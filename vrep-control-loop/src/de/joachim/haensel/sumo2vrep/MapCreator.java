@@ -19,7 +19,6 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import sumobindings.EdgeType;
-import sumobindings.JunctionType;
 import sumobindings.LaneType;
 import sumobindings.NetType;
 
