@@ -18,7 +18,8 @@ module vrepvehicle
     exports de.joachim.haensel.vehiclecontrol.reactive;
     exports sumobindings;
 
-    requires coppelialib;
+    requires transitive coppelialib;
     requires java.xml;
     requires transitive java.xml.bind;
+    requires junit;
 }
