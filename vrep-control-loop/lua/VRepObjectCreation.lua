@@ -1,3 +1,12 @@
+createdObjects = {}
+
+deleteCreated function(inInts, inFloats, inStrings, inBuffer)
+	while(next(createdObjects) != nil)
+		sim.removeObject(table.remove(createdObjects))
+	end
+	return {}, {}, {}, "" 
+end
+
 createEdge = function(inInts, inFloats, inStrings, inBuffer)
 --      simAddStatusbarMessage("Creating edge at: "..table_to_string(inFloats))
       local x1 = inFloats[1]
@@ -45,6 +54,8 @@ createEdge = function(inInts, inFloats, inStrings, inBuffer)
       
       sim.setObjectName(objectHandle, inStrings[1])
       sim.addStatusbarMessage(inStrings[1].."; "..x1.."; "..y1.."; "..x2.."; "..y2.."; "..dx.."; "..dy.."; "..atanBase.."; "..angle.."; "..length)
+
+      table.insert(createdObjects, objectHandle) -- for later removal
       return {}, {}, {}, "" 
 end
 
@@ -70,6 +81,8 @@ createJunction = function(inInts, inFloats, inStrings, inBuffer)
 
       sim.addStatusbarMessage("Creating junction at: "..table_to_string(coordinates))
       local posResult = sim.setObjectPosition(objectHandle, sim_handle_parent, {coordinates[1], coordinates[2], height/2})
+
+      table.insert(createdObjects, objectHandle) -- for later removal
       return {}, {}, {}, "" 
 end
 
@@ -95,6 +108,8 @@ createCenter = function(inInts, inFloats, inStrings, inBuffer)
       local coordinates = {0, 0, 0}
       sim.addStatusbarMessage("objectHandle:"..type(objectHandle)..", relativeToObjHandle:"..type(relativeToObjHandle)..", coordinates:"..type(coordinates))
       local posResult = sim.setObjectPosition(objectHandle, relativeToObjHandle, coordinates)
+
+      table.insert(createdObjects, objectHandle) -- for later removal
       return {}, {}, {}, "" 
 end
 

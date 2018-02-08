@@ -22,4 +22,5 @@ module vrepvehicle
     requires java.xml;
     requires transitive java.xml.bind;
     requires junit;
+    requires org.junit.jupiter.api;
 }

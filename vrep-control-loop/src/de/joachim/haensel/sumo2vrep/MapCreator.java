@@ -28,21 +28,22 @@ public class MapCreator
     private float _downScaleFactor;
     private float _streetWidth;
     private float _streetHeight;
+    private VRepRemoteAPI _vrep;
+    private int _clientID;
     
-    public MapCreator(float downScaleFactor, float streetWidth, float streetHeight)
+    public MapCreator(float downScaleFactor, float streetWidth, float streetHeight, VRepRemoteAPI vrep, int clientID)
     {
         _downScaleFactor = downScaleFactor;
         _streetWidth = streetWidth;
         _streetHeight = streetHeight;
+        _vrep = vrep;
+        _clientID = clientID;
     }
 
-    public void setup(String networkFilename)
+    public void createMap(String networkFilename)
     {
         try
         {
-            VRepRemoteAPI vrep = VRepRemoteAPI.INSTANCE;
-            int clientID = vrep.simxStart("127.0.0.1", 19999, true, true, 5000, 5);
-            loadFunctions(vrep, clientID);
             IDCreator elementNameCreator = new IDCreator();
             NetType roadNetwork = readSumoMap(networkFilename);
             List<JunctionType> junctions = roadNetwork.getJunction();
@@ -54,9 +55,9 @@ public class MapCreator
                 }
                 float xPos = curJunction.getX();
                 float yPos = curJunction.getY();
-                createJunction(vrep, clientID, elementNameCreator, xPos, yPos);
+                createJunction(_vrep, _clientID, elementNameCreator, xPos, yPos);
             }
-            vrep.simxCallScriptFunction(clientID, "ScriptLoader", 6, "createCenter", null, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);            
+            _vrep.simxCallScriptFunction(_clientID, "ScriptLoader", 6, "createCenter", null, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);            
             List<EdgeType> edges = roadNetwork.getEdge();
             for (EdgeType curEdge : edges)
             {
@@ -73,11 +74,11 @@ public class MapCreator
                         {
                             String p1 = lineCoordinates[0];
                             String p2 = lineCoordinates[1];
-                            createLane(vrep, clientID, elementNameCreator, curLane, p1, p2);              
+                            createLane(_vrep, _clientID, elementNameCreator, curLane, p1, p2);              
                         }
                         else
                         {
-                            createLaneRecursive(vrep, clientID, elementNameCreator, curLane, Arrays.asList(lineCoordinates));
+                            createLaneRecursive(_vrep, _clientID, elementNameCreator, curLane, Arrays.asList(lineCoordinates));
                         }
                     }
                 }
@@ -139,8 +140,13 @@ public class MapCreator
         stringParameters[0] = elementNameCreator.createEdgeID();
         vrep.simxCallScriptFunction(clientID, "ScriptLoader", 6, "createEdge", null, callParamsF, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
     }
+    
+    public void deleteAll() throws VRepException
+    {
+        _vrep.simxCallScriptFunction(_clientID, "ScriptLoader", 6, "deleteCreated", null, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+    }
 
-    public void loadFunctions(VRepRemoteAPI vrep, int clientID)
+    public void loadFunctions()
     {
         StringWA inParamsString = new StringWA(1);
         String scriptText = null;
@@ -157,7 +163,7 @@ public class MapCreator
             }
             inParamsString.getArray()[0] = scriptText;
             StringWA returnStrings = new StringWA(1);
-            vrep.simxCallScriptFunction(clientID, "ScriptLoader", 6, "loadCode", null, null, inParamsString, null, null, null, returnStrings, null, remoteApi.simx_opmode_blocking);
+            _vrep.simxCallScriptFunction(_clientID, "ScriptLoader", 6, "loadCode", null, null, inParamsString, null, null, null, returnStrings, null, remoteApi.simx_opmode_blocking);
             if (returnStrings.getArray().length >= 1)
             {
                 String loadReturnValue = returnStrings.getArray()[0];
