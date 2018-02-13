@@ -1,9 +1,10 @@
 package de.joachim.haensel.sumo2vrep.test;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
@@ -21,19 +22,19 @@ class MapCreationTest
     private VRepRemoteAPI _vrep;
     private int _clientID;
 
-    @BeforeAll 
+    @BeforeClass
     void setupVrep() throws VRepException
     {
         _vrep = VRepRemoteAPI.INSTANCE;
         _clientID = _vrep.simxStart("127.0.0.1", 19999, true, true, 5000, 5);
     }
     
-    @BeforeEach
+    @Before
     void setUp() throws Exception
     {
     }
 
-    @AfterEach
+    @After
     void tearDown() throws Exception
     {
         
