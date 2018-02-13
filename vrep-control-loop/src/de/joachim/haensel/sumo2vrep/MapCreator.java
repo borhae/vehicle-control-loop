@@ -154,7 +154,7 @@ public class MapCreator
         {
             try
             {
-                scriptText = new String(Files.readAllBytes(Paths.get("./lua/ObjectCreationCustomizationScript.lua")));
+                scriptText = new String(Files.readAllBytes(Paths.get("./lua/VRepObjectCreation.lua")));
             }
             catch (IOException e)
             {

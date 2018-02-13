@@ -1,7 +1,7 @@
-createdObjects = {}
+-- createdObjects = {}
 
-deleteCreated function(inInts, inFloats, inStrings, inBuffer)
-	while(next(createdObjects) != nil)
+deleteCreated = function(inInts, inFloats, inStrings, inBuffer)
+	while(next(createdObjects) ~= nil) do
 		sim.removeObject(table.remove(createdObjects))
 	end
 	return {}, {}, {}, "" 
