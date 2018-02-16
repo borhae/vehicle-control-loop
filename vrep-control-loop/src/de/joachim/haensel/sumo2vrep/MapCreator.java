@@ -3,9 +3,6 @@ package de.joachim.haensel.sumo2vrep;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,6 +15,7 @@ import coppelia.StringWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import sumobindings.EdgeType;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;
@@ -30,14 +28,16 @@ public class MapCreator
     private float _streetHeight;
     private VRepRemoteAPI _vrep;
     private int _clientID;
+    private VRepObjectCreation _vrepObjectCreator;
     
-    public MapCreator(float downScaleFactor, float streetWidth, float streetHeight, VRepRemoteAPI vrep, int clientID)
+    public MapCreator(float downScaleFactor, float streetWidth, float streetHeight, VRepRemoteAPI vrep, int clientID, VRepObjectCreation vrepObjectCreator)
     {
         _downScaleFactor = downScaleFactor;
         _streetWidth = streetWidth;
         _streetHeight = streetHeight;
         _vrep = vrep;
         _clientID = clientID;
+        _vrepObjectCreator = vrepObjectCreator;
     }
 
     public void createMap(String networkFilename)
@@ -57,7 +57,7 @@ public class MapCreator
                 float yPos = curJunction.getY();
                 createJunction(_vrep, _clientID, elementNameCreator, xPos, yPos);
             }
-            _vrep.simxCallScriptFunction(_clientID, "ScriptLoader", 6, "createCenter", null, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);            
+            _vrepObjectCreator.createMapCenter();
             List<EdgeType> edges = roadNetwork.getEdge();
             for (EdgeType curEdge : edges)
             {
@@ -144,36 +144,6 @@ public class MapCreator
     public void deleteAll() throws VRepException
     {
         _vrep.simxCallScriptFunction(_clientID, "ScriptLoader", 6, "deleteCreated", null, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
-    }
-
-    public void loadFunctions()
-    {
-        StringWA inParamsString = new StringWA(1);
-        String scriptText = null;
-        try
-        {
-            try
-            {
-                scriptText = new String(Files.readAllBytes(Paths.get("./lua/VRepObjectCreation.lua")));
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-                return;
-            }
-            inParamsString.getArray()[0] = scriptText;
-            StringWA returnStrings = new StringWA(1);
-            _vrep.simxCallScriptFunction(_clientID, "ScriptLoader", 6, "loadCode", null, null, inParamsString, null, null, null, returnStrings, null, remoteApi.simx_opmode_blocking);
-            if (returnStrings.getArray().length >= 1)
-            {
-                String loadReturnValue = returnStrings.getArray()[0];
-                System.out.println("script handle: " + loadReturnValue);
-            }
-        }
-        catch (VRepException e)
-        {
-            e.printStackTrace();
-        }
     }
 
     public NetType readSumoMap(String networkFileName) 

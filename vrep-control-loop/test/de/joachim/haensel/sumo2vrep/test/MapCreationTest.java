@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -16,6 +17,7 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.sumo2vrep.MapCreator;
+import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 
 public class MapCreationTest
@@ -28,23 +30,26 @@ public class MapCreationTest
     private static final float STREET_HEIGHT = 0.4f / DOWN_SCALE_FACTOR;
     private static VRepRemoteAPI _vrep;
     private static int _clientID;
+    private static VRepObjectCreation _objectCreator;
 
     @BeforeClass
     public static void setupVrep() throws VRepException
     {
         _vrep = VRepRemoteAPI.INSTANCE;
         _clientID = _vrep.simxStart("127.0.0.1", 19999, true, true, 5000, 5);
+        _objectCreator = new VRepObjectCreation(_vrep, _clientID);
     }
     
-    @Before
-    public void setUp() throws Exception
+    @AfterClass
+    public static void tearDownVrep() 
     {
+        _vrep.simxFinish(_clientID);
     }
-
+    
     @After
-    public void tearDown() throws Exception
+    public void cleanUpObjects() throws VRepException
     {
-        
+        _objectCreator.deleteAll();
     }
     
     @Test 
@@ -79,27 +84,23 @@ public class MapCreationTest
     }
 
     @Test
-    public void testLoadAndRemoveMap() throws VRepException
+    public void testLoadSimpleMap() throws VRepException
     {
-        MapCreator mapCreator = new MapCreator(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID);
-        mapCreator.loadFunctions();
+        MapCreator mapCreator = new MapCreator(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap("./res/roadnetworks/superSimpleMap.net.xml");
-        mapCreator.deleteAll();
     }
     
-    @Test
-    public void testLoadSimpleMap()
+    @Test 
+    public void testMidRangeSyntheticMap() throws VRepException
     {
-        MapCreator mapCreator = new MapCreator(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID);
-        mapCreator.loadFunctions();
-        mapCreator.createMap("./res/roadnetworks/superSimpleMap.net.xml");
+        MapCreator mapCreator = new MapCreator(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMap("./res/roadnetworks/testMap5Streets.net.xml");
     }
 
     @Test
-    public void testLoadRealWorldMap()
+    public void testLoadRealWorldMap() throws VRepException
     {
-        MapCreator mapCreator = new MapCreator(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID);
-        mapCreator.loadFunctions();
-        mapCreator.createMap("./res/exampleMap/neumarkRealWorldJustCars.net.xml");
+        MapCreator mapCreator = new MapCreator(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
     }
 }

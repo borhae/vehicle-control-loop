@@ -6,7 +6,7 @@ import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
-public class CarControl
+public class CarControlInterface
 {
 
     private VRepObjectCreation _creator;
@@ -15,7 +15,7 @@ public class CarControl
     private int _clientID;
     private String _scriptParentName;
 
-    public CarControl(VRepObjectCreation creator, String scriptParentName, VRepRemoteAPI vrep, int clientID, int physicalBodyHandle)
+    public CarControlInterface(VRepObjectCreation creator, String scriptParentName, VRepRemoteAPI vrep, int clientID, int physicalBodyHandle)
     {
         _creator = creator;
         _physicalBodyHandle = physicalBodyHandle;

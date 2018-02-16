@@ -1,4 +1,4 @@
--- createdObjects = {}
+createdObjects = {}
 
 deleteCreated = function(inInts, inFloats, inStrings, inBuffer)
 	while(next(createdObjects) ~= nil) do
@@ -163,6 +163,8 @@ createPrimitive = function(inInts, inFloats, inStrings, inBuffer)
 --    NAMING
       simSetObjectName(objectHandle, name)
       simAddStatusbarMessage("name added, now returning")
+      table.insert(createdObjects, objectHandle) -- for later removal
+      
       return {objectHandle}, {}, {}, "" 
 end
 
@@ -213,6 +215,9 @@ createJoint = function(inInts, inFloats, inStrings, inBuffer)
       simSetJointForce(objectHandle, maximumForce)      
 --    NAMING
       simSetObjectName(objectHandle, name)
+      
+      table.insert(createdObjects, objectHandle) -- for later removal
+      
       return {objectHandle}, {}, {}, "" 
 end
 

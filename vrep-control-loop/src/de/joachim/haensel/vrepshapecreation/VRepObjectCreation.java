@@ -16,9 +16,9 @@ import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
 public class VRepObjectCreation
 {
     private static final String SCRIPT_LOADING_LUA_FUNCTION = "loadCode";
-    private static final String LOADED_SCRIPT_OBJECT_CREATION = "./src/main/lua/VRepObjectCreation.lua";
-    private static final String SPRING_DAMPER_SCRIPT_FILE_NAME = "./src/main/lua/TestSpringDamperControlScript.lua";
-    private static final String STEERING_CONTROL_SCRIPT_FILE_NAME = "./src/main/lua/SteeringControlScript.lua";
+    private static final String LOADED_SCRIPT_OBJECT_CREATION = "./lua/VRepObjectCreation.lua";
+    private static final String SPRING_DAMPER_SCRIPT_FILE_NAME = "./lua/SpringDamperControlScript.lua";
+    private static final String STEERING_CONTROL_SCRIPT_FILE_NAME = "./lua/SteeringControlScript.lua";
     
     
     private static final String VREP_LOADING_SCRIPT_PARENT_OBJECT = "ScriptLoader";
@@ -205,5 +205,15 @@ public class VRepObjectCreation
         {
             e.printStackTrace();
         }
+    }
+
+    public void createMapCenter() throws VRepException
+    {
+        _vrep.simxCallScriptFunction(_clientID, "ScriptLoader", 6, "createCenter", null, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);            
+    }
+
+    public void deleteAll() throws VRepException
+    {
+        _vrep.simxCallScriptFunction(_clientID, "ScriptLoader", 6, "deleteCreated", null, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
     }
 }
