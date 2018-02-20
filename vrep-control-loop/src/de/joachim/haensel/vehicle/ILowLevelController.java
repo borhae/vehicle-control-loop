@@ -1,8 +1,9 @@
 package de.joachim.haensel.vehicle;
 
+import de.joachim.haensel.vehiclecontrol.base.Position2D;
+
 public interface ILowLevelController
 {
-    void driveTo(float f, float y);
-    void driveToBlocking(float x, float y);
-    void controlEvent();
+    public void controlEvent();
+    public void driveTo(Position2D position);
 }

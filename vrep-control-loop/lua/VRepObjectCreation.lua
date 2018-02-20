@@ -295,3 +295,10 @@ table_to_string = function(tbl)
     end
     return result.."}"
 end
+
+-- ------------------------- TODO: THIS SHOULD GO TO IT'S OWN FILE --------------
+
+simulationState =  function(inInts, inFloats, inStrings, inBuffer)
+  local simulationState = sim.getSimulationState()
+  return {simulationState}, {}, {}, "" 
+end

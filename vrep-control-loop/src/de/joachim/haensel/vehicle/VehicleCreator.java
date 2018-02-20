@@ -42,6 +42,8 @@ public class VehicleCreator
     {
         try
         {
+            VehicleHandles vehicleHandles = new VehicleHandles();
+
             float baseLength = (float) (VWPoloDimensions.getWheelbase() + 100.0)/1000;
             float baseWidth = (float) (VWPoloDimensions.getWidth() - 100)/1000;
             
@@ -70,14 +72,16 @@ public class VehicleCreator
             createConnector(_objectCreator, damperRearLeft, axisRearLeft, "connectorDrlArl", 0.0f, 0.0f, - STEERING_LENGTH/2.0f, STEERING_DIAMETER * 1.8f, STEERING_DIAMETER * 1.8f);
             createConnector(_objectCreator, damperRearRight, axisRearRight, "connectorDrrArr", 0.0f, 0.0f, - STEERING_LENGTH/2.0f, STEERING_DIAMETER * 1.8f, STEERING_DIAMETER * 1.8f);
             
-            createWheel(_objectCreator, "frontLeftWheel", motorFrontLeft, WHEEL_DIAMETER, WHEEL_WIDTH);
-            createWheel(_objectCreator, "frontRightWheel", motorFrontRight, WHEEL_DIAMETER, WHEEL_WIDTH);
-            createWheel(_objectCreator, "rearLeftWheel", axisRearLeft, WHEEL_DIAMETER, WHEEL_WIDTH);
-            createWheel(_objectCreator, "rearRightWheel", axisRearRight, WHEEL_DIAMETER, WHEEL_WIDTH);
+            int frontLeftWheel = createWheel(_objectCreator, "frontLeftWheel", motorFrontLeft, WHEEL_DIAMETER, WHEEL_WIDTH);
+            int frontRightWheel = createWheel(_objectCreator, "frontRightWheel", motorFrontRight, WHEEL_DIAMETER, WHEEL_WIDTH);
+            int rearLeftWheel = createWheel(_objectCreator, "rearLeftWheel", axisRearLeft, WHEEL_DIAMETER, WHEEL_WIDTH);
+            int rearRightWheel = createWheel(_objectCreator, "rearRightWheel", axisRearRight, WHEEL_DIAMETER, WHEEL_WIDTH);
 
             CarControlInterface car1 = new CarControlInterface(_objectCreator, PHYSICAL_CAR_BODY_NAME, _vrep, _clientID, physicalBodyHandle);
+            
+            vehicleHandles.setPhysicalBody(physicalBodyHandle).setRearLeftWheel(rearLeftWheel).setRearRightWheel(rearRightWheel);
             car1.initialize();
-            return new Vehicle(_objectCreator, _vrep, _clientID, physicalBodyHandle, car1);
+            return new Vehicle(_objectCreator, _vrep, _clientID, vehicleHandles, car1);
         }
         catch (VRepException e)
         {
