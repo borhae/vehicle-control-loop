@@ -72,7 +72,7 @@ public class VehicleCreationTest
         float height = vehicleCreator.getVehicleHeight();
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f);
         NetType network = mapCreator.getNetwork();
-        JunctionType junction = network.getJunction().get(0);
+        JunctionType junction = network.getJunction().get(3);
         String incommingLaneID = junction.getIncLanes().split(" ")[0];
         LaneType incommingLane = mapCreator.getLaneForName(incommingLaneID);
         vehicle.putOnJunctionHeadingTo(junction, incommingLane);

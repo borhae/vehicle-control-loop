@@ -1,5 +1,6 @@
 package de.joachim.haensel.vehicle;
 
+import java.awt.geom.Point2D;
 import java.util.Timer;
 
 import coppelia.FloatWA;
@@ -135,6 +136,31 @@ public class Vehicle implements IActuatingSensing
 
     public void putOnJunctionHeadingTo(JunctionType junction, LaneType laneToHeadFor) throws VRepException
     {
-        setPosition(junction.getX(), junction.getY(), 0.3f);
+        float junctionX = junction.getX();
+        float junctionY = junction.getY();
+        
+        Position2D[] lineCoordinates = Position2D.valueOf(laneToHeadFor.getShape().split(" "));
+        double minDist = Float.MAX_VALUE;
+        int minIdx = -1;
+        for (int idx = 0; idx < lineCoordinates.length; idx++)
+        {
+            Position2D curCoordinate = lineCoordinates[idx];
+            double curDist = Point2D.distance(curCoordinate.getX(), curCoordinate.getY(), junctionX, junctionY);
+            if(curDist < minDist)
+            {
+               minDist = curDist;
+               minIdx = idx;
+            }
+        }
+        Position2D startPos = lineCoordinates[minIdx];
+        setPosition(startPos.getX(), startPos.getY(), 0.3f);
+        // defined by two points
+        if(lineCoordinates.length == 2)
+        {
+            int otherIdx = minIdx == 0 ? 1 : 0;
+            Position2D destPos = lineCoordinates[otherIdx];
+            double angle = Math.atan2(startPos.getY() - destPos.getY(), startPos.getX() - destPos.getX()) + Math.PI / 2;
+            setOrientation(0.0f, 0.0f, (float)angle);
+        }
     }
 }

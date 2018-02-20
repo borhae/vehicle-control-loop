@@ -11,6 +11,13 @@ public class Position2D
         _y = y;
     }
 
+    public Position2D(String coordinatesAsString)
+    {
+        String[] coordinates = coordinatesAsString.split(",");
+        _x  = Float.valueOf(coordinates[0]);
+        _y  = Float.valueOf(coordinates[1]);
+    }
+
     public void setX(float x)
     {
         _x = x;
@@ -48,5 +55,15 @@ public class Position2D
     {
         _x = x;
         _y = y;
+    }
+
+    public static Position2D[] valueOf(String[] coordinates)
+    {
+        Position2D[] result = new Position2D[coordinates.length];
+        for (int idx = 0; idx < coordinates.length; idx++)
+        {
+            result[idx] = new Position2D(coordinates[idx]);
+        }
+        return result;
     }
 }
