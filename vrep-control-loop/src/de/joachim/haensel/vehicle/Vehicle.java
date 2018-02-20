@@ -1,13 +1,14 @@
 package de.joachim.haensel.vehicle;
 
-import java.awt.geom.Point2D;
 import java.util.Timer;
 
 import coppelia.FloatWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
-import de.joachim.haensel.vehiclecontrol.base.Position2D;
+import de.joachim.haensel.sumo2vrep.OrientedPosition;
+import de.joachim.haensel.sumo2vrep.Position2D;
+import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.vehiclecontrol.reactive.CarControlInterface;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import sumobindings.JunctionType;
@@ -27,8 +28,9 @@ public class Vehicle implements IActuatingSensing
     private Timer _timer;
     private Position2D _curPosition;
     private Position2D _rearWheelCenterPosition;
+    private RoadMap _roadMap;
     
-    public Vehicle(VRepObjectCreation creator, VRepRemoteAPI vrep, int clientID, VehicleHandles vehicleHandles, CarControlInterface controller)
+    public Vehicle(VRepObjectCreation creator, VRepRemoteAPI vrep, int clientID, VehicleHandles vehicleHandles, CarControlInterface controller, RoadMap roadMap)
     {
         _vrep = vrep;
         _clientID = clientID;
@@ -37,13 +39,14 @@ public class Vehicle implements IActuatingSensing
         
         
         _lowerControlLayer = new BadReactiveController(this);
-        _upperControlLayer = new NavigationController(_lowerControlLayer);
+        _upperControlLayer = new NavigationController(_lowerControlLayer, this, roadMap);
 
         _controlEventGenerator = new LowLevelEventGenerator();
         _controlEventGenerator.addEventListener(_lowerControlLayer);
         _timer = new Timer();
         _curPosition = new Position2D(0, 0);
         _rearWheelCenterPosition = new Position2D(0, 0);
+        _roadMap = null;
     }
 
     public void setOrientation(float angleAlpha, float angleBeta, float angleGamma) throws VRepException
@@ -74,8 +77,9 @@ public class Vehicle implements IActuatingSensing
         _timer.scheduleAtFixedRate(_controlEventGenerator, 0, CONTROL_LOOP_EXECUTION_DENSITY);
     }
 
-    public void driveToBlocking(float x, float y)
+    public void driveToBlocking(float x, float y, RoadMap roadMap)
     {
+        _roadMap = roadMap;
         _upperControlLayer.driveToBlocking(new Position2D(x, y));
     }
 
@@ -136,31 +140,8 @@ public class Vehicle implements IActuatingSensing
 
     public void putOnJunctionHeadingTo(JunctionType junction, LaneType laneToHeadFor) throws VRepException
     {
-        float junctionX = junction.getX();
-        float junctionY = junction.getY();
-        
-        Position2D[] lineCoordinates = Position2D.valueOf(laneToHeadFor.getShape().split(" "));
-        double minDist = Float.MAX_VALUE;
-        int minIdx = -1;
-        for (int idx = 0; idx < lineCoordinates.length; idx++)
-        {
-            Position2D curCoordinate = lineCoordinates[idx];
-            double curDist = Point2D.distance(curCoordinate.getX(), curCoordinate.getY(), junctionX, junctionY);
-            if(curDist < minDist)
-            {
-               minDist = curDist;
-               minIdx = idx;
-            }
-        }
-        Position2D startPos = lineCoordinates[minIdx];
-        setPosition(startPos.getX(), startPos.getY(), 0.3f);
-        // defined by two points
-        if(lineCoordinates.length == 2)
-        {
-            int otherIdx = minIdx == 0 ? 1 : 0;
-            Position2D destPos = lineCoordinates[otherIdx];
-            double angle = Math.atan2(startPos.getY() - destPos.getY(), startPos.getX() - destPos.getX()) + Math.PI / 2;
-            setOrientation(0.0f, 0.0f, (float)angle);
-        }
+        OrientedPosition posAndHeading = _roadMap.computeLaneEntryAtJunction(junction, laneToHeadFor);
+        setOrientation(0.0f, 0.0f, (float)posAndHeading.getAngle());
+        setPosition(posAndHeading.getPos().getX(), posAndHeading.getPos().getY(), 0.3f);
     }
 }

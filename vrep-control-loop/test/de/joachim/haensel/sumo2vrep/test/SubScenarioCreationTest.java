@@ -10,9 +10,13 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.sumo2vrep.MapCreator;
+import de.joachim.haensel.sumo2vrep.OrientedPosition;
+import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.vehicle.Vehicle;
 import de.joachim.haensel.vehicle.VehicleCreator;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
+import sumobindings.JunctionType;
+import sumobindings.LaneType;
 
 public class SubScenarioCreationTest
 {
@@ -66,11 +70,12 @@ public class SubScenarioCreationTest
     @Test
     public void testSetVehicleOnSimpleRoadNetwork() throws VRepException
     {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
         MapCreator mapCreator = new MapCreator(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap("./res/roadnetworks/superSimpleMap.net.xml");
+        mapCreator.createMap(roadMap);
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
         float height = vehicleCreator.getVehicleHeight();
-        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f);
+        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap);
         vehicle.setOrientation(0.0f, 0.0f, 0.0f);
         vehicle.setPosition(3.0f, 2.0f, 1.0f);
     }
@@ -78,17 +83,25 @@ public class SubScenarioCreationTest
     @Test
     public void testShortDrive() throws VRepException
     {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
         MapCreator mapCreator = new MapCreator(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap("./res/roadnetworks/superSimpleMap.net.xml");
+        mapCreator.createMap(roadMap);
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
         float height = vehicleCreator.getVehicleHeight();
-        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f);
-        vehicle.setOrientation(0.0f, 0.0f, (float)Math.PI);
-        vehicle.setPosition(2.0f, 0.0f, 1.0f);
+        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap);
+
+        JunctionType startingJunction = roadMap.getJunctions().get(3);
+        String startingLaneID = startingJunction.getIncLanes().split(" ")[0];
+        LaneType lane = roadMap.getLaneForName(startingLaneID);
+
+        JunctionType targetJunction = roadMap.getJunctions().get(2);
+        OrientedPosition targetPoint = roadMap.computeLaneEntryAtJunction(targetJunction, lane);
+        
+        vehicle.putOnJunctionHeadingTo(startingJunction, lane);
         _vrep.simxStartSimulation(_clientID, remoteApi.simx_opmode_blocking);
         
         vehicle.start();
-        vehicle.driveToBlocking(2.0f, 12.0f);
+        vehicle.driveToBlocking(targetPoint.getPos().getX(), targetPoint.getPos().getY(), roadMap);
         //let him drive for a while (uncontrolled for now)
         try
         {

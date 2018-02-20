@@ -1,30 +1,28 @@
 package de.joachim.haensel.sumo2vrep.test;
 
 
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import coppelia.StringWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.sumo2vrep.MapCreator;
+import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 
 public class MapCreationTest
 {
-//  private static final String NETWORK_FILE_NAME = "./res/exampleMap/1stTestMap.net.xml";
-//  private static final String NETWORK_FILE_NAME = "./res/exampleMap/testMap5Streets.net.xml";
-
     private static final float DOWN_SCALE_FACTOR = 1;
     private static final float STREET_WIDTH = 3.3f / DOWN_SCALE_FACTOR;
     private static final float STREET_HEIGHT = 0.4f / DOWN_SCALE_FACTOR;
@@ -86,21 +84,24 @@ public class MapCreationTest
     @Test
     public void testLoadSimpleMap() throws VRepException
     {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
         MapCreator mapCreator = new MapCreator(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap("./res/roadnetworks/superSimpleMap.net.xml");
+        mapCreator.createMap(roadMap);
     }
     
     @Test 
     public void testMidRangeSyntheticMap() throws VRepException
     {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/testMap5Streets.net.xml");
         MapCreator mapCreator = new MapCreator(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap("./res/roadnetworks/testMap5Streets.net.xml");
+        mapCreator.createMap(roadMap);
     }
 
     @Test
     public void testLoadRealWorldMap() throws VRepException
     {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
         MapCreator mapCreator = new MapCreator(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
+        mapCreator.createMap(roadMap);
     }
 }

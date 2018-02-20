@@ -3,6 +3,7 @@ package de.joachim.haensel.vehicle;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.vehiclecontrol.reactive.CarControlInterface;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import de.joachim.haensel.vrepshapecreation.joints.EVRepJointModes;
@@ -38,7 +39,7 @@ public class VehicleCreator
         _objectCreator = objectCreator;
     }
 
-    public Vehicle createAt(float x, float y, float z)
+    public Vehicle createAt(float x, float y, float z, RoadMap roadMap)
     {
         try
         {
@@ -81,7 +82,7 @@ public class VehicleCreator
             
             vehicleHandles.setPhysicalBody(physicalBodyHandle).setRearLeftWheel(rearLeftWheel).setRearRightWheel(rearRightWheel);
             car1.initialize();
-            return new Vehicle(_objectCreator, _vrep, _clientID, vehicleHandles, car1);
+            return new Vehicle(_objectCreator, _vrep, _clientID, vehicleHandles, car1, roadMap);
         }
         catch (VRepException e)
         {

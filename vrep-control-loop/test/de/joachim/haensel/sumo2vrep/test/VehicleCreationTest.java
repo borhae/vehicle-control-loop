@@ -8,10 +8,10 @@ import org.junit.Test;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.sumo2vrep.MapCreator;
+import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.vehicle.Vehicle;
 import de.joachim.haensel.vehicle.VehicleCreator;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
-import sumobindings.EdgeType;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;
 import sumobindings.NetType;
@@ -50,7 +50,7 @@ public class VehicleCreationTest
     {
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
         float height = vehicleCreator.getVehicleHeight();
-        vehicleCreator.createAt(-3f, 0, height + 0.1f);
+        vehicleCreator.createAt(-3f, 0, height + 0.1f, null);
     }
     
     @Test
@@ -58,7 +58,7 @@ public class VehicleCreationTest
     {
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
         float height = vehicleCreator.getVehicleHeight();
-        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f);
+        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, null);
         vehicle.setOrientation(1.0f, 1.0f, 1.0f);
         vehicle.setPosition(3.0f, 2.0f, 1.0f);
     }
@@ -66,16 +66,16 @@ public class VehicleCreationTest
     @Test
     public void testCreateAndPutOnNodeVehicle() throws VRepException
     {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
         MapCreator mapCreator = new MapCreator(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap("./res/roadnetworks/superSimpleMap.net.xml");
+        mapCreator.createMap(roadMap);
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
         float height = vehicleCreator.getVehicleHeight();
-        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f);
-        NetType network = mapCreator.getNetwork();
+        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap);
+        NetType network = roadMap.getNetwork();
         JunctionType junction = network.getJunction().get(3);
         String incommingLaneID = junction.getIncLanes().split(" ")[0];
-        LaneType incommingLane = mapCreator.getLaneForName(incommingLaneID);
+        LaneType incommingLane = roadMap.getLaneForName(incommingLaneID);
         vehicle.putOnJunctionHeadingTo(junction, incommingLane);
-        System.out.println("wait");
     }
 }

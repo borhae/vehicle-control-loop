@@ -1,6 +1,6 @@
 package de.joachim.haensel.vehicle;
 
-import de.joachim.haensel.vehiclecontrol.base.Position2D;
+import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.vehiclecontrol.reactive.ControllerStates;
 import de.joachim.haensel.vehiclecontrol.reactive.pid.PIDController;
 

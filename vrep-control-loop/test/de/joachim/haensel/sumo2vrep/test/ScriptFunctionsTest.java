@@ -1,14 +1,11 @@
 package de.joachim.haensel.sumo2vrep.test;
 
-import java.math.BigInteger;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import coppelia.FloatWA;
-import coppelia.IntW;
 import coppelia.IntWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
@@ -69,7 +66,7 @@ public class ScriptFunctionsTest
     {
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
         float height = vehicleCreator.getVehicleHeight();
-        Vehicle vehicle = vehicleCreator.createAt(-2.0f, 0.0f, height + 0.1f);
+        Vehicle vehicle = vehicleCreator.createAt(-2.0f, 0.0f, height + 0.1f, null);
 
         _vrep.simxStartSimulation(_clientID, remoteApi.simx_opmode_blocking);
         

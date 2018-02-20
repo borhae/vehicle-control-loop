@@ -1,16 +1,7 @@
 package de.joachim.haensel.sumo2vrep;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 import coppelia.FloatWA;
 import coppelia.StringWA;
@@ -21,7 +12,6 @@ import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import sumobindings.EdgeType;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;
-import sumobindings.NetType;
 
 public class MapCreator
 {
@@ -31,9 +21,6 @@ public class MapCreator
     private VRepRemoteAPI _vrep;
     private int _clientID;
     private VRepObjectCreation _vrepObjectCreator;
-    private NetType _roadNetwork;
-    private Map<String, JunctionType> _nameToJunctionMap;
-    private Map<String, LaneType> _nameToLaneMap;
     
     public MapCreator(float downScaleFactor, float streetWidth, float streetHeight, VRepRemoteAPI vrep, int clientID, VRepObjectCreation vrepObjectCreator)
     {   
@@ -43,17 +30,14 @@ public class MapCreator
         _vrep = vrep;
         _clientID = clientID;
         _vrepObjectCreator = vrepObjectCreator;
-        _nameToJunctionMap = new HashMap<>();
-        _nameToLaneMap = new HashMap<>();
     }
 
-    public void createMap(String networkFilename)
+    public void createMap(RoadMap roadMap)
     {
+        IDCreator elementNameCreator = new IDCreator();
         try
         {
-            IDCreator elementNameCreator = new IDCreator();
-            _roadNetwork = readSumoMap(networkFilename);
-            List<JunctionType> junctions = _roadNetwork.getJunction();
+            List<JunctionType> junctions = roadMap.getJunctions();
             for (JunctionType curJunction : junctions)
             {
                 if(curJunction.getType().equals("internal"))
@@ -62,10 +46,10 @@ public class MapCreator
                 }
                 float xPos = curJunction.getX();
                 float yPos = curJunction.getY();
-                createJunction(_vrep, _clientID, elementNameCreator, xPos, yPos, curJunction);
+                createJunction(_vrep, _clientID, elementNameCreator, xPos, yPos);
             }
             _vrepObjectCreator.createMapCenter();
-            List<EdgeType> edges = _roadNetwork.getEdge();
+            List<EdgeType> edges = roadMap.getEdges();
             for (EdgeType curEdge : edges)
             {
                 String function = curEdge.getFunction();
@@ -110,7 +94,7 @@ public class MapCreator
         }
     }
 
-    public void createJunction(VRepRemoteAPI vrep, int clientID, IDCreator elementNameCreator, float xPos, float yPos, JunctionType curJunction) throws VRepException
+    public void createJunction(VRepRemoteAPI vrep, int clientID, IDCreator elementNameCreator, float xPos, float yPos) throws VRepException
     {
         FloatWA callParamsFA = new FloatWA(5); 
         float[] floatParameters = callParamsFA.getArray();
@@ -123,7 +107,6 @@ public class MapCreator
         callParamsS.getArray()[0] = elementNameCreator.createJunctionID(); //curJunction.getId(); might be double names so skip that
         
         vrep.simxCallScriptFunction(clientID, "ScriptLoader", remoteApi.sim_scripttype_customizationscript, "createJunction", null, callParamsFA, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
-        _nameToJunctionMap.put(curJunction.getId(), curJunction);
     }
 
     public void createLane(VRepRemoteAPI vrep, int clientID, IDCreator elementNameCreator, LaneType curLane, String p1, String p2) throws VRepException
@@ -147,52 +130,10 @@ public class MapCreator
         String[] stringParameters = callParamsS.getArray();
         stringParameters[0] = elementNameCreator.createEdgeID();
         vrep.simxCallScriptFunction(clientID, "ScriptLoader", 6, "createEdge", null, callParamsF, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
-        _nameToLaneMap.put(curLane.getId(), curLane);
     }
     
     public void deleteAll() throws VRepException
     {
         _vrep.simxCallScriptFunction(_clientID, "ScriptLoader", 6, "deleteCreated", null, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
-    }
-
-    public NetType readSumoMap(String networkFileName) 
-    {
-        try
-        {
-            JAXBContext context = JAXBContext.newInstance(NetType.class);
-            Unmarshaller unmarshaller = context.createUnmarshaller();
-            FileReader mapFileReader = new FileReader(new File(networkFileName));
-            return (NetType) unmarshaller.unmarshal(mapFileReader);
-        }
-        catch (JAXBException e)
-        {
-            e.printStackTrace();
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public NetType getMapAsLanelets()
-    {
-        
-        return _roadNetwork;
-    }
-
-    public NetType getNetwork()
-    {
-        return _roadNetwork;
-    }
-
-    public JunctionType getJunctionForName(String elemName)
-    {
-        return _nameToJunctionMap.get(elemName);
-    }
-    
-    public LaneType getLaneForName(String laneName)
-    {
-        return _nameToLaneMap.get(laneName);
     }
 }
