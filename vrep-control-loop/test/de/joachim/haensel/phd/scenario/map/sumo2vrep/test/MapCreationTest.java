@@ -1,4 +1,4 @@
-package de.joachim.haensel.sumo2vrep.test;
+package de.joachim.haensel.phd.scenario.map.sumo2vrep.test;
 
 
 import static org.junit.Assert.fail;

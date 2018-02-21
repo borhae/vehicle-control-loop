@@ -1,4 +1,4 @@
-package de.joachim.haensel.sumo2vrep.test;
+package de.joachim.haensel.phd.scenario.vehicle.test;
 
 import org.junit.After;
 import org.junit.AfterClass;
