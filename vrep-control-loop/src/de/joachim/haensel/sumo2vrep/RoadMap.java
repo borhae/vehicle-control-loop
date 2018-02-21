@@ -38,6 +38,7 @@ public class RoadMap
         _navigableNetwork = new HashMap<>();
         _nameToJunctionMap = new HashMap<>();
         _nameToLaneMap = new HashMap<>();
+        _nameToEdgeMap = new HashMap<>();
         _positionToLaneMap = new HashMap<>();
         getJunctions().stream().forEach(junction -> _nameToJunctionMap.put(junction.getId(), junction));
         getEdges().stream().forEach(edge -> {insertAllLanesFrom(edge); _nameToEdgeMap.put(edge.getId(), edge);});
