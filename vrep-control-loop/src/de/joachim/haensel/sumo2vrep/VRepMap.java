@@ -13,7 +13,7 @@ import sumobindings.EdgeType;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;
 
-public class MapCreator
+public class VRepMap
 {
     private float _downScaleFactor;
     private float _streetWidth;
@@ -21,8 +21,9 @@ public class MapCreator
     private VRepRemoteAPI _vrep;
     private int _clientID;
     private VRepObjectCreation _vrepObjectCreator;
+    private IDCreator _elementNameCreator;
     
-    public MapCreator(float downScaleFactor, float streetWidth, float streetHeight, VRepRemoteAPI vrep, int clientID, VRepObjectCreation vrepObjectCreator)
+    public VRepMap(float downScaleFactor, float streetWidth, float streetHeight, VRepRemoteAPI vrep, int clientID, VRepObjectCreation vrepObjectCreator)
     {   
         _downScaleFactor = downScaleFactor;
         _streetWidth = streetWidth;
@@ -34,7 +35,7 @@ public class MapCreator
 
     public void createMap(RoadMap roadMap)
     {
-        IDCreator elementNameCreator = new IDCreator();
+        _elementNameCreator = new IDCreator();
         try
         {
             List<JunctionType> junctions = roadMap.getJunctions();
@@ -44,9 +45,7 @@ public class MapCreator
                 {
                     continue;
                 }
-                float xPos = curJunction.getX();
-                float yPos = curJunction.getY();
-                createJunction(_vrep, _clientID, elementNameCreator, xPos, yPos);
+                createJunction(_vrep, _clientID, _elementNameCreator, curJunction);
             }
             _vrepObjectCreator.createMapCenter();
             List<EdgeType> edges = roadMap.getEdges();
@@ -65,11 +64,11 @@ public class MapCreator
                         {
                             String p1 = lineCoordinates[0];
                             String p2 = lineCoordinates[1];
-                            createLane(_vrep, _clientID, elementNameCreator, curLane, p1, p2);              
+                            createLane(_vrep, _clientID, _elementNameCreator, curLane, p1, p2);              
                         }
                         else
                         {
-                            createLaneRecursive(_vrep, _clientID, elementNameCreator, curLane, Arrays.asList(lineCoordinates));
+                            createLaneRecursive(_vrep, _clientID, _elementNameCreator, curLane, Arrays.asList(lineCoordinates));
                         }
                     }
                 }
@@ -94,8 +93,11 @@ public class MapCreator
         }
     }
 
-    public void createJunction(VRepRemoteAPI vrep, int clientID, IDCreator elementNameCreator, float xPos, float yPos) throws VRepException
+    public void createJunction(VRepRemoteAPI vrep, int clientID, IDCreator elementNameCreator, JunctionType junction) throws VRepException
     {
+        float xPos = junction.getX();
+        float yPos = junction.getY();
+
         FloatWA callParamsFA = new FloatWA(5); 
         float[] floatParameters = callParamsFA.getArray();
         floatParameters[0] = xPos/_downScaleFactor;
@@ -104,7 +106,7 @@ public class MapCreator
         floatParameters[3] = _streetWidth;
         floatParameters[4] = _streetHeight;
         StringWA callParamsS = new StringWA(1);
-        callParamsS.getArray()[0] = elementNameCreator.createJunctionID(); //curJunction.getId(); might be double names so skip that
+        callParamsS.getArray()[0] = elementNameCreator.createJunctionID(junction);
         
         vrep.simxCallScriptFunction(clientID, "ScriptLoader", remoteApi.sim_scripttype_customizationscript, "createJunction", null, callParamsFA, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
     }
@@ -128,12 +130,17 @@ public class MapCreator
         floatParameters[6] = _streetHeight;
         
         String[] stringParameters = callParamsS.getArray();
-        stringParameters[0] = elementNameCreator.createEdgeID();
+        stringParameters[0] = elementNameCreator.createLaneID(curLane);
         vrep.simxCallScriptFunction(clientID, "ScriptLoader", 6, "createEdge", null, callParamsF, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
     }
     
     public void deleteAll() throws VRepException
     {
         _vrep.simxCallScriptFunction(_clientID, "ScriptLoader", 6, "deleteCreated", null, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+    }
+
+    public IDCreator getIDMapper()
+    {
+        return _elementNameCreator;
     }
 }

@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
-import de.joachim.haensel.sumo2vrep.MapCreator;
+import de.joachim.haensel.sumo2vrep.VRepMap;
 import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.vehicle.Vehicle;
 import de.joachim.haensel.vehicle.VehicleCreator;
@@ -67,7 +67,7 @@ public class VehicleCreationTest
     public void testCreateAndPutOnNodeVehicle() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
-        MapCreator mapCreator = new MapCreator(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
         float height = vehicleCreator.getVehicleHeight();
