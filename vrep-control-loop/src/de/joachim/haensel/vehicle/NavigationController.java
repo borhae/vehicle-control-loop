@@ -1,10 +1,14 @@
 package de.joachim.haensel.vehicle;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
+import de.joachim.haensel.sumo2vrep.Segment;
+import de.joachim.haensel.vehiclecontrol.Navigator;
+import sumobindings.JunctionType;
 import sumobindings.LaneType;
 
 public class NavigationController implements ITopLayerControl
@@ -50,10 +54,15 @@ public class NavigationController implements ITopLayerControl
         _timer.schedule(new ControlLoop(), UPDATE_FREQUENCY);
     }
 
-    private void createSegments(Position2D currentPosition, Position2D position)
+    private void createSegments(Position2D currentPosition, Position2D targetPosition)
     {
         //TODO pick up here, when closest lanes can be determined the navigation can start
-       LaneType lane = _roadMap.getClosestLaneFor(currentPosition);
+       LaneType startLane = _roadMap.getClosestLaneFor(currentPosition);
+       JunctionType startJunction = _roadMap.getClosestJunctionFor(currentPosition);
+       LaneType targetLane = _roadMap.getClosestLaneFor(targetPosition);
+       JunctionType targetJunction = _roadMap.getClosestJunctionFor(targetPosition);
+       Navigator navigator = new Navigator(_roadMap);
+       List<Segment> segments = navigator.getRoute(startJunction, targetJunction);
     }
 
     @Override

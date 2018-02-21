@@ -100,9 +100,6 @@ public class MapCreationTest
     @Test
     public void testCheckRoadMapAssignements() throws VRepException
     {
-        IntW dummyHandle = new IntW(0);
-        _vrep.simxCreateDummy(_clientID, 2, null, dummyHandle, remoteApi.simx_opmode_blocking);
-        
         RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
         VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
@@ -118,7 +115,7 @@ public class MapCreationTest
         List<String> vrepLaneNames = idMapper.getVRepLanesForSumoEdge(edgeZero);
         assert(vrepLaneNames.size() == 1); 
         
-        IntW vrepLaneHandle = dummyHandle;
+        IntW vrepLaneHandle = new IntW(0);
         _vrep.simxGetObjectHandle(_clientID, vrepLaneNames.get(0), vrepLaneHandle, remoteApi.simx_opmode_blocking);
         FloatWA vrep3dPosition = new FloatWA(3);
         _vrep.simxGetObjectPosition(_clientID, vrepLaneHandle.getValue(), -1, vrep3dPosition, remoteApi.simx_opmode_blocking);

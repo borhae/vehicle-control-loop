@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 21/02/2018 18:56:09 by Netedit Version 0.31.0
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
+
+    <output>
+        <output-file value="C:\opt\git\vrep-control-loop\vrep-control-loop\res\roadnetworks\testing3Junctions2Edges2Lanes.net.xml"/>
+    </output>
+
+    <processing>
+        <no-turnarounds value="true"/>
+        <offset.disable-normalization value="true"/>
+    </processing>
+
+</configuration>
+-->
+
+<net version="0.27" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/net_file.xsd">
+
+    <location netOffset="0.00,0.00" convBoundary="0.72,38.85,43.53,72.78" origBoundary="10000000000.00,10000000000.00,-10000000000.00,-10000000000.00" projParameter="!"/>
+
+    <edge id=":gneJ1_0" function="internal">
+        <lane id=":gneJ1_0_0" index="0" speed="13.89" length="2.53" shape="39.18,71.10 39.86,71.01 40.36,70.73 40.67,70.24 40.79,69.56"/>
+    </edge>
+
+    <edge id="gneE0" from="gneJ0" to="gneJ1" priority="1">
+        <lane id="gneE0_0" index="0" speed="13.89" length="38.44" shape="0.73,70.77 39.18,71.10"/>
+    </edge>
+    <edge id="gneE1" from="gneJ1" to="gneJ2" priority="1">
+        <lane id="gneE1_0" index="0" speed="13.89" length="30.79" shape="40.79,69.56 41.88,38.79"/>
+    </edge>
+
+    <junction id="gneJ0" type="dead_end" x="0.72" y="72.42" incLanes="" intLanes="" shape="0.72,72.37 0.75,69.17"/>
+    <junction id="gneJ1" type="priority" x="42.33" y="72.78" incLanes="gneE0_0" intLanes=":gneJ1_0_0" shape="42.39,69.62 39.19,69.50 39.16,72.70">
+        <request index="0" response="0" foes="0" cont="0"/>
+    </junction>
+    <junction id="gneJ2" type="dead_end" x="43.53" y="38.85" incLanes="gneE1_0" intLanes="" shape="40.28,38.73 43.48,38.85"/>
+
+    <connection from="gneE0" to="gneE1" fromLane="0" toLane="0" via=":gneJ1_0_0" dir="r" state="M"/>
+
+    <connection from=":gneJ1_0" to="gneE1" fromLane="0" toLane="0" dir="s" state="M"/>
+
+</net>

@@ -1,5 +1,9 @@
 package de.joachim.haensel.sumo2vrep;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class Segment
 {
     private float _x1;
@@ -35,5 +39,29 @@ public class Segment
         float s = (a + b + _c)/2.0f;
         float h = (float) (_c/2.0f*Math.sqrt(s*(s-a)*(s-b)*(s-_c)));
         return h;
+    }
+
+    public static List<Segment> createSegments(String shape)
+    {
+        ArrayList<Segment> result = new ArrayList<Segment>();
+        createSegments(Arrays.asList(shape.split(" ")), result);
+        return result;
+    }
+
+    private static void createSegments(List<String> coordinateList, List<Segment> result)
+    {
+        if(coordinateList.size() <= 1)
+        {
+            // a Segment needs at least two coordinates
+            return;
+        }
+        else
+        {
+            result.add(new Segment(coordinateList.get(0), coordinateList.get(1)));
+            if(coordinateList.size() >= 3)
+            {
+                createSegments(coordinateList.subList(1, coordinateList.size()), result);
+            }
+        }
     }
 }

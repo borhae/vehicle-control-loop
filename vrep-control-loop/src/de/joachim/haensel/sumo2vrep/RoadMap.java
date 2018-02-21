@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,18 +23,60 @@ import sumobindings.NetType;
 public class RoadMap
 {
     private NetType _roadNetwork;
+    private HashMap<JunctionType, Node> _navigableNetwork;
+
     private Map<String, JunctionType> _nameToJunctionMap;
     private Map<String, LaneType> _nameToLaneMap;
+    private Map<String, EdgeType> _nameToEdgeMap;
+
     private Map<Position2D, LaneType> _positionToLaneMap;
+
 
     public RoadMap(String networkFileName)
     {
         _roadNetwork = readSumoMap(networkFileName);
+        _navigableNetwork = new HashMap<>();
         _nameToJunctionMap = new HashMap<>();
         _nameToLaneMap = new HashMap<>();
         _positionToLaneMap = new HashMap<>();
         getJunctions().stream().forEach(junction -> _nameToJunctionMap.put(junction.getId(), junction));
-        getEdges().stream().forEach(edge -> insertAllLanesFrom(edge));
+        getEdges().stream().forEach(edge -> {insertAllLanesFrom(edge); _nameToEdgeMap.put(edge.getId(), edge);});
+        createNavigableNetwork();
+    }
+
+    private void createNavigableNetwork()
+    {
+        createNodes();
+        connectNodes();
+    }
+    
+    private void createNodes()
+    {
+        List<JunctionType> junctions = _roadNetwork.getJunction();
+        junctions.stream().forEach(junction -> _navigableNetwork.put(junction, new Node(junction)));
+    }
+
+    private void connectNodes()
+    {
+       _roadNetwork.getEdge().stream().forEach(edge -> createEdgeConnections(edge));
+    }
+
+    private void createEdgeConnections(EdgeType edge)
+    {
+        if(!(edge.getFunction() == null || edge.getFunction().isEmpty()))
+        {
+            return;
+        }
+        Edge navigableEdge = new Edge(edge);
+        
+        JunctionType fromJunction = _nameToJunctionMap.get(edge.getFrom());
+        JunctionType toJunction = _nameToJunctionMap.get(edge.getTo());
+        
+        Node navigableFromJunction = _navigableNetwork.get(fromJunction);
+        Node navigableToJunction = _navigableNetwork.get(toJunction);
+        
+        navigableFromJunction.addOutgoing(navigableEdge, navigableToJunction);
+        navigableToJunction.addIncomming(navigableEdge, navigableFromJunction);
     }
 
     private void insertAllLanesFrom(EdgeType edge)
@@ -85,6 +128,11 @@ public class RoadMap
     public JunctionType getJunctionForName(String elemName)
     {
         return _nameToJunctionMap.get(elemName);
+    }
+    
+    public EdgeType getEdgeForName(String edgeName)
+    {
+        return _nameToEdgeMap.get(edgeName);
     }
     
     public LaneType getLaneForName(String laneName)
@@ -144,6 +192,18 @@ public class RoadMap
         }
         return curClosest;
     }
+    
+    public JunctionType getClosestJunctionFor(Position2D currentPosition)
+    {
+        Collection<JunctionType> junctions = _nameToJunctionMap.values();
+        Comparator<JunctionType> junctionComp = (j1, j2) -> Float.compare(junctionDist(j1, currentPosition), junctionDist(j2, currentPosition)); 
+        return junctions.stream().min(junctionComp).get();
+    }
+
+    private float junctionDist(JunctionType junction, Position2D position)
+    {
+        return position.distance(junction.getShape());
+    }
 
     /**
      * Smallest because lanes might have several segments
@@ -179,5 +239,15 @@ public class RoadMap
             result.add(new Segment(shapeCoordinates[idx], shapeCoordinates[idx + 1]));
         }
         return result;
+    }
+
+    public Collection<Node> getNodes()
+    {
+        return _navigableNetwork.values();
+    }
+
+    public Node getNode(JunctionType junction)
+    {
+        return _navigableNetwork.get(junction);
     }
 }

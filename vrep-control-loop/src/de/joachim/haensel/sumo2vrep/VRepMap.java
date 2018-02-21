@@ -59,8 +59,8 @@ public class VRepMap
                     {
                         String shape = curLane.getShape();
                         String[] lineCoordinates = shape.split(" ");
-                        int numberSubLanes = lineCoordinates.length / 2;
-                        if(numberSubLanes == 1)
+                        int numberCoordinates = lineCoordinates.length;
+                        if(numberCoordinates == 2)
                         {
                             String p1 = lineCoordinates[0];
                             String p2 = lineCoordinates[1];
