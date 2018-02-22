@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.test;
+package de.joachim.haensel.phd.scenario.scripts.test;
 
 import org.junit.After;
 import org.junit.AfterClass;

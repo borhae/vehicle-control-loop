@@ -8,6 +8,7 @@ import org.junit.Test;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.sumo2vrep.VRepMap;
+import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.vehicle.Vehicle;
 import de.joachim.haensel.vehicle.VehicleCreator;
@@ -16,14 +17,11 @@ import sumobindings.JunctionType;
 import sumobindings.LaneType;
 import sumobindings.NetType;
 
-public class VehicleCreationTest
+public class VehicleCreationTest implements TestConstants
 {
     private static VRepRemoteAPI _vrep;
     private static int _clientID;
     private static VRepObjectCreation _objectCreator;
-    private static final float DOWN_SCALE_FACTOR = 1;
-    private static final float STREET_WIDTH = 3.3f / DOWN_SCALE_FACTOR;
-    private static final float STREET_HEIGHT = 0.4f / DOWN_SCALE_FACTOR;
 
     @BeforeClass
     public static void setupVrep() throws VRepException

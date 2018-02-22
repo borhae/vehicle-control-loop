@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.streamextensions.IndexAdder;
 import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
@@ -18,11 +19,8 @@ import de.joachim.haensel.sumo2vrep.VRepMap;
 import de.joachim.haensel.vehiclecontrol.Navigator;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
-public class NavigationTest
+public class NavigationTest implements TestConstants
 {
-    private static final float DOWN_SCALE_FACTOR = 1;
-    private static final float STREET_WIDTH = 3.3f / DOWN_SCALE_FACTOR;
-    private static final float STREET_HEIGHT = 0.4f / DOWN_SCALE_FACTOR;
     private static VRepRemoteAPI _vrep;
     private static int _clientID;
     private static VRepObjectCreation _objectCreator;

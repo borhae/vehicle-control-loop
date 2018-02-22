@@ -20,6 +20,7 @@ import coppelia.StringWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.sumo2vrep.IDCreator;
 import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
@@ -29,11 +30,8 @@ import sumobindings.EdgeType;
 import sumobindings.LaneType;
 
 
-public class MapCreationTest
+public class MapCreationTest implements TestConstants
 {
-    private static final float DOWN_SCALE_FACTOR = 1;
-    private static final float STREET_WIDTH = 3.3f / DOWN_SCALE_FACTOR;
-    private static final float STREET_HEIGHT = 0.4f / DOWN_SCALE_FACTOR;
     private static VRepRemoteAPI _vrep;
     private static int _clientID;
     private static VRepObjectCreation _objectCreator;
