@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.navigation.test;
 
+import java.awt.Color;
 import java.util.List;
 
 import org.junit.After;
@@ -51,19 +52,35 @@ public class NavigationTest
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/testing3Junctions2Edges2Lanes.net.xml");
         Navigator navigator = new Navigator(roadMap);
-        List<Segment> route = navigator.getRoute(new Position2D(11.4f, 101.4f), new Position2D(101.81f, 9.23f));
+        Position2D startPosition = new Position2D(11.4f, 101.4f);
+        Position2D destinationPosition = new Position2D(101.81f, 9.23f);
+        List<Segment> route = navigator.getRoute(startPosition, destinationPosition);
+        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMap(roadMap);
+        drawRoute(route, _objectCreator);
+    }
+
+    @Test
+    public void testNavigationRealMap()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+        Navigator navigator = new Navigator(roadMap);
+        Position2D startPosition = new Position2D(5747.01f, 2979.22f);
+        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
+        List<Segment> route = navigator.getRoute(startPosition, destinationPosition);
         VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
         drawRoute(route, _objectCreator);
         System.out.println("done");
     }
-
+    
     private void drawRoute(List<Segment> route, VRepObjectCreation objectCreator)
     {
+        Color color = new Color(255, 0, 0);
         route.stream().map(IndexAdder.indexed()).forEachOrdered(indexedSegment -> {
             try
             {
-                objectCreator.createSegment(indexedSegment.value(), DOWN_SCALE_FACTOR, 1.0f, 0.1f, "segment_" + indexedSegment.index());
+                objectCreator.createSegment(indexedSegment.value(), DOWN_SCALE_FACTOR, 1.0f, 0.1f, "segment_" + indexedSegment.index(), color);
             }
             catch (VRepException exc)
             {

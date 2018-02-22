@@ -49,6 +49,8 @@ public class VRepMap
             }
             _vrepObjectCreator.createMapCenter();
             List<EdgeType> edges = roadMap.getEdges();
+            int numOfLanes = computeNumOfLanes(edges);
+            System.out.println("about to create: " + numOfLanes + " lanes!!");
             for (EdgeType curEdge : edges)
             {
                 String function = curEdge.getFunction();
@@ -78,6 +80,27 @@ public class VRepMap
         {
             e.printStackTrace();
         }
+    }
+
+    private int computeNumOfLanes(List<EdgeType> edges)
+    { 
+        int result = 0;
+        for (EdgeType curEdge : edges)
+        {
+            String function = curEdge.getFunction();
+            if(function == null || function.isEmpty())
+            {
+                List<LaneType> lanes = curEdge.getLane();
+                for (LaneType curLane : lanes)
+                {
+                    String shape = curLane.getShape();
+                    String[] lineCoordinates = shape.split(" ");
+                    result += lineCoordinates.length - 1;
+                }
+            }
+        }
+
+        return result;
     }
 
     public void createLaneRecursive(VRepRemoteAPI vrep, int clientID, IDCreator elementNameCreator, LaneType curLane, List<String> lineCoordinates) throws VRepException

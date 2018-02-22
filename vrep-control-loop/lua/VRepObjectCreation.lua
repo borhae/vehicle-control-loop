@@ -59,6 +59,66 @@ createEdge = function(inInts, inFloats, inStrings, inBuffer)
       return {}, {}, {}, "" 
 end
 
+createSegment = function(inInts, inFloats, inStrings, inBuffer)
+--      simAddStatusbarMessage("Creating edge at: "..table_to_string(inFloats))
+      local x1 = inFloats[1]
+      local y1 = inFloats[2]
+      local x2 = inFloats[3]
+      local y2 = inFloats[4]
+      local width = inFloats[6]
+      local height = inFloats[7]
+      local red = inFloats[8]
+      local green = inFloats[9]
+      local blue = inFloats[10]
+
+      local dx = x2 - x1
+      local dy = y2 - y1
+      
+      local length = math.sqrt(dx * dx + dy * dy)
+      
+      local xPos = dx/2 + x1
+      local yPos = dy/2 + y1
+      local position = {xPos, yPos, height/2}      
+      
+      local atanBase = dy/dx
+      local angle = math.atan(atanBase) + (math.pi /2)
+      -- SHAPE
+      local CUBOID = 0
+      local SPHERE = 1
+      local CYLINDER = 2
+      local CONE = 3
+      -- OPTIONS
+      local BACK_CULL = 1 -- bit 0 backface culling
+      local EDGE_VIS = 2  -- bit 1 edges visible
+      local SHAPE_SMO = 4 -- bit 2 shape is smoothed 
+      local SHAPE_RESP = 8 -- bit 3 shape is respondable
+      local SHAPE_STAT = 16 -- bit 4 shape is static
+      local CYL_OE = 32 -- bit 5 cylinder has open ends
+      local testObjSize = {width, length, height}
+      local objectHandle = sim.createPureShape(CUBOID, EDGE_VIS + SHAPE_RESP + SHAPE_STAT, testObjSize, 0, nil)
+      
+--    POSITION
+      local posResult = sim.setObjectPosition(objectHandle, sim_handle_parent, position)
+
+--    ORIENTATION
+      sim.setObjectOrientation(objectHandle, -1, {0.0, 0.0, angle})
+      
+--	  COLOR
+      sim.setShapeColor(objectHandle, null, sim.colorcomponent_ambient_diffuse, {red, green, blue})
+      
+--    NAMING
+      local equalXSign = x1/math.abs(x1) == x2/math.abs(x2)
+      local equalYSign = y1/math.abs(y1) == y2/math.abs(y2)
+      local signInf = tostring(equalXSign)..tostring(equalYSign)
+      
+      sim.setObjectName(objectHandle, inStrings[1])
+      sim.addStatusbarMessage(inStrings[1].."; "..x1.."; "..y1.."; "..x2.."; "..y2.."; "..dx.."; "..dy.."; "..atanBase.."; "..angle.."; "..length)
+
+      table.insert(createdObjects, objectHandle) -- for later removal
+      return {}, {}, {}, "" 
+end
+
+
 createJunction = function(inInts, inFloats, inStrings, inBuffer)
       coordinates = inFloats
       local width = inFloats[4] * 4

@@ -22,6 +22,7 @@ import sumobindings.NetType;
 
 public class RoadMap
 {
+    private static final String INTERNAL_DESIGNATOR = "internal";
     private NetType _roadNetwork;
     private HashMap<JunctionType, Node> _navigableNetwork;
 
@@ -40,9 +41,21 @@ public class RoadMap
         _nameToLaneMap = new HashMap<>();
         _nameToEdgeMap = new HashMap<>();
         _positionToLaneMap = new HashMap<>();
-        getJunctions().stream().forEach(junction -> _nameToJunctionMap.put(junction.getId(), junction));
-        getEdges().stream().forEach(edge -> {insertAllLanesFrom(edge); _nameToEdgeMap.put(edge.getId(), edge);});
+        getJunctions().stream().forEach(junction -> {if(!isInternal(junction)){_nameToJunctionMap.put(junction.getId(), junction);}});
+        getEdges().stream().forEach(edge -> {if(!isInternal(edge)){insertAllLanesFrom(edge); _nameToEdgeMap.put(edge.getId(), edge);}});
         createNavigableNetwork();
+    }
+
+    private boolean isInternal(EdgeType edge)
+    {
+        String function = edge.getFunction();
+        return function != null && function.equals(INTERNAL_DESIGNATOR);
+    }
+
+    private boolean isInternal(JunctionType junction)
+    {
+        String type = junction.getType();
+        return type != null && type.equals(INTERNAL_DESIGNATOR);
     }
 
     private void createNavigableNetwork()

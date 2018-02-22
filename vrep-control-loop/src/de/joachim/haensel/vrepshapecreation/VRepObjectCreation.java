@@ -1,10 +1,12 @@
 package de.joachim.haensel.vrepshapecreation;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import coppelia.FloatWA;
+import coppelia.IntW;
 import coppelia.IntWA;
 import coppelia.StringWA;
 import coppelia.remoteApi;
@@ -213,9 +215,9 @@ public class VRepObjectCreation
         _vrep.simxCallScriptFunction(_clientID, "ScriptLoader", 6, "createCenter", null, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);            
     }
     
-    public void createSegment(Segment segment, float downScaleFactor, float width, float height, String name) throws VRepException
+    public void createSegment(Segment segment, float downScaleFactor, float width, float height, String name, Color color) throws VRepException
     {
-        FloatWA callParamsF = new FloatWA(7);
+        FloatWA callParamsF = new FloatWA(10);
         StringWA callParamsS = new StringWA(1);
         
         float[] floatParameters = callParamsF.getArray();
@@ -228,10 +230,13 @@ public class VRepObjectCreation
         floatParameters[4] = segment.getLength()/downScaleFactor;
         floatParameters[5] = width;
         floatParameters[6] = height;
+        floatParameters[7] = (float)color.getRed()/255.0f;
+        floatParameters[8] = (float)color.getGreen()/255.0f;
+        floatParameters[9] = (float)color.getBlue()/255.0f;
         
         String[] stringParameters = callParamsS.getArray();
         stringParameters[0] = name;
-        _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "createEdge", null, callParamsF, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+        _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "createSegment", null, callParamsF, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
     }
 
     public void deleteAll() throws VRepException
