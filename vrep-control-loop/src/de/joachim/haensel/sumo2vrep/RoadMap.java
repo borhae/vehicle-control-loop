@@ -203,7 +203,7 @@ public class RoadMap
 
     private float junctionDist(JunctionType junction, Position2D position)
     {
-        return position.distance(junction.getShape());
+        return position.distance(junction.getX(), junction.getY());
     }
 
     /**

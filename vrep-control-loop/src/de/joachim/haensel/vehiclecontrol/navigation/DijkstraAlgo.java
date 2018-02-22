@@ -45,9 +45,9 @@ public class DijkstraAlgo implements IShortestPathAlgorithm
         _distances.put(_source, 0.0f);
         while(!_unvisitedNodes.isEmpty())
         {
-            Node u = minimumDistance(_distances);
+            Node u = minimumDistance(_unvisitedNodes);
             
-            _distances.remove(u);
+            _unvisitedNodes.remove(u);
             
             if(u.equals(_target))
             {
@@ -56,7 +56,9 @@ public class DijkstraAlgo implements IShortestPathAlgorithm
             Collection<Node> neighbors = neighbors(u);
             for (Node v : neighbors)
             {
-                float alternativeDistance = _distances.get(u) + u.distance(v);
+                Float distanceOfU = _distances.get(u);
+                Float distanceBetweenUAndV = u.distance(v);
+                float alternativeDistance = distanceOfU + distanceBetweenUAndV;
                 if(alternativeDistance < _distances.get(v))
                 {
                     _distances.put(v, alternativeDistance);
@@ -69,14 +71,19 @@ public class DijkstraAlgo implements IShortestPathAlgorithm
 
     private List<Node> toPath(HashMap<Node, Node> previousNodesOptimalPath, Node target)
     {
-        Stack<Node> result = new Stack<>();
+        Stack<Node> collectionStack = new Stack<>();
         Node cur = target;
         while(cur != null)
         {
-            result.push(cur);
+            collectionStack.push(cur);
             cur = _previousNodesOptimalPath.get(cur);
         }
-        return new ArrayList<>(result);
+        List<Node> result = new ArrayList<>();
+        while(!collectionStack.isEmpty())
+        {
+            result.add(collectionStack.pop());
+        }
+        return result;
     }
 
     private Collection<Node> neighbors(Node node)
@@ -84,17 +91,18 @@ public class DijkstraAlgo implements IShortestPathAlgorithm
         return node.getOutgoingNodes();
     }
 
-    private Node minimumDistance(HashMap<Node, Float> distances)
+    private Node minimumDistance(HashSet<Node> unvisitedNodes)
     {
-        return distances.keySet().stream().min((j1, j2) -> Float.compare(_distances.get(j1), _distances.get(j2))).get();
+        return unvisitedNodes.stream().min((j1, j2) -> Float.compare(_distances.get(j1), _distances.get(j2))).get();
     }
 
     private void init()
     {
         _distances = new HashMap<>();
-        _nodes.stream().forEach(junction -> _distances.put(junction, Float.MAX_VALUE));
+        _nodes.stream().forEach(node -> _distances.put(node, Float.MAX_VALUE));
         _previousNodesOptimalPath = new HashMap<>();
         _nodes.stream().forEach(node -> _previousNodesOptimalPath.put(node, null));
         _unvisitedNodes = new HashSet<>();
+        _nodes.stream().forEach(node -> _unvisitedNodes.add(node));
     }
 }

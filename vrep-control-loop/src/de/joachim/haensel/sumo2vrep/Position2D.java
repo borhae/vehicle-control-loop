@@ -82,6 +82,11 @@ public class Position2D
     {
         return distance(this, new Position2D(coordinates));
     }
+    
+    public float distance(float x, float y)
+    {
+        return distance(this._x, this._y, x, y);
+    }
 
     public double distance(Position2D other)
     {
@@ -95,8 +100,13 @@ public class Position2D
 
     public static float distance(Position2D p1, Position2D p2)
     {
-        float dx = p2._x - p1._x;
-        float dy = p2._y - p2._y;
+        return distance(p1._x,  p1._y, p2._x, p2._y);
+    }
+
+    public static float distance(float x1, float y1, float x2, float y2)
+    {
+        float dx = x2 - x1;
+        float dy = y2 - y1;
         
         return (float)Math.sqrt(dx*dx + dy*dy);
     }
@@ -106,4 +116,5 @@ public class Position2D
     {
         return "p:(" + _x  + ", " + _y + ")";
     }
+
 }

@@ -35,11 +35,18 @@ public class Node
 
     public Float distance(Node v)
     {
-        return _outgoing.get(v).getLength();
+        Edge edgeToNode = _outgoing.get(v);
+        return edgeToNode.getLength();
     }
 
     public Edge getOutgoingEdge(Node node)
     {
         return _outgoing.get(node);
+    }
+
+    @Override
+    public String toString()
+    {
+        return _baseJunction.getId();
     }
 }

@@ -1,6 +1,7 @@
 package de.joachim.haensel.sumo2vrep;
 
 import sumobindings.EdgeType;
+import sumobindings.LaneType;
 
 public class Edge
 {
@@ -13,7 +14,8 @@ public class Edge
 
     public Float getLength()
     {
-        return _sumoEdge.getLength();
+        LaneType firstLane = _sumoEdge.getLane().get(0);
+        return firstLane.getLength();
     }
 
     public EdgeType getSumoEdge()

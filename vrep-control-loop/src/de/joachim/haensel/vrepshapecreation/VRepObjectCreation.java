@@ -10,6 +10,7 @@ import coppelia.StringWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.sumo2vrep.Segment;
 import de.joachim.haensel.vrepshapecreation.joints.JointParameters;
 import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
 
@@ -210,6 +211,27 @@ public class VRepObjectCreation
     public void createMapCenter() throws VRepException
     {
         _vrep.simxCallScriptFunction(_clientID, "ScriptLoader", 6, "createCenter", null, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);            
+    }
+    
+    public void createSegment(Segment segment, float downScaleFactor, float width, float height, String name) throws VRepException
+    {
+        FloatWA callParamsF = new FloatWA(7);
+        StringWA callParamsS = new StringWA(1);
+        
+        float[] floatParameters = callParamsF.getArray();
+        
+        floatParameters[0] = segment.getX1()/downScaleFactor;
+        floatParameters[1] = segment.getY1()/downScaleFactor;
+        
+        floatParameters[2] = segment.getX2()/downScaleFactor;
+        floatParameters[3] = segment.getY2()/downScaleFactor;
+        floatParameters[4] = segment.getLength()/downScaleFactor;
+        floatParameters[5] = width;
+        floatParameters[6] = height;
+        
+        String[] stringParameters = callParamsS.getArray();
+        stringParameters[0] = name;
+        _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "createEdge", null, callParamsF, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
     }
 
     public void deleteAll() throws VRepException

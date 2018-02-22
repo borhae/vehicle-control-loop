@@ -3,7 +3,9 @@ package de.joachim.haensel.vehiclecontrol;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.joachim.haensel.sumo2vrep.Edge;
 import de.joachim.haensel.sumo2vrep.Node;
+import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.sumo2vrep.Segment;
 import de.joachim.haensel.vehiclecontrol.navigation.DijkstraAlgo;
@@ -20,6 +22,13 @@ public class Navigator
     {
         _roadMap = roadMap;
     }
+    
+    public List<Segment> getRoute(Position2D currentPosition, Position2D targetPosition)
+    {
+        JunctionType startJunction = _roadMap.getClosestJunctionFor(currentPosition);
+        JunctionType targetJunction = _roadMap.getClosestJunctionFor(targetPosition);
+        return getRoute(startJunction, targetJunction);
+    }
 
     public List<Segment> getRoute(JunctionType startJunction, JunctionType targetJunction)
     {
@@ -29,7 +38,7 @@ public class Navigator
         List<Node> path = shortestPathSolver.getPath();
         return createSegmentsFromPath(path);
     }
-
+    
     private List<Segment> createSegmentsFromPath(List<Node> path)
     {
         List<Segment> result = new ArrayList<>();
@@ -52,6 +61,7 @@ public class Navigator
 
     private EdgeType getEdgeBetween(Node cur, Node next)
     {
-        return cur.getOutgoingEdge(next).getSumoEdge();
+        Edge edgeToNext = cur.getOutgoingEdge(next);
+        return edgeToNext.getSumoEdge();
     }
 }

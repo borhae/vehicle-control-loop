@@ -50,19 +50,10 @@ public class NavigationController implements ITopLayerControl
     public void driveTo(Position2D targetPosition)
     {
         Position2D currentPosition = _sensorsActuators.getPosition();
-        createSegments(currentPosition, targetPosition);
-        _timer.schedule(new ControlLoop(), UPDATE_FREQUENCY);
-    }
-
-    private void createSegments(Position2D currentPosition, Position2D targetPosition)
-    {
+        Navigator navigator = new Navigator(_roadMap);
         //TODO pick up here, when closest lanes can be determined the navigation can start
-       LaneType startLane = _roadMap.getClosestLaneFor(currentPosition);
-       JunctionType startJunction = _roadMap.getClosestJunctionFor(currentPosition);
-       LaneType targetLane = _roadMap.getClosestLaneFor(targetPosition);
-       JunctionType targetJunction = _roadMap.getClosestJunctionFor(targetPosition);
-       Navigator navigator = new Navigator(_roadMap);
-       List<Segment> segments = navigator.getRoute(startJunction, targetJunction);
+        navigator.getRoute(currentPosition, targetPosition);
+        _timer.schedule(new ControlLoop(), UPDATE_FREQUENCY);
     }
 
     @Override

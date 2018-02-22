@@ -40,6 +40,11 @@ public class Segment
         float h = (float) (_c/2.0f*Math.sqrt(s*(s-a)*(s-b)*(s-_c)));
         return h;
     }
+    
+    public float getLength()
+    {
+        return Position2D.distance(_x1, _y1, _x2, _y2);
+    }
 
     public static List<Segment> createSegments(String shape)
     {
@@ -63,5 +68,25 @@ public class Segment
                 createSegments(coordinateList.subList(1, coordinateList.size()), result);
             }
         }
+    }
+
+    public float getX1()
+    {
+        return _x1;
+    }
+
+    public float getY1()
+    {
+        return _y1;
+    }
+
+    public float getX2()
+    {
+        return _x2;
+    }
+
+    public float getY2()
+    {
+        return _y2;
     }
 }
