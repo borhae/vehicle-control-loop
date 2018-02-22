@@ -1,6 +1,6 @@
 package de.joachim.haensel.phd.scenario.math.bezier;
 
-class CacheItem
+public class CacheItem
 {
     public float _position;
     public float _xpos;
@@ -10,8 +10,8 @@ class CacheItem
 
     public CacheItem(float xpos, float ypos, float zpos)
     {
-        this._xpos = xpos;
-        this._ypos = ypos;
-        this._zpos = zpos;
+        _xpos = xpos;
+        _ypos = ypos;
+        _zpos = zpos;
     }
 }

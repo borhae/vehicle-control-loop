@@ -53,13 +53,12 @@ public class NavigationController implements ITopLayerControl
     {
         Position2D currentPosition = _sensorsActuators.getPosition();
         Navigator navigator = new Navigator(_roadMap);
-        //TODO pick up here, when closest lanes can be determined the navigation can start
         List<Line2D> route = navigator.getRoute(currentPosition, targetPosition);
         
-        Trajectorizer trajectorizer = new Trajectorizer(_roadMap);
+        Trajectorizer trajectorizer = new Trajectorizer();
         List<Trajectory> trajectories = trajectorizer.createTrajectory(route);
         
-        
+        // TODO pick up here, when there is a trajectory, that we can follow
         _timer.schedule(new ControlLoop(), UPDATE_FREQUENCY);
     }
 

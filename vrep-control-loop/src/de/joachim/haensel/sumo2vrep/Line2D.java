@@ -23,6 +23,16 @@ public class Line2D
         _c = length(_x1, _y1, _x2, _y2);
     }
     
+    
+    public Line2D(float x1, float y1, float x2, float y2)
+    {
+        _x1 = x1;
+        _y1 = y1;
+        _x2 = x2;
+        _y2 = y2;
+    }
+
+
     public float length(float x1, float y1, float x2, float y2)
     {
         float dx = x2 - x1;
