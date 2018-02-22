@@ -6,6 +6,8 @@ import java.util.TimerTask;
 
 import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectorizer;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.vehiclecontrol.Navigator;
 import sumobindings.JunctionType;
@@ -53,6 +55,10 @@ public class NavigationController implements ITopLayerControl
         Navigator navigator = new Navigator(_roadMap);
         //TODO pick up here, when closest lanes can be determined the navigation can start
         List<Line2D> route = navigator.getRoute(currentPosition, targetPosition);
+        
+        Trajectorizer trajectorizer = new Trajectorizer(_roadMap);
+        List<Trajectory> trajectories = trajectorizer.createTrajectory(route);
+        
         
         _timer.schedule(new ControlLoop(), UPDATE_FREQUENCY);
     }
