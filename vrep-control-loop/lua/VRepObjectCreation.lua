@@ -59,7 +59,7 @@ createEdge = function(inInts, inFloats, inStrings, inBuffer)
       return {}, {}, {}, "" 
 end
 
-createSegment = function(inInts, inFloats, inStrings, inBuffer)
+createLine = function(inInts, inFloats, inStrings, inBuffer)
 --      simAddStatusbarMessage("Creating edge at: "..table_to_string(inFloats))
       local x1 = inFloats[1]
       local y1 = inFloats[2]

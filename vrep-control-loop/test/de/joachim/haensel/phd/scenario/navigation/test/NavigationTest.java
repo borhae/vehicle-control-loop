@@ -14,7 +14,7 @@ import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.streamextensions.IndexAdder;
 import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
-import de.joachim.haensel.sumo2vrep.Segment;
+import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.sumo2vrep.VRepMap;
 import de.joachim.haensel.vehiclecontrol.Navigator;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
@@ -52,7 +52,7 @@ public class NavigationTest implements TestConstants
         Navigator navigator = new Navigator(roadMap);
         Position2D startPosition = new Position2D(11.4f, 101.4f);
         Position2D destinationPosition = new Position2D(101.81f, 9.23f);
-        List<Segment> route = navigator.getRoute(startPosition, destinationPosition);
+        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
         drawRoute(route, _objectCreator);
@@ -65,20 +65,20 @@ public class NavigationTest implements TestConstants
         Navigator navigator = new Navigator(roadMap);
         Position2D startPosition = new Position2D(5747.01f, 2979.22f);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
-        List<Segment> route = navigator.getRoute(startPosition, destinationPosition);
+        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
         drawRoute(route, _objectCreator);
         System.out.println("done");
     }
     
-    private void drawRoute(List<Segment> route, VRepObjectCreation objectCreator)
+    private void drawRoute(List<Line2D> route, VRepObjectCreation objectCreator)
     {
         Color color = new Color(255, 0, 0);
-        route.stream().map(IndexAdder.indexed()).forEachOrdered(indexedSegment -> {
+        route.stream().map(IndexAdder.indexed()).forEachOrdered(indexedLine -> {
             try
             {
-                objectCreator.createSegment(indexedSegment.value(), DOWN_SCALE_FACTOR, 1.0f, 0.1f, "segment_" + indexedSegment.index(), color);
+                objectCreator.createLine(indexedLine.value(), DOWN_SCALE_FACTOR, 1.0f, 0.1f, "someline_" + indexedLine.index(), color);
             }
             catch (VRepException exc)
             {

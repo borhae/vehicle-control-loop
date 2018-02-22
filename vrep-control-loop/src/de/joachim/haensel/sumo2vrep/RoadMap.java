@@ -230,13 +230,13 @@ public class RoadMap
         String[] coordinateList = lane.getShape().split(" ");
         if(coordinateList.length == 2)
         {
-            return new Segment(coordinateList[0], coordinateList[1]).distance(position);
+            return new Line2D(coordinateList[0], coordinateList[1]).distance(position);
         }
-        List<Segment> segments = createSegments(coordinateList);
+        List<Line2D> lines = createLines(coordinateList);
         float minDist = Float.MAX_VALUE;
-        for (Segment curSegment : segments)
+        for (Line2D curLine : lines)
         {
-            float curDistance = curSegment.distance(position);
+            float curDistance = curLine.distance(position);
             if(curDistance < minDist)
             {
                 minDist = curDistance;
@@ -245,12 +245,12 @@ public class RoadMap
         return minDist;
     }
 
-    private List<Segment> createSegments(String[] shapeCoordinates)
+    private List<Line2D> createLines(String[] shapeCoordinates)
     {
-        List<Segment> result = new ArrayList<>();
+        List<Line2D> result = new ArrayList<>();
         for(int idx = 0; idx < shapeCoordinates.length - 1; idx+=2)
         {
-            result.add(new Segment(shapeCoordinates[idx], shapeCoordinates[idx + 1]));
+            result.add(new Line2D(shapeCoordinates[idx], shapeCoordinates[idx + 1]));
         }
         return result;
     }

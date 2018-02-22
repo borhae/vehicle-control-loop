@@ -46,7 +46,7 @@ public class RoadMapTest implements TestConstants
     }
 
     @Test
-    public void testSegmentDistance() throws VRepException
+    public void testLineDistance() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
         VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);

@@ -7,7 +7,7 @@ import de.joachim.haensel.sumo2vrep.Edge;
 import de.joachim.haensel.sumo2vrep.Node;
 import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
-import de.joachim.haensel.sumo2vrep.Segment;
+import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.vehiclecontrol.navigation.DijkstraAlgo;
 import de.joachim.haensel.vehiclecontrol.navigation.IShortestPathAlgorithm;
 import sumobindings.EdgeType;
@@ -23,25 +23,25 @@ public class Navigator
         _roadMap = roadMap;
     }
     
-    public List<Segment> getRoute(Position2D currentPosition, Position2D targetPosition)
+    public List<Line2D> getRoute(Position2D currentPosition, Position2D targetPosition)
     {
         JunctionType startJunction = _roadMap.getClosestJunctionFor(currentPosition);
         JunctionType targetJunction = _roadMap.getClosestJunctionFor(targetPosition);
         return getRoute(startJunction, targetJunction);
     }
 
-    public List<Segment> getRoute(JunctionType startJunction, JunctionType targetJunction)
+    public List<Line2D> getRoute(JunctionType startJunction, JunctionType targetJunction)
     {
         IShortestPathAlgorithm shortestPathSolver = new DijkstraAlgo(_roadMap);
         shortestPathSolver.setSource(startJunction);
         shortestPathSolver.setTarget(targetJunction);
         List<Node> path = shortestPathSolver.getPath();
-        return createSegmentsFromPath(path);
+        return createLinesFromPath(path);
     }
     
-    private List<Segment> createSegmentsFromPath(List<Node> path)
+    private List<Line2D> createLinesFromPath(List<Node> path)
     {
-        List<Segment> result = new ArrayList<>();
+        List<Line2D> result = new ArrayList<>();
         List<EdgeType> edges = new ArrayList<>();
         for(int idx = 0; idx < path.size() - 1; idx++)
         {
@@ -54,7 +54,7 @@ public class Navigator
         {
             List<LaneType> lanes = curEdge.getLane();
             String shape = lanes.get(0).getShape();
-            result.addAll(Segment.createSegments(shape));
+            result.addAll(Line2D.createLines(shape));
         }
         return result;
     }

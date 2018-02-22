@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Segment
+public class Line2D
 {
     private float _x1;
     private float _y1;
@@ -12,7 +12,7 @@ public class Segment
     private float _y2;
     private float _c;
 
-    public Segment(String p1, String p2)
+    public Line2D(String p1, String p2)
     {
         String[] coordinates1 = p1.split(",");
         _x1  = Float.valueOf(coordinates1[0]);
@@ -46,26 +46,26 @@ public class Segment
         return Position2D.distance(_x1, _y1, _x2, _y2);
     }
 
-    public static List<Segment> createSegments(String shape)
+    public static List<Line2D> createLines(String shape)
     {
-        ArrayList<Segment> result = new ArrayList<Segment>();
-        createSegments(Arrays.asList(shape.split(" ")), result);
+        ArrayList<Line2D> result = new ArrayList<Line2D>();
+        createLines(Arrays.asList(shape.split(" ")), result);
         return result;
     }
 
-    private static void createSegments(List<String> coordinateList, List<Segment> result)
+    private static void createLines(List<String> coordinateList, List<Line2D> result)
     {
         if(coordinateList.size() <= 1)
         {
-            // a Segment needs at least two coordinates
+            // a line needs at least two coordinates
             return;
         }
         else
         {
-            result.add(new Segment(coordinateList.get(0), coordinateList.get(1)));
+            result.add(new Line2D(coordinateList.get(0), coordinateList.get(1)));
             if(coordinateList.size() >= 3)
             {
-                createSegments(coordinateList.subList(1, coordinateList.size()), result);
+                createLines(coordinateList.subList(1, coordinateList.size()), result);
             }
         }
     }
