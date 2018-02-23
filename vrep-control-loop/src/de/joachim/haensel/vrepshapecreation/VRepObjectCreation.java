@@ -227,7 +227,7 @@ public class VRepObjectCreation
         
         floatParameters[2] = line.getX2()/downScaleFactor;
         floatParameters[3] = line.getY2()/downScaleFactor;
-        floatParameters[4] = line.getLength()/downScaleFactor;
+        floatParameters[4] = line.length()/downScaleFactor;
         floatParameters[5] = width;
         floatParameters[6] = height;
         floatParameters[7] = (float)color.getRed()/255.0f;

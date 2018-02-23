@@ -14,15 +14,14 @@ public class Line2D
 
     public Line2D(String p1, String p2)
     {
-        String[] coordinates1 = p1.split(",");
-        _x1  = Float.valueOf(coordinates1[0]);
-        _y1  = Float.valueOf(coordinates1[1]);
-        String[] coordinates2 = p2.split(",");
-        _x2  = Float.valueOf(coordinates2[0]);
-        _y2  = Float.valueOf(coordinates2[1]);
-        _c = length(_x1, _y1, _x2, _y2);
+        String[] coordinate1 = p1.split(",");
+        _x1  = Float.valueOf(coordinate1[0]);
+        _y1  = Float.valueOf(coordinate1[1]);
+        String[] coordinate2 = p2.split(",");
+        _x2  = Float.valueOf(coordinate2[0]);
+        _y2  = Float.valueOf(coordinate2[1]);
+        _c = Position2D.distance(_x1, _y1, _x2, _y2);
     }
-    
     
     public Line2D(float x1, float y1, float x2, float y2)
     {
@@ -30,8 +29,8 @@ public class Line2D
         _y1 = y1;
         _x2 = x2;
         _y2 = y2;
+        _c = Position2D.distance(_x1, _y1, _x2, _y2);
     }
-
 
     public float length(float x1, float y1, float x2, float y2)
     {
@@ -51,9 +50,9 @@ public class Line2D
         return h;
     }
     
-    public float getLength()
+    public float length()
     {
-        return Position2D.distance(_x1, _y1, _x2, _y2);
+        return _c;
     }
 
     public static List<Line2D> createLines(String shape)

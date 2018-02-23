@@ -34,7 +34,7 @@ public class IndexAdder<T>
             @Override
             public IndexAdder<T> apply(T t)
             {
-                return new IndexAdder<T>(idxGenerator.incrementAndGet(), t);
+                return new IndexAdder<T>(idxGenerator.getAndIncrement(), t);
             }
         };
         return result;

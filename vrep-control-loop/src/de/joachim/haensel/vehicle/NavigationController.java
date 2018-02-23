@@ -6,7 +6,7 @@ import java.util.TimerTask;
 
 import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectorizer;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.SplineTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.vehiclecontrol.Navigator;
@@ -55,7 +55,7 @@ public class NavigationController implements ITopLayerControl
         Navigator navigator = new Navigator(_roadMap);
         List<Line2D> route = navigator.getRoute(currentPosition, targetPosition);
         
-        Trajectorizer trajectorizer = new Trajectorizer();
+        SplineTrajectorizer trajectorizer = new SplineTrajectorizer();
         List<Trajectory> trajectories = trajectorizer.createTrajectory(route);
         
         // TODO pick up here, when there is a trajectory, that we can follow
