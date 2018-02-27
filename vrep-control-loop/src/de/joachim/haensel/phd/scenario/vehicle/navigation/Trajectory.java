@@ -15,4 +15,10 @@ public class Trajectory
     {
         return _vector;
     }
+
+    @Override
+    public String toString()
+    {
+        return _vector.toString();
+    }
 }

@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -11,6 +12,7 @@ import javax.swing.JPanel;
 import org.junit.Test;
 
 import de.joachim.haensel.phd.scenario.math.bezier.Spline2D;
+import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.InterpolationTrajectorizer;
@@ -66,7 +68,7 @@ public class TrajectoryBuildingTest implements TestConstants
         ITrajectorizer trajectorizer = new InterpolationTrajectorizer();
         List<Trajectory> trajectory = trajectorizer.createTrajectory(downscaled);
         
-        float scale = 1.5f;
+        float scale = 1.2f;
         JPanel panel = new TestOutPanel(trajectorizer.getPoints(), trajectory, scale);
         panel.setPreferredSize(new Dimension(2560, 1440));
         JFrame frame = new JFrame();
@@ -78,9 +80,23 @@ public class TrajectoryBuildingTest implements TestConstants
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        String length = trajectory.stream().map(trj -> "l: " + trj.getVector().length()).collect(Collectors.joining(System.lineSeparator()));
+        System.out.println(length);
         System.out.println("done");
     }
-
+    
+    @Test
+    public void testVisualizationSingleVector()
+    {
+        TrajectorySnippetFrame frame = new TrajectorySnippetFrame();
+        ArrayList<Vector2D> snippet = new ArrayList<>();
+        snippet.add(new Vector2D(10.0f, 10.0f, 10.0f, 10.10f));
+        snippet.add(new Vector2D(10.0f, 10.0f, 10.0f, 10.10f));
+        frame.setCurRoute(snippet, snippet.get(0));
+        frame.setVisible(true);
+        System.out.println("wait!");
+    }
+    
     private List<Line2D> transform(List<Line2D> route, float scale, float xTrans, float yTrans)
     {
         List<Line2D> result = new ArrayList<>();

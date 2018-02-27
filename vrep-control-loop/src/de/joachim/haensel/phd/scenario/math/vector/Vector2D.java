@@ -36,11 +36,26 @@ public class Vector2D
         {
             System.out.println("we got some not a numbers!!");
         }
-        _length = (float)Math.sqrt(dirX * dirX + dirY * dirY);
+        _length = computeLength(dirX, dirY);
         _dX = dirX;
         _dY = dirY;
         _normX = _dX / _length;
         _normY = _dY / _length;
+    }
+
+    private float computeLength(float dirX, float dirY)
+    {
+        return (float)Math.sqrt(dirX * dirX + dirY * dirY);
+    }
+
+    public Vector2D(Position2D base, Position2D tip)
+    {
+        this(base.getX(), base.getY(), tip.getX() - base.getX(), tip.getY() - base.getY());
+    }
+
+    public Vector2D(Vector2D v)
+    {
+        this(v.getBase(), v.getTip());
     }
 
     public float length()
@@ -74,7 +89,7 @@ public class Vector2D
         {
             System.out.println("we got some not a numbers!!");
         }
-       return cut;
+        return cut;
     }
 
     public static float computeAngle(Vector2D a, Vector2D b)
@@ -92,5 +107,57 @@ public class Vector2D
     public Position2D getDir()
     {
         return new Position2D(_dX, _dY);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "(" + _bX + ", " + _bY + ") -> (" + _dX + ", " + _dY + ") l: " + _length; 
+    }
+
+    public Position2D getTip()
+    {
+        return new Position2D(_bX + _dX, _bY + _dY);
+    }
+    
+    public static int compBaseX(Vector2D v1, Vector2D v2)
+    {
+        return Float.compare(v1.getBase().getX(), v2.getBase().getX());
+    }
+    
+    public static int compBaseY(Vector2D v1, Vector2D v2)
+    {
+        return Float.compare(v1.getBase().getY(), v2.getBase().getY());
+    }
+    
+    public static int compTipX(Vector2D v1, Vector2D v2)
+    {
+        return Float.compare(v1.getTip().getX(), v2.getTip().getX());
+    }
+    
+    public static int compTipY(Vector2D v1, Vector2D v2)
+    {
+        return Float.compare(v1.getTip().getY(), v2.getTip().getY());
+    }
+
+    public void sub(float x, float y)
+    {
+        _bX -= x;
+        _bY -= y;
+    }
+    
+    public void add(int x, int y)
+    {
+        _bX += x;
+        _bY += y;
+    }
+    
+    public void mul(float f)
+    {
+        _bX *= f;
+        _bY *= f;
+        _dX *= f;
+        _dY *= f;
+        _length = computeLength(_dX, _dY);
     }
 }
