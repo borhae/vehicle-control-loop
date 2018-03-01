@@ -12,6 +12,7 @@ import de.joachim.haensel.phd.scenario.math.TriangleError;
 import de.joachim.haensel.phd.scenario.math.TriangleSolver;
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.phd.scenario.navigation.visualization.TrajectorySnippetFrame;
+import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
 import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.sumo2vrep.Position2D;
 
@@ -42,10 +43,11 @@ public class InterpolationTrajectorizer extends AbstractTrajectorizer
         
         
         //TODO remove this, was here for debugging
-        List<Vector2D> snippet = new ArrayList<>(unevenVectorRoute.subList(0, 6));
-        TrajectorySnippetFrame visual = new TrajectorySnippetFrame();
-        visual.setCurRoute(snippet, snippet.get(0));
-        visual.setVisible(true);
+//        List<Vector2D> snippet = new ArrayList<>(unevenVectorRoute.subList(0, 6));
+//        Vector2DVisualizer visual = new Vector2DVisualizer();
+//        visual.setVectors(snippet);
+//        visual.setHighlight(snippet.get(0));
+//        visual.setVisible(true);
         
         while(!unevenVectorRoute.isEmpty())
         {
@@ -53,9 +55,10 @@ public class InterpolationTrajectorizer extends AbstractTrajectorizer
 
             //TOOD remove after debug
 
-            snippet = new ArrayList<>(unevenVectorRoute.subList(0, Integer.min(6, unevenVectorRoute.size())));
-            visual.setCurRoute(snippet, curVector);
-            visual.repaint();
+//            snippet = new ArrayList<>(unevenVectorRoute.subList(0, Integer.min(6, unevenVectorRoute.size())));
+//            visual.setVectors(snippet);
+//            visual.setHighlight(curVector);
+//            visual.updateVisuals();
             
             // if the previous computation left a residue, merge it to the next 
             if(residue != null)

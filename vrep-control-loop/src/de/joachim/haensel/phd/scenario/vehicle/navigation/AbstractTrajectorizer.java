@@ -13,7 +13,7 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
     {
         _points = new float[route.size() + 1][2];
         route.stream().map(IndexAdder.indexed())
-                .forEach(indexedLine -> enterInto(_points, indexedLine.index(), indexedLine.value()));
+                .forEach(indexedLine -> enterInto(_points, indexedLine.idx(), indexedLine.v()));
     }
 
     private void enterInto(float[][] points, int idx, Line2D line)

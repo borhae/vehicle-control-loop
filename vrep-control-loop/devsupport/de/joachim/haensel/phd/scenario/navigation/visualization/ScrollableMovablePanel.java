@@ -125,7 +125,6 @@ public class ScrollableMovablePanel extends JPanel implements MouseWheelListener
 
         dragger = true;
         repaint();
-
     }
 
     @Override

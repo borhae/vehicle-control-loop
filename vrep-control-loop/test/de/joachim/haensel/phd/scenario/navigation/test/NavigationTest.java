@@ -78,7 +78,7 @@ public class NavigationTest implements TestConstants
         route.stream().map(IndexAdder.indexed()).forEachOrdered(indexedLine -> {
             try
             {
-                objectCreator.createLine(indexedLine.value(), DOWN_SCALE_FACTOR, 1.0f, 0.1f, "someline_" + indexedLine.index(), color);
+                objectCreator.createLine(indexedLine.v(), DOWN_SCALE_FACTOR, 1.0f, 0.1f, "someline_" + indexedLine.idx(), color);
             }
             catch (VRepException exc)
             {

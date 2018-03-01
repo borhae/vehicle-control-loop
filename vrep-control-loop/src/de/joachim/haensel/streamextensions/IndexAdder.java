@@ -1,5 +1,7 @@
 package de.joachim.haensel.streamextensions;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -14,12 +16,12 @@ public class IndexAdder<T>
         _value = value;
     }
 
-    public int index()
+    public int idx()
     {
         return _index;
     }
 
-    public T value()
+    public T v()
     {
         return _value;
     }
@@ -38,5 +40,11 @@ public class IndexAdder<T>
             }
         };
         return result;
+    }
+    
+    public void example()
+    {
+        List<Integer> example = new ArrayList<>();
+        example.stream().map(IndexAdder.indexed()).forEachOrdered(e -> System.out.println("idx: " + e.idx() + ", value: " + e.v()));
     }
 }
