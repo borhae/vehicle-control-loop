@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.navigation.test;
+package de.joachim.haensel.phd.scenario.navigation.visualization;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;

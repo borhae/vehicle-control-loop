@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 import de.joachim.haensel.phd.scenario.math.TriangleError;
 import de.joachim.haensel.phd.scenario.math.TriangleSolver;
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
-import de.joachim.haensel.phd.scenario.navigation.test.TrajectorySnippetFrame;
+import de.joachim.haensel.phd.scenario.navigation.visualization.TrajectorySnippetFrame;
 import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.sumo2vrep.Position2D;
 

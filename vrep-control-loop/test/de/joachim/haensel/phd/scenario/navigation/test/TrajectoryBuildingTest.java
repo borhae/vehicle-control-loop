@@ -13,6 +13,8 @@ import org.junit.Test;
 
 import de.joachim.haensel.phd.scenario.math.bezier.Spline2D;
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
+import de.joachim.haensel.phd.scenario.navigation.visualization.TestOutPanel;
+import de.joachim.haensel.phd.scenario.navigation.visualization.TrajectorySnippetFrame;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.InterpolationTrajectorizer;

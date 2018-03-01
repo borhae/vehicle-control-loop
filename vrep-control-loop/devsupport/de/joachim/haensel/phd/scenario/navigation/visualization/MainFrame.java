@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.navigation.test;
+package de.joachim.haensel.phd.scenario.navigation.visualization;
 
 import java.awt.Color;
 import java.awt.Dimension;
