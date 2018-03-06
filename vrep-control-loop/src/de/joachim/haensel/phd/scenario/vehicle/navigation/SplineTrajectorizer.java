@@ -13,7 +13,7 @@ public class SplineTrajectorizer extends AbstractTrajectorizer implements ITraje
     public List<Trajectory> createTrajectory(List<Line2D> route)
     {
         List<Trajectory> result = new ArrayList<>();
-        routeToPointArray(route);
+        _points = routeToPointArray(route);
         int lastIndex = _points.length - 1;
         _points[lastIndex][0] = route.get(route.size() - 1).getX2();
         _points[lastIndex][1] = route.get(route.size() - 1).getY2();

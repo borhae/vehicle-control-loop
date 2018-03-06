@@ -12,6 +12,22 @@ public class Vector2D
     private float _dY; // direction y 
     private float _normX; //normalized x
     private float _normY; // normalized y
+    
+    public Vector2D(float baseX, float baseY, float dirX, float dirY)
+    {
+        _bX = baseX;
+        _bY = baseY;
+        _length = computeLength(dirX, dirY);
+        if(Float.isNaN(_bX) || Float.isNaN(_bY) || Float.isNaN(_length))
+        {
+            System.out.println("Illegal instantiation");
+            throw new RuntimeException("Illegal vector instantiation (" + _bX + ", " + _bY + ", " + _length + ") (baseX, baseY, length)");
+        }
+        _dX = dirX;
+        _dY = dirY;
+        _normX = _dX / _length;
+        _normY = _dY / _length;
+    }
 
     public Vector2D(Line2D line)
     {
@@ -28,26 +44,6 @@ public class Vector2D
         _normY = _dY / _length;
     }
 
-    public Vector2D(float baseX, float baseY, float dirX, float dirY)
-    {
-        _bX = baseX;
-        _bY = baseY;
-        if(Float.isNaN(_bX) || Float.isNaN(_bY) || Float.isNaN(_length))
-        {
-            System.out.println("we got some not a numbers!!");
-        }
-        _length = computeLength(dirX, dirY);
-        _dX = dirX;
-        _dY = dirY;
-        _normX = _dX / _length;
-        _normY = _dY / _length;
-    }
-
-    private float computeLength(float dirX, float dirY)
-    {
-        return (float)Math.sqrt(dirX * dirX + dirY * dirY);
-    }
-
     public Vector2D(Position2D base, Position2D tip)
     {
         this(base.getX(), base.getY(), tip.getX() - base.getX(), tip.getY() - base.getY());
@@ -55,7 +51,12 @@ public class Vector2D
 
     public Vector2D(Vector2D v)
     {
-        this(v.getBase(), v.getTip());
+        this(v._bX, v._bY, v._dX, v._dY);
+    }
+    
+    private float computeLength(float dirX, float dirY)
+    {
+        return (float)Math.sqrt(dirX * dirX + dirY * dirY);
     }
 
     public float length()
@@ -70,8 +71,8 @@ public class Vector2D
 
     /**
      * Cuts a vector of length length from this vector. this vector is shortened by that
-     * @param length
-     * @return
+     * @param length to be cut away
+     * @return a vector with the same direction as this one with length length
      */
     public Vector2D cutLengthFrom(float length)
     {
@@ -95,8 +96,9 @@ public class Vector2D
     public static float computeAngle(Vector2D a, Vector2D b)
     {
         float dotProduct = Vector2D.dotProduct(a, b);
-        float magnitudeProduct = a.length() * b.length();
-        return (float)Math.cos(dotProduct/magnitudeProduct);
+        float magnitudeProduct = a.getLength() * b.getLength();
+        float divsionResult = dotProduct/magnitudeProduct;
+        return (float)Math.acos(divsionResult);
     }
 
     private static float dotProduct(Vector2D a, Vector2D b)
@@ -112,7 +114,7 @@ public class Vector2D
     @Override
     public String toString()
     {
-        return "(" + _bX + ", " + _bY + ") -> (" + _dX + ", " + _dY + ") l: " + _length; 
+        return " <|(" + _bX + ", " + _bY + ")->(" + _dX + ", " + _dY + ")l:" + _length + "|> "; 
     }
 
     public Position2D getTip()
@@ -159,5 +161,15 @@ public class Vector2D
         _dX *= f;
         _dY *= f;
         _length = computeLength(_dX, _dY);
+    }
+
+    public float getLength()
+    {
+        return computeLength(_dX, _dY);
+    }
+
+    public Position2D getNorm()
+    {
+        return new Position2D(_normX, _normY);
     }
 }

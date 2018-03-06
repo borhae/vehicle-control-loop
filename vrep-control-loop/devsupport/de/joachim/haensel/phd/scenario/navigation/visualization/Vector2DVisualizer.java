@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -15,7 +17,6 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -31,7 +32,7 @@ public class Vector2DVisualizer extends JFrame
     public class Vector2DVisualizerPanel extends JPanel implements MouseWheelListener, MouseListener, MouseMotionListener
     {
 
-        private static final int ARROW_SIZE = 5;
+        private static final double ARROW_SIZE = 1.0;
         private boolean _zoomer;
         private double _zoomFactor;
         private Point _startPoint;
@@ -45,9 +46,9 @@ public class Vector2DVisualizer extends JFrame
         // holds information in the following way
         // first dimension is an ordered set of vectors to draw
         // second dimension is [baseX, baseY, tipX, tipY] of each vector
-        private int[][] _content;
+        private double[][] _content;
         // same as before but supposed to be drawn highlighted
-        private int[][] _highlightedContent;
+        private double[][] _highlightedContent;
 
         public Vector2DVisualizerPanel()
         {
@@ -55,20 +56,20 @@ public class Vector2DVisualizer extends JFrame
             _yOffset = 0.0;
             _zoomFactor = 1.0;
             _prevZoomFactor = 1.0;
-            _content = new int[10][];
+            _content = new double[10][];
             initVectors(_content);
-            _highlightedContent = new int[2][];
+            _highlightedContent = new double[2][];
             initVectors(_highlightedContent);
             addMouseWheelListener(this);
             addMouseMotionListener(this);
             addMouseListener(this);
         }
 
-        private void initVectors(int[][] initializee)
+        private void initVectors(double[][] initializee)
         {
             for(int idx = 0; idx < initializee.length; idx++)
             {
-                initializee[idx] = new int[4];
+                initializee[idx] = new double[4];
             }
         }
 
@@ -98,7 +99,7 @@ public class Vector2DVisualizer extends JFrame
                     _dragger = false;
                 }
             }
-            int[][] transformedContent = new int[_content.length][];
+            double[][] transformedContent = new double[_content.length][];
             for (int idx = 0; idx < _content.length; idx++)
             {
                 transformedContent[idx] = scale(_content[idx], _zoomFactor);
@@ -108,46 +109,59 @@ public class Vector2DVisualizer extends JFrame
                 transformedContent[idx] = translate(transformedContent[idx], _xOffset, _yOffset);
             }
             
+            double[][] transformedHighlighted = new double[_highlightedContent.length][];
+            for (int idx = 0; idx < _highlightedContent.length; idx++)
+            {
+                transformedHighlighted[idx] = scale(_highlightedContent[idx], _zoomFactor);
+            }
+            for (int idx = 0; idx < _highlightedContent.length; idx++)
+            {
+                transformedHighlighted[idx] = translate(transformedHighlighted[idx], _xOffset, _yOffset);
+            }
+            
+            
             // draw stuff here
+            g2.setColor(Color.BLACK);
             Arrays.asList(transformedContent).stream().forEach(v -> drawVector(g2, v));
-            // change color here
-//            Arrays.asList(_highlightedContent).stream().forEach(v -> g2.drawLine(v[0], v[1], v[2], v[3]));
+            //draw highlighted stuff here
+            g2.setColor(Color.BLUE);
+            Arrays.asList(transformedHighlighted).stream().forEach(v -> drawVector(g2, v));
         }
 
-        private void drawVector(Graphics2D g2, int[] v)
+        private void drawVector(Graphics2D g2, double[] v)
         {
-            int xB = v[0];
-            int yB = v[1];
-            int xT = v[2];
-            int yT = v[3];
-            g2.drawLine(xB, yB, xT, yT);
+            double xB = v[0];
+            double yB = v[1];
+            double xT = v[2];
+            double yT = v[3];
+            g2.drawLine((int)xB, (int)yB, (int)xT, (int)yT);
             //tip. oval instead of arrow, cause it's easier
-            int size = (int)(ARROW_SIZE * _zoomFactor);
+            double size = (ARROW_SIZE * _zoomFactor);
             double dx = xT - xB;
             double dy = yT - yB;
             double l = Math.sqrt(dx * dx + dy * dy);
             double nx = dx / l;
             double ny = dy / l;
-            double delX = (double)size/2.0 * (1.0 + nx);
-            double delY = (double)size/2.0 * (1.0 + ny);
-            int x = xT - (int)delX;
-            int y = yT - (int)delY;
-            g2.drawOval(x, y, size, size);
+            double delX = size/2.0 * (1.0 + nx);
+            double delY = size/2.0 * (1.0 + ny);
+            double x = xT - delX;
+            double y = yT - delY;
+            g2.drawOval((int)x, (int)y, (int)size, (int)size);
         }
 
-        private int[] scale(int[] v, double zoomFactor)
+        private double[] scale(double[] v, double zoomFactor)
         {
-            int[] result = new int[4];
+            double[] result = new double[4];
             for (int idx = 0; idx < result.length; idx++)
             {
-                result[idx] = (int)(v[idx] * zoomFactor);
+                result[idx] = v[idx] * zoomFactor;
             }
             return result;
         }
 
-        private int[] translate(int[] v, double xOffset, double yOffset)
+        private double[] translate(double[] v, double xOffset, double yOffset)
         {
-            int[] result = new int[4];
+            double[] result = new double[4];
             result[0] = (int)(v[0] + xOffset);
             result[1] = (int)(v[1] + yOffset);
             result[2] = (int)(v[2] + xOffset);
@@ -221,7 +235,7 @@ public class Vector2DVisualizer extends JFrame
         {
             if(snippet.size() != _content.length)
             {
-                _content = new int[snippet.size()][];
+                _content = new double[snippet.size()][];
                 initVectors(_content);
             }
             snippet.stream().map(IndexAdder.indexed()).forEachOrdered(v -> addInto(_content, v));
@@ -231,27 +245,27 @@ public class Vector2DVisualizer extends JFrame
         {
             if(_highlightedContent.length != 1)
             {
-                _highlightedContent = new int[1][];
+                _highlightedContent = new double[1][];
                 initVectors(_highlightedContent);
             }
             Position2D base = vector2d.getBase();
             Position2D tip = vector2d.getTip();
-            _content[0][0] = (int) base.getX();
-            _content[0][1] = (int) base.getY();
-            _content[0][2] = (int) tip.getX();
-            _content[0][3] = (int) tip.getY();
+            _highlightedContent[0][0] = (int) base.getX();
+            _highlightedContent[0][1] = (int) base.getY();
+            _highlightedContent[0][2] = (int) tip.getX();
+            _highlightedContent[0][3] = (int) tip.getY();
         }
 
-        private void addInto(int[][] content, IndexAdder<Vector2D> v)
+        private void addInto(double[][] content, IndexAdder<Vector2D> v)
         {
             int idx = v.idx();
             Vector2D vector = v.v();
             Position2D base = vector.getBase();
             Position2D tip = vector.getTip();
-            _content[idx][0] = (int) base.getX();
-            _content[idx][1] = (int) base.getY();
-            _content[idx][2] = (int) tip.getX();
-            _content[idx][3] = (int) tip.getY();
+            _content[idx][0] = base.getX();
+            _content[idx][1] = base.getY();
+            _content[idx][2] = tip.getX();
+            _content[idx][3] = tip.getY();
         }
     }
 
@@ -260,15 +274,19 @@ public class Vector2DVisualizer extends JFrame
 
     public Vector2DVisualizer()
     {
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
+//        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+//        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        Dimension windowSize = new Dimension(2560, 1440);
+        setSize(windowSize);
         setLayout(null);
         setTitle("Vector Visualization");
 
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int width = (int) screenSize.getWidth();
-        int height = (int) screenSize.getHeight();
-
+//        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+//        int width = (int) screenSize.getWidth();
+//        int height = (int) screenSize.getHeight();
+        int width = windowSize.width;
+        int height = windowSize.height;
+        
         _panel = new Vector2DVisualizerPanel();
 
         _panel.setBounds(50, 50, width - 100, height - 240);
@@ -282,17 +300,35 @@ public class Vector2DVisualizer extends JFrame
         this.add(_infoLabel);
         _infoLabel.setVisible(true);
     }
+    
+
+    public void showOnScreen(int screen)
+    {
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] gd = ge.getScreenDevices();
+        if (screen > -1 && screen < gd.length)
+        {
+            this.setLocation(gd[screen].getDefaultConfiguration().getBounds().x, this.getY());
+        }
+        else if (gd.length > 0)
+        {
+            this.setLocation(gd[0].getDefaultConfiguration().getBounds().x, this.getY());
+        }
+        else
+        {
+            throw new RuntimeException("No Screens Found");
+        }
+    }
 
     public void setVectors(List<Vector2D> vectors)
     {
         _panel.setVectors(vectors);
     }
 
-    //TODO add if needed
-//    public void setHighlight(Vector2D highlight)
-//    {
-//        _panel.setHighlight(highlight);
-//    }
+    public void setHighlight(Vector2D highlight)
+    {
+        _panel.setHighlight(highlight);
+    }
 
     public void updateVisuals()
     {
