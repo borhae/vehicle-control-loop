@@ -5,20 +5,55 @@ import de.joachim.haensel.sumo2vrep.Position2D;
 
 public class Vector2D
 {
-    private float _bX; //baseX
-    private float _bY; //baseY
-    private float _length;
-    private float _dX; // direction x 
-    private float _dY; // direction y 
-    private float _normX; //normalized x
-    private float _normY; // normalized y
+    private double _bX; //baseX
+    private double _bY; //baseY
+    private double _length;
+    private double _dX; // direction x 
+    private double _dY; // direction y 
+    private double _normX; //normalized x
+    private double _normY; // normalized y
     
-    public Vector2D(float baseX, float baseY, float dirX, float dirY)
+    public double getbX()
+    {
+        return _bX;
+    }
+
+    public double getbY()
+    {
+        return _bY;
+    }
+
+    public double getdX()
+    {
+        return _dX;
+    }
+
+    public double getdY()
+    {
+        return _dY;
+    }
+
+    public double getNormX()
+    {
+        return _normX;
+    }
+
+    public double getNormY()
+    {
+        return _normY;
+    }
+
+    public void setLength(double length)
+    {
+        _length = length;
+    }
+
+    public Vector2D(double baseX, double baseY, double dirX, double dirY)
     {
         _bX = baseX;
         _bY = baseY;
         _length = computeLength(dirX, dirY);
-        if(Float.isNaN(_bX) || Float.isNaN(_bY) || Float.isNaN(_length))
+        if(Double.isNaN(_bX) || Double.isNaN(_bY) || Double.isNaN(_length))
         {
             System.out.println("Illegal instantiation");
             throw new RuntimeException("Illegal vector instantiation (" + _bX + ", " + _bY + ", " + _length + ") (baseX, baseY, length)");
@@ -34,7 +69,7 @@ public class Vector2D
         _bX = line.getX1();
         _bY = line.getY1();
         _length = line.length();
-        if(Float.isNaN(_bX) || Float.isNaN(_bY) || Float.isNaN(_length))
+        if(Double.isNaN(_bX) || Double.isNaN(_bY) || Double.isNaN(_length))
         {
             System.out.println("we got some not a numbers!!");
         }
@@ -54,12 +89,12 @@ public class Vector2D
         this(v._bX, v._bY, v._dX, v._dY);
     }
     
-    private float computeLength(float dirX, float dirY)
+    private double computeLength(double dirX, double dirY)
     {
-        return (float)Math.sqrt(dirX * dirX + dirY * dirY);
+        return (double)Math.sqrt(dirX * dirX + dirY * dirY);
     }
 
-    public float length()
+    public double length()
     {
         return _length;
     }
@@ -71,37 +106,37 @@ public class Vector2D
 
     /**
      * Cuts a vector of length length from this vector. this vector is shortened by that
-     * @param length to be cut away
+     * @param stepSize to be cut away
      * @return a vector with the same direction as this one with length length
      */
-    public Vector2D cutLengthFrom(float length)
+    public Vector2D cutLengthFrom(double stepSize)
     {
-        float newBX = _bX;
-        float newBY = _bY;
-        float newDX = _normX * length;
-        float newDY = _normY * length;
+        double newBX = _bX;
+        double newBY = _bY;
+        double newDX = _normX * stepSize;
+        double newDY = _normY * stepSize;
         Vector2D cut = new Vector2D(newBX, newBY, newDX, newDY);
-        _bX = _bX + length * _normX;
-        _bY = _bY + length * _normY;
+        _bX = _bX + stepSize * _normX;
+        _bY = _bY + stepSize * _normY;
         _dX = _dX - newDX;
         _dY = _dY - newDY;
-        _length = (float)Math.sqrt(_dX * _dX + _dY * _dY);
-        if(Float.isNaN(_bX) || Float.isNaN(_bY) || Float.isNaN(_length))
+        _length = (double)Math.sqrt(_dX * _dX + _dY * _dY);
+        if(Double.isNaN(_bX) || Double.isNaN(_bY) || Double.isNaN(_length))
         {
             System.out.println("we got some not a numbers!!");
         }
         return cut;
     }
 
-    public static float computeAngle(Vector2D a, Vector2D b)
+    public static double computeAngle(Vector2D a, Vector2D b)
     {
-        float dotProduct = Vector2D.dotProduct(a, b);
-        float magnitudeProduct = a.getLength() * b.getLength();
-        float divsionResult = dotProduct/magnitudeProduct;
-        return (float)Math.acos(divsionResult);
+        double dotProduct = Vector2D.dotProduct(a, b);
+        double magnitudeProduct = a.getLength() * b.getLength();
+        double divsionResult = dotProduct/magnitudeProduct;
+        return (double)Math.acos(divsionResult);
     }
 
-    private static float dotProduct(Vector2D a, Vector2D b)
+    private static double dotProduct(Vector2D a, Vector2D b)
     {
         return a._dX * b._dX + a._dY * b._dY;
     }
@@ -124,25 +159,25 @@ public class Vector2D
     
     public static int compBaseX(Vector2D v1, Vector2D v2)
     {
-        return Float.compare(v1.getBase().getX(), v2.getBase().getX());
+        return Double.compare(v1.getBase().getX(), v2.getBase().getX());
     }
     
     public static int compBaseY(Vector2D v1, Vector2D v2)
     {
-        return Float.compare(v1.getBase().getY(), v2.getBase().getY());
+        return Double.compare(v1.getBase().getY(), v2.getBase().getY());
     }
     
     public static int compTipX(Vector2D v1, Vector2D v2)
     {
-        return Float.compare(v1.getTip().getX(), v2.getTip().getX());
+        return Double.compare(v1.getTip().getX(), v2.getTip().getX());
     }
     
     public static int compTipY(Vector2D v1, Vector2D v2)
     {
-        return Float.compare(v1.getTip().getY(), v2.getTip().getY());
+        return Double.compare(v1.getTip().getY(), v2.getTip().getY());
     }
 
-    public void sub(float x, float y)
+    public void sub(double x, double y)
     {
         _bX -= x;
         _bY -= y;
@@ -154,7 +189,7 @@ public class Vector2D
         _bY += y;
     }
     
-    public void mul(float f)
+    public void mul(double f)
     {
         _bX *= f;
         _bY *= f;
@@ -163,7 +198,7 @@ public class Vector2D
         _length = computeLength(_dX, _dY);
     }
 
-    public float getLength()
+    public double getLength()
     {
         return computeLength(_dX, _dY);
     }

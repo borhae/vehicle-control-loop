@@ -12,19 +12,24 @@ import de.joachim.haensel.sumo2vrep.Position2D;
 
 public class InterpolationTrajectorizerTrigonometry extends AbstractTrajectorizer
 {
+    private double _stepSize;
+
+    public InterpolationTrajectorizerTrigonometry(double stepSize)
+    {
+        _stepSize = stepSize;
+    }
+    
     @Override
     public List<Trajectory> createTrajectory(List<Line2D> route)
     {
-        float stepSize = 15.0f;
         LinkedList<Vector2D> unevenVectorRoute = lineListToVectorList(route);
-//        List<Vector2D> pointList = interpolateRecursive(unevenVectorRoute, stepSize);
         List<Vector2D> pointList = new LinkedList<>();
         unevenVectorRoute  = patchHolesInRoute(unevenVectorRoute);
-        interpolateRecursive(unevenVectorRoute, null, pointList, stepSize);
+        interpolateRecursive(unevenVectorRoute, null, pointList, _stepSize);
         return pointList.stream().map(vector -> new Trajectory(vector)).collect(Collectors.toList());
     }
 
-    public void interpolateRecursive(LinkedList<Vector2D> unevenVectorRoute, Vector2D residue, List<Vector2D> resultList, float stepSize)
+    public void interpolateRecursiveNonWorking(LinkedList<Vector2D> unevenVectorRoute, Vector2D residue, List<Vector2D> resultList, double stepSize)
     {
         if(unevenVectorRoute.isEmpty())
         {
@@ -39,32 +44,67 @@ public class InterpolationTrajectorizerTrigonometry extends AbstractTrajectorize
                 Vector2D nextVector = unevenVectorRoute.pop();
                 Vector2D newFirstElement = new Vector2D(curVector.getBase(), nextVector.getTip());
                 unevenVectorRoute.push(newFirstElement);
-                interpolateRecursive(unevenVectorRoute, residue, resultList, stepSize);
+                interpolateRecursiveNonWorking(unevenVectorRoute, residue, resultList, stepSize);
             }
             else
             {
                 if(residue == null)
                 {
                     residue = fillEvenRoute(curVector, resultList, stepSize);
-                    interpolateRecursive(unevenVectorRoute, residue, resultList, stepSize);
+                    interpolateRecursiveNonWorking(unevenVectorRoute, residue, resultList, stepSize);
                 }
                 else
                 {
                     Vector2D newFirstElement = mergeResidueAndNext(residue, curVector, resultList, stepSize);
                     unevenVectorRoute.push(newFirstElement);
-                    interpolateRecursive(unevenVectorRoute, null, resultList, stepSize);
+                    interpolateRecursiveNonWorking(unevenVectorRoute, null, resultList, stepSize);
+                }
+            }
+        }
+    }
+    
+    public void interpolateRecursive(LinkedList<Vector2D> unevenRoute, Vector2D residue, List<Vector2D> result, double stepSize)
+    {
+        if(unevenRoute.isEmpty())
+        {
+            return;
+        }
+        else
+        {
+            Vector2D currentVector = unevenRoute.pop();
+            if(currentVector.getLength() < stepSize)
+            {
+                Vector2D nextVector = unevenRoute.pop();
+                while(Position2D.distance(currentVector.getBase(), nextVector.getTip()) < stepSize)
+                {
+                    nextVector = unevenRoute.pop();
+                }
+                residue = mergeResidueAndNext(currentVector, nextVector, result, stepSize);
+                interpolateRecursive(unevenRoute, residue, result, stepSize);
+            }
+            else
+            {
+                if(residue == null)
+                {
+                    residue = fillEvenRoute(currentVector, result, stepSize);
+                    interpolateRecursive(unevenRoute, residue, result, stepSize);
+                }
+                else
+                {
+                    residue = mergeResidueAndNext(residue, currentVector, result, stepSize);
+                    interpolateRecursive(unevenRoute, residue, result, stepSize);
                 }
             }
         }
     }
 
-    private Vector2D mergeResidueAndNext(Vector2D residue, Vector2D curVector, List<Vector2D> resultList, float stepSize)
+    private Vector2D mergeResidueAndNext(Vector2D residue, Vector2D curVector, List<Vector2D> resultList, double stepSize)
     {
             TriangleSolver tr = new TriangleSolver();
             tr.seta(stepSize);
-            float baseDistances = Position2D.distance(residue.getBase(), curVector.getBase());
+            double baseDistances = Position2D.distance(residue.getBase(), curVector.getBase());
             tr.setc(baseDistances);
-            float angleBetweenVectors = Vector2D.computeAngle(residue, curVector);
+            double angleBetweenVectors = Vector2D.computeAngle(residue, curVector);
             double angleInDegrees = Math.toDegrees(angleBetweenVectors);
             tr.setAlpha(angleInDegrees);
             float b = Float.NaN;
@@ -122,7 +162,7 @@ public class InterpolationTrajectorizerTrigonometry extends AbstractTrajectorize
         }
     }
 
-    private Vector2D fillEvenRoute(Vector2D curVector, List<Vector2D> evenVectorRoute, float stepSize)
+    private Vector2D fillEvenRoute(Vector2D curVector, List<Vector2D> evenVectorRoute, double stepSize)
     {
         int fitsNTimes = (int)(curVector.getLength() / stepSize);
         for(int cnt = 0; cnt < fitsNTimes; cnt++)

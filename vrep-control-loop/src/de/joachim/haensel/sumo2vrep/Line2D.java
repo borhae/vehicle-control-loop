@@ -6,11 +6,11 @@ import java.util.List;
 
 public class Line2D
 {
-    private float _x1;
-    private float _y1;
-    private float _x2;
-    private float _y2;
-    private float _c;
+    private double _x1;
+    private double _y1;
+    private double _x2;
+    private double _y2;
+    private double _c;
 
     public Line2D(String p1, String p2)
     {
@@ -23,7 +23,7 @@ public class Line2D
         _c = Position2D.distance(_x1, _y1, _x2, _y2);
     }
     
-    public Line2D(float x1, float y1, float x2, float y2)
+    public Line2D(double x1, double y1, double x2, double y2)
     {
         _x1 = x1;
         _y1 = y1;
@@ -32,25 +32,25 @@ public class Line2D
         _c = Position2D.distance(_x1, _y1, _x2, _y2);
     }
 
-    public float length(float x1, float y1, float x2, float y2)
+    public double length(double x1, double y1, double x2, double y2)
     {
-        float dx = x2 - x1;
-        float dy = y2 - y1;
-        return (float)Math.sqrt(dx * dx + dy * dy);
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
-    public float distance(Position2D position)
+    public double distance(Position2D position)
     {
-        float pX = position.getX();
-        float pY = position.getY();
-        float a = length(pX, pY, _x1, _y1);
-        float b = length(_x2, _y2, pX, pY);
-        float s = (a + b + _c)/2.0f;
-        float h = (float) (_c/2.0f*Math.sqrt(s*(s-a)*(s-b)*(s-_c)));
+        double pX = position.getX();
+        double pY = position.getY();
+        double a = length(pX, pY, _x1, _y1);
+        double b = length(_x2, _y2, pX, pY);
+        double s = (a + b + _c)/2.0f;
+        double h = _c/2.0f*Math.sqrt(s*(s-a)*(s-b)*(s-_c));
         return h;
     }
     
-    public float length()
+    public double length()
     {
         return _c;
     }
@@ -79,22 +79,22 @@ public class Line2D
         }
     }
 
-    public float getX1()
+    public double getX1()
     {
         return _x1;
     }
 
-    public float getY1()
+    public double getY1()
     {
         return _y1;
     }
 
-    public float getX2()
+    public double getX2()
     {
         return _x2;
     }
 
-    public float getY2()
+    public double getY2()
     {
         return _y2;
     }

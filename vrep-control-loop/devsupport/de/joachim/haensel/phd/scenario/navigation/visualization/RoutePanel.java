@@ -38,7 +38,7 @@ public class RoutePanel extends ScrollableMovablePanel
         int y2 = (int)tip.getY() ;
         g2.drawLine(x1, y1, x2, y2);
         int r = 2;
-        g2.drawOval(x1 + r, y1 + r, r, r);
+        g2.drawOval(x1 - r, y1 - r, r, r);
     }
 
 //    private void drawVector(Graphics2D g2, Vector2D v)

@@ -12,24 +12,24 @@ import de.joachim.haensel.sumo2vrep.Position2D;
 public abstract class AbstractTrajectorizer implements ITrajectorizer
 {
     protected static final float EPSILON = 0.00001f;
-    protected float[][] _points;
+    protected double[][] _points;
 
-    public float[][] routeToPointArray(List<Line2D> route)
+    public double[][] routeToPointArray(List<Line2D> route)
     {
-        float[][] result = new float[route.size() + 1][2];
+        double[][] result = new double[route.size() + 1][2];
         route.stream().map(IndexAdder.indexed())
                 .forEach(indexedLine -> enterInto(result, indexedLine.idx(), indexedLine.v()));
         return result;
     }
 
-    private void enterInto(float[][] points, int idx, Line2D line)
+    private void enterInto(double[][] points, int idx, Line2D line)
     {
         points[idx][0] = line.getX1();
         points[idx][1] = line.getY1();
     }
 
     @Override
-    public float[][] getPoints()
+    public double[][] getPoints()
     {
         return _points;
     }

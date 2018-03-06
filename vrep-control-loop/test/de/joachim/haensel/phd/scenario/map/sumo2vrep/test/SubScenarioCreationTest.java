@@ -98,7 +98,7 @@ public class SubScenarioCreationTest implements TestConstants
         _vrep.simxStartSimulation(_clientID, remoteApi.simx_opmode_blocking);
         
         vehicle.start();
-        vehicle.driveToBlocking(targetPoint.getPos().getX(), targetPoint.getPos().getY(), roadMap);
+        vehicle.driveToBlocking((float)targetPoint.getPos().getX(), (float)targetPoint.getPos().getY(), roadMap);
         //let him drive for a while (uncontrolled for now)
         try
         {

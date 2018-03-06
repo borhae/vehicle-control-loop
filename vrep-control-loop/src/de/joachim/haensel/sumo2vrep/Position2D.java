@@ -4,10 +4,10 @@ import coppelia.FloatWA;
 
 public class Position2D
 {
-    private float _x;
-    private float _y;
+    private double _x;
+    private double _y;
 
-    public Position2D(float x, float y)
+    public Position2D(double x, double y)
     {
         _x = x;
         _y = y;
@@ -26,22 +26,22 @@ public class Position2D
         _y = pos3d.getArray()[1];
     }
     
-    public float getX()
+    public double getX()
     {
         return _x;
     }
 
-    public float getY()
+    public double getY()
     {
         return _y;
     }
     
-    public void setX(float x)
+    public void setX(double x)
     {
         _x = x;
     }
 
-    public void setY(float y)
+    public void setY(double y)
     {
         _y = y;
     }
@@ -52,7 +52,7 @@ public class Position2D
         _y = xy[1];
     }
     
-    public void setXY(float x, float y)
+    public void setXY(double x, double y)
     {
         _x = x;
         _y = y;
@@ -68,6 +68,12 @@ public class Position2D
         return result;
     }
     
+    /**
+     * The point between p1 and p2
+     * @param p1
+     * @param p2
+     * @return
+     */
     public static Position2D between(Position2D p1, Position2D p2)
     {
         return new Position2D((p2._x  + p1._x)/2.0f, (p2._y + p1._y)/2.0f);
@@ -78,12 +84,12 @@ public class Position2D
         return distance(other) <= epsilon;
     }
     
-    public float distance(String coordinates)
+    public double distance(String coordinates)
     {
         return distance(this, new Position2D(coordinates));
     }
     
-    public float distance(float x, float y)
+    public double distance(double x, double y)
     {
         return distance(this._x, this._y, x, y);
     }
@@ -93,22 +99,22 @@ public class Position2D
         return distance(this, other);
     }
 
-    public static boolean equals(Position2D p1, Position2D p2, float epsilon)
+    public static boolean equals(Position2D p1, Position2D p2, double epsilon)
     {
         return distance(p1, p2) < epsilon;
     }
 
-    public static float distance(Position2D p1, Position2D p2)
+    public static double distance(Position2D p1, Position2D p2)
     {
         return distance(p1._x,  p1._y, p2._x, p2._y);
     }
 
-    public static float distance(float x1, float y1, float x2, float y2)
+    public static double distance(double x1, double y1, double x2, double y2)
     {
-        float dx = x2 - x1;
-        float dy = y2 - y1;
+        double dx = x2 - x1;
+        double dy = y2 - y1;
         
-        return (float)Math.sqrt(dx*dx + dy*dy);
+        return Math.sqrt(dx*dx + dy*dy);
     }
 
     @Override

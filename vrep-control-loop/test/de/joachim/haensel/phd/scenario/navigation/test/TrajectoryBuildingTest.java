@@ -18,10 +18,12 @@ import de.joachim.haensel.phd.scenario.math.bezier.Spline2D;
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.phd.scenario.navigation.visualization.TestOutPanel;
 import de.joachim.haensel.phd.scenario.navigation.visualization.TrajectorySnippetFrame;
+import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.InterpolationTrajectorizerTrigonometry;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.IterativeInterpolationTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.SplineTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.sumo2vrep.Line2D;
@@ -39,7 +41,7 @@ public class TrajectoryBuildingTest implements TestConstants
         Position2D startPosition = new Position2D(5747.01f, 2979.22f);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTrigonometry();
+        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTrigonometry(5);
         LinkedList<Vector2D> lineListToVectorList = trajectorizer.lineListToVectorList(route);
         lineListToVectorList.stream().forEach(v -> checkValid(v));
     }
@@ -52,7 +54,7 @@ public class TrajectoryBuildingTest implements TestConstants
         Position2D startPosition = new Position2D(5747.01f, 2979.22f);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTrigonometry();
+        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTrigonometry(5);
         LinkedList<Vector2D> lineListToVectorList = trajectorizer.lineListToVectorList(route);
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(lineListToVectorList);
         patchedRoute.stream().forEach(v -> checkValid(v));
@@ -66,7 +68,7 @@ public class TrajectoryBuildingTest implements TestConstants
         Position2D startPosition = new Position2D(5747.01f, 2979.22f);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTrigonometry();
+        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTrigonometry(5);
         LinkedList<Vector2D> lineListToVectorList = trajectorizer.lineListToVectorList(route);
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(lineListToVectorList);
         patchedRoute.stream().forEach(v -> checkValid(v));
@@ -74,7 +76,7 @@ public class TrajectoryBuildingTest implements TestConstants
         double max = Double.MIN_VALUE;
         for(int idx = 0; idx + 1 < patchedRoute.size(); idx++)
         {
-            float distance = Position2D.distance(patchedRoute.get(idx).getTip(), patchedRoute.get(idx + 1).getBase());
+            double distance = Position2D.distance(patchedRoute.get(idx).getTip(), patchedRoute.get(idx + 1).getBase());
             if(distance < min)
             {
                 min = distance;
@@ -97,7 +99,7 @@ public class TrajectoryBuildingTest implements TestConstants
         Position2D startPosition = new Position2D(5747.01f, 2979.22f);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTrigonometry();
+        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTrigonometry(15);
         LinkedList<Vector2D> routeAsVectors = trajectorizer.lineListToVectorList(route);
         routeAsVectors.stream().forEach(v -> checkValid(v));
         double min = Double.MAX_VALUE;
@@ -105,7 +107,7 @@ public class TrajectoryBuildingTest implements TestConstants
         List<Double> distances = new ArrayList<>();
         for(int idx = 0; idx + 1 < routeAsVectors.size(); idx++)
         {
-            float distance = Position2D.distance(routeAsVectors.get(idx).getTip(), routeAsVectors.get(idx + 1).getBase());
+            double distance = Position2D.distance(routeAsVectors.get(idx).getTip(), routeAsVectors.get(idx + 1).getBase());
             if(distance < min)
             {
                 min = distance;
@@ -132,7 +134,7 @@ public class TrajectoryBuildingTest implements TestConstants
         Position2D startPosition = new Position2D(5747.01f, 2979.22f);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTrigonometry();
+        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTrigonometry(15);
         LinkedList<Vector2D> routeAsVectors = trajectorizer.lineListToVectorList(route);
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(routeAsVectors);
         routeAsVectors.stream().forEach(v -> checkValid(v));
@@ -141,7 +143,7 @@ public class TrajectoryBuildingTest implements TestConstants
         List<Double> smallLengths = new ArrayList<>();
         for(int idx = 0; idx < patchedRoute.size(); idx++)
         {
-            float length = patchedRoute.get(idx).getLength();
+            double length = patchedRoute.get(idx).getLength();
             if(length < min)
             {
                 min = length;
@@ -168,24 +170,50 @@ public class TrajectoryBuildingTest implements TestConstants
         input.add(new Vector2D(10, 0, 0, 10));
         input.add(new Vector2D(10, 10, -10, 0));
         
-        InterpolationTrajectorizerTrigonometry trajecorizer = new InterpolationTrajectorizerTrigonometry();
+        InterpolationTrajectorizerTrigonometry trajecorizer = new InterpolationTrajectorizerTrigonometry(6);
         LinkedList<Vector2D> patchedRoute = trajecorizer.patchHolesInRoute(input);
         List<Vector2D> result = new LinkedList<>();
-        trajecorizer.interpolateRecursive(patchedRoute, null, result, 6);
+        trajecorizer.interpolateRecursiveNonWorking(patchedRoute, null, result, 6);
         result.stream().forEach(v -> checkValid(v));
+    }
+    
+    @Test
+    public void test3SyntheticVectorsSquareInterpolationIterative()
+    {
+        LinkedList<Vector2D> input = new LinkedList<>();
+        input.add(new Vector2D(0, 0, 10, 0));
+        input.add(new Vector2D(10, 0, 0, 10));
+        input.add(new Vector2D(10, 10, -10, 0));
+
+        IterativeInterpolationTrajectorizer trajectorizer = new IterativeInterpolationTrajectorizer(6);
+        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
+        List<Vector2D> comparisonRoute = new ArrayList<>();
+        patchedRoute.stream().forEach(v -> comparisonRoute.add(v));
+        
+        ArrayList<Vector2D> result = new ArrayList<>();
+        trajectorizer.quantize(patchedRoute, result, 6);
+        result.stream().forEach(v -> checkValid(v));
+
+        Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.setVectors(result);
+        frame.setBlueVectors(comparisonRoute);
+        frame.setVisible(true);
+        frame.updateVisuals();
+
+        System.out.println("done");
     }
     
     private void checkValid(Vector2D v)
     {
-        float x = v.getBase().getX();
-        float y = v.getBase().getY();
-        float length = v.getLength();
-        float dirX = v.getDir().getX();
-        float dirY = v.getDir().getY();
-        float normX = v.getNorm().getX();
-        float normY = v.getNorm().getY();
+        double x = v.getBase().getX();
+        double y = v.getBase().getY();
+        double length = v.getLength();
+        double dirX = v.getDir().getX();
+        double dirY = v.getDir().getY();
+        double normX = v.getNorm().getX();
+        double normY = v.getNorm().getY();
         boolean invalid =
-                Float.isNaN(x) || Float.isNaN(y) || Float.isNaN(length) || Float.isNaN(dirX)  || Float.isNaN(dirY)  || Float.isNaN(normX)  || Float.isNaN(normY); 
+                Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(length) || Double.isNaN(dirX)  || Double.isNaN(dirY)  || Double.isNaN(normX)  || Double.isNaN(normY); 
         if(invalid)
         {
             throw new RuntimeException();
@@ -207,17 +235,6 @@ public class TrajectoryBuildingTest implements TestConstants
         Spline2D traversableSpline = ((SplineTrajectorizer)trajectorizer).getTraversableSpline();
 
         float scale = 1.5f;
-        JPanel panel = new TestOutPanel(trajectorizer.getPoints(), traversableSpline, scale);
-        panel.setPreferredSize(new Dimension(2560, 1440));
-        JFrame frame = new JFrame();
-        JPanel cp = (JPanel) frame.getContentPane();
-        cp.setLayout(new BorderLayout());
-        cp.add(panel, BorderLayout.CENTER);
-        frame.pack();
-        frame.setResizable(false);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         System.out.println("done");
     }
     
@@ -229,24 +246,58 @@ public class TrajectoryBuildingTest implements TestConstants
         Position2D startPosition = new Position2D(5747.01f, 2979.22f);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        List<Line2D> downscaled = transform(route, 2.5f, -2000.0f, -2700.0f);
+        List<Line2D> downscaledRoute = transform(route, 2.5f, -2000.0f, -2700.0f);
+
+        LinkedList<Vector2D> originalDownsacledVectorRoute = new LinkedList<>();
+        downscaledRoute.stream().forEach(l -> originalDownsacledVectorRoute.add(new Vector2D(l)));
         
-        ITrajectorizer trajectorizer = new InterpolationTrajectorizerTrigonometry();
-        List<Trajectory> trajectory = trajectorizer.createTrajectory(downscaled);
+        InterpolationTrajectorizerTrigonometry trajectorizer = new InterpolationTrajectorizerTrigonometry(5);
+        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(originalDownsacledVectorRoute);
+        List<Trajectory> trajectory = trajectorizer.createTrajectory(downscaledRoute);
         
-        float scale = 1.2f;
-        JPanel panel = new TestOutPanel(trajectorizer.getPoints(), trajectory, scale);
-        panel.setPreferredSize(new Dimension(2560, 1440));
-        JFrame frame = new JFrame();
-        JPanel cp = (JPanel) frame.getContentPane();
-        cp.setLayout(new BorderLayout());
-        cp.add(panel, BorderLayout.CENTER);
-        frame.pack();
-        frame.setResizable(false);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         String length = trajectory.stream().map(trj -> "l: " + trj.getVector().getLength()).collect(Collectors.joining(System.lineSeparator()));
+        
+        List<Vector2D> quantizedRoute = new ArrayList<>();
+        trajectory.stream().forEach(trj -> quantizedRoute.add(trj.getVector()));
+
+        Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.setVectors(quantizedRoute);
+        frame.setBlueVectors(patchedRoute);
+        frame.setVisible(true);
+        frame.updateVisuals();
+        
+        System.out.println(length);
+        System.out.println("done");
+    }
+    
+    @Test
+    public void testInterpolationTrajectorizerIterative()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+        Navigator navigator = new Navigator(roadMap);
+        Position2D startPosition = new Position2D(5747.01f, 2979.22f);
+        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
+        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
+        List<Line2D> downscaledRoute = transform(route, 2.5f, -2000.0f, -2700.0f);
+
+        LinkedList<Vector2D> originalDownsacledVectorRoute = new LinkedList<>();
+        downscaledRoute.stream().forEach(l -> originalDownsacledVectorRoute.add(new Vector2D(l)));
+        
+        IterativeInterpolationTrajectorizer trajectorizer = new IterativeInterpolationTrajectorizer(2);
+        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(originalDownsacledVectorRoute);
+        List<Trajectory> trajectory = trajectorizer.createTrajectory(downscaledRoute);
+        
+        String length = trajectory.stream().map(trj -> "l: " + trj.getVector().getLength()).collect(Collectors.joining(System.lineSeparator()));
+        
+        List<Vector2D> quantizedRoute = new ArrayList<>();
+        trajectory.stream().forEach(trj -> quantizedRoute.add(trj.getVector()));
+
+        Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.setVectors(quantizedRoute);
+//        frame.setBlueVectors(patchedRoute);
+        frame.setVisible(true);
+        frame.updateVisuals();
+        
         System.out.println(length);
         System.out.println("done");
     }
@@ -254,11 +305,11 @@ public class TrajectoryBuildingTest implements TestConstants
     @Test
     public void testVisualizationSingleVector()
     {
-        TrajectorySnippetFrame frame = new TrajectorySnippetFrame();
+        Vector2DVisualizer frame = new Vector2DVisualizer();
         ArrayList<Vector2D> snippet = new ArrayList<>();
         snippet.add(new Vector2D(10.0f, 10.0f, 10.0f, 10.10f));
         snippet.add(new Vector2D(10.0f, 10.0f, 10.0f, 10.10f));
-        frame.setCurRoute(snippet, snippet.get(0));
+        frame.setVectors(snippet);
         frame.setVisible(true);
         System.out.println("wait!");
     }

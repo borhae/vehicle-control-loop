@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.navigation.visualization;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -9,7 +10,7 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.MouseInfo;
 import java.awt.Point;
-import java.awt.Toolkit;
+import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -29,6 +30,8 @@ import de.joachim.haensel.sumo2vrep.Position2D;
 
 public class Vector2DVisualizer extends JFrame
 {
+    private static final Dimension FRAME_SIZE = new Dimension(2560, 1440);
+
     public class Vector2DVisualizerPanel extends JPanel implements MouseWheelListener, MouseListener, MouseMotionListener
     {
 
@@ -48,7 +51,7 @@ public class Vector2DVisualizer extends JFrame
         // second dimension is [baseX, baseY, tipX, tipY] of each vector
         private double[][] _content;
         // same as before but supposed to be drawn highlighted
-        private double[][] _highlightedContent;
+        private double[][] _blueContent;
 
         public Vector2DVisualizerPanel()
         {
@@ -56,10 +59,6 @@ public class Vector2DVisualizer extends JFrame
             _yOffset = 0.0;
             _zoomFactor = 1.0;
             _prevZoomFactor = 1.0;
-            _content = new double[10][];
-            initVectors(_content);
-            _highlightedContent = new double[2][];
-            initVectors(_highlightedContent);
             addMouseWheelListener(this);
             addMouseMotionListener(this);
             addMouseListener(this);
@@ -99,33 +98,43 @@ public class Vector2DVisualizer extends JFrame
                     _dragger = false;
                 }
             }
-            double[][] transformedContent = new double[_content.length][];
-            for (int idx = 0; idx < _content.length; idx++)
-            {
-                transformedContent[idx] = scale(_content[idx], _zoomFactor);
-            }
-            for (int idx = 0; idx < _content.length; idx++)
-            {
-                transformedContent[idx] = translate(transformedContent[idx], _xOffset, _yOffset);
-            }
-            
-            double[][] transformedHighlighted = new double[_highlightedContent.length][];
-            for (int idx = 0; idx < _highlightedContent.length; idx++)
-            {
-                transformedHighlighted[idx] = scale(_highlightedContent[idx], _zoomFactor);
-            }
-            for (int idx = 0; idx < _highlightedContent.length; idx++)
-            {
-                transformedHighlighted[idx] = translate(transformedHighlighted[idx], _xOffset, _yOffset);
-            }
             
             
             // draw stuff here
-            g2.setColor(Color.BLACK);
-            Arrays.asList(transformedContent).stream().forEach(v -> drawVector(g2, v));
-            //draw highlighted stuff here
-            g2.setColor(Color.BLUE);
-            Arrays.asList(transformedHighlighted).stream().forEach(v -> drawVector(g2, v));
+            if(_content != null && _content.length != 0)
+            {
+                double[][] transformedContent = transform(_content, _zoomFactor, _xOffset, _yOffset);
+                
+                g2.setColor(Color.BLACK);
+                Stroke s1 = new BasicStroke((float) 2.0);
+                g2.setStroke(s1);
+                Arrays.asList(transformedContent).stream().forEach(v -> drawVector(g2, v));
+            }
+
+            if(_blueContent != null && _blueContent.length != 0)
+            {
+                double[][] transformedBlue = transform(_blueContent, _zoomFactor, _xOffset, _yOffset); 
+                
+                //draw highlighted stuff here
+                g2.setColor(Color.BLUE);
+                Stroke s = new BasicStroke((float) 3.0);
+                g2.setStroke(s);
+                Arrays.asList(transformedBlue).stream().forEach(v -> drawVector(g2, v));
+            }
+        }
+
+        private double[][] transform(double[][] content, double zoom, double xOffset, double yOffset)
+        {
+            double[][] transformedContent = new double[content.length][];
+            for (int idx = 0; idx < content.length; idx++)
+            {
+                transformedContent[idx] = scale(content[idx], zoom);
+            }
+            for (int idx = 0; idx < content.length; idx++)
+            {
+                transformedContent[idx] = translate(transformedContent[idx], xOffset, yOffset);
+            }
+            return transformedContent;
         }
 
         private void drawVector(Graphics2D g2, double[] v)
@@ -233,39 +242,32 @@ public class Vector2DVisualizer extends JFrame
 
         public void setVectors(List<Vector2D> snippet)
         {
-            if(snippet.size() != _content.length)
+            if(_content == null || snippet.size() != _content.length)
             {
                 _content = new double[snippet.size()][];
                 initVectors(_content);
             }
             snippet.stream().map(IndexAdder.indexed()).forEachOrdered(v -> addInto(_content, v));
         }
-
-        public void setHighlight(Vector2D vector2d)
+        
+        public void setBlueVectors(List<Vector2D> vectors)
         {
-            if(_highlightedContent.length != 1)
+            if(_blueContent == null || vectors.size() != _blueContent.length)
             {
-                _highlightedContent = new double[1][];
-                initVectors(_highlightedContent);
+                _blueContent = new double[vectors.size()][];
+                initVectors(_blueContent);
             }
-            Position2D base = vector2d.getBase();
-            Position2D tip = vector2d.getTip();
-            _highlightedContent[0][0] = (int) base.getX();
-            _highlightedContent[0][1] = (int) base.getY();
-            _highlightedContent[0][2] = (int) tip.getX();
-            _highlightedContent[0][3] = (int) tip.getY();
+            vectors.stream().map(IndexAdder.indexed()).forEachOrdered(v -> addInto(_blueContent, v));
         }
 
         private void addInto(double[][] content, IndexAdder<Vector2D> v)
         {
             int idx = v.idx();
             Vector2D vector = v.v();
-            Position2D base = vector.getBase();
-            Position2D tip = vector.getTip();
-            _content[idx][0] = base.getX();
-            _content[idx][1] = base.getY();
-            _content[idx][2] = tip.getX();
-            _content[idx][3] = tip.getY();
+            content[idx][0] = vector.getbX();
+            content[idx][1] = vector.getbY();
+            content[idx][2] = vector.getbX() + vector.getdX();
+            content[idx][3] = vector.getbY() + vector.getdY();
         }
     }
 
@@ -274,18 +276,12 @@ public class Vector2DVisualizer extends JFrame
 
     public Vector2DVisualizer()
     {
-//        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-//        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        Dimension windowSize = new Dimension(2560, 1440);
-        setSize(windowSize);
+        setSize(FRAME_SIZE);
         setLayout(null);
         setTitle("Vector Visualization");
 
-//        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-//        int width = (int) screenSize.getWidth();
-//        int height = (int) screenSize.getHeight();
-        int width = windowSize.width;
-        int height = windowSize.height;
+        int width = FRAME_SIZE.width;
+        int height = FRAME_SIZE.height;
         
         _panel = new Vector2DVisualizerPanel();
 
@@ -319,15 +315,15 @@ public class Vector2DVisualizer extends JFrame
             throw new RuntimeException("No Screens Found");
         }
     }
+    
+    public void setBlueVectors(List<Vector2D> vectors)
+    {
+        _panel.setBlueVectors(vectors);
+    }
 
     public void setVectors(List<Vector2D> vectors)
     {
         _panel.setVectors(vectors);
-    }
-
-    public void setHighlight(Vector2D highlight)
-    {
-        _panel.setHighlight(highlight);
     }
 
     public void updateVisuals()

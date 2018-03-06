@@ -14,15 +14,15 @@ public class Spline2D
     private final Cubic[] y;
     
     private List<CacheItem> travelCache;
-    private float maxTravelStep;
-    private float posStep;
+    private double maxTravelStep;
+    private double posStep;
 
-    public Spline2D(float[][] points)
+    public Spline2D(double[][] points)
     {
         this.count = points.length;
 
-        float[] x = new float[count];
-        float[] y = new float[count];
+        double[] x = new double[count];
+        double[] y = new double[count];
 
         for (int i = 0; i < count; i++)
         {
@@ -39,14 +39,14 @@ public class Spline2D
         return count;
     }
 
-    public final float[] getPositionAt(float param)
+    public final double[] getPositionAt(double param)
     {
-        float[] v = new float[2];
+        double[] v = new double[2];
         this.getPositionAt(param, v);
         return v;
     }
 
-    public final void getPositionAt(float param, float[] result)
+    public final void getPositionAt(double param, double[] result)
     {
         // clamp
         if (param < 0.0f)
@@ -56,26 +56,26 @@ public class Spline2D
 
         // split
         int ti = (int) param;
-        float tf = param - ti;
+        double tf = param - ti;
 
         // eval
         result[0] = x[ti].eval(tf);
         result[1] = y[ti].eval(tf);
     }
 
-    public void enabledTripCaching(float maxTravelStep, float posStep)
+    public void enabledTripCaching(double maxTravelStep, double posStep)
     {
         this.maxTravelStep = maxTravelStep;
         this.posStep = posStep;
 
-        float x = this.x[0].eval(0.0f);
-        float y = this.y[0].eval(0.0f);
+        double x = this.x[0].eval(0.0f);
+        double y = this.y[0].eval(0.0f);
 
         this.travelCache = new ArrayList<CacheItem>();
         this.travelCache.add(new CacheItem(x, y, 0.0f));
     }
 
-    public float[] getTripPosition(float totalTrip)
+    public double[] getTripPosition(double totalTrip)
     {
         CacheItem last = this.travelCache.get(this.travelCache.size() - 1);
         last = buildCache(totalTrip, last);
@@ -122,12 +122,12 @@ public class Spline2D
             }
         }
 
-        float travel = totalTrip - last._travelled;
+        double travel = totalTrip - last._travelled;
         last = this.getSteppingPosition(last._position, travel, posStep);
-        return new float[] { last._xpos, last._ypos };
+        return new double[] { last._xpos, last._ypos };
     }
 
-    private CacheItem buildCache(float totalTrip, CacheItem last)
+    private CacheItem buildCache(double totalTrip, CacheItem last)
     {
         while (last._travelled < totalTrip)
         {
@@ -137,7 +137,7 @@ public class Spline2D
                 break;
             }
 
-            float travel = Math.min(totalTrip - last._travelled, maxTravelStep);
+            double travel = Math.min(totalTrip - last._travelled, maxTravelStep);
 
             CacheItem curr = this.getSteppingPosition(last._position, travel, posStep);
 
@@ -160,16 +160,16 @@ public class Spline2D
         return last;
     }
 
-    private CacheItem getSteppingPosition(float posOffset, float travel, float segmentStep)
+    private CacheItem getSteppingPosition(double posOffset, double travel, double segmentStep)
     {
-        float pos = posOffset;
-        float[] last = this.getPositionAt(pos);
+        double pos = posOffset;
+        double[] last = this.getPositionAt(pos);
 
-        float travelled = 0.0f;
+        double travelled = 0.0f;
 
         while (travelled < travel && pos < this.count)
         {
-            float[] curr = this.getPositionAt(pos += segmentStep);
+            double[] curr = this.getPositionAt(pos += segmentStep);
             travelled += Spline2D.dist(last, curr);
             last = curr;
         }
@@ -180,12 +180,12 @@ public class Spline2D
         return item;
     }
 
-    private static float dist(float[] a, float[] b)
+    private static double dist(double[] a, double[] b)
     {
-        float dx = b[0] - a[0];
-        float dy = b[1] - a[1];
+        double dx = b[0] - a[0];
+        double dy = b[1] - a[1];
 
-        return (float) Math.sqrt(dx * dx + dy * dy);
+        return  Math.sqrt(dx * dx + dy * dy);
     }
 
     public List<CacheItem> getTravelCache()

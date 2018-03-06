@@ -15,7 +15,7 @@ public class CheckOutSpline2D
 
     public static void main(String[] args)
     {
-        final float[][] points = new float[16][2];
+        final double[][] points = new double[16][2];
         Random r = new Random(123456L);
         for (int i = 0; i < points.length; i++)
         {
@@ -39,8 +39,8 @@ public class CheckOutSpline2D
         }
 
         JPanel panel = new JPanel() {
-            float travelled = 0.0f;
-            float travelStep = (float) Math.PI;
+            double travelled = 0.0f;
+            double travelStep =  Math.PI;
 
             @Override
             protected void paintComponent(Graphics g)
@@ -54,10 +54,10 @@ public class CheckOutSpline2D
 
                 g.setColor(Color.BLUE);
 
-                float d = 0.0f;
+                double d = 0.0f;
                 while (d < points.length)
                 {
-                    float[] at = fixedSpline.getPositionAt(d);
+                    double[] at = fixedSpline.getPositionAt(d);
 
                     this.drawCircle(g, at[0], at[1], 2);
 
@@ -75,7 +75,7 @@ public class CheckOutSpline2D
                 // draw GROWING spline
                 g.setColor(Color.GREEN);
 
-                float[] xy;
+                double[] xy;
                 for (int i = 0; i < 25; i++)
                 {
                     xy = growingSpline.getTripPosition(this.travelled * i / 25.0f);
@@ -87,7 +87,7 @@ public class CheckOutSpline2D
                 this.repaint();
             }
 
-            private void drawCircle(Graphics g, float x, float y, int r)
+            private void drawCircle(Graphics g, double x, double y, int r)
             {
                 g.fillOval((int) x - r, (int) y - r, r * 2, r * 2);
             }

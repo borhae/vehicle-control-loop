@@ -191,8 +191,8 @@ public class RoadMap
 
     public LaneType getClosestLaneFor(Position2D position)
     {
-        float smallestDist = Float.MAX_VALUE;
-        float curDist = Float.MAX_VALUE;
+        double smallestDist = Double.MAX_VALUE;
+        double curDist = Double.MAX_VALUE;
         LaneType curClosest = null;
         Collection<LaneType> lanes = _nameToLaneMap.values();
         for (LaneType curLane : lanes)
@@ -210,11 +210,11 @@ public class RoadMap
     public JunctionType getClosestJunctionFor(Position2D currentPosition)
     {
         Collection<JunctionType> junctions = _nameToJunctionMap.values();
-        Comparator<JunctionType> junctionComp = (j1, j2) -> Float.compare(junctionDist(j1, currentPosition), junctionDist(j2, currentPosition)); 
+        Comparator<JunctionType> junctionComp = (j1, j2) -> Double.compare(junctionDist(j1, currentPosition), junctionDist(j2, currentPosition)); 
         return junctions.stream().min(junctionComp).get();
     }
 
-    private float junctionDist(JunctionType junction, Position2D position)
+    private double junctionDist(JunctionType junction, Position2D position)
     {
         return position.distance(junction.getX(), junction.getY());
     }
@@ -225,7 +225,7 @@ public class RoadMap
      * @param lane
      * @return
      */
-    private float computeSmallestLaneToPointDistance(Position2D position, LaneType lane)
+    private double computeSmallestLaneToPointDistance(Position2D position, LaneType lane)
     {
         String[] coordinateList = lane.getShape().split(" ");
         if(coordinateList.length == 2)
@@ -233,10 +233,10 @@ public class RoadMap
             return new Line2D(coordinateList[0], coordinateList[1]).distance(position);
         }
         List<Line2D> lines = createLines(coordinateList);
-        float minDist = Float.MAX_VALUE;
+        double minDist = Double.MAX_VALUE;
         for (Line2D curLine : lines)
         {
-            float curDistance = curLine.distance(position);
+            double curDistance = curLine.distance(position);
             if(curDistance < minDist)
             {
                 minDist = curDistance;

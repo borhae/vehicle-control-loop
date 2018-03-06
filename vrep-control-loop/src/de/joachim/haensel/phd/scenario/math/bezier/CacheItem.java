@@ -2,13 +2,13 @@ package de.joachim.haensel.phd.scenario.math.bezier;
 
 public class CacheItem
 {
-    public float _position;
-    public float _xpos;
-    public float _ypos;
-    public float _zpos;
-    public float _travelled;
+    public double _position;
+    public double _xpos;
+    public double _ypos;
+    public double _zpos;
+    public double _travelled;
 
-    public CacheItem(float xpos, float ypos, float zpos)
+    public CacheItem(double xpos, double ypos, double zpos)
     {
         _xpos = xpos;
         _ypos = ypos;

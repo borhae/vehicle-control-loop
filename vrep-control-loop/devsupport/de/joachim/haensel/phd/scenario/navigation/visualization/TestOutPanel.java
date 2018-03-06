@@ -84,7 +84,7 @@ public class TestOutPanel extends JPanel
         float delta = 0.08f;
         while (d < _points.length)
         {
-            float[] at = _spline.getPositionAt(d);
+            double[] at = _spline.getPositionAt(d);
 
             this.drawCircle(g, at[0] * _scale, at[1] * _scale, 10);
 
@@ -97,7 +97,7 @@ public class TestOutPanel extends JPanel
         g.fillOval((int) x - r, (int) y - r, r * 2, r * 2);
     }
 
-    private void drawCircle(Graphics g, float x, float y, int r)
+    private void drawCircle(Graphics g, double x, double y, int r)
     {
         g.drawOval((int) x - r, (int) y - r, r * 2, r * 2);
     }

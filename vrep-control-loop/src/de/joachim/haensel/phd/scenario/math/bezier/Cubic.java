@@ -2,12 +2,12 @@ package de.joachim.haensel.phd.scenario.math.bezier;
 
 public class Cubic
 {
-    private float _a;
-    private float _b;
-    private float _c;
-    private float _d;
+    private double _a;
+    private double _b;
+    private double _c;
+    private double _d;
 
-    public Cubic(float a, float b, float c, float d)
+    public Cubic(double a, double b, double c, double d)
     {
         _a = a;
         _b = b;
@@ -15,7 +15,7 @@ public class Cubic
         _d = d;
     }
 
-    public float eval(float u)
+    public double eval(double u)
     {
         return (((_d * u) + _c) * u + _b) * u + _a;
     }

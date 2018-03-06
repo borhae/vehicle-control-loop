@@ -142,6 +142,6 @@ public class Vehicle implements IActuatingSensing
     {
         OrientedPosition posAndHeading = _roadMap.computeLaneEntryAtJunction(junction, laneToHeadFor);
         setOrientation(0.0f, 0.0f, (float)posAndHeading.getAngle());
-        setPosition(posAndHeading.getPos().getX(), posAndHeading.getPos().getY(), 0.3f);
+        setPosition((float)posAndHeading.getPos().getX(), (float)posAndHeading.getPos().getY(), 0.3f);
     }
 }

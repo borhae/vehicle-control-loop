@@ -2,11 +2,11 @@ package de.joachim.haensel.phd.scenario.math.bezier;
 
 public class Curve
 {
-    public static final Cubic[] calcCurve(int n, float[] axis)
+    public static final Cubic[] calcCurve(int n, double[] axis)
     {
-        float[] gamma = new float[n + 1];
-        float[] delta = new float[n + 1];
-        float[] d = new float[n + 1];
+        double[] gamma = new double[n + 1];
+        double[] delta = new double[n + 1];
+        double[] d = new double[n + 1];
         Cubic[] c = new Cubic[n + 0];
 
         // gamma
@@ -29,10 +29,10 @@ public class Curve
         // c
         for (int i = 0; i < n; i++)
         {
-            float x0 = axis[i + 0];
-            float x1 = axis[i + 1];
-            float d0 = d[i + 0];
-            float d1 = d[i + 1];
+            double x0 = axis[i + 0];
+            double x1 = axis[i + 1];
+            double d0 = d[i + 0];
+            double d1 = d[i + 1];
             c[i] = new Cubic(x0, d0, 3.0f * (x1 - x0) - 2.0f * d0 - d1, 2.0f * (x0 - x1) + d0 + d1);
         }
         return c;
