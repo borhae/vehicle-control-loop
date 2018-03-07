@@ -4,15 +4,12 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import de.joachim.haensel.sumo2vrep.Position2D;
-import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.IterativeInterpolationTrajectorizer;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.SplineTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.sumo2vrep.Line2D;
+import de.joachim.haensel.sumo2vrep.Position2D;
+import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.vehiclecontrol.Navigator;
-import sumobindings.JunctionType;
-import sumobindings.LaneType;
 
 public class NavigationController implements ITopLayerControl
 {
@@ -33,15 +30,13 @@ public class NavigationController implements ITopLayerControl
 
     private static final long UPDATE_FREQUENCY = 200; //every 200 millis check on the lower layer and possibly feed new instructions
 
-    private ILowLevelController _controllee;
     private NavigationState _navigationState;
     private RoadMap _roadMap;
     private IActuatingSensing _sensorsActuators;
     private Timer _timer;
 
-    public NavigationController(ILowLevelController lowerControlLayer, IActuatingSensing sensorsActuators, RoadMap roadMap)
+    public NavigationController(IActuatingSensing sensorsActuators, RoadMap roadMap)
     {
-        _controllee = lowerControlLayer;
         _navigationState = NavigationState.IDLE;
         _timer = new Timer();
         _sensorsActuators = sensorsActuators;
@@ -66,5 +61,11 @@ public class NavigationController implements ITopLayerControl
     public void driveToBlocking(Position2D target)
     {
         driveTo(target);
+    }
+
+    @Override
+    public List<Trajectory> getNewSegments(int requestSize)
+    {
+        return null;
     }
 }

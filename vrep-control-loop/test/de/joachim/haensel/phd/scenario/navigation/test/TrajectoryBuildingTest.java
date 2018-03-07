@@ -1,23 +1,18 @@
 package de.joachim.haensel.phd.scenario.navigation.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
 
 import org.junit.Test;
 
 import de.joachim.haensel.phd.scenario.math.bezier.Spline2D;
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
-import de.joachim.haensel.phd.scenario.navigation.visualization.TestOutPanel;
-import de.joachim.haensel.phd.scenario.navigation.visualization.TrajectorySnippetFrame;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
@@ -172,7 +167,7 @@ public class TrajectoryBuildingTest implements TestConstants
         
         InterpolationTrajectorizerTrigonometry trajecorizer = new InterpolationTrajectorizerTrigonometry(6);
         LinkedList<Vector2D> patchedRoute = trajecorizer.patchHolesInRoute(input);
-        List<Vector2D> result = new LinkedList<>();
+        Deque<Vector2D> result = new LinkedList<>();
         trajecorizer.interpolateRecursiveNonWorking(patchedRoute, null, result, 6);
         result.stream().forEach(v -> checkValid(v));
     }
@@ -187,20 +182,47 @@ public class TrajectoryBuildingTest implements TestConstants
 
         IterativeInterpolationTrajectorizer trajectorizer = new IterativeInterpolationTrajectorizer(6);
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
-        List<Vector2D> comparisonRoute = new ArrayList<>();
+        Deque<Vector2D> comparisonRoute = new LinkedList<>();
         patchedRoute.stream().forEach(v -> comparisonRoute.add(v));
         
-        ArrayList<Vector2D> result = new ArrayList<>();
-        trajectorizer.quantize(patchedRoute, result, 6);
+        Deque<Vector2D> result = new LinkedList<>();
+        trajectorizer.quantize(patchedRoute, result, 6.0);
         result.stream().forEach(v -> checkValid(v));
 
         Vector2DVisualizer frame = new Vector2DVisualizer();
-        frame.setVectors(result);
-        frame.setBlueVectors(comparisonRoute);
+        frame.addVectorSet(result, Color.BLACK);
+        frame.addVectorSet(comparisonRoute, Color.BLUE);
         frame.setVisible(true);
         frame.updateVisuals();
 
         System.out.println("done");
+    }
+    
+    @Test
+    public void test3SyntheticVectorsSquareOverlayedTrajectories()
+    {
+        LinkedList<Vector2D> input = new LinkedList<>();
+        input.add(new Vector2D(0, 0, 10, 0));
+        input.add(new Vector2D(10, 0, 0, 10));
+        input.add(new Vector2D(10, 10, -10, 0));
+        
+        int stepSize = 6;
+        AbstractTrajectorizer trajectorizer = new IterativeInterpolationTrajectorizer(stepSize);
+        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
+
+        Deque<Vector2D> comparisonRoute = new LinkedList<>();
+        patchedRoute.stream().forEach(v -> comparisonRoute.add(v));
+        
+        Deque<Vector2D> quantizedRoute = new LinkedList<>();
+        trajectorizer.quantize(patchedRoute, quantizedRoute, stepSize);
+        trajectorizer.createOverlay(quantizedRoute, stepSize);
+        quantizedRoute.stream().forEach(v -> checkValid(v));
+
+        Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.addVectorSet(quantizedRoute, Color.BLACK);
+        frame.addVectorSet(comparisonRoute, Color.BLUE);
+        frame.setVisible(true);
+        frame.updateVisuals();
     }
     
     private void checkValid(Vector2D v)
@@ -257,12 +279,12 @@ public class TrajectoryBuildingTest implements TestConstants
         
         String length = trajectory.stream().map(trj -> "l: " + trj.getVector().getLength()).collect(Collectors.joining(System.lineSeparator()));
         
-        List<Vector2D> quantizedRoute = new ArrayList<>();
+        Deque<Vector2D> quantizedRoute = new LinkedList<>();
         trajectory.stream().forEach(trj -> quantizedRoute.add(trj.getVector()));
 
         Vector2DVisualizer frame = new Vector2DVisualizer();
-        frame.setVectors(quantizedRoute);
-        frame.setBlueVectors(patchedRoute);
+        frame.addVectorSet(quantizedRoute, Color.BLACK);
+        frame.addVectorSet(patchedRoute, Color.BLUE);
         frame.setVisible(true);
         frame.updateVisuals();
         
@@ -289,12 +311,12 @@ public class TrajectoryBuildingTest implements TestConstants
         
         String length = trajectory.stream().map(trj -> "l: " + trj.getVector().getLength()).collect(Collectors.joining(System.lineSeparator()));
         
-        List<Vector2D> quantizedRoute = new ArrayList<>();
+        Deque<Vector2D> quantizedRoute = new LinkedList<>();
         trajectory.stream().forEach(trj -> quantizedRoute.add(trj.getVector()));
 
         Vector2DVisualizer frame = new Vector2DVisualizer();
-        frame.setVectors(quantizedRoute);
-//        frame.setBlueVectors(patchedRoute);
+        frame.addVectorSet(quantizedRoute, Color.BLACK);
+        frame.addVectorSet(patchedRoute, Color.RED);
         frame.setVisible(true);
         frame.updateVisuals();
         
@@ -306,10 +328,10 @@ public class TrajectoryBuildingTest implements TestConstants
     public void testVisualizationSingleVector()
     {
         Vector2DVisualizer frame = new Vector2DVisualizer();
-        ArrayList<Vector2D> snippet = new ArrayList<>();
+        Deque<Vector2D> snippet = new LinkedList<>();
         snippet.add(new Vector2D(10.0f, 10.0f, 10.0f, 10.10f));
         snippet.add(new Vector2D(10.0f, 10.0f, 10.0f, 10.10f));
-        frame.setVectors(snippet);
+        frame.addVectorSet(snippet, Color.BLACK);
         frame.setVisible(true);
         System.out.println("wait!");
     }

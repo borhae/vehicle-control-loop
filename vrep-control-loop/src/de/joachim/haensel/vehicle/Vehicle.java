@@ -38,8 +38,8 @@ public class Vehicle implements IActuatingSensing
         _controlInterface = controller;
         
         
-        _lowerControlLayer = new BadReactiveController(this);
-        _upperControlLayer = new NavigationController(_lowerControlLayer, this, roadMap);
+        _upperControlLayer = new NavigationController(this, roadMap);
+        _lowerControlLayer = new BadReactiveController(this, _upperControlLayer);
 
         _controlEventGenerator = new LowLevelEventGenerator();
         _controlEventGenerator.addEventListener(_lowerControlLayer);

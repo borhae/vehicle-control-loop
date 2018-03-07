@@ -1,9 +1,11 @@
 package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.bezier.Spline2D;
+import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.sumo2vrep.Line2D;
 
 /**
@@ -31,5 +33,11 @@ public class SplineTrajectorizer extends AbstractTrajectorizer implements ITraje
     public Spline2D getTraversableSpline()
     {
         return _traversableSpline;
+    }
+
+    @Override
+    public void quantize(Deque<Vector2D> overlay, Deque<Vector2D> result, double stepSize)
+    {
+        // TODO Auto-generated method stub, and yet I don't think I will ever implement this
     }
 }

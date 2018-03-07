@@ -16,8 +16,9 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Deque;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -26,10 +27,44 @@ import javax.swing.JPanel;
 
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.streamextensions.IndexAdder;
-import de.joachim.haensel.sumo2vrep.Position2D;
 
 public class Vector2DVisualizer extends JFrame
 {
+    public class ContentElememnt
+    {
+        private double[][] _content;
+        private Color _color;
+
+        public ContentElememnt(Deque<Vector2D> vectors, Color color)
+        {
+            if(_content == null || vectors.size() != _content.length)
+            {
+                _content = new double[vectors.size()][];
+                initVectors(_content);
+            }
+            vectors.stream().map(IndexAdder.indexed()).forEachOrdered(v -> addInto(_content, v));
+            _color = color;
+        }
+        
+        private void addInto(double[][] content, IndexAdder<Vector2D> v)
+        {
+            int idx = v.idx();
+            Vector2D vector = v.v();
+            content[idx][0] = vector.getbX();
+            content[idx][1] = vector.getbY();
+            content[idx][2] = vector.getbX() + vector.getdX();
+            content[idx][3] = vector.getbY() + vector.getdY();
+        }
+        
+        private void initVectors(double[][] initializee)
+        {
+            for(int idx = 0; idx < initializee.length; idx++)
+            {
+                initializee[idx] = new double[4];
+            }
+        }
+    }
+
     private static final Dimension FRAME_SIZE = new Dimension(2560, 1440);
 
     public class Vector2DVisualizerPanel extends JPanel implements MouseWheelListener, MouseListener, MouseMotionListener
@@ -49,9 +84,8 @@ public class Vector2DVisualizer extends JFrame
         // holds information in the following way
         // first dimension is an ordered set of vectors to draw
         // second dimension is [baseX, baseY, tipX, tipY] of each vector
-        private double[][] _content;
         // same as before but supposed to be drawn highlighted
-        private double[][] _blueContent;
+        private ArrayList<ContentElememnt> _contentList;
 
         public Vector2DVisualizerPanel()
         {
@@ -59,17 +93,10 @@ public class Vector2DVisualizer extends JFrame
             _yOffset = 0.0;
             _zoomFactor = 1.0;
             _prevZoomFactor = 1.0;
+            _contentList = new ArrayList<>();
             addMouseWheelListener(this);
             addMouseMotionListener(this);
             addMouseListener(this);
-        }
-
-        private void initVectors(double[][] initializee)
-        {
-            for(int idx = 0; idx < initializee.length; idx++)
-            {
-                initializee[idx] = new double[4];
-            }
         }
 
         @Override
@@ -99,27 +126,14 @@ public class Vector2DVisualizer extends JFrame
                 }
             }
             
-            
             // draw stuff here
-            if(_content != null && _content.length != 0)
+            for (ContentElememnt content : _contentList)
             {
-                double[][] transformedContent = transform(_content, _zoomFactor, _xOffset, _yOffset);
-                
-                g2.setColor(Color.BLACK);
+                double[][] transformedContent = transform(content._content, _zoomFactor, _xOffset, _yOffset);
+                g2.setColor(content._color);
                 Stroke s1 = new BasicStroke((float) 2.0);
                 g2.setStroke(s1);
                 Arrays.asList(transformedContent).stream().forEach(v -> drawVector(g2, v));
-            }
-
-            if(_blueContent != null && _blueContent.length != 0)
-            {
-                double[][] transformedBlue = transform(_blueContent, _zoomFactor, _xOffset, _yOffset); 
-                
-                //draw highlighted stuff here
-                g2.setColor(Color.BLUE);
-                Stroke s = new BasicStroke((float) 3.0);
-                g2.setStroke(s);
-                Arrays.asList(transformedBlue).stream().forEach(v -> drawVector(g2, v));
             }
         }
 
@@ -239,35 +253,10 @@ public class Vector2DVisualizer extends JFrame
         public void mouseExited(MouseEvent e)
         {
         }
-
-        public void setVectors(List<Vector2D> snippet)
-        {
-            if(_content == null || snippet.size() != _content.length)
-            {
-                _content = new double[snippet.size()][];
-                initVectors(_content);
-            }
-            snippet.stream().map(IndexAdder.indexed()).forEachOrdered(v -> addInto(_content, v));
-        }
         
-        public void setBlueVectors(List<Vector2D> vectors)
+        public void addVectorSet(Deque<Vector2D> vectors, Color color)
         {
-            if(_blueContent == null || vectors.size() != _blueContent.length)
-            {
-                _blueContent = new double[vectors.size()][];
-                initVectors(_blueContent);
-            }
-            vectors.stream().map(IndexAdder.indexed()).forEachOrdered(v -> addInto(_blueContent, v));
-        }
-
-        private void addInto(double[][] content, IndexAdder<Vector2D> v)
-        {
-            int idx = v.idx();
-            Vector2D vector = v.v();
-            content[idx][0] = vector.getbX();
-            content[idx][1] = vector.getbY();
-            content[idx][2] = vector.getbX() + vector.getdX();
-            content[idx][3] = vector.getbY() + vector.getdY();
+            _contentList.add(new ContentElememnt(vectors, color));
         }
     }
 
@@ -316,16 +305,11 @@ public class Vector2DVisualizer extends JFrame
         }
     }
     
-    public void setBlueVectors(List<Vector2D> vectors)
+    public void addVectorSet(Deque<Vector2D> vectors, Color color)
     {
-        _panel.setBlueVectors(vectors);
+        _panel.addVectorSet(vectors, color);
     }
-
-    public void setVectors(List<Vector2D> vectors)
-    {
-        _panel.setVectors(vectors);
-    }
-
+    
     public void updateVisuals()
     {
         this.repaint();

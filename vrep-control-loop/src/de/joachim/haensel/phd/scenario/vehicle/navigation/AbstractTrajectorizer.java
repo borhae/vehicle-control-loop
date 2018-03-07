@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -64,4 +65,20 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
         }
         return patchedList;
     }
+
+    public Deque<Vector2D> createOverlay(Deque<Vector2D> quantizedRoute, double stepSize)
+    {
+        Deque<Vector2D> input = new LinkedList<>();
+        Deque<Vector2D> result = new LinkedList<>();
+        Vector2D first = quantizedRoute.peek();
+        Vector2D newFirst = new Vector2D(first);
+        newFirst.cutLengthFrom(first.getLength() / 2.0);
+        quantizedRoute.stream().forEach(v -> input.add(v));
+        input.pop();
+        input.push(newFirst);
+        quantize(input, result, stepSize);
+        return result;
+    }
+
+    public abstract void quantize(Deque<Vector2D> overlay, Deque<Vector2D> result, double stepSize);
 }

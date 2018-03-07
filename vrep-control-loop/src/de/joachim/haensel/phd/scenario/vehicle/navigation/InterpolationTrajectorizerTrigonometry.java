@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,13 +24,21 @@ public class InterpolationTrajectorizerTrigonometry extends AbstractTrajectorize
     public List<Trajectory> createTrajectory(List<Line2D> route)
     {
         LinkedList<Vector2D> unevenVectorRoute = lineListToVectorList(route);
-        List<Vector2D> pointList = new LinkedList<>();
+        Deque<Vector2D> pointList = new LinkedList<>();
         unevenVectorRoute  = patchHolesInRoute(unevenVectorRoute);
         interpolateRecursive(unevenVectorRoute, null, pointList, _stepSize);
         return pointList.stream().map(vector -> new Trajectory(vector)).collect(Collectors.toList());
     }
 
-    public void interpolateRecursiveNonWorking(LinkedList<Vector2D> unevenVectorRoute, Vector2D residue, List<Vector2D> resultList, double stepSize)
+
+    @Override
+    public void quantize(Deque<Vector2D> input, Deque<Vector2D> result, double stepSize)
+    {
+        Deque<Vector2D> pointList = new LinkedList<>();
+        interpolateRecursive(input, null, pointList, _stepSize);
+    }
+
+    public void interpolateRecursiveNonWorking(LinkedList<Vector2D> unevenVectorRoute, Vector2D residue, Deque<Vector2D> resultList, double stepSize)
     {
         if(unevenVectorRoute.isEmpty())
         {
@@ -63,7 +72,7 @@ public class InterpolationTrajectorizerTrigonometry extends AbstractTrajectorize
         }
     }
     
-    public void interpolateRecursive(LinkedList<Vector2D> unevenRoute, Vector2D residue, List<Vector2D> result, double stepSize)
+    public void interpolateRecursive(Deque<Vector2D> unevenRoute, Vector2D residue, Deque<Vector2D> result, double stepSize)
     {
         if(unevenRoute.isEmpty())
         {
@@ -98,7 +107,7 @@ public class InterpolationTrajectorizerTrigonometry extends AbstractTrajectorize
         }
     }
 
-    private Vector2D mergeResidueAndNext(Vector2D residue, Vector2D curVector, List<Vector2D> resultList, double stepSize)
+    private Vector2D mergeResidueAndNext(Vector2D residue, Vector2D curVector, Deque<Vector2D> resultList, double stepSize)
     {
             TriangleSolver tr = new TriangleSolver();
             tr.seta(stepSize);
@@ -162,7 +171,7 @@ public class InterpolationTrajectorizerTrigonometry extends AbstractTrajectorize
         }
     }
 
-    private Vector2D fillEvenRoute(Vector2D curVector, List<Vector2D> evenVectorRoute, double stepSize)
+    private Vector2D fillEvenRoute(Vector2D curVector, Deque<Vector2D> evenVectorRoute, double stepSize)
     {
         int fitsNTimes = (int)(curVector.getLength() / stepSize);
         for(int cnt = 0; cnt < fitsNTimes; cnt++)

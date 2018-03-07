@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,13 +22,15 @@ public class IterativeInterpolationTrajectorizer extends AbstractTrajectorizer
     public List<Trajectory> createTrajectory(List<Line2D> route)
     {
         LinkedList<Vector2D> unevenVectorRoute = lineListToVectorList(route);
-        List<Vector2D> result = new LinkedList<>();
+        Deque<Vector2D> result = new LinkedList<>();
         unevenVectorRoute  = patchHolesInRoute(unevenVectorRoute);
         quantize(unevenVectorRoute, result, _stepSize);
         return result.stream().map(vector -> new Trajectory(vector)).collect(Collectors.toList());
     }
 
-    public void quantize(LinkedList<Vector2D> unevenVectorRoute, List<Vector2D> result, double stepSize)
+    
+    @Override
+    public void quantize(Deque<Vector2D> unevenVectorRoute, Deque<Vector2D> result, double stepSize)
     {
         while(!unevenVectorRoute.isEmpty())
         {

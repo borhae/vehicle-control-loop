@@ -106,18 +106,18 @@ public class Vector2D
 
     /**
      * Cuts a vector of length length from this vector. this vector is shortened by that
-     * @param stepSize to be cut away
+     * @param amount to be cut away
      * @return a vector with the same direction as this one with length length
      */
-    public Vector2D cutLengthFrom(double stepSize)
+    public Vector2D cutLengthFrom(double amount)
     {
         double newBX = _bX;
         double newBY = _bY;
-        double newDX = _normX * stepSize;
-        double newDY = _normY * stepSize;
+        double newDX = _normX * amount;
+        double newDY = _normY * amount;
         Vector2D cut = new Vector2D(newBX, newBY, newDX, newDY);
-        _bX = _bX + stepSize * _normX;
-        _bY = _bY + stepSize * _normY;
+        _bX = _bX + amount * _normX;
+        _bY = _bY + amount * _normY;
         _dX = _dX - newDX;
         _dY = _dY - newDY;
         _length = (double)Math.sqrt(_dX * _dX + _dY * _dY);
