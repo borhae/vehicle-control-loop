@@ -6,6 +6,7 @@ import java.util.TimerTask;
 
 import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.IterativeInterpolationTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.SplineTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.sumo2vrep.Line2D;
@@ -38,7 +39,6 @@ public class NavigationController implements ITopLayerControl
     private IActuatingSensing _sensorsActuators;
     private Timer _timer;
 
-
     public NavigationController(ILowLevelController lowerControlLayer, IActuatingSensing sensorsActuators, RoadMap roadMap)
     {
         _controllee = lowerControlLayer;
@@ -55,7 +55,7 @@ public class NavigationController implements ITopLayerControl
         Navigator navigator = new Navigator(_roadMap);
         List<Line2D> route = navigator.getRoute(currentPosition, targetPosition);
         
-        SplineTrajectorizer trajectorizer = new SplineTrajectorizer();
+        IterativeInterpolationTrajectorizer trajectorizer = new IterativeInterpolationTrajectorizer(4.0);
         List<Trajectory> trajectories = trajectorizer.createTrajectory(route);
         
         // TODO pick up here, when there is a trajectory, that we can follow

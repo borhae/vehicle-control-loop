@@ -1,5 +1,7 @@
 package de.joachim.haensel.phd.scenario.map.sumo2vrep.test;
 
+import java.util.List;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -11,10 +13,13 @@ import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.sumo2vrep.VRepMap;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
+import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.sumo2vrep.OrientedPosition;
+import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.vehicle.Vehicle;
 import de.joachim.haensel.vehicle.VehicleCreator;
+import de.joachim.haensel.vehiclecontrol.Navigator;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;
@@ -62,6 +67,26 @@ public class SubScenarioCreationTest implements TestConstants
     public void cleanUpObjects() throws VRepException
     {
         _objectCreator.deleteAll();
+    }
+    
+    
+    @Test
+    public void testRouteFollow3JunctionMap() throws VRepException
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/testing3Junctions2Edges2Lanes.net.xml");
+        Navigator navigator = new Navigator(roadMap);
+        Position2D startPosition = new Position2D(11.4f, 101.4f);
+        Position2D destinationPosition = new Position2D(101.81f, 9.23f);
+        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
+        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMap(roadMap);
+        
+        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
+        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap);
+        vehicle.setOrientation(0.0f, 0.0f, 0.0f);
+        vehicle.setPosition(0.0f, 0.0f, 0.0f);
+        
+        
     }
     
     @Test

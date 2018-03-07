@@ -6,6 +6,12 @@ import java.util.List;
 import de.joachim.haensel.phd.scenario.math.bezier.Spline2D;
 import de.joachim.haensel.sumo2vrep.Line2D;
 
+/**
+ * For now this class is abandoned. Use {@link IterativeInterpolationTrajectorizer} instead.
+ * @author dummy
+ *
+ */
+@Deprecated
 public class SplineTrajectorizer extends AbstractTrajectorizer implements ITrajectorizer
 {
     private Spline2D _traversableSpline;

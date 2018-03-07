@@ -46,7 +46,7 @@ public class Vehicle implements IActuatingSensing
         _timer = new Timer();
         _curPosition = new Position2D(0, 0);
         _rearWheelCenterPosition = new Position2D(0, 0);
-        _roadMap = null;
+        _roadMap = roadMap;
     }
 
     public void setOrientation(float angleAlpha, float angleBeta, float angleGamma) throws VRepException
