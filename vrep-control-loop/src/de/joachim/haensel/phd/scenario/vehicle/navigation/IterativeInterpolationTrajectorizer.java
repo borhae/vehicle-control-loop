@@ -30,26 +30,28 @@ public class IterativeInterpolationTrajectorizer extends AbstractTrajectorizer
 
     
     @Override
-    public void quantize(Deque<Vector2D> unevenVectorRoute, Deque<Vector2D> result, double stepSize)
+    public void quantize(Deque<Vector2D> srcRoute, Deque<Vector2D> result, double stepSize)
     {
-        while(!unevenVectorRoute.isEmpty())
+        Deque<Vector2D> srcCopy = new LinkedList<>();
+        srcRoute.stream().forEach(v -> srcCopy.add(new Vector2D(v)));
+        while(!srcCopy.isEmpty())
         {
-            Vector2D curVector = unevenVectorRoute.pop();
+            Vector2D curVector = srcCopy.pop();
             if(curVector.getLength() > stepSize)
             {
                 Vector2D newElem = curVector.cutLengthFrom(stepSize);
                 result.add(newElem);
-                unevenVectorRoute.push(curVector);
+                srcCopy.push(curVector);
             }
-            else if(!unevenVectorRoute.isEmpty())
+            else if(!srcCopy.isEmpty())
             {
-                Vector2D nextVector = unevenVectorRoute.pop();
+                Vector2D nextVector = srcCopy.pop();
                 Position2D curBase = curVector.getBase();
                 Position2D nextTip = nextVector.getTip();
                 double distance = Position2D.distance(curBase, nextTip);
-                while(distance < stepSize && !unevenVectorRoute.isEmpty())
+                while(distance < stepSize && !srcCopy.isEmpty())
                 {
-                    nextVector = unevenVectorRoute.pop();
+                    nextVector = srcCopy.pop();
                     nextTip = nextVector.getTip();
                     distance = Position2D.distance(curBase, nextTip);
                 }
@@ -65,7 +67,7 @@ public class IterativeInterpolationTrajectorizer extends AbstractTrajectorizer
                     Vector2D newElem = new Vector2D(curBase, newElemTip);
                     result.add(newElem);
                     Vector2D residue = new Vector2D(newElemTip, nextTip);
-                    unevenVectorRoute.push(residue);
+                    srcCopy.push(residue);
                 }
             }
             else

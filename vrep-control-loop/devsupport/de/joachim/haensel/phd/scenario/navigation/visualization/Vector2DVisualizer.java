@@ -34,8 +34,9 @@ public class Vector2DVisualizer extends JFrame
     {
         private double[][] _content;
         private Color _color;
+        private Stroke _stroke;
 
-        public ContentElememnt(Deque<Vector2D> vectors, Color color)
+        public ContentElememnt(Deque<Vector2D> vectors, Color color, Stroke stroke)
         {
             if(_content == null || vectors.size() != _content.length)
             {
@@ -44,6 +45,7 @@ public class Vector2DVisualizer extends JFrame
             }
             vectors.stream().map(IndexAdder.indexed()).forEachOrdered(v -> addInto(_content, v));
             _color = color;
+            _stroke = stroke;
         }
         
         private void addInto(double[][] content, IndexAdder<Vector2D> v)
@@ -131,8 +133,8 @@ public class Vector2DVisualizer extends JFrame
             {
                 double[][] transformedContent = transform(content._content, _zoomFactor, _xOffset, _yOffset);
                 g2.setColor(content._color);
-                Stroke s1 = new BasicStroke((float) 2.0);
-                g2.setStroke(s1);
+                Stroke strokeConfig = content._stroke == null ? new BasicStroke((float) 2.0) : content._stroke;
+                g2.setStroke(strokeConfig);
                 Arrays.asList(transformedContent).stream().forEach(v -> drawVector(g2, v));
             }
         }
@@ -254,9 +256,9 @@ public class Vector2DVisualizer extends JFrame
         {
         }
         
-        public void addVectorSet(Deque<Vector2D> vectors, Color color)
+        public void addVectorSet(Deque<Vector2D> vectors, Color color, Stroke stroke)
         {
-            _contentList.add(new ContentElememnt(vectors, color));
+            _contentList.add(new ContentElememnt(vectors, color, stroke));
         }
     }
 
@@ -307,7 +309,12 @@ public class Vector2DVisualizer extends JFrame
     
     public void addVectorSet(Deque<Vector2D> vectors, Color color)
     {
-        _panel.addVectorSet(vectors, color);
+        _panel.addVectorSet(vectors, color, null);
+    }
+    
+    public void addVectorSet(Deque<Vector2D> vectors, Color color, Stroke stroke)
+    {
+        _panel.addVectorSet(vectors, color, stroke);
     }
     
     public void updateVisuals()

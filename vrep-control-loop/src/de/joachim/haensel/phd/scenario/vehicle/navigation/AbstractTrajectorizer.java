@@ -66,19 +66,39 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
         return patchedList;
     }
 
-    public Deque<Vector2D> createOverlay(Deque<Vector2D> quantizedRoute, double stepSize)
+    public Deque<Vector2D> createOverlay(Deque<Vector2D> srcRoute, double stepSize)
     {
         Deque<Vector2D> input = new LinkedList<>();
         Deque<Vector2D> result = new LinkedList<>();
-        Vector2D first = quantizedRoute.peek();
-        Vector2D newFirst = new Vector2D(first);
-        newFirst.cutLengthFrom(first.getLength() / 2.0);
-        quantizedRoute.stream().forEach(v -> input.add(v));
-        input.pop();
-        input.push(newFirst);
+        Deque<Vector2D> startSector = new LinkedList<>();
+        srcRoute.stream().forEach(v -> input.add(new Vector2D(v)));
+
+        Position2D inputBase = input.peek().getBase();
+        Vector2D vectorInStartSector = input.pop();
+        startSector.add(vectorInStartSector);
+        Position2D curTip = vectorInStartSector.getTip();
+        double curDist = Position2D.distance(inputBase, curTip);
+        while(curDist < (stepSize / 2.0))
+        {
+            vectorInStartSector = input.pop();
+            startSector.add(vectorInStartSector);
+            curTip = vectorInStartSector.getTip();
+            curDist = Position2D.distance(inputBase, curTip);
+        }
+        
+        Deque<Vector2D> quantizedStartSegment = new LinkedList<>();
+        quantize(startSector, quantizedStartSegment, stepSize / 2.0);
+        Vector2D firstVector = quantizedStartSegment.pop();
+
+        Position2D base = firstVector.getTip();
+        Position2D tip = input.peek().getBase();
+        Vector2D secondVector = new Vector2D(base, tip);
+        
+        input.push(secondVector);
         quantize(input, result, stepSize);
+        result.push(firstVector);
         return result;
     }
-
-    public abstract void quantize(Deque<Vector2D> overlay, Deque<Vector2D> result, double stepSize);
+    
+    public abstract void quantize(Deque<Vector2D> source, Deque<Vector2D> result, double stepSize);
 }

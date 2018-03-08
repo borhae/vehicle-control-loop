@@ -85,14 +85,15 @@ public class BadReactiveController implements ILowLevelController
                 return;
             }
             
-            ensureValidBuffer();
+            ensureBufferSize();
+            
             float targetWheelRotation = computeTargetWheelRotationSpeed();
             float targetSteeringAngle = computeTargetSteeringAngle();
             _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
         }
     }
 
-    private void ensureValidBuffer()
+    private void ensureBufferSize()
     {
         if(_segmentBuffer.size() < 20)
         {
