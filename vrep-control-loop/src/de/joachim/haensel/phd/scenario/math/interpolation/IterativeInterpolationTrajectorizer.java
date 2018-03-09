@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.vehicle.navigation;
+package de.joachim.haensel.phd.scenario.math.interpolation;
 
 import java.util.Deque;
 import java.util.LinkedList;
@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
 import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.sumo2vrep.Position2D;
 

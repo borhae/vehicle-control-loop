@@ -13,14 +13,14 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import de.joachim.haensel.phd.scenario.math.bezier.Spline2D;
+import de.joachim.haensel.phd.scenario.math.bezier.SplineTrajectorizer;
+import de.joachim.haensel.phd.scenario.math.interpolation.InterpolationTrajectorizerTrigonometry;
+import de.joachim.haensel.phd.scenario.math.interpolation.IterativeInterpolationTrajectorizer;
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.InterpolationTrajectorizerTrigonometry;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.IterativeInterpolationTrajectorizer;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.SplineTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.sumo2vrep.Position2D;

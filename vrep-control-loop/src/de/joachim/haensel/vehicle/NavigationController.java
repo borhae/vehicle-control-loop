@@ -2,7 +2,7 @@ package de.joachim.haensel.vehicle;
 
 import java.util.List;
 
-import de.joachim.haensel.phd.scenario.vehicle.navigation.IterativeInterpolationTrajectorizer;
+import de.joachim.haensel.phd.scenario.math.interpolation.IterativeInterpolationTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Route;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.sumo2vrep.Line2D;
