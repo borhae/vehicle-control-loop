@@ -11,24 +11,11 @@ import de.joachim.haensel.sumo2vrep.Position2D;
 
 public class IterativeInterpolationTrajectorizer extends AbstractTrajectorizer
 {
-    private double _stepSize;
-
     public IterativeInterpolationTrajectorizer(double stepSize)
     {
-        _stepSize = stepSize;
-    }
-    
-    @Override
-    public List<Trajectory> createTrajectory(List<Line2D> route)
-    {
-        LinkedList<Vector2D> unevenVectorRoute = lineListToVectorList(route);
-        Deque<Vector2D> result = new LinkedList<>();
-        unevenVectorRoute  = patchHolesInRoute(unevenVectorRoute);
-        quantize(unevenVectorRoute, result, _stepSize);
-        return result.stream().map(vector -> new Trajectory(vector)).collect(Collectors.toList());
+        super(stepSize);
     }
 
-    
     @Override
     public void quantize(Deque<Vector2D> srcRoute, Deque<Vector2D> result, double stepSize)
     {

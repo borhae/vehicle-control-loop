@@ -82,11 +82,16 @@ public class SubScenarioCreationTest implements TestConstants
         mapCreator.createMap(roadMap);
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
-        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap);
+        Line2D firstLine = route.get(0);
+        Position2D startingPoint = new Position2D(firstLine.getX1(), firstLine.getY1());
+
+        Line2D lastLine = route.get(route.size() - 1);
+        Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
+        
+        Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap);
         vehicle.setOrientation(0.0f, 0.0f, 0.0f);
-        vehicle.setPosition(0.0f, 0.0f, 0.0f);
         
-        
+        vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
     }
     
     @Test

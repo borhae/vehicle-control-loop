@@ -67,20 +67,22 @@ public class Vehicle implements IActuatingSensing
         _vrep.simxSetObjectPosition(_clientID, _vehicleHandles.getPhysicalBody(), -1, position, remoteApi.simx_opmode_blocking);
     }
 
-    public void driveTo(float x, float y)
-    {
-        _upperControlLayer.driveTo(new Position2D(x, y));
-    }
-    
     public void start()
     {
         _timer.scheduleAtFixedRate(_controlEventGenerator, 0, CONTROL_LOOP_EXECUTION_DENSITY);
     }
+    
+    public void driveTo(float x, float y, RoadMap roadMap)
+    {
+        _roadMap = roadMap;
+        _upperControlLayer.driveTo(new Position2D(x, y), roadMap);
+    }
 
     public void driveToBlocking(float x, float y, RoadMap roadMap)
     {
+        //TODO nothings blocking here yet. Take care if the rest is done
         _roadMap = roadMap;
-        _upperControlLayer.driveToBlocking(new Position2D(x, y));
+        _upperControlLayer.driveToBlocking(new Position2D(x, y), roadMap);
     }
 
     @Override

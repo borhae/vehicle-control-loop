@@ -10,6 +10,7 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -32,6 +33,9 @@ public class Vector2DVisualizer extends JFrame
 {
     public class ContentElememnt
     {
+        // holds information in the following way
+        // first dimension is an ordered set of vectors to draw
+        // second dimension is [baseX, baseY, tipX, tipY] of each vector
         private double[][] _content;
         private Color _color;
         private Stroke _stroke;
@@ -83,10 +87,6 @@ public class Vector2DVisualizer extends JFrame
         private double _xOffset;
         private double _yOffset;
         private double _prevZoomFactor;
-        // holds information in the following way
-        // first dimension is an ordered set of vectors to draw
-        // second dimension is [baseX, baseY, tipX, tipY] of each vector
-        // same as before but supposed to be drawn highlighted
         private ArrayList<ContentElememnt> _contentList;
 
         public Vector2DVisualizerPanel()
@@ -106,6 +106,7 @@ public class Vector2DVisualizer extends JFrame
         {
             super.paint(g);
             Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             if (_zoomer)
             {
                 double xRel = MouseInfo.getPointerInfo().getLocation().getX() - getLocationOnScreen().getX();

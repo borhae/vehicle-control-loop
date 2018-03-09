@@ -282,13 +282,13 @@ public class TrajectoryBuildingTest implements TestConstants
         
         
         Deque<Vector2D> quantizedRoute = new LinkedList<>();
-        double stepSize = 100.0;
+        double stepSize = 2.0;
         trajectorizer.quantize(patchedRoute, quantizedRoute, stepSize);
         
         Deque<Vector2D> overlay = trajectorizer.createOverlay(patchedRouteCopy, stepSize);
 
         Vector2DVisualizer frame = new Vector2DVisualizer();
-//        frame.addVectorSet(patchedRoute, Color.BLACK, new BasicStroke(6.0f));
+        frame.addVectorSet(patchedRoute, Color.BLACK, new BasicStroke(6.0f));
         frame.addVectorSet(quantizedRoute, Color.BLUE, new BasicStroke(4.0f));
         frame.addVectorSet(overlay, Color.ORANGE, new BasicStroke(2.0f));
         frame.setVisible(true);
@@ -325,7 +325,7 @@ public class TrajectoryBuildingTest implements TestConstants
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         List<Line2D> downscaled = transform(route, 2.5f, -2000.0f, -2700.0f);
         
-        ITrajectorizer trajectorizer = new SplineTrajectorizer();
+        ITrajectorizer trajectorizer = new SplineTrajectorizer(6.0);
         trajectorizer.createTrajectory(downscaled);
         Spline2D traversableSpline = ((SplineTrajectorizer)trajectorizer).getTraversableSpline();
 

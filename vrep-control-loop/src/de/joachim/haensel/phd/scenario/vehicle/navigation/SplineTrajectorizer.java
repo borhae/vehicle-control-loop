@@ -6,6 +6,7 @@ import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.bezier.Spline2D;
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
+import de.joachim.haensel.streamextensions.IndexAdder;
 import de.joachim.haensel.sumo2vrep.Line2D;
 
 /**
@@ -18,16 +19,9 @@ public class SplineTrajectorizer extends AbstractTrajectorizer implements ITraje
 {
     private Spline2D _traversableSpline;
 
-    public List<Trajectory> createTrajectory(List<Line2D> route)
+    public SplineTrajectorizer(double stepSize)
     {
-        List<Trajectory> result = new ArrayList<>();
-        _points = routeToPointArray(route);
-        int lastIndex = _points.length - 1;
-        _points[lastIndex][0] = route.get(route.size() - 1).getX2();
-        _points[lastIndex][1] = route.get(route.size() - 1).getY2();
-        _traversableSpline = new Spline2D(_points);
-        // TODO not ready here, trajectory not built yet
-        return result;
+        super(stepSize);
     }
 
     public Spline2D getTraversableSpline()
@@ -36,8 +30,18 @@ public class SplineTrajectorizer extends AbstractTrajectorizer implements ITraje
     }
 
     @Override
-    public void quantize(Deque<Vector2D> overlay, Deque<Vector2D> result, double stepSize)
+    public void quantize(Deque<Vector2D> source, Deque<Vector2D> result, double stepSize)
     {
-        // TODO Auto-generated method stub, and yet I don't think I will ever implement this
+        double[][] point = new double[source.size()][];
+        source.stream().map(IndexAdder.indexed()).forEach(curElem -> enterInto(point, curElem));
+        _traversableSpline = new Spline2D(point);
+    }
+
+    private void enterInto(double[][] point, IndexAdder<Vector2D> curElem)
+    {
+        point[curElem.idx()] = new double[2];
+        
+        point[curElem.idx()][0] = curElem.v().getbX();
+        point[curElem.idx()][1] = curElem.v().getbY();
     }
 }

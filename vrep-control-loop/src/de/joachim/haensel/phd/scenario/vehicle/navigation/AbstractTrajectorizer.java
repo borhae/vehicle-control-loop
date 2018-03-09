@@ -1,42 +1,45 @@
 package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
-import de.joachim.haensel.streamextensions.IndexAdder;
 import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.sumo2vrep.Position2D;
 
 public abstract class AbstractTrajectorizer implements ITrajectorizer
 {
     protected static final float EPSILON = 0.00001f;
-    protected double[][] _points;
+    protected double _stepSize;
 
-    public double[][] routeToPointArray(List<Line2D> route)
+    public AbstractTrajectorizer(double stepSize)
     {
-        double[][] result = new double[route.size() + 1][2];
-        route.stream().map(IndexAdder.indexed())
-                .forEach(indexedLine -> enterInto(result, indexedLine.idx(), indexedLine.v()));
-        return result;
-    }
-
-    private void enterInto(double[][] points, int idx, Line2D line)
-    {
-        points[idx][0] = line.getX1();
-        points[idx][1] = line.getY1();
-    }
-
-    @Override
-    public double[][] getPoints()
-    {
-        return _points;
+        _stepSize = stepSize;
     }
     
     @Override 
-    public abstract List<Trajectory> createTrajectory(List<Line2D> route);
+    public List<Trajectory> createTrajectory(List<Line2D> route)
+    {
+        List<Trajectory> result = new ArrayList<>();
+        LinkedList<Vector2D> srcRoute = lineListToVectorList(route);
+        LinkedList<Vector2D> quantizedRoute = new LinkedList<>();
+        quantize(srcRoute, quantizedRoute, _stepSize);
+        Deque<Vector2D> overlay = createOverlay(srcRoute, _stepSize);
+        for( int idx = 0; idx < quantizedRoute.size(); idx++)
+        {
+            Vector2D vec1 = overlay.pop();
+            Trajectory elem1 = new Trajectory(vec1);
+            Vector2D vec2 = quantizedRoute.pop();
+            Trajectory elem2 = new Trajectory(vec2);
+            result.add(elem1);
+            result.add(elem2);
+        }
+        //TODO add velocity profile information to Trajectory 
+        return result;
+    }
 
     public LinkedList<Vector2D> lineListToVectorList(List<Line2D> route)
     {

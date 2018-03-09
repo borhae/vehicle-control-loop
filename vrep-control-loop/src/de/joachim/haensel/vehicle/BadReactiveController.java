@@ -74,23 +74,33 @@ public class BadReactiveController implements ILowLevelController
     @Override
     public void controlEvent()
     {
-        Position2D currentPosition;
-        if(_stateMachine.getState() == ControllerStates.DRIVE_TO)
+        switch (_stateMachine.getState())
         {
-            currentPosition = _actuatorsSensors.getPosition();
-            
-            if(currentPosition.equals(_expectedTarget, 0.2))
-            {
-                _stateMachine.arrivedAtTarget();
-                return;
-            }
-            
-            ensureBufferSize();
-            
-            float targetWheelRotation = computeTargetWheelRotationSpeed();
-            float targetSteeringAngle = computeTargetSteeringAngle();
-            _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
+            case IDLE:
+                break;
+            case DRIVE_TO:
+                driveToAction();
+                break;
+            default:
+                break;
         }
+    }
+
+    private void driveToAction()
+    {
+        Position2D currentPosition = _actuatorsSensors.getPosition();
+        
+        if(currentPosition.equals(_expectedTarget, 0.2))
+        {
+            _stateMachine.arrivedAtTarget();
+            return;
+        }
+        
+        ensureBufferSize();
+        
+        float targetWheelRotation = computeTargetWheelRotationSpeed();
+        float targetSteeringAngle = computeTargetSteeringAngle();
+        _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
     }
 
     private void ensureBufferSize()
