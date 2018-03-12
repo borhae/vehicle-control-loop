@@ -7,11 +7,11 @@ import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
 import de.joachim.haensel.statemachine.Messages;
 import de.joachim.haensel.statemachine.States;
 
-public class TestStateMachine extends FiniteStateMachineTemplate
+public class TestStateMachineParams extends FiniteStateMachineTemplate
 {
     public enum TestMessages implements Messages
     {
-        ON, OFF, LIGHT_SWITCH;
+        ON, OFF, LIGHT_SWITCH, LIGHT_OUT_SWITCH;
     }
 
     public enum TestStates implements States
@@ -19,26 +19,20 @@ public class TestStateMachine extends FiniteStateMachineTemplate
         DEVICE_OFF, DEVICE_ON_LIGHT_OFF, DEVICE_ON_LIGHT_ON
     }
 
-    public TestStateMachine()
+    public TestStateMachineParams()
     {
+        Consumer<Object> actionOff = parameter -> System.out.println("Darkness"); 
+        Consumer<Integer> actionOn = parameter -> System.out.println("Light, brightness: " + parameter);
+        
         createTransition(TestStates.DEVICE_OFF, TestMessages.ON, TestStates.DEVICE_ON_LIGHT_OFF, null);
         createTransition(TestStates.DEVICE_ON_LIGHT_OFF, TestMessages.OFF, TestStates.DEVICE_OFF, null);
         
-        createTransition(TestStates.DEVICE_ON_LIGHT_OFF, TestMessages.LIGHT_SWITCH, TestStates.DEVICE_ON_LIGHT_ON, new Consumer<Object>() {
-            @Override
-            public void accept(Object t)
-            {
-                System.out.println("Light");
-            }
-        });
-        createTransition(TestStates.DEVICE_ON_LIGHT_ON, TestMessages.LIGHT_SWITCH, TestStates.DEVICE_ON_LIGHT_OFF, new Consumer<Object>() {
-
-            @Override
-            public void accept(Object t)
-            {
-                System.out.println("Darkness");
-            }
-        });
+        createTransition(TestStates.DEVICE_ON_LIGHT_OFF, TestMessages.LIGHT_SWITCH, TestStates.DEVICE_ON_LIGHT_ON, actionOn);
+        createTransition(TestStates.DEVICE_ON_LIGHT_ON, TestMessages.LIGHT_SWITCH, TestStates.DEVICE_ON_LIGHT_ON, actionOn);
+        createTransition(TestStates.DEVICE_ON_LIGHT_ON, TestMessages.LIGHT_OUT_SWITCH, TestStates.DEVICE_ON_LIGHT_OFF, actionOff);
+        
+        createTransition(TestStates.DEVICE_ON_LIGHT_ON, TestMessages.OFF, TestStates.DEVICE_OFF, actionOff);
+        
         setInitialState(TestStates.DEVICE_OFF);
         reset();
     }
@@ -48,9 +42,9 @@ public class TestStateMachine extends FiniteStateMachineTemplate
         transition(TestMessages.ON, null);
     }
 
-    public void light()
+    public void light(int brightness)
     {
-        transition(TestMessages.LIGHT_SWITCH, null);
+        transition(TestMessages.LIGHT_SWITCH, brightness);
     }
 
     public void off()
@@ -61,5 +55,10 @@ public class TestStateMachine extends FiniteStateMachineTemplate
     public boolean isLightOn()
     {
         return getCurrentState() == TestStates.DEVICE_ON_LIGHT_ON;
+    }
+
+    public void lightOff()
+    {
+        transition(TestMessages.LIGHT_OUT_SWITCH, null);
     }
 }

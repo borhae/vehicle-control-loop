@@ -3,14 +3,28 @@ package de.joachim.haensel.vehicle;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerMsg;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerStates;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
 import de.joachim.haensel.sumo2vrep.Position2D;
-import de.joachim.haensel.vehiclecontrol.reactive.ControllerStates;
+import de.joachim.haensel.vehicle.BadReactiveController.DriveToAction;
 import de.joachim.haensel.vehiclecontrol.reactive.pid.PIDController;
 
 public class BadReactiveController implements ILowLevelController
 {
+    public class DriveToAction implements Consumer<BadReactiveController>
+    {
+        @Override
+        public void accept(BadReactiveController controller)
+        {
+            //TODO Called whenever sensor data is available while driving
+        }
+    }
+
     private static final int SEGMENT_BUFFER_SIZE = 40;
     private Position2D _expectedTarget;
     private IActuatingSensing _actuatorsSensors;
@@ -19,40 +33,33 @@ public class BadReactiveController implements ILowLevelController
     private Deque<Trajectory> _segmentBuffer;
     private ITrajectoryProvider _segmentProvider;
 
-    public class DefaultReactiveControllerStateMachine
+    public class DefaultReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
-        private ControllerStates _currentState;
-        
         public DefaultReactiveControllerStateMachine()
         {
-            _currentState = ControllerStates.IDLE;
+            Consumer<Position2D> driveToAction = target -> _expectedTarget = target; 
+            createTransition(ControllerStates.IDLE, ControllerMsg.DRIVE_TO, ControllerStates.DRIVING, driveToAction);
+            createTransition(ControllerStates.DRIVING, ControllerMsg.ARRIVED_AT_TARGET, ControllerStates.IDLE, null);
+            Consumer<BadReactiveController> driveAction = new DriveToAction();
+            createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, ControllerStates.DRIVING, driveAction );
+            setInitialState(ControllerStates.IDLE);
+            
+            reset();
         }
         
-        public void set(ControllerStates newState)
-        {
-            _currentState = newState;
-        }
-
         public void driveTo(Position2D target)
         {
-            if(_currentState == ControllerStates.IDLE)
-            {
-                _expectedTarget = target;
-                _currentState = ControllerStates.DRIVE_TO;
-            }
-        }
-
-        public ControllerStates getState()
-        {
-            return _currentState;
+            transition(ControllerMsg.DRIVE_TO, target);
         }
 
         public void arrivedAtTarget()
         {
-            if(_currentState == ControllerStates.DRIVE_TO)
-            {
-                _currentState = ControllerStates.IDLE;
-            }
+            transition(ControllerMsg.ARRIVED_AT_TARGET, null);
+        }
+
+        public void controlEvent(BadReactiveController badReactiveController)
+        {
+            transition(ControllerMsg.CONTROL_EVENT, badReactiveController);
         }
     }
     
@@ -74,16 +81,7 @@ public class BadReactiveController implements ILowLevelController
     @Override
     public void controlEvent()
     {
-        switch (_stateMachine.getState())
-        {
-            case IDLE:
-                break;
-            case DRIVE_TO:
-                driveToAction();
-                break;
-            default:
-                break;
-        }
+        _stateMachine.controlEvent(this);
     }
 
     private void driveToAction()
