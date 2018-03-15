@@ -24,7 +24,6 @@ public class TriangleSolver
     private TriangleType type;
     private double[] areas;
 
-
     public TriangleSolver()
     {
         a = Double.NaN;

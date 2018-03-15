@@ -39,7 +39,7 @@ public class VehicleCreator
         _objectCreator = objectCreator;
     }
 
-    public Vehicle createAt(float x, float y, float z, RoadMap roadMap)
+    public Vehicle createAt(float x, float y, float z, RoadMap roadMap, IUpperLayerFactory uppperLayerFactory, ILowerLayerFactory lowerLayerFactory)
     {
         try
         {
@@ -78,11 +78,11 @@ public class VehicleCreator
             int rearLeftWheel = createWheel(_objectCreator, "rearLeftWheel", axisRearLeft, WHEEL_DIAMETER, WHEEL_WIDTH);
             int rearRightWheel = createWheel(_objectCreator, "rearRightWheel", axisRearRight, WHEEL_DIAMETER, WHEEL_WIDTH);
 
-            CarControlInterface car1 = new CarControlInterface(_objectCreator, PHYSICAL_CAR_BODY_NAME, _vrep, _clientID, physicalBodyHandle);
+            CarControlInterface car = new CarControlInterface(_objectCreator, PHYSICAL_CAR_BODY_NAME, _vrep, _clientID, physicalBodyHandle);
             
-            vehicleHandles.setPhysicalBody(physicalBodyHandle).setRearLeftWheel(rearLeftWheel).setRearRightWheel(rearRightWheel);
-            car1.initialize();
-            return new Vehicle(_objectCreator, _vrep, _clientID, vehicleHandles, car1, roadMap);
+            vehicleHandles.setPhysicalBody(physicalBodyHandle).setRearLeftWheel(rearLeftWheel).setRearRightWheel(rearRightWheel).setFrontLeftWheel(frontLeftWheel).setFrontRightWheel(frontRightWheel);
+            car.initialize();
+            return new Vehicle(_objectCreator, _vrep, _clientID, vehicleHandles, car, roadMap, uppperLayerFactory, lowerLayerFactory);
         }
         catch (VRepException e)
         {

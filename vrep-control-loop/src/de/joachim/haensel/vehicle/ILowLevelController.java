@@ -6,4 +6,5 @@ public interface ILowLevelController
 {
     public void controlEvent();
     public void driveTo(Position2D position);
+    void initController(IActuatingSensing actuatorsSensors, ITrajectoryProvider trajectoryProvider);
 }

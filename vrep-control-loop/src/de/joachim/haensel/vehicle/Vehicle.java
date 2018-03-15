@@ -30,17 +30,17 @@ public class Vehicle implements IActuatingSensing
     private Position2D _rearWheelCenterPosition;
     private RoadMap _roadMap;
     
-    public Vehicle(VRepObjectCreation creator, VRepRemoteAPI vrep, int clientID, VehicleHandles vehicleHandles, CarControlInterface controller, RoadMap roadMap)
+//        _upperControlLayer = new NavigationController(this, roadMap);
+//        _lowerControlLayer = new BadReactiveController(this, _upperControlLayer);
+    public Vehicle(VRepObjectCreation creator, VRepRemoteAPI vrep, int clientID, VehicleHandles vehicleHandles, CarControlInterface controller, RoadMap roadMap, IUpperLayerFactory upperLayerFactory, ILowerLayerFactory lowerLayerFactory)
     {
         _vrep = vrep;
         _clientID = clientID;
         _vehicleHandles = vehicleHandles;
         _controlInterface = controller;
+        _upperControlLayer = upperLayerFactory.create();
+        _lowerControlLayer = lowerLayerFactory.create();
         
-        
-        _upperControlLayer = new NavigationController(this, roadMap);
-        _lowerControlLayer = new BadReactiveController(this, _upperControlLayer);
-
         _controlEventGenerator = new LowLevelEventGenerator();
         _controlEventGenerator.addEventListener(_lowerControlLayer);
         _timer = new Timer();
@@ -75,14 +75,15 @@ public class Vehicle implements IActuatingSensing
     public void driveTo(float x, float y, RoadMap roadMap)
     {
         _roadMap = roadMap;
-        _upperControlLayer.driveTo(new Position2D(x, y), roadMap);
+        Position2D targetPosition = new Position2D(x, y);
+        _upperControlLayer.buildSegmentBuffer(targetPosition, roadMap);
+        _lowerControlLayer.driveTo(targetPosition);
     }
 
     public void driveToBlocking(float x, float y, RoadMap roadMap)
     {
         //TODO nothings blocking here yet. Take care if the rest is done
-        _roadMap = roadMap;
-        _upperControlLayer.driveToBlocking(new Position2D(x, y), roadMap);
+        driveTo(x, y, roadMap);
     }
 
     @Override

@@ -1,7 +1,6 @@
 package de.joachim.haensel.statemachine.test;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
 import de.joachim.haensel.statemachine.Messages;
@@ -21,24 +20,15 @@ public class TestStateMachine extends FiniteStateMachineTemplate
 
     public TestStateMachine()
     {
-        createTransition(TestStates.DEVICE_OFF, TestMessages.ON, TestStates.DEVICE_ON_LIGHT_OFF, null);
-        createTransition(TestStates.DEVICE_ON_LIGHT_OFF, TestMessages.OFF, TestStates.DEVICE_OFF, null);
+        createTransition(TestStates.DEVICE_OFF, TestMessages.ON, null, TestStates.DEVICE_ON_LIGHT_OFF, null);
+        createTransition(TestStates.DEVICE_ON_LIGHT_OFF, TestMessages.OFF, null, TestStates.DEVICE_OFF, null);
         
-        createTransition(TestStates.DEVICE_ON_LIGHT_OFF, TestMessages.LIGHT_SWITCH, TestStates.DEVICE_ON_LIGHT_ON, new Consumer<Object>() {
-            @Override
-            public void accept(Object t)
-            {
-                System.out.println("Light");
-            }
-        });
-        createTransition(TestStates.DEVICE_ON_LIGHT_ON, TestMessages.LIGHT_SWITCH, TestStates.DEVICE_ON_LIGHT_OFF, new Consumer<Object>() {
+        Consumer<Object> lightAction = o -> System.out.println("Light");
+        createTransition(TestStates.DEVICE_ON_LIGHT_OFF, TestMessages.LIGHT_SWITCH, null, TestStates.DEVICE_ON_LIGHT_ON, lightAction);
 
-            @Override
-            public void accept(Object t)
-            {
-                System.out.println("Darkness");
-            }
-        });
+        Consumer<Object> lightOutAction = o -> System.out.println("Darkness");
+        createTransition(TestStates.DEVICE_ON_LIGHT_ON, TestMessages.LIGHT_SWITCH, null, TestStates.DEVICE_ON_LIGHT_OFF, lightOutAction );
+        
         setInitialState(TestStates.DEVICE_OFF);
         reset();
     }

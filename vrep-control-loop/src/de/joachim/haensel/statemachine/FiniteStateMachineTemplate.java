@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 
 public class FiniteStateMachineTemplate
@@ -41,7 +40,7 @@ public class FiniteStateMachineTemplate
         public String toString()
         {
             String action = null;
-            if(_action == null)
+            if(_action != null)
             {
                 action = _action.getClass().getName();
             }
@@ -56,12 +55,12 @@ public class FiniteStateMachineTemplate
 
     private States _currentState;
     private States _initialState;
-    private HashMap<States, Map<Messages, ActionTargetStatePair>> _transitionTable;
+    private HashMap<States, Map<Messages, Map<Guard, ActionTargetStatePair>>> _transitionTable;
 
     public FiniteStateMachineTemplate()
     {
         _currentState = States.ILLEGAL;
-        _transitionTable = new HashMap<States, Map<Messages, ActionTargetStatePair>>();
+        _transitionTable = new HashMap<States, Map<Messages, Map<Guard, ActionTargetStatePair>>>();
     }
     
     public States getCurrentState()
@@ -72,29 +71,77 @@ public class FiniteStateMachineTemplate
     public<T> void transition(Messages msg, T parameter)
     {
         States fromState = getCurrentState();
-        ActionTargetStatePair stateActionPair = _transitionTable.get(fromState).get(msg);
-        if(stateActionPair == null)
+        Map<Messages, Map<Guard,ActionTargetStatePair>> transitions = _transitionTable.get(fromState);
+        if(transitions == null)
+        {
+            // no outgoing transitions from current state (final state? transitiontable not initialized?)
+            return;
+        }
+        Map<Guard, ActionTargetStatePair> guardedActionTargetStatePair = transitions.get(msg);
+        if(guardedActionTargetStatePair == null)
         {
             //no transition from current state possible with message msg
             return;
         }
         else
         {
-            stateActionPair.runAction(parameter);
-            _currentState = stateActionPair.getState();
+            Set<Guard> guards = guardedActionTargetStatePair.keySet();
+            boolean hasAlreadyTriggered = false;
+            for (Guard curGuard : guards)
+            {
+                if(curGuard.isTrue())
+                {
+                    if(!hasAlreadyTriggered)
+                    {
+                        ActionTargetStatePair actionTargetStatePair = guardedActionTargetStatePair.get(curGuard);
+                        actionTargetStatePair.runAction(parameter);
+                        _currentState = actionTargetStatePair.getState();
+                        hasAlreadyTriggered = true;
+                    }
+                    else
+                    {
+                        System.out.println("Warning: there was a second guard that could have triggered. This machine is not deterministic!");
+                    }
+                }
+            }
         }
     }
 
-    public <T, R> void createTransition(States fromState, Messages msg, States toState, Consumer<T> action)
+    public <T, R> void createTransition(States fromState, Messages msg, Guard guard, States toState, Consumer<T> action)
     {
-        Map<Messages, ActionTargetStatePair> transitionsFromFromState = _transitionTable.get(fromState);
+        Map<Messages, Map<Guard, ActionTargetStatePair>> transitionsFromFromState = _transitionTable.get(fromState);
         if(transitionsFromFromState == null)
         {
+            // state not present yet
             transitionsFromFromState = new HashMap<>();
             _transitionTable.put(fromState, transitionsFromFromState);
         }
-        ActionTargetStatePair<T> newStateAction = new ActionTargetStatePair<T>(toState, action);
-        transitionsFromFromState.put(msg, newStateAction);
+        //state present
+        Map<Guard, ActionTargetStatePair> guardedActionTargetStatePair = transitionsFromFromState.get(msg);
+        if(guardedActionTargetStatePair == null)
+        {
+            // state present, no transition for message
+            guardedActionTargetStatePair = new HashMap<>();
+            transitionsFromFromState.put(msg, guardedActionTargetStatePair);
+        }
+        //transition with msg present, no guard, no action, no target state
+        if(guard == null)
+        {
+            guard = Guard.TRUE_GUARD;
+        }
+        ActionTargetStatePair actionTargetStatePair = guardedActionTargetStatePair.get(guard);
+        if(actionTargetStatePair == null)
+        {
+            // guard not present yet
+            ActionTargetStatePair<T> newActionTargetPair = new ActionTargetStatePair<>(toState, action);
+            guardedActionTargetStatePair.put(guard, newActionTargetPair);
+        }
+        else
+        {
+            // transition was entered like this already (same start-state, message and guard)
+            return;
+        }
+        
     }
 
     public void setInitialState(States initialState)
@@ -114,14 +161,19 @@ public class FiniteStateMachineTemplate
         Set<States> fromStates = _transitionTable.keySet();
         for (States curFrom : fromStates)
         {
-            Map<Messages, ActionTargetStatePair> map = _transitionTable.get(curFrom);
+            Map<Messages, Map<Guard, ActionTargetStatePair>> map = _transitionTable.get(curFrom);
             Set<Messages> availableMessages = map.keySet();
             for (Messages curMessage : availableMessages)
             {
-                ActionTargetStatePair actionTargetStatePair = map.get(curMessage);
-                String actionName = actionTargetStatePair._action == null ? "" : actionTargetStatePair._action.getClass().getName();
-                result.append(curFrom + "-" + curMessage + "/{" + actionName + "}" + actionTargetStatePair._state); 
-                result.append(System.lineSeparator());
+                Map<Guard, ActionTargetStatePair> guardedActionTargetStatePair = map.get(curMessage);
+                Set<Guard> guards = guardedActionTargetStatePair.keySet();
+                for (Guard curGuard : guards)
+                {
+                    ActionTargetStatePair actionTargetStatePair = guardedActionTargetStatePair.get(curGuard);
+                    String actionName = actionTargetStatePair._action == null ? "" : actionTargetStatePair._action.getClass().getName();
+                    result.append(curFrom + "  -" + curMessage + "[" + curGuard + "]" + "/{" + actionName + "}-  " + actionTargetStatePair._state); 
+                    result.append(System.lineSeparator());
+                }
             }
         }
         return result.toString();

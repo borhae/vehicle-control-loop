@@ -6,7 +6,7 @@ import de.joachim.haensel.sumo2vrep.RoadMap;
 
 public interface ITopLayerControl extends ITrajectoryProvider, IDrivingState
 {
-    void driveTo(Position2D position2d, RoadMap roadMap);
+    void buildSegmentBuffer(Position2D position2d, RoadMap roadMap);
 
-    void driveToBlocking(Position2D position2d, RoadMap roadMap);
+    void initController(IActuatingSensing sensorsActuators, RoadMap roadMap);
 }

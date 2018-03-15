@@ -17,6 +17,10 @@ import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.sumo2vrep.OrientedPosition;
 import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
+import de.joachim.haensel.vehicle.BadReactiveController;
+import de.joachim.haensel.vehicle.ILowerLayerFactory;
+import de.joachim.haensel.vehicle.IUpperLayerFactory;
+import de.joachim.haensel.vehicle.NavigationController;
 import de.joachim.haensel.vehicle.Vehicle;
 import de.joachim.haensel.vehicle.VehicleCreator;
 import de.joachim.haensel.vehiclecontrol.Navigator;
@@ -88,7 +92,10 @@ public class SubScenarioCreationTest implements TestConstants
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
-        Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap);
+        IUpperLayerFactory upperFact = () -> {return new NavigationController();};
+        ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+
+        Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, upperFact, lowerFact);
         vehicle.setOrientation(0.0f, 0.0f, 0.0f);
         
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
@@ -102,7 +109,11 @@ public class SubScenarioCreationTest implements TestConstants
         mapCreator.createMap(roadMap);
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
         float height = vehicleCreator.getVehicleHeight();
-        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap);
+
+        IUpperLayerFactory upperFact = () -> {return new NavigationController();};
+        ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+
+        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap, upperFact, lowerFact);
         vehicle.setOrientation(0.0f, 0.0f, 0.0f);
         vehicle.setPosition(3.0f, 2.0f, 1.0f);
     }
@@ -115,7 +126,11 @@ public class SubScenarioCreationTest implements TestConstants
         mapCreator.createMap(roadMap);
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
         float height = vehicleCreator.getVehicleHeight();
-        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap);
+        
+        IUpperLayerFactory upperFact = () -> {return new NavigationController();};
+        ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+
+        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap, upperFact, lowerFact);
 
         JunctionType startingJunction = roadMap.getJunctions().get(3);
         String startingLaneID = startingJunction.getIncLanes().split(" ")[0];

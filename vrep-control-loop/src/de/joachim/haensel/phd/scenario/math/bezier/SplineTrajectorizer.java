@@ -1,15 +1,12 @@
 package de.joachim.haensel.phd.scenario.math.bezier;
 
-import java.util.ArrayList;
 import java.util.Deque;
-import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.interpolation.IterativeInterpolationTrajectorizer;
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
 import de.joachim.haensel.streamextensions.IndexAdder;
-import de.joachim.haensel.sumo2vrep.Line2D;
 
 /**
  * For now this class is abandoned. Use {@link IterativeInterpolationTrajectorizer} instead.

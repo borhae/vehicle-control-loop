@@ -5,6 +5,8 @@ public class VehicleHandles
     private int _physicalBody;
     private int _rearLeftWheel;
     private int _rearRightWheel;
+    private int _frontLeftWheel;
+    private int _frontRightWheel;
 
     public int getPhysicalBody()
     {
@@ -26,6 +28,18 @@ public class VehicleHandles
     public VehicleHandles setRearRightWheel(int rearRightWheel)
     {
         _rearRightWheel = rearRightWheel;
+        return this;
+    }
+    
+    public VehicleHandles setFrontLeftWheel(int frontLeftWheel)
+    {
+        _frontLeftWheel = frontLeftWheel;
+        return this;
+    }
+    
+    public VehicleHandles setFrontRightWheel(int frontRightWheel)
+    {
+        _frontRightWheel = frontRightWheel;
         return this;
     }
 

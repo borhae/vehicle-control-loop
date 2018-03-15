@@ -1,7 +1,6 @@
 package de.joachim.haensel.statemachine.test;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
 import de.joachim.haensel.statemachine.Messages;
@@ -24,14 +23,14 @@ public class TestStateMachineParams extends FiniteStateMachineTemplate
         Consumer<Object> actionOff = parameter -> System.out.println("Darkness"); 
         Consumer<Integer> actionOn = parameter -> System.out.println("Light, brightness: " + parameter);
         
-        createTransition(TestStates.DEVICE_OFF, TestMessages.ON, TestStates.DEVICE_ON_LIGHT_OFF, null);
-        createTransition(TestStates.DEVICE_ON_LIGHT_OFF, TestMessages.OFF, TestStates.DEVICE_OFF, null);
+        createTransition(TestStates.DEVICE_OFF, TestMessages.ON, null, TestStates.DEVICE_ON_LIGHT_OFF, null);
+        createTransition(TestStates.DEVICE_ON_LIGHT_OFF, TestMessages.OFF, null, TestStates.DEVICE_OFF, null);
         
-        createTransition(TestStates.DEVICE_ON_LIGHT_OFF, TestMessages.LIGHT_SWITCH, TestStates.DEVICE_ON_LIGHT_ON, actionOn);
-        createTransition(TestStates.DEVICE_ON_LIGHT_ON, TestMessages.LIGHT_SWITCH, TestStates.DEVICE_ON_LIGHT_ON, actionOn);
-        createTransition(TestStates.DEVICE_ON_LIGHT_ON, TestMessages.LIGHT_OUT_SWITCH, TestStates.DEVICE_ON_LIGHT_OFF, actionOff);
+        createTransition(TestStates.DEVICE_ON_LIGHT_OFF, TestMessages.LIGHT_SWITCH, null, TestStates.DEVICE_ON_LIGHT_ON, actionOn);
+        createTransition(TestStates.DEVICE_ON_LIGHT_ON, TestMessages.LIGHT_SWITCH, null, TestStates.DEVICE_ON_LIGHT_ON, actionOn);
+        createTransition(TestStates.DEVICE_ON_LIGHT_ON, TestMessages.LIGHT_OUT_SWITCH, null, TestStates.DEVICE_ON_LIGHT_OFF, actionOff);
         
-        createTransition(TestStates.DEVICE_ON_LIGHT_ON, TestMessages.OFF, TestStates.DEVICE_OFF, actionOff);
+        createTransition(TestStates.DEVICE_ON_LIGHT_ON, TestMessages.OFF, null, TestStates.DEVICE_OFF, actionOff);
         
         setInitialState(TestStates.DEVICE_OFF);
         reset();

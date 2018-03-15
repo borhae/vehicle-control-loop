@@ -12,27 +12,25 @@ import de.joachim.haensel.vehiclecontrol.Navigator;
 
 public class NavigationController implements ITopLayerControl
 {
-    public enum NavigationState
-    {
-        IDLE, DRIVING
-    }
-
-    private NavigationState _navigationState;
     private RoadMap _roadMap;
     private IActuatingSensing _sensorsActuators;
     private Route _currentRoute;
 
-    public NavigationController(IActuatingSensing sensorsActuators, RoadMap roadMap)
+    @Override
+    public void initController(IActuatingSensing sensorsActuators, RoadMap roadMap)
     {
-        _navigationState = NavigationState.IDLE;
         _sensorsActuators = sensorsActuators;
         _roadMap = roadMap;
         
         _currentRoute = new Route();
     }
 
+    public NavigationController()
+    {
+    }
+
     @Override
-    public void driveTo(Position2D targetPosition, RoadMap roadMap)
+    public void buildSegmentBuffer(Position2D targetPosition, RoadMap roadMap)
     {
         _roadMap = roadMap;
         Position2D currentPosition = _sensorsActuators.getPosition();
@@ -41,14 +39,6 @@ public class NavigationController implements ITopLayerControl
         
         IterativeInterpolationTrajectorizer trajectorizer = new IterativeInterpolationTrajectorizer(2.0);
         _currentRoute.createRoute(trajectorizer.createTrajectory(routeBasis));
-        // TODO pick up here, when there is a trajectory, that we can follow
-        _navigationState = NavigationState.DRIVING;
-    }
-
-    @Override
-    public void driveToBlocking(Position2D target, RoadMap roadMap)
-    {
-        driveTo(target, roadMap);
     }
 
     @Override

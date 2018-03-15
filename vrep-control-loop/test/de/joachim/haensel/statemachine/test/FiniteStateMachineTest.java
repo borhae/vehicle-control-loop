@@ -42,4 +42,18 @@ public class FiniteStateMachineTest
         sm.light(6);
         assert(!sm.isLightOn());
     }
+    
+    @Test
+    public void testExampleFSMWithGuard()
+    {
+        TestStateMachineGuards sm = new TestStateMachineGuards();
+        sm.listenActive();
+        assert(sm.isListening());
+        sm.setValA(5);
+        sm.environmentEvent();
+        assert(sm.isListening());
+        sm.setValA(11);
+        sm.environmentEvent();
+        assert(!sm.isListening());
+    }
 }
