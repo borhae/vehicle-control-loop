@@ -9,4 +9,6 @@ public interface IActuatingSensing
     public void drive(float targetWheelRotation, float targetSteeringAngle);
 
     public Position2D getRearWheelCenterPosition();
+
+    public double getVehicleLength();
 }

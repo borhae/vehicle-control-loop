@@ -1,5 +1,8 @@
 package de.joachim.haensel.phd.scenario.math.vector;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.sumo2vrep.Position2D;
 
@@ -12,6 +15,8 @@ public class Vector2D
     private double _dY; // direction y 
     private double _normX; //normalized x
     private double _normY; // normalized y
+    
+    // parameterized: x(t) = _dX * t + _bX, y(t) = _dY * t + _bY
     
     public double getbX()
     {
@@ -206,5 +211,67 @@ public class Vector2D
     public Position2D getNorm()
     {
         return new Position2D(_normX, _normY);
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if(!(obj instanceof Vector2D))
+        {
+            return false;
+        }
+        else
+        {
+            Vector2D other = (Vector2D)obj;
+            return _bX == other._bX 
+                    && _bY == other._bY 
+                    && _length == other._length 
+                    && _dX == other._dX 
+                    && _dY == other._dY 
+                    && _normX == other._normX 
+                    && _normY == other._normY;
+        }
+    }
+
+    public static List<Vector2D> circleIntersection(Vector2D vector, Position2D center, double r)
+    {
+        List<Vector2D> result = new ArrayList<>();
+        // formula: ((x1-x0)t+x0-h)^2+((y1-y0)t+y0-k)^2=r^2  with (h, k) centerpoint and r the radius
+        // after collection: at^2 + bt +c with
+        // a=(x1-x0)^2+(y1-y0)^2
+        // b=2(x1-x0)(x0-h)+2(y1-y0)(y0-k)
+        // c=(x0-h)^2+(y0-k)^2-r^2
+        // t = (-b +- sqr(b^2-4ac)/2a
+        double h = center.getX();
+        double k = center.getY();
+        double x0 = vector._bX;
+        double y0 = vector._bY;
+        double x0h = x0 - h;
+        double y0k = y0 - k;
+        double dx = vector._dX;
+        double dy = vector._dY;
+
+        double a = dx * dx + dy * dy;
+        double b = 2*dx*x0h + 2*dy*y0k; 
+        double c = x0h * x0h +  y0k * y0k - r * r;
+        
+        double root = b * b - 4*a*c;
+        if(root >= 0)
+        {
+            double t1 = (-b + Math.sqrt(root))/(2*a);
+            double t2 = (-b - Math.sqrt(root))/(2*a);
+            
+            if(0 < t1 && t1 <= 1)
+            {
+                Vector2D v1 = new Vector2D(x0, y0, t1 * dx, t1 * dy);
+                result.add(v1);
+            }
+            if(0 < t2 && t2 <= 1)
+            {
+                Vector2D v2 = new Vector2D(x0, y0, t2 * dx, t2 * dy);
+                result.add(v2);
+            }
+        }
+        return result;
     }
 }

@@ -147,4 +147,11 @@ public class Vehicle implements IActuatingSensing
         setOrientation(0.0f, 0.0f, (float)posAndHeading.getAngle());
         setPosition((float)posAndHeading.getPos().getX(), (float)posAndHeading.getPos().getY(), 0.3f);
     }
+
+    @Override
+    public double getVehicleLength()
+    {
+        //TODO compute vehicle length
+        return 0;
+    }
 }
