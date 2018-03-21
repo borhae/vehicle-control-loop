@@ -133,6 +133,22 @@ public class Vector2D
         return cut;
     }
 
+    /**
+     * Perpendicular (smallest) distance of point to vector
+     * @param point to be considered
+     * @return The length of perpendicular between given point and this vector
+     */
+    public double distance(Position2D point)
+    {
+        double pX = point.getX();
+        double pY = point.getY();
+        double a = computeLength(_bX -pX, _bY - pY);
+        double b = computeLength(_bX + _dX - pX, _bY + _dY - pY);
+        double s = (a + b + _length)/2.0f;
+        double h = _length/2.0f*Math.sqrt(s*(s-a)*(s-b)*(s-_length));
+        return h;
+    }
+
     public static double computeAngle(Vector2D a, Vector2D b)
     {
         double dotProduct = Vector2D.dotProduct(a, b);

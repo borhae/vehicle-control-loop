@@ -15,6 +15,10 @@ public class NavigationController implements ITopLayerControl
     private RoadMap _roadMap;
     private IActuatingSensing _sensorsActuators;
     private Route _currentRoute;
+    
+    public NavigationController()
+    {
+    }
 
     @Override
     public void initController(IActuatingSensing sensorsActuators, RoadMap roadMap)
@@ -23,10 +27,6 @@ public class NavigationController implements ITopLayerControl
         _roadMap = roadMap;
         
         _currentRoute = new Route();
-    }
-
-    public NavigationController()
-    {
     }
 
     @Override

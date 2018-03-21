@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 import de.joachim.haensel.phd.scenario.math.bezier.Spline2D;
 import de.joachim.haensel.phd.scenario.math.bezier.SplineTrajectorizer;
@@ -228,6 +229,59 @@ public class TrajectoryBuildingTest implements TestConstants
     }
     
     @Test
+    public void test1SyntheticVectorOverlayedTrajectoriesAlignQuantized()
+    {
+        LinkedList<Vector2D> input = new LinkedList<>();
+        input.add(new Vector2D(0, 0, 10, 0));
+        
+        int stepSize = 6;
+        AbstractTrajectorizer trajectorizer = new IterativeInterpolationTrajectorizer(stepSize);
+        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
+
+        Deque<Vector2D> comparisonRoute = new LinkedList<>();
+        patchedRoute.stream().forEach(v -> comparisonRoute.add(v));
+        
+        Deque<Vector2D> quantizedRoute = new LinkedList<>();
+        trajectorizer.quantize(patchedRoute, quantizedRoute, stepSize);
+        Deque<Vector2D> overlayRoute = trajectorizer.createOverlay(quantizedRoute, stepSize);
+        quantizedRoute.stream().forEach(v -> checkValid(v));
+
+        Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.addVectorSet(quantizedRoute, Color.BLACK);
+        frame.addVectorSet(comparisonRoute, Color.BLUE);
+        frame.addVectorSet(overlayRoute, Color.ORANGE);
+        frame.setVisible(true);
+        frame.updateVisuals();
+    }
+    
+    @Test
+    public void test2SyntheticVectorOverlayedTrajectoriesAlignQuantized()
+    {
+        LinkedList<Vector2D> input = new LinkedList<>();
+        input.add(new Vector2D(0, 0, 10, 0));
+        input.add(new Vector2D(10, 0, 0, 10));
+        
+        int stepSize = 6;
+        AbstractTrajectorizer trajectorizer = new IterativeInterpolationTrajectorizer(stepSize);
+        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
+
+        Deque<Vector2D> comparisonRoute = new LinkedList<>();
+        patchedRoute.stream().forEach(v -> comparisonRoute.add(v));
+        
+        Deque<Vector2D> quantizedRoute = new LinkedList<>();
+        trajectorizer.quantize(patchedRoute, quantizedRoute, stepSize);
+        Deque<Vector2D> overlayRoute = trajectorizer.createOverlay(quantizedRoute, stepSize);
+        quantizedRoute.stream().forEach(v -> checkValid(v));
+
+        Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.addVectorSet(quantizedRoute, Color.BLACK);
+        frame.addVectorSet(comparisonRoute, Color.BLUE);
+        frame.addVectorSet(overlayRoute, Color.ORANGE);
+        frame.setVisible(true);
+        frame.updateVisuals();
+    }
+ 
+    @Test
     public void test3SyntheticVectorsSquareOverlayedTrajectoriesAlignOriginal()
     {
         LinkedList<Vector2D> input = new LinkedList<>();
@@ -258,6 +312,225 @@ public class TrajectoryBuildingTest implements TestConstants
         frame.updateVisuals();
     }
     
+    
+    @Test
+    public void test1SyntheticVectorsSquareOverlayedTrajectoriesAlignOriginal()
+    {
+        LinkedList<Vector2D> input = new LinkedList<>();
+        input.add(new Vector2D(0, 0, 10, 0));
+        
+        int stepSize = 6;
+        AbstractTrajectorizer trajectorizer = new IterativeInterpolationTrajectorizer(stepSize);
+        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
+
+        Deque<Vector2D> comparisonRoute = new LinkedList<>();
+        patchedRoute.stream().forEach(v -> comparisonRoute.add(new Vector2D(v)));
+        
+        Deque<Vector2D> overlaySrc = new LinkedList<>();
+        patchedRoute.stream().forEach(v -> overlaySrc.add(new Vector2D(v)));
+        
+        Deque<Vector2D> quantizedRoute = new LinkedList<>();
+        trajectorizer.quantize(patchedRoute, quantizedRoute, stepSize);
+        Deque<Vector2D> overlayRoute = trajectorizer.createOverlay(overlaySrc, stepSize);
+        quantizedRoute.stream().forEach(v -> checkValid(v));
+
+        Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.addVectorSet(comparisonRoute, Color.BLACK, new BasicStroke(3.0f));
+        frame.addVectorSet(quantizedRoute, Color.BLUE, new BasicStroke(2.0f));
+        frame.addVectorSet(overlayRoute, Color.ORANGE, new BasicStroke(1.0f));
+        frame.setVisible(true);
+        frame.updateVisuals();
+    }
+
+    @Test
+    public void test1SyntheticVectorsSquareOverlayedTrajectoriesAlignOriginalStepsizeTooLarge()
+    {
+        LinkedList<Vector2D> input = new LinkedList<>();
+        input.add(new Vector2D(0, 0, 10, 0));
+        
+        int stepSize = 12;
+        AbstractTrajectorizer trajectorizer = new IterativeInterpolationTrajectorizer(stepSize);
+        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
+
+        Deque<Vector2D> comparisonRoute = new LinkedList<>();
+        patchedRoute.stream().forEach(v -> comparisonRoute.add(new Vector2D(v)));
+        
+        Deque<Vector2D> overlaySrc = new LinkedList<>();
+        patchedRoute.stream().forEach(v -> overlaySrc.add(new Vector2D(v)));
+        
+        Deque<Vector2D> quantizedRoute = new LinkedList<>();
+        trajectorizer.quantize(patchedRoute, quantizedRoute, stepSize);
+        Deque<Vector2D> overlayRoute = trajectorizer.createOverlay(overlaySrc, stepSize);
+        quantizedRoute.stream().forEach(v -> checkValid(v));
+
+        Position2D lastTip = patchedRoute.peekLast().getTip();
+        Position2D quantizedLastTip = quantizedRoute.peekLast().getTip();
+        Position2D overlayLastTip = overlayRoute.peekLast().getTip();
+        assert(quantizedRoute.size() == 1);
+        assert(overlayRoute.size() == 2);
+        assert(quantizedLastTip.equals(lastTip, 0.0000000000001));
+        assert(overlayLastTip.equals(lastTip, 0.0000000000001));
+       
+        Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.addVectorSet(comparisonRoute, Color.BLACK, new BasicStroke(3.0f));
+        frame.addVectorSet(quantizedRoute, Color.BLUE, new BasicStroke(2.0f));
+        frame.addVectorSet(overlayRoute, Color.ORANGE, new BasicStroke(1.0f));
+        frame.setVisible(true);
+        frame.updateVisuals();
+        System.out.println("wait");
+    }
+    
+    @Test
+    public void test1SyntheticVectorsSquareOverlayedTrajectoriesAlignOriginalStepsizeExactDouble()
+    {
+        LinkedList<Vector2D> input = new LinkedList<>();
+        input.add(new Vector2D(0, 0, 5.0, 0));
+        input.add(new Vector2D(5.0, 0, 5.0, 0));
+        
+        int stepSize = 10;
+        AbstractTrajectorizer trajectorizer = new IterativeInterpolationTrajectorizer(stepSize);
+        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
+
+        Deque<Vector2D> comparisonRoute = new LinkedList<>();
+        patchedRoute.stream().forEach(v -> comparisonRoute.add(new Vector2D(v)));
+        
+        Deque<Vector2D> overlaySrc = new LinkedList<>();
+        patchedRoute.stream().forEach(v -> overlaySrc.add(new Vector2D(v)));
+        
+        Deque<Vector2D> quantizedRoute = new LinkedList<>();
+        trajectorizer.quantize(patchedRoute, quantizedRoute, stepSize);
+        Deque<Vector2D> overlayRoute = trajectorizer.createOverlay(overlaySrc, stepSize);
+        quantizedRoute.stream().forEach(v -> checkValid(v));
+
+        Vector2D lastInInput = patchedRoute.peekLast();
+        Vector2D lastInQuantized = quantizedRoute.peekLast();
+        Vector2D lastInOverlay = overlayRoute.peekLast();
+        
+        Position2D lastTip = lastInInput.getTip();
+        Position2D quantizedLastTip = lastInQuantized.getTip();
+        Position2D overlayLastTip = lastInOverlay.getTip();
+
+        assertEquals(1, quantizedRoute.size());
+        assertEquals(2, overlayRoute.size());
+
+        assertEquals(stepSize, lastInQuantized.length(), 0.0000000000001);
+        assertEquals(lastInInput.length(), lastInOverlay.length(), 0.0000000000001);
+
+        assert(quantizedLastTip.equals(lastTip, 0.0000000000001));
+        assert(overlayLastTip.equals(lastTip, 0.0000000000001));
+    }
+    
+    @Test
+    public void test2SyntheticVectorsSquareOverlayedTrajectoriesAlignOriginalStepsizeExactSize()
+    {
+        LinkedList<Vector2D> input = new LinkedList<>();
+        input.add(new Vector2D(0, 0, 10.0, 0));
+        input.add(new Vector2D(10.0, 0, 0.0, 10.0));
+        
+        int stepSize = 10;
+        AbstractTrajectorizer trajectorizer = new IterativeInterpolationTrajectorizer(stepSize);
+        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
+
+        Deque<Vector2D> comparisonRoute = new LinkedList<>();
+        patchedRoute.stream().forEach(v -> comparisonRoute.add(new Vector2D(v)));
+        
+        Deque<Vector2D> overlaySrc = new LinkedList<>();
+        patchedRoute.stream().forEach(v -> overlaySrc.add(new Vector2D(v)));
+        
+        Deque<Vector2D> quantizedRoute = new LinkedList<>();
+        trajectorizer.quantize(patchedRoute, quantizedRoute, stepSize);
+        Deque<Vector2D> overlayRoute = trajectorizer.createOverlay(overlaySrc, stepSize);
+        quantizedRoute.stream().forEach(v -> checkValid(v));
+        overlayRoute.stream().forEach(v -> checkValid(v));
+        
+
+        Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.addVectorSet(patchedRoute, Color.BLACK, new BasicStroke(6.0f));
+        frame.addVectorSet(quantizedRoute, Color.BLUE, new BasicStroke(4.0f));
+        frame.addVectorSet(overlayRoute, Color.ORANGE, new BasicStroke(2.0f));
+        frame.setVisible(true);
+        frame.updateVisuals();
+
+        
+        List<Vector2D> directAccessOverlay = new ArrayList<>(overlayRoute);
+
+        Vector2D lastInInput = patchedRoute.peekLast();
+        Vector2D lastInQuantized = quantizedRoute.peekLast();
+
+        Vector2D firstInOverlay = directAccessOverlay.get(0);
+        Vector2D middleInOverlay = directAccessOverlay.get(1);
+        Vector2D lastInOverlay = directAccessOverlay.get(2);
+        
+        Position2D lastTip = lastInInput.getTip();
+        Position2D quantizedLastTip = lastInQuantized.getTip();
+        Position2D overlayLastTip = lastInOverlay.getTip();
+
+        assert(quantizedRoute.size() == 2);
+        assert(overlayRoute.size() == 3);
+
+        assert(lastInQuantized.length() == lastInInput.length());
+        assert(firstInOverlay.length() == stepSize / 2.0);
+        assert(middleInOverlay.length() - stepSize < 0.00000001);
+        
+        assert(quantizedLastTip.equals(lastTip, 0.0000000000001));
+        assert(overlayLastTip.equals(lastTip, 0.0000000000001));
+    }
+    
+    @Test
+    public void test2SyntheticVectorsSquareOverlayedTrajectoriesAlignOriginalStepsizeExactTwoThird()
+    {
+        LinkedList<Vector2D> input = new LinkedList<>();
+        input.add(new Vector2D(0, 0, 9.0, 0));
+        input.add(new Vector2D(9.0, 0, 0.0, 9.0));
+        
+        int stepSize = 6;
+        AbstractTrajectorizer trajectorizer = new IterativeInterpolationTrajectorizer(stepSize);
+        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
+
+        Deque<Vector2D> comparisonRoute = new LinkedList<>();
+        patchedRoute.stream().forEach(v -> comparisonRoute.add(new Vector2D(v)));
+        
+        Deque<Vector2D> overlaySrc = new LinkedList<>();
+        patchedRoute.stream().forEach(v -> overlaySrc.add(new Vector2D(v)));
+        
+        Deque<Vector2D> quantizedRoute = new LinkedList<>();
+        trajectorizer.quantize(patchedRoute, quantizedRoute, stepSize);
+        Deque<Vector2D> overlayRoute = trajectorizer.createOverlay(overlaySrc, stepSize);
+        quantizedRoute.stream().forEach(v -> checkValid(v));
+        overlayRoute.stream().forEach(v -> checkValid(v));
+        
+
+        Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.addVectorSet(patchedRoute, Color.BLACK, new BasicStroke(6.0f));
+        frame.addVectorSet(quantizedRoute, Color.BLUE, new BasicStroke(4.0f));
+        frame.addVectorSet(overlayRoute, Color.ORANGE, new BasicStroke(2.0f));
+        frame.setVisible(true);
+        frame.updateVisuals();
+
+
+        Vector2D lastInInput = patchedRoute.peekLast();
+        Vector2D lastInQuantized = quantizedRoute.peekLast();
+
+        Vector2D firstInOverlay = overlayRoute.peek();
+        Vector2D lastInOverlay = overlayRoute.peekLast();
+        
+        Position2D lastTip = lastInInput.getTip();
+        Position2D quantizedLastTip = lastInQuantized.getTip();
+        Position2D overlayLastTip = lastInOverlay.getTip();
+
+        assert(quantizedRoute.size() == 3);
+        assert(overlayRoute.size() == 4);
+
+        assert(firstInOverlay.length() == stepSize / 2.0);
+        assert(overlayRoute.pop().getLength() == (stepSize / 2.0)); 
+        assert(overlayRoute.pop().getLength() == stepSize); 
+        assert(overlayRoute.pop().getLength() == stepSize); 
+        assert(overlayRoute.pop().getLength() == (stepSize / 2.0)); 
+        
+        assert(quantizedLastTip.equals(lastTip, 0.0000000000001));
+        assert(overlayLastTip.equals(lastTip, 0.0000000000001));
+    }
+
     @Test
     public void testRealWorldOverlayedTrajectoriesAlignOriginal()
     {

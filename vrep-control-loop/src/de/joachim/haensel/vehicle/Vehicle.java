@@ -29,6 +29,7 @@ public class Vehicle implements IActuatingSensing
     private Position2D _curPosition;
     private Position2D _rearWheelCenterPosition;
     private RoadMap _roadMap;
+    private double _vehicleLength;
     
 //        _upperControlLayer = new NavigationController(this, roadMap);
 //        _lowerControlLayer = new BadReactiveController(this, _upperControlLayer);
@@ -39,7 +40,9 @@ public class Vehicle implements IActuatingSensing
         _vehicleHandles = vehicleHandles;
         _controlInterface = controller;
         _upperControlLayer = upperLayerFactory.create();
+        _upperControlLayer.initController(this, roadMap);
         _lowerControlLayer = lowerLayerFactory.create();
+        _lowerControlLayer.initController(this, _upperControlLayer);
         
         _controlEventGenerator = new LowLevelEventGenerator();
         _controlEventGenerator.addEventListener(_lowerControlLayer);
@@ -47,6 +50,7 @@ public class Vehicle implements IActuatingSensing
         _curPosition = new Position2D(0, 0);
         _rearWheelCenterPosition = new Position2D(0, 0);
         _roadMap = roadMap;
+        _vehicleLength = -1.0;
     }
 
     public void setOrientation(float angleAlpha, float angleBeta, float angleGamma) throws VRepException
@@ -114,7 +118,7 @@ public class Vehicle implements IActuatingSensing
             _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getRearLeftWheel(), -1, position3D, remoteApi.simx_opmode_blocking);
             float xR= position3D.getArray()[0];
             float yR = position3D.getArray()[1];
-            _rearWheelCenterPosition.setXY(xL - xR, yL -yR);
+            _rearWheelCenterPosition.setXY((xL + xR) / 2.0, (yL + yR) / 2.0);
         }
         catch (VRepException exc)
         {
@@ -151,7 +155,30 @@ public class Vehicle implements IActuatingSensing
     @Override
     public double getVehicleLength()
     {
-        //TODO compute vehicle length
-        return 0;
+        if(_vehicleLength < 0)
+        {
+            try
+            {
+                int frontLeftWheelHandle = _vehicleHandles.getFrontLeftWheel();
+                int rearLeftWheelHandle = _vehicleHandles.getRearLeftWheel();
+                FloatWA frontLeftWheelPos = new FloatWA(3);
+                FloatWA rearLeftWheelPos = new FloatWA(3);
+                _vrep.simxGetObjectPosition(_clientID, rearLeftWheelHandle, -1, frontLeftWheelPos, remoteApi.simx_opmode_blocking);
+                _vrep.simxGetObjectPosition(_clientID, frontLeftWheelHandle, -1, rearLeftWheelPos, remoteApi.simx_opmode_blocking);
+                Position2D p1 = new Position2D(rearLeftWheelPos);
+                Position2D p2 = new Position2D(rearLeftWheelPos);
+                _vehicleLength = Position2D.distance(p1, p2);
+                return _vehicleLength;
+            }
+            catch (VRepException exc)
+            {
+                exc.printStackTrace();
+            }
+        }
+        else
+        {
+            return _vehicleLength;
+        }
+        return 0.0;
     }
 }

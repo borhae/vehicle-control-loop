@@ -2,16 +2,15 @@ package de.joachim.haensel.phd.scenario.math.interpolation;
 
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
-import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.sumo2vrep.Position2D;
 
 public class IterativeInterpolationTrajectorizer extends AbstractTrajectorizer
 {
+    private static final int RECURSION_LIMIT = 20;
+
     public IterativeInterpolationTrajectorizer(double stepSize)
     {
         super(stepSize);
@@ -25,7 +24,8 @@ public class IterativeInterpolationTrajectorizer extends AbstractTrajectorizer
         while(!srcCopy.isEmpty())
         {
             Vector2D curVector = srcCopy.pop();
-            if(curVector.getLength() > stepSize)
+//            if(curVector.getLength() > stepSize)
+            if(curVector.getLength() - stepSize > EPSILON)
             {
                 Vector2D newElem = curVector.cutLengthFrom(stepSize);
                 result.add(newElem);
@@ -43,7 +43,7 @@ public class IterativeInterpolationTrajectorizer extends AbstractTrajectorizer
                     nextTip = nextVector.getTip();
                     distance = Position2D.distance(curBase, nextTip);
                 }
-                if(distance < stepSize)
+                if(distance <= stepSize)
                 {
                     //even taken together the elements won't be long enough. So last element
                     result.add(new Vector2D(curBase, nextTip));
@@ -51,7 +51,7 @@ public class IterativeInterpolationTrajectorizer extends AbstractTrajectorizer
                 else
                 {
                     Position2D nextBase = nextVector.getBase();
-                    Position2D newElemTip = binaryFindNewTip(curBase, nextBase, nextBase, nextTip, stepSize, 20);
+                    Position2D newElemTip = binaryFindNewTip(curBase, nextBase, nextBase, nextTip, stepSize, RECURSION_LIMIT);
                     Vector2D newElem = new Vector2D(curBase, newElemTip);
                     result.add(newElem);
                     Vector2D residue = new Vector2D(newElemTip, nextTip);

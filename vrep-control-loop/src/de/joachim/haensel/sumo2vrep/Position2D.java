@@ -122,5 +122,4 @@ public class Position2D
     {
         return "p:(" + _x  + ", " + _y + ")";
     }
-
 }

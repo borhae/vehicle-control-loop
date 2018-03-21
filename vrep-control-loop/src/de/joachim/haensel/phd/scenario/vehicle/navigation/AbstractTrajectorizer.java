@@ -12,7 +12,7 @@ import de.joachim.haensel.sumo2vrep.Position2D;
 
 public abstract class AbstractTrajectorizer implements ITrajectorizer
 {
-    protected static final float EPSILON = 0.00001f;
+    protected static final double EPSILON = 0.00001;
     protected double _stepSize;
 
     public AbstractTrajectorizer(double stepSize)
@@ -69,37 +69,77 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
         return patchedList;
     }
 
-    public Deque<Vector2D> createOverlay(Deque<Vector2D> srcRoute, double stepSize)
+    /**
+     * Create a list of vectors that will all have stepsize length. The
+     * resulting first vector will have the same base as the first vector of the input list, the tip of the last vector of the result 
+     * will accordingly be the same as the tip of the last vector of the input list. The first vector will only have half of the stepsize.
+     * @param input list of vectors possibly of uneven size, possibly different from stepSize
+     * @param stepSize the target length of the vectors in the result list
+     * @return a list of vectors of size stepSize except for the first which will have have the stepsize
+     */
+    public Deque<Vector2D> createOverlay(Deque<Vector2D> input, double stepSize)
     {
-        Deque<Vector2D> input = new LinkedList<>();
+        Deque<Vector2D> inputCopy = new LinkedList<>();
         Deque<Vector2D> result = new LinkedList<>();
-        Deque<Vector2D> startSector = new LinkedList<>();
-        srcRoute.stream().forEach(v -> input.add(new Vector2D(v)));
+        input.stream().forEach(v -> inputCopy.add(new Vector2D(v)));
 
+        Deque<Vector2D> startSector = computeStartSector(stepSize / 2.0, inputCopy);
+        // here the start segment will have length equal or more of (stepsize/2.0)
+        Deque<Vector2D> quantizedStartSegment = new LinkedList<>();
+        quantize(startSector, quantizedStartSegment, stepSize / 2.0);
+        // firstVector is of length (stepsize/2.0) 
+        if(inputCopy.isEmpty())
+        {
+            // if there was only one vector or there are none left, we need to reassemble from what we got 
+            while(!quantizedStartSegment.isEmpty())
+            {
+                if(quantizedStartSegment.size() >= 2)
+                {
+                    Vector2D newElem = new Vector2D(quantizedStartSegment.pop().getBase(), quantizedStartSegment.pop().getTip());
+                    result.add(newElem);
+                }
+                else
+                {
+                    result.add(quantizedStartSegment.pop());
+                }
+            }
+        }
+        else
+        {
+            Vector2D firstVector = quantizedStartSegment.pop();
+            Position2D base = firstVector.getTip();
+            Position2D tip = inputCopy.peek().getBase();
+            Vector2D secondVector = new Vector2D(base, tip);
+            
+            inputCopy.push(secondVector);
+            quantize(inputCopy, result, stepSize);
+            result.push(firstVector);
+        }
+        return result;
+    }
+
+    /**
+     * Collects as many vectors as necessary to "inscribe" a vector of length size to the result vectorlist
+     * @param size required minimum size between first vector base and last vector tip
+     * @param input list of vectors to collect from. 
+     * @return A list of vector(s) where the distance between first vectors base and last vectors tip is at least of size <code>size</code> 
+     */
+    private Deque<Vector2D> computeStartSector(double size, Deque<Vector2D> input)
+    {
         Position2D inputBase = input.peek().getBase();
+
+        Deque<Vector2D> result = new LinkedList<>();
         Vector2D vectorInStartSector = input.pop();
-        startSector.add(vectorInStartSector);
+        result.add(vectorInStartSector);
         Position2D curTip = vectorInStartSector.getTip();
         double curDist = Position2D.distance(inputBase, curTip);
-        while(curDist < (stepSize / 2.0))
+        while(curDist < (size / 2.0))
         {
             vectorInStartSector = input.pop();
-            startSector.add(vectorInStartSector);
+            result.add(vectorInStartSector);
             curTip = vectorInStartSector.getTip();
             curDist = Position2D.distance(inputBase, curTip);
         }
-        
-        Deque<Vector2D> quantizedStartSegment = new LinkedList<>();
-        quantize(startSector, quantizedStartSegment, stepSize / 2.0);
-        Vector2D firstVector = quantizedStartSegment.pop();
-
-        Position2D base = firstVector.getTip();
-        Position2D tip = input.peek().getBase();
-        Vector2D secondVector = new Vector2D(base, tip);
-        
-        input.push(secondVector);
-        quantize(input, result, stepSize);
-        result.push(firstVector);
         return result;
     }
     
