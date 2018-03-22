@@ -86,7 +86,12 @@ public class BadReactiveController implements ILowLevelController
     @Override
     public void controlEvent()
     {
+        boolean wasDriving = _stateMachine.getCurrentState() == ControllerStates.DRIVING;
         _stateMachine.controlEvent(this);
+        if(wasDriving && _stateMachine.getCurrentState() == ControllerStates.IDLE)
+        {
+            _actuatorsSensors.removeVector(_segmentVisualHandle);
+        }
     }
 
     private void driveAction()
@@ -95,6 +100,7 @@ public class BadReactiveController implements ILowLevelController
         _actuatorsSensors.computeAndLockSensorData();
         ensureBufferSize();
         chooseCurrentSegment(_actuatorsSensors.getPosition());
+        _actuatorsSensors.drawUpdateVector(_segmentVisualHandle, _currentSegment.getVector(), Color.RED);
         float targetWheelRotation = computeTargetWheelRotationSpeed();
         float targetSteeringAngle = computeTargetSteeringAngle();
         _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
@@ -179,8 +185,9 @@ public class BadReactiveController implements ILowLevelController
 //            System.out.print("-> angle alpha: " + alpha);
             double delta = Math.atan( (2.0 *_actuatorsSensors.getVehicleLength() * Math.sin(alpha)) / (rearWheelToLookAhead.length()) );
 //            System.out.println(", angle delta: " + delta);
-            //delta inverted, the car seemed to steer away. might be an orientation issue
-            return (float)-delta;
+            double delatDegrees = Math.toDegrees(delta);
+            System.out.println("Steering deg.:" + delatDegrees);
+            return (float)delta;
         }
     }
 

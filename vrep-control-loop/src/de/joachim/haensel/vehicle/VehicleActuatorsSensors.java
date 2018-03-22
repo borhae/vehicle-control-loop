@@ -1,14 +1,18 @@
 package de.joachim.haensel.vehicle;
 
+import static org.junit.Assert.fail;
+
 import java.awt.Color;
 
 import coppelia.FloatWA;
+import coppelia.IntWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.CarControlInterface;
 import de.joachim.haensel.sumo2vrep.Position2D;
+import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class VehicleActuatorsSensors implements IActuatingSensing
 {
@@ -131,22 +135,72 @@ public class VehicleActuatorsSensors implements IActuatingSensing
     @Override
     public int drawVector(Vector2D vector, Color color)
     {
-        // TODO required in LUA library
-        // TODO proceed in LUA library
-        // -- number drawingObjectHandle=sim.addDrawingObject(number objectType,number size,number duplicateTolerance,number parentObjectHandle,number maxItemCount,table_3 ambient_diffuse=nil,nil,table_3 specular=nil,table_3 emission=nil)
-        // handle = sim.addDrawingObject(sim.drawing_lines, 2, 0.0, -1, 1, nil, nil, color)
-        // -- number result=sim.addDrawingObjectItem(number drawingObjectHandle,table itemData)
-        // sim.addDrawingObjectItem(handle, {{x1, y1, z1}, {x2, y2, z2}})
-        return 0;
+        Vector2D v = new Vector2D(0.0, 0.0, 50.0, 50.0);
+        Color c = Color.RED;
+        FloatWA callParamsF = new FloatWA(6);
+        float[] floatParamsArray = callParamsF.getArray();
+        floatParamsArray[0] = (float) v.getBase().getX();
+        floatParamsArray[1] = (float) v.getBase().getY();
+        floatParamsArray[2] = 0.0f;
+        floatParamsArray[3] = (float) v.getTip().getX();
+        floatParamsArray[4] = (float) v.getTip().getY();
+        floatParamsArray[5] = 0.0f;
+        String parentObj = VRepObjectCreation.VREP_LOADING_SCRIPT_PARENT_OBJECT;
+        try
+        {
+            //_vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, remoteApi.sim_scripttype_customizationscript, "drawVector", inInts, inFloats, inStrings, inBuffer, outInts, outFloats, outStrings, outBuffer, remoteApi.simx_opmode_blocking);
+            IntWA result = new IntWA(1);
+            _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_customizationscript, "drawVector", null, callParamsF, null, null, result, null, null, null, remoteApi.simx_opmode_blocking);
+            int handle = result.getArray()[0];
+            System.out.println("!!!!!Draw handle: " + handle);
+            return handle;
+        }
+        catch (VRepException exc)
+        {
+            exc.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public void drawUpdateVector(int handle, Vector2D vector, Color color)
     {
-        // TODO required in LUA library
-        // TODO proceed in LUA library
-        // sim.addDrawingObjectItem(handle, nil)
-        // sim.addDrawingObjectItem(handle, "vector")
+        System.out.println("draw handle" + handle);
+        FloatWA callParamsF = new FloatWA(6);
+        float[] floatParamsArray = callParamsF.getArray();
+        floatParamsArray[0] = (float) vector.getBase().getX();
+        floatParamsArray[1] = (float) vector.getBase().getY();
+        floatParamsArray[2] = 1.0f;
+        floatParamsArray[3] = (float) vector.getTip().getX();
+        floatParamsArray[4] = (float) vector.getTip().getY();
+        floatParamsArray[5] = 1.0f;
+        String parentObj = VRepObjectCreation.VREP_LOADING_SCRIPT_PARENT_OBJECT;
+        IntWA inHandle = new IntWA(1);
+        inHandle.getArray()[0] = handle;
+        try
+        {
+            _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_customizationscript, "drawUpdateVector", inHandle, callParamsF, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+        }
+        catch (VRepException exc)
+        {
+            exc.printStackTrace();
+        }
+    }
+    
+    @Override
+    public void removeVector(int handle)
+    {
+        String parentObj = VRepObjectCreation.VREP_LOADING_SCRIPT_PARENT_OBJECT;
+        IntWA inHandle = new IntWA(1);
+        inHandle.getArray()[0] = handle;
+        try
+        {
+            _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_customizationscript, "drawRemoveVector", inHandle, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+        }
+        catch (VRepException exc)
+        {
+            exc.printStackTrace();
+        }
     }
 
     @Override

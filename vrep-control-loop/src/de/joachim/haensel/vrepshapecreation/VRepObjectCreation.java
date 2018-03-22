@@ -23,7 +23,7 @@ public class VRepObjectCreation
     private static final String STEERING_CONTROL_SCRIPT_FILE_NAME = "./lua/SteeringControlScript.lua";
     
     
-    private static final String VREP_LOADING_SCRIPT_PARENT_OBJECT = "ScriptLoader";
+    public static final String VREP_LOADING_SCRIPT_PARENT_OBJECT = "ScriptLoader";
     private VRepRemoteAPI _vrep;
     private int _clientID;
     private String _springDamperScript;

@@ -81,7 +81,7 @@ public class LayerInteractionTest implements TestConstants
         RoadMap roadMap = new RoadMap("./res/roadnetworks/testing3Junctions2Edges2Lanes.net.xml");
         NavigationController controller = new NavigationController();
         Position2D destinationPosition = new Position2D(101.81f, 9.23f);
-        IActuatingSensing sensorsActuators = new IActuatingSensing() {            
+        IActuatingSensing sensorsActuators = new IActuatingSensing() {
             @Override
             public double getVehicleLength()
             {
@@ -133,6 +133,11 @@ public class LayerInteractionTest implements TestConstants
             public Vector2D getOrientation()
             {
                 return null;
+            }
+
+            @Override
+            public void removeVector(int handle)
+            {
             }
         };
         controller.initController(sensorsActuators, roadMap);

@@ -58,4 +58,10 @@ public interface IActuatingSensing
      * @param vector the new location
      */
     public void drawUpdateVector(int handle, Vector2D vector, Color color);
+
+    /**
+     * Removes the vector. Don't forget, these are hard to remove since they can't be selected
+     * @param handle
+     */
+    public void removeVector(int handle);
 }
