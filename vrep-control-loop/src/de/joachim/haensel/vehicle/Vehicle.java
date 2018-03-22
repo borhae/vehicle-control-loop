@@ -1,5 +1,6 @@
 package de.joachim.haensel.vehicle;
 
+import java.awt.Color;
 import java.util.Timer;
 
 import coppelia.FloatWA;
@@ -194,5 +195,18 @@ public class Vehicle implements IActuatingSensing
         Position2D p1 = new Position2D(rearLeftWheelPos);
         Position2D p2 = new Position2D(frontLeftWheelPos);
         return new Vector2D(p1, p2);
+    }
+
+    @Override
+    public int drawVector(Vector2D vector, Color color)
+    {
+        
+        return 0;
+    }
+
+    @Override
+    public void drawUpdateVector(int handle, Vector2D vector, Color color)
+    {
+        
     }
 }

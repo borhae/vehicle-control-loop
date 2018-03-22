@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.vehicle.test;
 
+import java.awt.Color;
 import java.util.List;
 
 import org.junit.After;
@@ -103,6 +104,17 @@ public class LayerInteractionTest implements TestConstants
 
             @Override
             public void computeAndLockSensorData()
+            {
+            }
+
+            @Override
+            public int drawVector(Vector2D vector, Color color)
+            {
+                return 0;
+            }
+
+            @Override
+            public void drawUpdateVector(int handle, Vector2D vector, Color color)
             {
             }
         };

@@ -1,5 +1,6 @@
 package de.joachim.haensel.vehicle;
 
+import java.awt.Color;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -24,6 +25,7 @@ public class BadReactiveController implements ILowLevelController
     private ITrajectoryProvider _segmentProvider;
     private Trajectory _currentSegment;
     private double _lookahead;
+    private int _segmentVisualHandle;
 
     public class DefaultReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
@@ -68,6 +70,11 @@ public class BadReactiveController implements ILowLevelController
         _segmentProvider = trajectoryProvider;
         _currentSegment = null;
         _lookahead = 5.0;
+        ensureBufferSize();
+        _actuatorsSensors.computeAndLockSensorData();
+        Position2D currentPosition = _actuatorsSensors.getPosition();
+        chooseCurrentSegment(currentPosition);
+        _segmentVisualHandle = _actuatorsSensors.drawVector(_currentSegment.getVector(), Color.RED);
     }
 
     @Override
@@ -84,7 +91,7 @@ public class BadReactiveController implements ILowLevelController
 
     private void driveAction()
     {
-        System.out.println("acting on drive :)");
+        System.out.println("------------------------------------------------------------------------------");
         _actuatorsSensors.computeAndLockSensorData();
         ensureBufferSize();
         chooseCurrentSegment(_actuatorsSensors.getPosition());
@@ -105,20 +112,18 @@ public class BadReactiveController implements ILowLevelController
         {
             boolean segmentFound = false;
             int segIdx = 0;
-            Trajectory mySeg = null;
             for (Trajectory curTraj : _segmentBuffer)
             {
+                segIdx++;
                 if(isInRange(currentPosition, curTraj.getVector(), _lookahead))
                 {
                     segmentFound = true;
-                    mySeg = curTraj;
                     break;
                 }
-                segIdx++;
             }
             if(!segmentFound)
             {
-                System.out.println("aaaaaaaaaah nothing is close enough");
+                System.out.println("No new segment. Lookahead:" +  _lookahead + ", Pos: " + currentPosition + ", buffer: " + _segmentBuffer);
                 return;
             }
             else
@@ -129,7 +134,6 @@ public class BadReactiveController implements ILowLevelController
                     _currentSegment = _segmentBuffer.pop();
                     segIdx--;
                 }
-                _currentSegment = _segmentBuffer.pop();
             }
         }
     }
@@ -138,7 +142,7 @@ public class BadReactiveController implements ILowLevelController
     {
         double baseDist = Position2D.distance(vector.getBase(), position);
         double tipDist = Position2D.distance(vector.getTip(), position);
-        System.out.println("Td: " + tipDist + ", Bd: " + baseDist);
+//        System.out.println("Td: " + tipDist + ", Bd: " + baseDist);
         return tipDist > requiredDistance && baseDist <= requiredDistance;
     }
 
@@ -158,23 +162,24 @@ public class BadReactiveController implements ILowLevelController
 
     protected float computeTargetSteeringAngle()
     {
-        //TODO last action was here, might already work
         Position2D rearWheelPosition = _actuatorsSensors.getRearWheelCenterPosition();
         Vector2D currentSegment = _currentSegment.getVector();
-        
+        _actuatorsSensors.drawUpdateVector(_segmentVisualHandle, currentSegment, Color.RED);
         Vector2D rearWheelToLookAhead = computeRearWheelToLookaheadVector(rearWheelPosition, currentSegment);
         if(rearWheelToLookAhead == null)
         {
-            System.out.println("line between " + rearWheelPosition + " and " + currentSegment + " with required distance " + _lookahead + " resulted in a null value");
+//            System.out.println("line between " + rearWheelPosition + " and " + currentSegment + " with required distance " + _lookahead + " resulted in a null value");
+            System.out.println("!!!!! no rear wheel to current segment vector of desired length");
             return 0.0f;
         }
         else
         {
-            System.out.println("line between " + rearWheelPosition + " and " + currentSegment + " with required distance " + _lookahead + " resulted in: " + rearWheelToLookAhead);
+//            System.out.println("line between " + rearWheelPosition + " and " + currentSegment + " with required distance " + _lookahead + " resulted in: " + rearWheelToLookAhead);
             double alpha = Vector2D.computeAngle(rearWheelToLookAhead, currentSegment);
-            System.out.print("-> angle alpha: " + alpha);
+//            System.out.print("-> angle alpha: " + alpha);
             double delta = Math.atan( (2.0 *_actuatorsSensors.getVehicleLength() * Math.sin(alpha)) / (rearWheelToLookAhead.length()) );
-            System.out.println(", angle delta: " + delta);
+//            System.out.println(", angle delta: " + delta);
+            //delta inverted, the car seemed to steer away. might be an orientation issue
             return (float)-delta;
         }
     }

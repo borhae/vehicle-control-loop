@@ -100,4 +100,27 @@ public class Line2D
     {
         return _y2;
     }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("l[");
+        String oB = "(";
+        String cB = ")";
+        String comma = ", ";
+        builder.append(oB);
+        builder.append(_x1);
+        builder.append(comma);
+        builder.append(_y1);
+        builder.append(cB);
+        builder.append(comma);
+        builder.append(oB);
+        builder.append(_x2);
+        builder.append(comma);
+        builder.append(_y2);
+        builder.append(cB);
+        builder.append("]");
+        return builder.toString();
+    }
 }

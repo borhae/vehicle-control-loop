@@ -28,12 +28,18 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
         LinkedList<Vector2D> quantizedRoute = new LinkedList<>();
         quantize(srcRoute, quantizedRoute, _stepSize);
         Deque<Vector2D> overlay = createOverlay(srcRoute, _stepSize);
-        for( int idx = 0; idx < quantizedRoute.size(); idx++)
+        int elementsToAdd = quantizedRoute.size() + overlay.size();
+        int addCnt = 0;
+        while(addCnt < elementsToAdd)
         {
             Vector2D vec1 = overlay.pop();
+            addCnt++;
             Trajectory elem1 = new Trajectory(vec1);
+            
             Vector2D vec2 = quantizedRoute.pop();
+            addCnt++;
             Trajectory elem2 = new Trajectory(vec2);
+            
             result.add(elem1);
             result.add(elem2);
         }
