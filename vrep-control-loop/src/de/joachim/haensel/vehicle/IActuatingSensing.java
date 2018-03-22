@@ -7,6 +7,10 @@ import de.joachim.haensel.sumo2vrep.Position2D;
 
 public interface IActuatingSensing
 {
+    public void setOrientation(float angleAlpha, float angleBeta, float angleGamma);
+    
+    public void setPosition(float posX, float posY, float posZ);
+    
     /**
      * Computes all sensory data for the same time instance
      */
@@ -17,6 +21,8 @@ public interface IActuatingSensing
      * @return 
      */
     public Position2D getPosition();
+
+    public Vector2D getOrientation();
 
     /**
      * Will give the vehicles center position between rear wheels at the time that {@code IActuatingSensing.computeAndLockSensorData()} was called.

@@ -70,17 +70,17 @@ public class BadReactiveController implements ILowLevelController
         _segmentProvider = trajectoryProvider;
         _currentSegment = null;
         _lookahead = 5.0;
-        ensureBufferSize();
-        _actuatorsSensors.computeAndLockSensorData();
-        Position2D currentPosition = _actuatorsSensors.getPosition();
-        chooseCurrentSegment(currentPosition);
-        _segmentVisualHandle = _actuatorsSensors.drawVector(_currentSegment.getVector(), Color.RED);
     }
 
     @Override
     public void driveTo(Position2D target)
     {
         _stateMachine.driveTo(target);
+        ensureBufferSize();
+        _actuatorsSensors.computeAndLockSensorData();
+        Position2D currentPosition = _actuatorsSensors.getPosition();
+        chooseCurrentSegment(currentPosition);
+        _segmentVisualHandle = _actuatorsSensors.drawVector(_currentSegment.getVector(), Color.RED);
     }
 
     @Override

@@ -31,9 +31,6 @@ public class Triangle
         _gamma  = Math.sin(cTimesSinAlphaByA);
         _beta = Math.PI - _alpha - _gamma;
         _b = _a * Math.sin(_beta) / Math.sin(_alpha);
-        double alphaDeg = Math.toDegrees(_alpha);
-        double betaDeg = Math.toDegrees(_beta);
-        double gammaDeg = Math.toDegrees(_gamma);
         return (float)_b;
     }
 }

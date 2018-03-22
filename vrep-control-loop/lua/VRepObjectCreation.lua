@@ -356,9 +356,48 @@ table_to_string = function(tbl)
     return result.."}"
 end
 
--- ------------------------- TODO: THIS SHOULD GO TO IT'S OWN FILE --------------
+-- ------------------------- TODO: THIS SHOULD GO TO IT'S OWN FILE (simulation control) --------------
 
 simulationState =  function(inInts, inFloats, inStrings, inBuffer)
   local simulationState = sim.getSimulationState()
   return {simulationState}, {}, {}, "" 
+end
+
+-- ------------------------- TODO: THIS SHOULD GO TO IT'S OWN FILE (debugging) --------------
+
+drawVector = function(inInts, inFloats, inStrings, inBuffer)
+  local size = 2
+  local emissiveColor = {1, 0, 0}
+  local handle = sim.addDrawingObject(sim.drawing_lines, size, 0, -1, 2, nil, nil, nil, emissiveColor)
+
+  local x1 = inFloats[1]
+  local y1 = inFloats[2]
+  local z1 = inFloats[3]
+  local x2 = inFloats[4]
+  local y2 = inFloats[5]
+  local z2 = inFloats[6]
+  
+  sim.addDrawingObjectItem(handle, nil)
+  sim.addDrawingObjectItem(handle, {x1, y1, z1, x2, y2, z2})
+  return {handle}, {}, {}, "" 
+end
+
+drawUpdateVector = function(inInts, inFloats, inStrings, inBuffer)
+  local handle = inInts[1]
+  local x1 = inFloats[1]
+  local y1 = inFloats[2]
+  local z1 = inFloats[3]
+  local x2 = inFloats[4]
+  local y2 = inFloats[5]
+  local z2 = inFloats[6]
+
+  sim.addDrawingObjectItem(handle, nil)
+  sim.addDrawingObjectItem(handle, {x1, y1, z1, x2, y2, z2})
+  return {}, {}, {}, "" 
+end
+
+drawRemoveVector = function(inInts, inFloats, inStrings, inBuffer)
+  local handle = inInts[1]
+  sim.removeDrawingObject(handle)
+  return {}, {}, {}, "" 
 end

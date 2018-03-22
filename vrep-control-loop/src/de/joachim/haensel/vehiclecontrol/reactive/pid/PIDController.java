@@ -1,5 +1,10 @@
 package de.joachim.haensel.vehiclecontrol.reactive.pid;
 
+/**
+ * TODO I might want to remove this class
+ * @author dummy
+ *
+ */
 public class PIDController
 {
     private double _p;

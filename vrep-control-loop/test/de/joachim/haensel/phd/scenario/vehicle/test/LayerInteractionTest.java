@@ -25,6 +25,7 @@ import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.vehicle.NavigationController;
 import de.joachim.haensel.vehicle.Vehicle;
+import de.joachim.haensel.vehicle.VehicleActuatorsSensors;
 import de.joachim.haensel.vehicle.VehicleCreator;
 import de.joachim.haensel.vehiclecontrol.Navigator;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
@@ -117,6 +118,22 @@ public class LayerInteractionTest implements TestConstants
             public void drawUpdateVector(int handle, Vector2D vector, Color color)
             {
             }
+
+            @Override
+            public void setOrientation(float angleAlpha, float angleBeta, float angleGamma)
+            {
+            }
+
+            @Override
+            public void setPosition(float posX, float posY, float posZ)
+            {
+            }
+
+            @Override
+            public Vector2D getOrientation()
+            {
+                return null;
+            }
         };
         controller.initController(sensorsActuators, roadMap);
         controller.buildSegmentBuffer(destinationPosition, roadMap);
@@ -148,7 +165,7 @@ public class LayerInteractionTest implements TestConstants
         
         Vector2D carOrientation = vehicle.getOrientation();
         NavigationController fakeNav = new NavigationController();
-        fakeNav.initController(vehicle, roadMap);
+        fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
         int size = fakeNav.getSegmentBufferSize();
         
@@ -158,6 +175,7 @@ public class LayerInteractionTest implements TestConstants
         double correctionAngle = Vector2D.computeAngle(carOrientation, firstSegOrientation) + Math.PI;
         
         vehicle.setOrientation(0.0f, 0.0f, (float)correctionAngle);
+
         try
         {
             Thread.sleep(2000);
