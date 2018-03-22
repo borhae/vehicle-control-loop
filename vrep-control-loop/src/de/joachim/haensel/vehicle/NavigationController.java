@@ -33,6 +33,7 @@ public class NavigationController implements ITopLayerControl
     public void buildSegmentBuffer(Position2D targetPosition, RoadMap roadMap)
     {
         _roadMap = roadMap;
+        _sensorsActuators.computeAndLockSensorData();
         Position2D currentPosition = _sensorsActuators.getPosition();
         Navigator navigator = new Navigator(_roadMap);
         List<Line2D> routeBasis = navigator.getRoute(currentPosition, targetPosition);
@@ -45,5 +46,15 @@ public class NavigationController implements ITopLayerControl
     public List<Trajectory> getNewSegments(int requestSize)
     {
         return _currentRoute.getSegments(requestSize);
+    }
+
+    public Trajectory segmentsPeek()
+    {
+        return _currentRoute.peek();
+    }
+
+    public int getSegmentBufferSize()
+    {
+        return _currentRoute.getSize();
     }
 }

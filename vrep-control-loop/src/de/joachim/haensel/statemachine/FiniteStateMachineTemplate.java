@@ -70,7 +70,6 @@ public class FiniteStateMachineTemplate
 
     public<T> void transition(Messages msg, T parameter)
     {
-        System.out.println("eval msg: " + msg + " with parameter: " + parameter);
         States fromState = getCurrentState();
         Map<Messages, Map<Guard,ActionTargetStatePair>> transitions = _transitionTable.get(fromState);
         if(transitions == null)

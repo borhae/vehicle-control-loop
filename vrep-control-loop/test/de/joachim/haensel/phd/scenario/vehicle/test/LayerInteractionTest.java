@@ -11,7 +11,9 @@ import coppelia.IntWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
@@ -98,6 +100,11 @@ public class LayerInteractionTest implements TestConstants
             
             @Override
             public void drive(float targetWheelRotation, float targetSteeringAngle){ }
+
+            @Override
+            public void computeAndLockSensorData()
+            {
+            }
         };
         controller.initController(sensorsActuators, roadMap);
         controller.buildSegmentBuffer(destinationPosition, roadMap);
@@ -124,8 +131,21 @@ public class LayerInteractionTest implements TestConstants
         
         IUpperLayerFactory uperFact = () -> {return new NavigationController();};
         ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+        
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
-        vehicle.setOrientation(0.0f, 0.0f, 0.0f);
+        
+        Vector2D carOrientation = vehicle.getOrientation();
+        NavigationController fakeNav = new NavigationController();
+        fakeNav.initController(vehicle, roadMap);
+        fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
+        int size = fakeNav.getSegmentBufferSize();
+        
+        Trajectory firstSeg = fakeNav.segmentsPeek();
+        Vector2D firstSegOrientation = firstSeg.getVector();
+        
+        double correctionAngle = Vector2D.computeAngle(carOrientation, firstSegOrientation) + Math.PI;
+        
+        vehicle.setOrientation(0.0f, 0.0f, (float)correctionAngle);
         try
         {
             Thread.sleep(2000);

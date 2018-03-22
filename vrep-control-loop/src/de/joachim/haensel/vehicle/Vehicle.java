@@ -6,6 +6,7 @@ import coppelia.FloatWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.CarControlInterface;
 import de.joachim.haensel.sumo2vrep.OrientedPosition;
 import de.joachim.haensel.sumo2vrep.Position2D;
@@ -89,41 +90,41 @@ public class Vehicle implements IActuatingSensing
         //TODO nothings blocking here yet. Take care if the rest is done
         driveTo(x, y, roadMap);
     }
+    
 
     @Override
-    public Position2D getPosition()
+    public void computeAndLockSensorData()
     {
         try
         {
-            FloatWA position3D = new FloatWA(3);
-            _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getPhysicalBody(), -1, position3D, remoteApi.simx_opmode_blocking);
-            _curPosition.setXY(position3D.getArray());
-        }
-        catch (VRepException exc)
-        {
-            exc.printStackTrace();
-        }
-        return _curPosition;
-    }
-    
-    @Override
-    public Position2D getRearWheelCenterPosition()
-    {
-        try
-        {
-            FloatWA position3D = new FloatWA(3);
-            _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getRearLeftWheel(), -1, position3D, remoteApi.simx_opmode_blocking);
-            float xL = position3D.getArray()[0];
-            float yL = position3D.getArray()[1];
-            _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getRearLeftWheel(), -1, position3D, remoteApi.simx_opmode_blocking);
-            float xR= position3D.getArray()[0];
-            float yR = position3D.getArray()[1];
+            FloatWA physicalBodyPosition = new FloatWA(3);
+            _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getPhysicalBody(), -1, physicalBodyPosition, remoteApi.simx_opmode_blocking);
+            _curPosition.setXY(physicalBodyPosition.getArray());
+            
+            FloatWA rearWheelPosition = new FloatWA(3);
+            _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getRearLeftWheel(), -1, rearWheelPosition, remoteApi.simx_opmode_blocking);
+            float xL = rearWheelPosition.getArray()[0];
+            float yL = rearWheelPosition.getArray()[1];
+            _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getRearRightWheel(), -1, rearWheelPosition, remoteApi.simx_opmode_blocking);
+            float xR = rearWheelPosition.getArray()[0];
+            float yR = rearWheelPosition.getArray()[1];
             _rearWheelCenterPosition.setXY((xL + xR) / 2.0, (yL + yR) / 2.0);
         }
         catch (VRepException exc)
         {
             exc.printStackTrace();
         }
+    }
+
+    @Override
+    public Position2D getPosition()
+    {
+        return _curPosition;
+    }
+    
+    @Override
+    public Position2D getRearWheelCenterPosition()
+    {
         return _rearWheelCenterPosition;
     }
 
@@ -166,7 +167,7 @@ public class Vehicle implements IActuatingSensing
                 _vrep.simxGetObjectPosition(_clientID, rearLeftWheelHandle, -1, frontLeftWheelPos, remoteApi.simx_opmode_blocking);
                 _vrep.simxGetObjectPosition(_clientID, frontLeftWheelHandle, -1, rearLeftWheelPos, remoteApi.simx_opmode_blocking);
                 Position2D p1 = new Position2D(rearLeftWheelPos);
-                Position2D p2 = new Position2D(rearLeftWheelPos);
+                Position2D p2 = new Position2D(frontLeftWheelPos);
                 _vehicleLength = Position2D.distance(p1, p2);
                 return _vehicleLength;
             }
@@ -180,5 +181,18 @@ public class Vehicle implements IActuatingSensing
             return _vehicleLength;
         }
         return 0.0;
+    }
+
+    public Vector2D getOrientation() throws VRepException
+    {
+        int frontLeftWheelHandle = _vehicleHandles.getFrontLeftWheel();
+        int rearLeftWheelHandle = _vehicleHandles.getRearLeftWheel();
+        FloatWA frontLeftWheelPos = new FloatWA(3);
+        FloatWA rearLeftWheelPos = new FloatWA(3);
+        _vrep.simxGetObjectPosition(_clientID, rearLeftWheelHandle, -1, frontLeftWheelPos, remoteApi.simx_opmode_blocking);
+        _vrep.simxGetObjectPosition(_clientID, frontLeftWheelHandle, -1, rearLeftWheelPos, remoteApi.simx_opmode_blocking);
+        Position2D p1 = new Position2D(rearLeftWheelPos);
+        Position2D p2 = new Position2D(frontLeftWheelPos);
+        return new Vector2D(p1, p2);
     }
 }

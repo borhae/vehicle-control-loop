@@ -47,6 +47,11 @@ public class VehicleHandles
     {
         return _rearLeftWheel;
     }
+    
+    public int getRearRightWheel()
+    {
+        return _rearRightWheel;
+    }
 
     public int getFrontLeftWheel()
     {

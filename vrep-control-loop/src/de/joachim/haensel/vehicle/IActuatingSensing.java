@@ -11,4 +11,6 @@ public interface IActuatingSensing
     public Position2D getRearWheelCenterPosition();
 
     public double getVehicleLength();
+
+    public void computeAndLockSensorData();
 }

@@ -1,11 +1,9 @@
 package de.joachim.haensel.vehicle;
 
-import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import de.joachim.haensel.phd.scenario.math.Triangle;
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerMsg;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerStates;
@@ -13,12 +11,12 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
 import de.joachim.haensel.statemachine.Guard;
 import de.joachim.haensel.statemachine.States;
-import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.sumo2vrep.Position2D;
 
 public class BadReactiveController implements ILowLevelController
 {
-    private static final int SEGMENT_BUFFER_SIZE = 40;
+    private static final int MIN_SEGMENT_BUFFER_SIZE = 5;
+    private static final int SEGMENT_BUFFER_SIZE = 10;
     private Position2D _expectedTarget;
     private IActuatingSensing _actuatorsSensors;
     private DefaultReactiveControllerStateMachine _stateMachine;
@@ -87,43 +85,73 @@ public class BadReactiveController implements ILowLevelController
     private void driveAction()
     {
         System.out.println("acting on drive :)");
+        _actuatorsSensors.computeAndLockSensorData();
         ensureBufferSize();
-        System.out.print("buffersize [V]");
-        chooseCurrentSegment();
-        System.out.print(", curSeg:" + _currentSegment.getVector());
+        chooseCurrentSegment(_actuatorsSensors.getPosition());
         float targetWheelRotation = computeTargetWheelRotationSpeed();
-        System.out.print(", v:" + targetWheelRotation);
         float targetSteeringAngle = computeTargetSteeringAngle();
-        System.out.print(", delta:" + targetSteeringAngle);
         _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
         System.out.println("drive called with: v:(" + targetWheelRotation + "), delta:(" + targetSteeringAngle + ")");
     }
 
-    private void chooseCurrentSegment()
+    private void chooseCurrentSegment(Position2D currentPosition)
     {
-        Position2D curPos = _actuatorsSensors.getPosition();
-        Trajectory firstSegment = _segmentBuffer.peek();
-        Trajectory secondSegment = _segmentBuffer.get(1);
-        
-        double distS1 = firstSegment.getVector().distance(curPos);
-        double distS2 = secondSegment.getVector().distance(curPos);
-        if(distS1 > distS2)
+        if(_currentSegment != null && isInRange(currentPosition, _currentSegment.getVector(), _lookahead))
         {
-            _segmentBuffer.pop(); //discard first
-            _currentSegment = secondSegment;
+            // current segment still in range, we are good here
+            return;
         }
         else
         {
-            _currentSegment = firstSegment;
+            boolean segmentFound = false;
+            int segIdx = 0;
+            Trajectory mySeg = null;
+            for (Trajectory curTraj : _segmentBuffer)
+            {
+                if(isInRange(currentPosition, curTraj.getVector(), _lookahead))
+                {
+                    segmentFound = true;
+                    mySeg = curTraj;
+                    break;
+                }
+                segIdx++;
+            }
+            if(!segmentFound)
+            {
+                System.out.println("aaaaaaaaaah nothing is close enough");
+                return;
+            }
+            else
+            {
+                System.out.println("Removing " + segIdx + " elements from buffer");
+                while(segIdx > 0)
+                {
+                    _currentSegment = _segmentBuffer.pop();
+                    segIdx--;
+                }
+                _currentSegment = _segmentBuffer.pop();
+            }
         }
+    }
+
+    private boolean isInRange(Position2D position, Vector2D vector, double requiredDistance)
+    {
+        double baseDist = Position2D.distance(vector.getBase(), position);
+        double tipDist = Position2D.distance(vector.getTip(), position);
+        System.out.println("Td: " + tipDist + ", Bd: " + baseDist);
+        return tipDist > requiredDistance && baseDist <= requiredDistance;
     }
 
     private void ensureBufferSize()
     {
-        if(_segmentBuffer.size() < 20)
+        if(_segmentBuffer.size() < MIN_SEGMENT_BUFFER_SIZE)
         {
             int segmentRequestSize = SEGMENT_BUFFER_SIZE - _segmentBuffer.size();
             List<Trajectory> trajectories = _segmentProvider.getNewSegments(segmentRequestSize);
+            if(trajectories == null)
+            {
+                return;
+            }
             trajectories.stream().forEach(traj -> _segmentBuffer.add(traj));
         }
     }
@@ -140,12 +168,15 @@ public class BadReactiveController implements ILowLevelController
             System.out.println("line between " + rearWheelPosition + " and " + currentSegment + " with required distance " + _lookahead + " resulted in a null value");
             return 0.0f;
         }
-        double alpha = Vector2D.computeAngle(rearWheelToLookAhead, currentSegment);
-        
-        
-        double delta = Math.atan( (2.0 *_actuatorsSensors.getVehicleLength() * Math.sin(alpha)) / (rearWheelToLookAhead.length()) );
-        
-        return (float)delta;
+        else
+        {
+            System.out.println("line between " + rearWheelPosition + " and " + currentSegment + " with required distance " + _lookahead + " resulted in: " + rearWheelToLookAhead);
+            double alpha = Vector2D.computeAngle(rearWheelToLookAhead, currentSegment);
+            System.out.print("-> angle alpha: " + alpha);
+            double delta = Math.atan( (2.0 *_actuatorsSensors.getVehicleLength() * Math.sin(alpha)) / (rearWheelToLookAhead.length()) );
+            System.out.println(", angle delta: " + delta);
+            return (float)-delta;
+        }
     }
 
     private Vector2D computeRearWheelToLookaheadVector(Position2D rearWheelPosition, Vector2D currentSegment)
@@ -158,13 +189,15 @@ public class BadReactiveController implements ILowLevelController
         }
         else
         {
-            return circleIntersection.get(0);
+            Vector2D vectorSegmentIntersection = circleIntersection.get(0);
+            Vector2D result = new Vector2D(rearWheelPosition, vectorSegmentIntersection.getTip());
+            return result;
         }
     }
 
     protected float computeTargetWheelRotationSpeed()
     {
-        return 10.0f;
+        return -0.5f;
     }
 
     @Override

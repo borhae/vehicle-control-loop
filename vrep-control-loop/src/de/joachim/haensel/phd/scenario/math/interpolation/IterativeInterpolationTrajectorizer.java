@@ -74,7 +74,6 @@ public class IterativeInterpolationTrajectorizer extends AbstractTrajectorizer
         }
         recursionLimit--;
         double distance = Position2D.distance(base, curTarget);
-        System.out.println(distance);
         if(distance < stepSize)
         {
             Position2D newTarget = Position2D.between(curTarget, higher);
