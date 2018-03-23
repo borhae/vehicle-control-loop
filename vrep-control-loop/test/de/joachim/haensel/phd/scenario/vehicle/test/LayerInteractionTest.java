@@ -109,17 +109,6 @@ public class LayerInteractionTest implements TestConstants
             }
 
             @Override
-            public int drawVector(Vector2D vector, Color color)
-            {
-                return 0;
-            }
-
-            @Override
-            public void drawUpdateVector(int handle, Vector2D vector, Color color)
-            {
-            }
-
-            @Override
             public void setOrientation(float angleAlpha, float angleBeta, float angleGamma)
             {
             }
@@ -133,11 +122,6 @@ public class LayerInteractionTest implements TestConstants
             public Vector2D getOrientation()
             {
                 return null;
-            }
-
-            @Override
-            public void removeVector(int handle)
-            {
             }
         };
         controller.initController(sensorsActuators, roadMap);
@@ -199,8 +183,10 @@ public class LayerInteractionTest implements TestConstants
         {
             exc.printStackTrace();
         }
+        vehicle.activateDebugging();
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");
+        vehicle.deacvtivateDebugging();
     }
 }

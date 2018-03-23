@@ -365,39 +365,57 @@ end
 
 -- ------------------------- TODO: THIS SHOULD GO TO IT'S OWN FILE (debugging) --------------
 
-drawVector = function(inInts, inFloats, inStrings, inBuffer)
-  local size = 2
-  local emissiveColor = {1, 0, 0}
-  local handle = sim.addDrawingObject(sim.drawing_lines, size, 0, -1, 2, nil, nil, nil, emissiveColor)
-
-  local x1 = inFloats[1]
-  local y1 = inFloats[2]
-  local z1 = inFloats[3]
-  local x2 = inFloats[4]
-  local y2 = inFloats[5]
-  local z2 = inFloats[6]
-  
-  sim.addDrawingObjectItem(handle, nil)
-  sim.addDrawingObjectItem(handle, {x1, y1, z1, x2, y2, z2})
-  return {handle}, {}, {}, "" 
+createDrawingObjectLine = function(inInts, inFloats, inStrings, inBuffer)
+	local size = 2
+	local emissiveColor = {1, 0, 0}
+	local handle = sim.addDrawingObject(sim.drawing_lines, size, 0, -1, 2, nil, nil, nil, emissiveColor)
+	return {handle}, {}, {}, "" 
 end
 
-drawUpdateVector = function(inInts, inFloats, inStrings, inBuffer)
-  local handle = inInts[1]
-  local x1 = inFloats[1]
-  local y1 = inFloats[2]
-  local z1 = inFloats[3]
-  local x2 = inFloats[4]
-  local y2 = inFloats[5]
-  local z2 = inFloats[6]
-
-  sim.addDrawingObjectItem(handle, nil)
-  sim.addDrawingObjectItem(handle, {x1, y1, z1, x2, y2, z2})
-  return {}, {}, {}, "" 
+createDrawingObjectCircle = function(inInts, inFloats, inStrings, inBuffer)
+	local emissiveColor = {0, 0, 1}
+	local pointSize = 0.005
+	local handle = sim.addDrawingObject(sim.drawing_spherepoints, pointSize, 0, -1, 99999999, nil, nil, nil, emissiveColor)
+	return {handle}, {}, {}, ""
 end
 
-drawRemoveVector = function(inInts, inFloats, inStrings, inBuffer)
-  local handle = inInts[1]
-  sim.removeDrawingObject(handle)
-  return {}, {}, {}, "" 
+removeDrawingObject = function(inInts, inFloats, inStrings, inBuffer)
+	local handle = inInts[1]
+	sim.removeDrawingObject(handle)
+	return {}, {}, {}, "" 
+end
+
+redrawLine = function(inInts, inFloats, inStrings, inBuffer)
+	local handle = inInts[1]
+	local x1 = inFloats[1]
+	local y1 = inFloats[2]
+	local z1 = inFloats[3]
+	local x2 = inFloats[4]
+	local y2 = inFloats[5]
+	local z2 = inFloats[6]
+
+	sim.addDrawingObjectItem(handle, nil)
+	sim.addDrawingObjectItem(handle, {x1, y1, z1, x2, y2, z2})
+	
+	return {}, {}, {}, "" 
+end
+
+redrawCircle = function(inInts, inFloats, inStrings, inBuffer)
+	local handle = inInts[1]
+	sim.addDrawingObjectItem(handle, nil)
+	local pointDistance = 0.5
+	local centerX = inFloats[1]
+	local centerY = inFloats[2]
+	local centerZ = inFloats[3]
+	local radius = inFloats[4]
+	
+	local currentPoint = {0.0, 0.0, 0.0}
+	currentPoint[3] = centerZ
+
+	for idx = 0, 360, pointDistance do
+		currentPoint[1] = centerX + radius * math.cos(idx * math.pi / 180)
+		currentPoint[2] = centerY + radius * math.sin(idx * math.pi / 180)
+		sim.addDrawingObjectItem(handle, currentPoint)
+	end
+	return {}, {}, {}, "" 
 end

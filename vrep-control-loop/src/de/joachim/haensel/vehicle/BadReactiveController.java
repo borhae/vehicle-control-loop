@@ -9,6 +9,8 @@ import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerMsg;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerStates;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
+import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
 import de.joachim.haensel.statemachine.Guard;
 import de.joachim.haensel.statemachine.States;
@@ -16,6 +18,8 @@ import de.joachim.haensel.sumo2vrep.Position2D;
 
 public class BadReactiveController implements ILowLevelController
 {
+    private static final String CAR_CIRCLE_DEBUG_KEY = "carCircle";
+    private static final String CURRENT_SEGMENT_DEBUG_KEY = "curSeg";
     private static final int MIN_SEGMENT_BUFFER_SIZE = 5;
     private static final int SEGMENT_BUFFER_SIZE = 10;
     private Position2D _expectedTarget;
@@ -25,7 +29,7 @@ public class BadReactiveController implements ILowLevelController
     private ITrajectoryProvider _segmentProvider;
     private Trajectory _currentSegment;
     private double _lookahead;
-    private int _segmentVisualHandle;
+    private IVrepDrawing _vrepDrawing;
 
     public class DefaultReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
@@ -62,6 +66,23 @@ public class BadReactiveController implements ILowLevelController
     }
 
     @Override
+    public void activateDebugging(IVrepDrawing vrepDrawing)
+    {
+        _vrepDrawing = vrepDrawing;
+        _vrepDrawing.registerDrawingObject(CURRENT_SEGMENT_DEBUG_KEY, DrawingType.LINE);
+        _vrepDrawing.registerDrawingObject(CAR_CIRCLE_DEBUG_KEY, DrawingType.CIRCLE);
+    }
+    
+
+    @Override
+    public void deactivateDebugging()
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
     public void initController(IActuatingSensing actuatorsSensors, ITrajectoryProvider trajectoryProvider)
     {
         _actuatorsSensors = actuatorsSensors;
@@ -80,18 +101,12 @@ public class BadReactiveController implements ILowLevelController
         _actuatorsSensors.computeAndLockSensorData();
         Position2D currentPosition = _actuatorsSensors.getPosition();
         chooseCurrentSegment(currentPosition);
-        _segmentVisualHandle = _actuatorsSensors.drawVector(_currentSegment.getVector(), Color.RED);
     }
 
     @Override
     public void controlEvent()
     {
-        boolean wasDriving = _stateMachine.getCurrentState() == ControllerStates.DRIVING;
         _stateMachine.controlEvent(this);
-        if(wasDriving && _stateMachine.getCurrentState() == ControllerStates.IDLE)
-        {
-            _actuatorsSensors.removeVector(_segmentVisualHandle);
-        }
     }
 
     private void driveAction()
@@ -100,7 +115,10 @@ public class BadReactiveController implements ILowLevelController
         _actuatorsSensors.computeAndLockSensorData();
         ensureBufferSize();
         chooseCurrentSegment(_actuatorsSensors.getPosition());
-        _actuatorsSensors.drawUpdateVector(_segmentVisualHandle, _currentSegment.getVector(), Color.RED);
+
+        _vrepDrawing.updateLine(CURRENT_SEGMENT_DEBUG_KEY, _currentSegment.getVector(), Color.RED);
+        _vrepDrawing.updateCircle(CAR_CIRCLE_DEBUG_KEY, _actuatorsSensors.getPosition(), _lookahead, Color.BLUE);
+        
         float targetWheelRotation = computeTargetWheelRotationSpeed();
         float targetSteeringAngle = computeTargetSteeringAngle();
         _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
@@ -170,7 +188,7 @@ public class BadReactiveController implements ILowLevelController
     {
         Position2D rearWheelPosition = _actuatorsSensors.getRearWheelCenterPosition();
         Vector2D currentSegment = _currentSegment.getVector();
-        _actuatorsSensors.drawUpdateVector(_segmentVisualHandle, currentSegment, Color.RED);
+        _vrepDrawing.updateLine(CURRENT_SEGMENT_DEBUG_KEY, currentSegment, Color.RED);
         Vector2D rearWheelToLookAhead = computeRearWheelToLookaheadVector(rearWheelPosition, currentSegment);
         if(rearWheelToLookAhead == null)
         {
@@ -187,7 +205,7 @@ public class BadReactiveController implements ILowLevelController
 //            System.out.println(", angle delta: " + delta);
             double delatDegrees = Math.toDegrees(delta);
             System.out.println("Steering deg.:" + delatDegrees);
-            return (float)delta;
+            return (float)-delta;
         }
     }
 

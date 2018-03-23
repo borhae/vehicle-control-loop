@@ -55,8 +55,10 @@ public class FiniteStateMachineTemplate
 
     private States _currentState;
     private States _initialState;
+    @SuppressWarnings("rawtypes")
     private HashMap<States, Map<Messages, Map<Guard, ActionTargetStatePair>>> _transitionTable;
 
+    @SuppressWarnings("rawtypes")
     public FiniteStateMachineTemplate()
     {
         _currentState = States.ILLEGAL;
@@ -68,6 +70,7 @@ public class FiniteStateMachineTemplate
         return _currentState;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public<T> void transition(Messages msg, T parameter)
     {
         States fromState = getCurrentState();
@@ -93,7 +96,7 @@ public class FiniteStateMachineTemplate
                 {
                     if(!hasAlreadyTriggered)
                     {
-                        ActionTargetStatePair actionTargetStatePair = guardedActionTargetStatePair.get(curGuard);
+                        ActionTargetStatePair<T> actionTargetStatePair = guardedActionTargetStatePair.get(curGuard);
                         actionTargetStatePair.runAction(parameter);
                         _currentState = actionTargetStatePair.getState();
                         hasAlreadyTriggered = true;
@@ -107,6 +110,7 @@ public class FiniteStateMachineTemplate
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public <T, R> void createTransition(States fromState, Messages msg, Guard guard, States toState, Consumer<T> action)
     {
         Map<Messages, Map<Guard, ActionTargetStatePair>> transitionsFromFromState = _transitionTable.get(fromState);
@@ -154,6 +158,7 @@ public class FiniteStateMachineTemplate
         _currentState = _initialState;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public String toString()
     {

@@ -1,10 +1,6 @@
 package de.joachim.haensel.statemachine.test;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
-
-import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
 
 public class FiniteStateMachineTest
 {
