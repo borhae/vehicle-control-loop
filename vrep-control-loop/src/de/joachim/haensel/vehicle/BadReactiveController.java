@@ -69,8 +69,8 @@ public class BadReactiveController implements ILowLevelController
     public void activateDebugging(IVrepDrawing vrepDrawing)
     {
         _vrepDrawing = vrepDrawing;
-        _vrepDrawing.registerDrawingObject(CURRENT_SEGMENT_DEBUG_KEY, DrawingType.LINE);
-        _vrepDrawing.registerDrawingObject(CAR_CIRCLE_DEBUG_KEY, DrawingType.CIRCLE);
+        _vrepDrawing.registerDrawingObject(CURRENT_SEGMENT_DEBUG_KEY, DrawingType.LINE, Color.RED);
+        _vrepDrawing.registerDrawingObject(CAR_CIRCLE_DEBUG_KEY, DrawingType.CIRCLE, Color.MAGENTA);
     }
     
 
@@ -112,7 +112,7 @@ public class BadReactiveController implements ILowLevelController
         System.out.println("------------------------------------------------------------------------------");
         _actuatorsSensors.computeAndLockSensorData();
         ensureBufferSize();
-        chooseCurrentSegment(_actuatorsSensors.getPosition());
+        chooseCurrentSegment(_actuatorsSensors.getRearWheelCenterPosition());
 
         _vrepDrawing.updateLine(CURRENT_SEGMENT_DEBUG_KEY, _currentSegment.getVector(), Color.RED);
         _vrepDrawing.updateCircle(CAR_CIRCLE_DEBUG_KEY, _actuatorsSensors.getRearWheelCenterPosition(), _lookahead, Color.BLUE);
@@ -136,12 +136,12 @@ public class BadReactiveController implements ILowLevelController
             int dropCount = 0;
             for (Trajectory curTraj : _segmentBuffer)
             {
+                dropCount++;
                 if(isInRange(currentPosition, curTraj.getVector(), _lookahead))
                 {
                     segmentFound = true;
                     break;
                 }
-                dropCount++;
             }
             if(!segmentFound)
             {
@@ -189,15 +189,12 @@ public class BadReactiveController implements ILowLevelController
         Vector2D rearWheelToLookAhead = computeRearWheelToLookaheadVector(rearWheelPosition, currentSegment);
         if(rearWheelToLookAhead == null)
         {
-//            System.out.println("line between " + rearWheelPosition + " and " + currentSegment + " with required distance " + _lookahead + " resulted in a null value");
             System.out.println("!!!!! no rear wheel to current segment vector of desired length");
             return 0.0f;
         }
         else
         {
-//            System.out.println("line between " + rearWheelPosition + " and " + currentSegment + " with required distance " + _lookahead + " resulted in: " + rearWheelToLookAhead);
             double alpha = Vector2D.computeAngle(rearWheelToLookAhead, currentSegment);
-//            System.out.print("-> angle alpha: " + alpha);
             double delta = Math.atan( (2.0 *_actuatorsSensors.getVehicleLength() * Math.sin(alpha)) / (rearWheelToLookAhead.length()) );
 //            System.out.println(", angle delta: " + delta);
             double delatDegrees = Math.toDegrees(delta);

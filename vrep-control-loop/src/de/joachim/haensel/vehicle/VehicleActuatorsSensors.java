@@ -140,19 +140,24 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     }
 
     @Override
-    public void registerDrawingObject(String key, DrawingType type)
+    public void registerDrawingObject(String key, DrawingType type, Color lineColor)
     {
         String parentObj = VRepObjectCreation.VREP_LOADING_SCRIPT_PARENT_OBJECT;
         IntWA luaIntCallResult = new IntWA(1);
+        FloatWA colorParamsLua = new FloatWA(3);
+        float[] colorParams = colorParamsLua.getArray();
+        colorParams[0] = lineColor.getRed() / 255.0f;
+        colorParams[1] = lineColor.getGreen() / 255.0f;
+        colorParams[2] = lineColor.getBlue() / 255.0f;
         try
         {
             switch (type)
             {
                 case LINE:
-                    _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_customizationscript, "createDrawingObjectLine", null, null, null, null, luaIntCallResult, null, null, null, remoteApi.simx_opmode_blocking);
+                    _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_customizationscript, "createDrawingObjectLine", null, colorParamsLua, null, null, luaIntCallResult, null, null, null, remoteApi.simx_opmode_blocking);
                     break;
                 case CIRCLE:
-                    _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_customizationscript, "createDrawingObjectCircle", null, null, null, null, luaIntCallResult, null, null, null, remoteApi.simx_opmode_blocking);
+                    _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_customizationscript, "createDrawingObjectCircle", null, colorParamsLua, null, null, luaIntCallResult, null, null, null, remoteApi.simx_opmode_blocking);
                     break;
                 default:
                     break;

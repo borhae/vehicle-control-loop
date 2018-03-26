@@ -367,13 +367,13 @@ end
 
 createDrawingObjectLine = function(inInts, inFloats, inStrings, inBuffer)
 	local size = 2
-	local emissiveColor = {1, 0, 0}
+	local emissiveColor = {inFloats[1], inFloats[2], inFloats[3]}
 	local handle = sim.addDrawingObject(sim.drawing_lines, size, 0, -1, 2, nil, nil, nil, emissiveColor)
 	return {handle}, {}, {}, "" 
 end
 
 createDrawingObjectCircle = function(inInts, inFloats, inStrings, inBuffer)
-	local emissiveColor = {0, 0, 1}
+	local emissiveColor = {inFloats[1], inFloats[2], inFloats[3]}
 	local pointSize = 0.01
 	local handle = sim.addDrawingObject(sim.drawing_spherepoints, pointSize, 0, -1, 99999999, nil, nil, nil, emissiveColor)
 	return {handle}, {}, {}, ""

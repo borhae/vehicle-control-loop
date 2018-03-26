@@ -7,7 +7,7 @@ import de.joachim.haensel.sumo2vrep.Position2D;
 
 public interface IVrepDrawing
 {
-    public void registerDrawingObject(String key, DrawingType type);
+    public void registerDrawingObject(String key, DrawingType type, Color red);
 
     /**
      * Update the drawing object formerly created by the {@code drawVector(...)} method
