@@ -77,10 +77,8 @@ public class BadReactiveController implements ILowLevelController
     @Override
     public void deactivateDebugging()
     {
-        // TODO Auto-generated method stub
-        
+        _vrepDrawing.removeAllDrawigObjects();
     }
-
 
     @Override
     public void initController(IActuatingSensing actuatorsSensors, ITrajectoryProvider trajectoryProvider)
@@ -117,7 +115,7 @@ public class BadReactiveController implements ILowLevelController
         chooseCurrentSegment(_actuatorsSensors.getPosition());
 
         _vrepDrawing.updateLine(CURRENT_SEGMENT_DEBUG_KEY, _currentSegment.getVector(), Color.RED);
-        _vrepDrawing.updateCircle(CAR_CIRCLE_DEBUG_KEY, _actuatorsSensors.getPosition(), _lookahead, Color.BLUE);
+        _vrepDrawing.updateCircle(CAR_CIRCLE_DEBUG_KEY, _actuatorsSensors.getRearWheelCenterPosition(), _lookahead, Color.BLUE);
         
         float targetWheelRotation = computeTargetWheelRotationSpeed();
         float targetSteeringAngle = computeTargetSteeringAngle();
@@ -135,15 +133,15 @@ public class BadReactiveController implements ILowLevelController
         else
         {
             boolean segmentFound = false;
-            int segIdx = 0;
+            int dropCount = 0;
             for (Trajectory curTraj : _segmentBuffer)
             {
-                segIdx++;
                 if(isInRange(currentPosition, curTraj.getVector(), _lookahead))
                 {
                     segmentFound = true;
                     break;
                 }
+                dropCount++;
             }
             if(!segmentFound)
             {
@@ -152,11 +150,11 @@ public class BadReactiveController implements ILowLevelController
             }
             else
             {
-                System.out.println("Removing " + segIdx + " elements from buffer");
-                while(segIdx > 0)
+                System.out.println("Removing " + dropCount + " elements from buffer");
+                while(dropCount > 0)
                 {
                     _currentSegment = _segmentBuffer.pop();
-                    segIdx--;
+                    dropCount--;
                 }
             }
         }
@@ -188,7 +186,6 @@ public class BadReactiveController implements ILowLevelController
     {
         Position2D rearWheelPosition = _actuatorsSensors.getRearWheelCenterPosition();
         Vector2D currentSegment = _currentSegment.getVector();
-        _vrepDrawing.updateLine(CURRENT_SEGMENT_DEBUG_KEY, currentSegment, Color.RED);
         Vector2D rearWheelToLookAhead = computeRearWheelToLookaheadVector(rearWheelPosition, currentSegment);
         if(rearWheelToLookAhead == null)
         {

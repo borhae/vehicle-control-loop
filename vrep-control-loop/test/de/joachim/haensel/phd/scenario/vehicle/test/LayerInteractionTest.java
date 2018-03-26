@@ -1,6 +1,5 @@
 package de.joachim.haensel.phd.scenario.vehicle.test;
 
-import java.awt.Color;
 import java.util.List;
 
 import org.junit.After;

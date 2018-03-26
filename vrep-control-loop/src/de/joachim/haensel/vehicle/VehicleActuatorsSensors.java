@@ -163,6 +163,7 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
             exc.printStackTrace();
         }
         int handle = luaIntCallResult.getArray()[0];
+        System.out.println("Added drawing object handle" + handle);
         _drawingObjectsStore.put(key, new DrawingObject(type, handle));
     }
 
@@ -191,7 +192,7 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     public void updateLine(String key, Vector2D vector, Color color)
     {
         int handle = _drawingObjectsStore.get(key).getHandle();
-        System.out.println("draw handle" + handle);
+        System.out.println("updating line with handle: " + handle);
         FloatWA callParamsF = new FloatWA(6);
         float[] floatParamsArray = callParamsF.getArray();
         floatParamsArray[0] = (float) vector.getBase().getX();
@@ -205,7 +206,7 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
         inHandle.getArray()[0] = handle;
         try
         {
-            _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_customizationscript, "drawUpdateVector", inHandle, callParamsF, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+            _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_customizationscript, "redrawLine", inHandle, callParamsF, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
         }
         catch (VRepException exc)
         {
@@ -217,11 +218,12 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     public void updateCircle(String key, Position2D center, double radius, Color color)
     {
         int handle = _drawingObjectsStore.get(key).getHandle();
+        System.out.println("Updating circle with handle: " + handle);
         FloatWA callParamsF = new FloatWA(6);
         float[] floatParamsArray = callParamsF.getArray();
         floatParamsArray[0] = (float) center.getX();
         floatParamsArray[1] = (float) center.getY();
-        floatParamsArray[2] = 0.0f;
+        floatParamsArray[2] = 1.0f;
         floatParamsArray[3] = (float) radius;
         try
         {
@@ -229,15 +231,13 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
             IntWA inHandle = new IntWA(1);
             inHandle.getArray()[0] = handle;
             _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_customizationscript, "redrawCircle", inHandle, callParamsF, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
-
-            _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_customizationscript, "removeDrawingObject", inHandle, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
         }
         catch (VRepException exc)
         {
             fail();
             exc.printStackTrace();
         }
-  }
+    }
 
     @Override
     public void setPosition(float posX, float posY, float posZ)

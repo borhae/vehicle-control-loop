@@ -374,7 +374,7 @@ end
 
 createDrawingObjectCircle = function(inInts, inFloats, inStrings, inBuffer)
 	local emissiveColor = {0, 0, 1}
-	local pointSize = 0.005
+	local pointSize = 0.01
 	local handle = sim.addDrawingObject(sim.drawing_spherepoints, pointSize, 0, -1, 99999999, nil, nil, nil, emissiveColor)
 	return {handle}, {}, {}, ""
 end
