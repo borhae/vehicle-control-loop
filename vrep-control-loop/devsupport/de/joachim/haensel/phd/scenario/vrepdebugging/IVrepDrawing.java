@@ -15,9 +15,9 @@ public interface IVrepDrawing
      * @param currentSegmentDebugKey of the drawing object that should be updated 
      * @param vector the new location
      */
-    public void updateLine(String currentSegmentDebugKey, Vector2D vector, Color color);
+    public void updateLine(String objectKey, Vector2D vector, Color color);
 
-    public void updateCircle(String carCircleDebugKey, Position2D position, double lookahead, Color blue);
+    public void updateCircle(String objectKey, Position2D position, double radius, Color color);
 
     public void removeAllDrawigObjects();
 }

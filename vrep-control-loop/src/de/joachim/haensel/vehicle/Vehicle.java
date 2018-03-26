@@ -109,4 +109,9 @@ public class Vehicle
     {
         return _actuatingSensing.getOrientation();
     }
+
+    public double getBetweenFrontRearWheelsLength()
+    {
+        return _actuatingSensing.getVehicleLength();
+    }
 }
