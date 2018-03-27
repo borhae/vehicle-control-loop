@@ -12,15 +12,17 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.sumo2vrep.Line2D;
+import de.joachim.haensel.vrepshapecreation.dummy.DummyParameters;
 import de.joachim.haensel.vrepshapecreation.joints.JointParameters;
 import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
 
 public class VRepObjectCreation
 {
     private static final String SCRIPT_LOADING_LUA_FUNCTION = "loadCode";
-    private static final String LOADED_SCRIPT_OBJECT_CREATION = "./lua/VRepObjectCreation.lua";
+    private static final String OBJECT_CREATION_SCRIPT_FILE_NAME = "./lua/VRepObjectCreation.lua";
     private static final String SPRING_DAMPER_SCRIPT_FILE_NAME = "./lua/SpringDamperControlScript.lua";
     private static final String STEERING_CONTROL_SCRIPT_FILE_NAME = "./lua/SteeringControlScript.lua";
+    private static final String STEERING_VISUALIZATION_SCRIPT_FILE_NAME = "./lua/SteeringVisualizationScript.lua";
     
     
     public static final String VREP_LOADING_SCRIPT_PARENT_OBJECT = "ScriptLoader";
@@ -28,6 +30,7 @@ public class VRepObjectCreation
     private int _clientID;
     private String _springDamperScript;
     private String _steeringScript;
+    private String _visualizationScript;
 
     public VRepObjectCreation(VRepRemoteAPI vrep, int clientID)
     {
@@ -64,6 +67,17 @@ public class VRepObjectCreation
         StringWA callParamsS = params.getStrings();
         IntWA returnInt = new IntWA(1);
         _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, remoteApi.sim_scripttype_customizationscript, "createPrimitive", callParamsI, callParamsF, callParamsS, null, returnInt, null, null, null, remoteApi.simx_opmode_blocking);
+        return returnInt.getArray()[0];
+    }
+
+
+    public int createDummy(DummyParameters params) throws VRepException
+    {
+        IntWA callParamsI = params.getInts();
+        FloatWA callParamsF = params.getFloats();
+        StringWA callParamsS = params.getStrings();
+        IntWA returnInt = new IntWA(1);
+        _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, remoteApi.sim_scripttype_customizationscript, "createDummy", callParamsI, callParamsF, callParamsS, null, returnInt, null, null, null, remoteApi.simx_opmode_blocking);
         return returnInt.getArray()[0];
     }
 
@@ -127,6 +141,23 @@ public class VRepObjectCreation
         _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, remoteApi.sim_scripttype_customizationscript, "setFloatParameter", callParamsI, callParamsF, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
     }
     
+
+    public void attachVisualizationScript(int dummyHandle) throws VRepException
+    {
+        if(_visualizationScript == null)
+        {
+            _visualizationScript = loadScript(STEERING_VISUALIZATION_SCRIPT_FILE_NAME);
+        }
+        IntWA callParamsI = new IntWA(2);
+        int[] paramArray = callParamsI.getArray();
+        paramArray[0] = dummyHandle;
+        paramArray[1] = remoteApi.sim_scripttype_childscript;
+        StringWA callParamsS = new StringWA(1);
+        callParamsS.getArray()[0] = _visualizationScript;
+        int scriptType = remoteApi.sim_scripttype_customizationscript;
+        _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, scriptType, "addAndAttachScriptNonThreaded", callParamsI, null, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+    }
+    
     public void attachControlScript(int physicalBodyHandle) throws VRepException
     {
         if(_steeringScript == null)
@@ -187,7 +218,7 @@ public class VRepObjectCreation
         {
             try
             {
-                scriptText = new String(Files.readAllBytes(Paths.get(LOADED_SCRIPT_OBJECT_CREATION)));
+                scriptText = new String(Files.readAllBytes(Paths.get(OBJECT_CREATION_SCRIPT_FILE_NAME)));
             }
             catch (IOException e)
             {

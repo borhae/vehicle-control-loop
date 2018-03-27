@@ -29,6 +29,12 @@ public interface IActuatingSensing
     public Position2D getRearWheelCenterPosition();
     
     /**
+     * Will give the vehicles center position between front wheels at the time that {@code IActuatingSensing.computeAndLockSensorData()} was called.
+     * @return 
+     */
+    public Position2D getFrontWheelCenterPosition();
+
+    /**
      * Will give the vehicles length (considered static)
      * @return 
      */
@@ -40,4 +46,5 @@ public interface IActuatingSensing
      * @param targetSteeringAngle
      */
     public void drive(float targetWheelRotation, float targetSteeringAngle);
+
 }

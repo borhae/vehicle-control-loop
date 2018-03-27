@@ -24,6 +24,7 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     private VehicleHandles _vehicleHandles;
     private Position2D _curPosition;
     private Position2D _rearWheelCenterPosition;
+    private Position2D _frontWheelCenterPosition;
     private double _vehicleLength;
     private CarControlInterface _controlInterface;
     private VRepRemoteAPI _vrep;
@@ -36,6 +37,7 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
         _controlInterface = controller;
         _curPosition = new Position2D(0, 0);
         _rearWheelCenterPosition = new Position2D(0, 0);
+        _frontWheelCenterPosition = new Position2D(0.0, 0.0);
         _vehicleLength = -1.0;
         _vrep = vrep;
         _clientID = clientID;
@@ -68,19 +70,37 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
             _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getPhysicalBody(), -1, physicalBodyPosition, remoteApi.simx_opmode_blocking);
             _curPosition.setXY(physicalBodyPosition.getArray());
             
-            FloatWA rearWheelPosition = new FloatWA(3);
-            _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getRearLeftWheel(), -1, rearWheelPosition, remoteApi.simx_opmode_blocking);
-            float xL = rearWheelPosition.getArray()[0];
-            float yL = rearWheelPosition.getArray()[1];
-            _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getRearRightWheel(), -1, rearWheelPosition, remoteApi.simx_opmode_blocking);
-            float xR = rearWheelPosition.getArray()[0];
-            float yR = rearWheelPosition.getArray()[1];
-            _rearWheelCenterPosition.setXY((xL + xR) / 2.0, (yL + yR) / 2.0);
+            computeRearWheelCenterPosition();
+            computeFrontWheelCenterPosition();
         }
         catch (VRepException exc)
         {
             exc.printStackTrace();
         }
+    }
+
+    private void computeFrontWheelCenterPosition() throws VRepException
+    {
+        FloatWA frontWheelPosition = new FloatWA(3);
+        _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getFrontLeftWheel(), -1, frontWheelPosition, remoteApi.simx_opmode_blocking);
+        float xL = frontWheelPosition.getArray()[0];
+        float yL = frontWheelPosition.getArray()[1];
+        _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getFrontRightWheel(), -1, frontWheelPosition, remoteApi.simx_opmode_blocking);
+        float xR = frontWheelPosition.getArray()[0];
+        float yR = frontWheelPosition.getArray()[1];
+        _frontWheelCenterPosition.setXY((xL + xR) / 2.0, (yL + yR) / 2.0);
+    }
+
+    private void computeRearWheelCenterPosition() throws VRepException
+    {
+        FloatWA rearWheelPosition = new FloatWA(3);
+        _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getRearLeftWheel(), -1, rearWheelPosition, remoteApi.simx_opmode_blocking);
+        float xL = rearWheelPosition.getArray()[0];
+        float yL = rearWheelPosition.getArray()[1];
+        _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getRearRightWheel(), -1, rearWheelPosition, remoteApi.simx_opmode_blocking);
+        float xR = rearWheelPosition.getArray()[0];
+        float yR = rearWheelPosition.getArray()[1];
+        _rearWheelCenterPosition.setXY((xL + xR) / 2.0, (yL + yR) / 2.0);
     }
     
     @Override
@@ -93,6 +113,12 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     public Position2D getRearWheelCenterPosition()
     {
         return _rearWheelCenterPosition;
+    }
+    
+    @Override
+    public Position2D getFrontWheelCenterPosition()
+    {
+        return _frontWheelCenterPosition;
     }
 
     @Override
@@ -168,7 +194,7 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
             exc.printStackTrace();
         }
         int handle = luaIntCallResult.getArray()[0];
-        System.out.println("Added drawing object handle" + handle);
+        System.out.println("Added drawing object with handle" + handle);
         _drawingObjectsStore.put(key, new DrawingObject(type, handle));
     }
 
@@ -197,7 +223,6 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     public void updateLine(String key, Vector2D vector, Color color)
     {
         int handle = _drawingObjectsStore.get(key).getHandle();
-        System.out.println("updating line with handle: " + handle);
         FloatWA callParamsF = new FloatWA(6);
         float[] floatParamsArray = callParamsF.getArray();
         floatParamsArray[0] = (float) vector.getBase().getX();
@@ -223,7 +248,6 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     public void updateCircle(String key, Position2D center, double radius, Color color)
     {
         int handle = _drawingObjectsStore.get(key).getHandle();
-        System.out.println("Updating circle with handle: " + handle);
         FloatWA callParamsF = new FloatWA(6);
         float[] floatParamsArray = callParamsF.getArray();
         floatParamsArray[0] = (float) center.getX();

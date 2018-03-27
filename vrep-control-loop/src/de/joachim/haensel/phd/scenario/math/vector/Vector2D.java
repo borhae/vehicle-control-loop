@@ -219,6 +219,15 @@ public class Vector2D
         _length = computeLength(_dX, _dY);
     }
 
+    public double side(Vector2D left)
+    {
+        Position2D a = getBase();
+        Position2D b = getTip();
+        Position2D m = left.getTip(); 
+        double determinant = (b.getX() - a.getX()) * (m.getY() - a.getY()) - (b.getY() - a.getY()) * (m.getX() - a.getX());
+        return Math.signum(determinant);
+    }
+
     public double getLength()
     {
         return computeLength(_dX, _dY);

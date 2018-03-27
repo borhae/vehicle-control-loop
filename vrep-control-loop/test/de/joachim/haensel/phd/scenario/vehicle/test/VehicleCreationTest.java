@@ -57,6 +57,7 @@ public class VehicleCreationTest implements TestConstants
 
         float height = vehicleCreator.getVehicleHeight();
         vehicleCreator.createAt(-3f, 0, height + 0.1f, null, upperFact, lowerFact);
+        System.out.println("wait here");
     }
     
     @Test

@@ -7,6 +7,7 @@ public class VehicleHandles
     private int _rearRightWheel;
     private int _frontLeftWheel;
     private int _frontRightWheel;
+    private int _rearWheelDummy;
 
     public int getPhysicalBody()
     {
@@ -43,6 +44,12 @@ public class VehicleHandles
         return this;
     }
 
+    public VehicleHandles setRearWheelVisualizationDummy(int rearWheelDummy)
+    {
+        _rearWheelDummy = rearWheelDummy;
+        return this;
+    }
+    
     public int getRearLeftWheel()
     {
         return _rearLeftWheel;
@@ -56,5 +63,10 @@ public class VehicleHandles
     public int getFrontLeftWheel()
     {
         return _frontLeftWheel;
+    }
+
+    public int getFrontRightWheel()
+    {
+        return _frontRightWheel;
     }
 }

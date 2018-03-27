@@ -94,6 +94,12 @@ public class LayerInteractionTest implements TestConstants
             }
             
             @Override
+            public Position2D getFrontWheelCenterPosition()
+            {
+                return null;
+            }
+            
+            @Override
             public Position2D getPosition()
             {
                 return new Position2D(0.73, 39.18);
@@ -186,6 +192,16 @@ public class LayerInteractionTest implements TestConstants
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");
+        vehicle.stop();
         vehicle.deacvtivateDebugging();
+        _vrep.simxStopSimulation(_clientID, remoteApi.simx_opmode_blocking);
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException exc)
+        {
+            exc.printStackTrace();
+        }
     }
 }

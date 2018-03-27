@@ -6,6 +6,7 @@ import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.CarControlInterface;
 import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
+import de.joachim.haensel.vrepshapecreation.dummy.DummyParameters;
 import de.joachim.haensel.vrepshapecreation.joints.EVRepJointModes;
 import de.joachim.haensel.vrepshapecreation.joints.EVRepJointTypes;
 import de.joachim.haensel.vrepshapecreation.joints.JointParameters;
@@ -54,6 +55,7 @@ public class VehicleCreator
             int damperRearRight = createDamper(_objectCreator, physicalBodyHandle, "damperRearRight", (float)baseWidth/2 - DAMPER_INSET, (float)-baseLength/2 + 0.1f, DAMPER_LENGTH/4 + _carHeight/2, false);
             int damperFrontLeft = createDamper(_objectCreator, physicalBodyHandle, "damperFrontLeft", (float)-baseWidth/2 + DAMPER_INSET, (float)baseLength/2 - 0.1f, DAMPER_LENGTH/4 + _carHeight/2, true);
             int damperFrontRight = createDamper(_objectCreator, physicalBodyHandle, "damperFrontRight", (float)baseWidth/2 - DAMPER_INSET, (float)baseLength/2 - 0.1f, DAMPER_LENGTH/4 + _carHeight/2, true);
+            int rearWheelDummy = createObjectAttachedVisualization(_objectCreator, physicalBodyHandle, "rearWheelVisualization", 0.0f, (float)-baseLength/2 + 0.1f, 0.0f, (float) (Math.PI/2.0), (float) (Math.PI/2.0), 0.0f);
 
             int steeringFrontLeft = createSteering(_objectCreator, "steeringFrontLeft", - STEERING_LENGTH/2.0f, 0.0f, 0.0f);
             int steeringFrontRight = createSteering(_objectCreator, "steeringFrontRight", - STEERING_LENGTH/2.0f, 0.0f, 0.0f);
@@ -64,8 +66,10 @@ public class VehicleCreator
             int motorFrontLeft = createMotor(_objectCreator, "motorFrontLeft", 0.0f, 0.0f, 0.0f);
             int motorFrontRight = createMotor(_objectCreator, "motorFrontRight", 0.0f, 0.0f, 0.0f);
             
-            createConnector(_objectCreator, steeringFrontLeft, motorFrontLeft, "connectorSflMfl", 0.0f, 0.0f, - STEERING_LENGTH/2.0f, STEERING_DIAMETER * 1.8f, STEERING_DIAMETER * 1.8f);
-            createConnector(_objectCreator, steeringFrontRight, motorFrontRight, "connectorSfrMfr", 0.0f, 0.0f, - STEERING_LENGTH/2.0f, STEERING_DIAMETER * 1.8f, STEERING_DIAMETER * 1.8f);
+            int connectorSflMfl = createConnector(_objectCreator, steeringFrontLeft, motorFrontLeft, "connectorSflMfl", 0.0f, 0.0f, - STEERING_LENGTH/2.0f, STEERING_DIAMETER * 1.8f, STEERING_DIAMETER * 1.8f);
+            int connectorSfrMfr = createConnector(_objectCreator, steeringFrontRight, motorFrontRight, "connectorSfrMfr", 0.0f, 0.0f, - STEERING_LENGTH/2.0f, STEERING_DIAMETER * 1.8f, STEERING_DIAMETER * 1.8f);
+            int frontLeftWheelDummy = createObjectAttachedVisualization(_objectCreator, connectorSflMfl, "frontLeftWheelDummy", 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+            int frontRightWheelDummy = createObjectAttachedVisualization(_objectCreator, connectorSfrMfr, "frontRightWheelDummy", 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
             
             int axisRearLeft = createAxis(_objectCreator, "axisRearLeft", 0.0f, 0.0f, 0.0f);
             int axisRearRight = createAxis(_objectCreator, "axisRearRight", 0.0f, 0.0f, 0.0f);
@@ -81,6 +85,7 @@ public class VehicleCreator
             CarControlInterface car = new CarControlInterface(_objectCreator, PHYSICAL_CAR_BODY_NAME, _vrep, _clientID, physicalBodyHandle);
             
             vehicleHandles.setPhysicalBody(physicalBodyHandle).setRearLeftWheel(rearLeftWheel).setRearRightWheel(rearRightWheel).setFrontLeftWheel(frontLeftWheel).setFrontRightWheel(frontRightWheel);
+            vehicleHandles.setRearWheelVisualizationDummy(rearWheelDummy);
             car.initialize();
             return new Vehicle(_objectCreator, _vrep, _clientID, vehicleHandles, car, roadMap, uppperLayerFactory, lowerLayerFactory);
         }
@@ -89,6 +94,19 @@ public class VehicleCreator
             e.printStackTrace();
         }
         return null;
+    }
+
+    private int createObjectAttachedVisualization(VRepObjectCreation objectCreator, int parentHandle, String name, float posX, float posY, float posZ, float alpha, float beta, float gamma) throws VRepException
+    {
+        DummyParameters params = new DummyParameters();
+        params.setName(name);
+        params.setPosition(posX, posY, posZ);
+        params.setOrientation(alpha, beta, gamma);
+        params.setSize(0.05f);
+        int dummyHandle = objectCreator.createDummy(params);
+        objectCreator.setParentForChild(parentHandle, dummyHandle, false);
+        objectCreator.attachVisualizationScript(dummyHandle);
+        return dummyHandle;
     }
 
     private int createCarBody(VRepObjectCreation creator, float baseLength, float baseWidth, float height, float posX, float posY, float posZ)

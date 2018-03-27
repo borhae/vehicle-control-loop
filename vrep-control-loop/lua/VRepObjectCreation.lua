@@ -294,6 +294,33 @@ setParentForChild = function(inInts, inFloats, inStrings, inBuffer)
   return {objectHandle}, {}, {}, "" 
 end
 
+createDummy = function(inInts, inFloats, inStrings, inBuffer)
+      local position = {inFloats[1], inFloats[2], inFloats[3]}
+      local angle = {inFloats[4], inFloats[5], inFloats[6]}
+      local size = inFloats[7]
+      
+      local name = inStrings[1]
+
+      simAddStatusbarMessage("values set, creating dummy")
+      local objectHandle = sim.createDummy(size, nil)
+      simAddStatusbarMessage("created, now positioning dummy")
+--    POSITION
+      local posResult = simSetObjectPosition(objectHandle, sim_handle_parent, position)
+      simAddStatusbarMessage("positioned, now giving orientation")
+
+--    ORIENTATION
+      simSetObjectOrientation(objectHandle, -1, angle)
+      simAddStatusbarMessage("oriented, now giving it a name")
+--    NAMING
+      simAddStatusbarMessage("name: "..name)
+
+      simSetObjectName(objectHandle, name)
+      simAddStatusbarMessage("name added, now returning")
+      table.insert(createdObjects, objectHandle) -- for later removal
+      
+      return {objectHandle}, {}, {}, "" 
+end
+
 
 setIntParameter = function(inInts, inFloats, inStrings, inBuffer)
   local objectID = inInts[1]
@@ -321,6 +348,22 @@ addAndAttachScript = function(inInts, inFloats, inStrings, inBuffer)
   local scriptContent = inStrings[1]
   
   local scriptHandle = sim.addScript(scriptType + sim_scripttype_threaded)
+  
+  sim.setScriptText(scriptHandle, scriptContent)
+  
+  sim.associateScriptWithObject(scriptHandle, objectHandle)
+  
+  return {scriptHandle}, {}, {}, "" 
+end
+
+addAndAttachScriptNonThreaded = function(inInts, inFloats, inStrings, inBuffer)
+--  sim.addStatusbarMessage("about to attach script")
+
+  local objectHandle = inInts[1]
+  local scriptType = inInts[2]
+  local scriptContent = inStrings[1]
+  
+  local scriptHandle = sim.addScript(scriptType)
   
   sim.setScriptText(scriptHandle, scriptContent)
   

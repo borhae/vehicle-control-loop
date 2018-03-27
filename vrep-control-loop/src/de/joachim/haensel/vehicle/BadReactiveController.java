@@ -37,17 +37,28 @@ public class BadReactiveController implements ILowLevelController
         {
             Consumer<Position2D> driveToAction = target -> _expectedTarget = target; 
             Consumer<BadReactiveController> driveAction = controller -> controller.driveAction();
+            Consumer<BadReactiveController> breakAndStopAction = controller -> controller.breakAndStopAction();
+            
 
             createTransition(ControllerStates.IDLE, ControllerMsg.DRIVE_TO, null, ControllerStates.DRIVING, driveToAction);
             
-            Guard arrivedAtTargetGuard = () -> _actuatorsSensors.getPosition().equals(_expectedTarget, 0.2);
+            Guard arrivedAtTargetGuard = () -> arrivedAtTarget();
             Guard notArrivedGuard = () -> !arrivedAtTargetGuard.isTrue();
             
-            createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, arrivedAtTargetGuard, ControllerStates.IDLE, null);
+            createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, arrivedAtTargetGuard, ControllerStates.IDLE, breakAndStopAction);
             createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, notArrivedGuard, ControllerStates.DRIVING, driveAction);
             
             setInitialState(ControllerStates.IDLE);
             reset();
+        }
+
+        private boolean arrivedAtTarget()
+        {
+            _actuatorsSensors.computeAndLockSensorData(); 
+            Position2D curPos = _actuatorsSensors.getPosition();
+            double distance = Position2D.distance(curPos, _expectedTarget);
+            System.out.println("d: " + distance + " (target: " + _expectedTarget + ", current position" + curPos);
+            return distance < 2.0;
         }
 
         public void driveTo(Position2D target)
@@ -107,9 +118,13 @@ public class BadReactiveController implements ILowLevelController
         _stateMachine.controlEvent(this);
     }
 
+    public void breakAndStopAction()
+    {
+        _actuatorsSensors.drive(0.0f, 0.0f);
+    }
+    
     private void driveAction()
     {
-        System.out.println("------------------------------------------------------------------------------");
         _actuatorsSensors.computeAndLockSensorData();
         ensureBufferSize();
         chooseCurrentSegment(_actuatorsSensors.getRearWheelCenterPosition());
@@ -120,7 +135,7 @@ public class BadReactiveController implements ILowLevelController
         float targetWheelRotation = computeTargetWheelRotationSpeed();
         float targetSteeringAngle = computeTargetSteeringAngle();
         _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
-        System.out.println("drive called with: v:(" + targetWheelRotation + "), delta:(" + targetSteeringAngle + ")");
+//        System.out.println("drive called with: v:(" + targetWheelRotation + "), delta:(" + targetSteeringAngle + ")");
     }
 
     private void chooseCurrentSegment(Position2D currentPosition)
@@ -145,12 +160,12 @@ public class BadReactiveController implements ILowLevelController
             }
             if(!segmentFound)
             {
-                System.out.println("No new segment. Lookahead:" +  _lookahead + ", Pos: " + currentPosition + ", buffer: " + _segmentBuffer);
+                //we have no direction here...
+//                System.out.println("No new segment. Lookahead:" +  _lookahead + ", Pos: " + currentPosition + ", buffer: " + _segmentBuffer);
                 return;
             }
             else
             {
-                System.out.println("Removing " + dropCount + " elements from buffer");
                 while(dropCount > 0)
                 {
                     _currentSegment = _segmentBuffer.pop();
@@ -164,7 +179,6 @@ public class BadReactiveController implements ILowLevelController
     {
         double baseDist = Position2D.distance(vector.getBase(), position);
         double tipDist = Position2D.distance(vector.getTip(), position);
-//        System.out.println("Td: " + tipDist + ", Bd: " + baseDist);
         return tipDist > requiredDistance && baseDist <= requiredDistance;
     }
 
@@ -185,21 +199,21 @@ public class BadReactiveController implements ILowLevelController
     protected float computeTargetSteeringAngle()
     {
         Position2D rearWheelPosition = _actuatorsSensors.getRearWheelCenterPosition();
+        Position2D frontWheelPosition = _actuatorsSensors.getFrontWheelCenterPosition();
         Vector2D currentSegment = _currentSegment.getVector();
         Vector2D rearWheelToLookAhead = computeRearWheelToLookaheadVector(rearWheelPosition, currentSegment);
+        Vector2D rearWheelToFrontWheel = new Vector2D(rearWheelPosition, frontWheelPosition);
         if(rearWheelToLookAhead == null)
         {
-            System.out.println("!!!!! no rear wheel to current segment vector of desired length");
+//            System.out.println("!!!!! no rear wheel to current segment vector of desired length");
             return 0.0f;
         }
         else
         {
-            double alpha = Vector2D.computeAngle(rearWheelToLookAhead, currentSegment);
+            double alpha = Vector2D.computeAngle(rearWheelToLookAhead, rearWheelToFrontWheel) * rearWheelToLookAhead.side(rearWheelToFrontWheel) * -1.0;
             double delta = Math.atan( (2.0 *_actuatorsSensors.getVehicleLength() * Math.sin(alpha)) / (rearWheelToLookAhead.length()) );
 //            System.out.println(", angle delta: " + delta);
-            double delatDegrees = Math.toDegrees(delta);
-            System.out.println("Steering deg.:" + delatDegrees);
-            return (float)-delta;
+            return (float) delta;
         }
     }
 
@@ -221,7 +235,7 @@ public class BadReactiveController implements ILowLevelController
 
     protected float computeTargetWheelRotationSpeed()
     {
-        return -0.5f;
+        return -2.5f;
     }
 
     @Override
