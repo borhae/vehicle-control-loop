@@ -235,7 +235,7 @@ public class BadReactiveController implements ILowLevelController
 
     protected float computeTargetWheelRotationSpeed()
     {
-        return -2.5f;
+        return -1.5f;
     }
 
     @Override
