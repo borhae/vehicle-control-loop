@@ -16,7 +16,7 @@ import de.joachim.haensel.statemachine.Guard;
 import de.joachim.haensel.statemachine.States;
 import de.joachim.haensel.sumo2vrep.Position2D;
 
-public class BadReactiveController implements ILowLevelController
+public class BadReactiveController implements ILowLevelController<PurePursuitParameters>
 {
     private static final String CAR_CIRCLE_DEBUG_KEY = "carCircle";
     private static final String CURRENT_SEGMENT_DEBUG_KEY = "curSeg";
@@ -30,6 +30,7 @@ public class BadReactiveController implements ILowLevelController
     private Trajectory _currentSegment;
     private double _lookahead;
     private IVrepDrawing _vrepDrawing;
+    private PurePursuitParameters _parameters;
 
     public class DefaultReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
@@ -91,6 +92,13 @@ public class BadReactiveController implements ILowLevelController
         _vrepDrawing.removeAllDrawigObjects();
     }
 
+
+    @Override
+    public void setParameters(PurePursuitParameters parameters)
+    {
+        _parameters = parameters;
+    }
+    
     @Override
     public void initController(IActuatingSensing actuatorsSensors, ITrajectoryProvider trajectoryProvider)
     {
@@ -99,7 +107,7 @@ public class BadReactiveController implements ILowLevelController
         _segmentBuffer = new LinkedList<>();
         _segmentProvider = trajectoryProvider;
         _currentSegment = null;
-        _lookahead = 5.0;
+        _lookahead = _parameters.getLookahead();
     }
 
     @Override

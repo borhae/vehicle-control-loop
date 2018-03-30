@@ -11,9 +11,11 @@ import de.joachim.haensel.sumo2vrep.VRepMap;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.vehicle.BadReactiveController;
+import de.joachim.haensel.vehicle.ILowLevelController;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.vehicle.NavigationController;
+import de.joachim.haensel.vehicle.PurePursuitParameters;
 import de.joachim.haensel.vehicle.Vehicle;
 import de.joachim.haensel.vehicle.VehicleCreator;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
@@ -67,7 +69,7 @@ public class VehicleCreationTest implements TestConstants
         float height = vehicleCreator.getVehicleHeight();
         
         IUpperLayerFactory upperFact = () -> {return new NavigationController();};
-        ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+        ILowerLayerFactory lowerFact = () -> {ILowLevelController<PurePursuitParameters> ctrl = new BadReactiveController(); ctrl.setParameters(new PurePursuitParameters(5.0)); return ctrl;};
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, null, upperFact, lowerFact);
         vehicle.setOrientation(1.0f, 1.0f, 1.0f);
@@ -77,13 +79,19 @@ public class VehicleCreationTest implements TestConstants
     @Test
     public void testScaledCreateVehicle() throws VRepException
     {
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 0.1f);
+        float scaleFactor = 0.1f;
+        double lookahead = 5.0/scaleFactor;
+        ILowLevelController<PurePursuitParameters> ctrl = new BadReactiveController(); 
+        ctrl.setParameters(new PurePursuitParameters(lookahead));
+        
+        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, scaleFactor);
         float height = vehicleCreator.getVehicleHeight();
         
+        
         IUpperLayerFactory upperFact = () -> {return new NavigationController();};
-        ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+        ILowerLayerFactory lowerFact = () -> {return ctrl;};
 
-        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, null, upperFact, lowerFact);
+        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + scaleFactor, null, upperFact, lowerFact);
         System.out.println("look at me");
     }
 

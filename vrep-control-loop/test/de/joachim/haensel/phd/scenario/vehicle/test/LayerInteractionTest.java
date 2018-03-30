@@ -23,6 +23,7 @@ import de.joachim.haensel.vehicle.IActuatingSensing;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.vehicle.NavigationController;
+import de.joachim.haensel.vehicle.PurePursuitParameters;
 import de.joachim.haensel.vehicle.Vehicle;
 import de.joachim.haensel.vehicle.VehicleActuatorsSensors;
 import de.joachim.haensel.vehicle.VehicleCreator;
@@ -153,7 +154,9 @@ public class LayerInteractionTest implements TestConstants
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
         IUpperLayerFactory uperFact = () -> {return new NavigationController();};
-        ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+        BadReactiveController ctrl = new BadReactiveController(); 
+        ctrl.setParameters(new PurePursuitParameters(5.0 * DOWN_SCALE_FACTOR));
+        ILowerLayerFactory lowerFact = () -> {return ctrl;};
         
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
         
@@ -352,11 +355,11 @@ public class LayerInteractionTest implements TestConstants
     @Test
     public void testRouteFollowRealMapNoVisualizationScaledDown() throws VRepException
     {
-        float scaleFactor = 100.0f;
+        float scaleFactor = 0.1f;
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
         Navigator navigator = new Navigator(roadMap);
-        Position2D startPosition = new Position2D(5747.01f, 2979.22f);
-        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
+        Position2D startPosition = new Position2D(5747.01f, 2979.22f).mul(scaleFactor);
+        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).mul(scaleFactor);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         VRepMap mapCreator = new VRepMap(scaleFactor, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMapSizedPlane(roadMap);
@@ -369,7 +372,9 @@ public class LayerInteractionTest implements TestConstants
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
         IUpperLayerFactory uperFact = () -> {return new NavigationController();};
-        ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+        BadReactiveController ctrl = new BadReactiveController(); 
+        ctrl.setParameters(new PurePursuitParameters(5.0/scaleFactor));
+        ILowerLayerFactory lowerFact = () -> {return ctrl;};
         
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
         

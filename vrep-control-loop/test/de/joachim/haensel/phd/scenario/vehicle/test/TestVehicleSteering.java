@@ -1,21 +1,18 @@
 package de.joachim.haensel.phd.scenario.vehicle.test;
 
 import java.awt.Color;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import coppelia.IntWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
-import de.joachim.haensel.phd.scenario.vehicle.test.TestVehicleSteering.IPathCondition;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import de.joachim.haensel.sumo2vrep.Position2D;
@@ -28,7 +25,6 @@ import de.joachim.haensel.vehicle.ITrajectoryProvider;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.vehicle.Vehicle;
 import de.joachim.haensel.vehicle.VehicleCreator;
-import de.joachim.haensel.vehicle.BadReactiveController.DefaultReactiveControllerStateMachine;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class TestVehicleSteering
@@ -230,7 +226,7 @@ public class TestVehicleSteering
         public boolean isOnPath(Position2D pos);
     }
 
-    public class TestCheckingSteeringController implements ILowLevelController
+    public class TestCheckingSteeringController implements ILowLevelController<Object>
     {
         private IActuatingSensing _actuatorsSensors;
         private float _targetAngle;
@@ -292,9 +288,14 @@ public class TestVehicleSteering
         public void deactivateDebugging()
         {
         }
+
+        @Override
+        public void setParameters(Object parameters)
+        {
+        }
     }
     
-    public class TestJustSteeringController implements ILowLevelController
+    public class TestJustSteeringController implements ILowLevelController<Object>
     {
         private IActuatingSensing _actuatorsSensors;
         private float _currentAngle;
@@ -329,6 +330,11 @@ public class TestVehicleSteering
 
         @Override
         public void deactivateDebugging()
+        {
+        }
+
+        @Override
+        public void setParameters(Object parameters)
         {
         }
     }

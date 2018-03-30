@@ -122,4 +122,11 @@ public class Position2D
     {
         return "p:(" + _x  + ", " + _y + ")";
     }
+
+    public Position2D mul(double scaleFactor)
+    {
+        _x *= scaleFactor;
+        _y *= scaleFactor;
+        return this;
+    }
 }
