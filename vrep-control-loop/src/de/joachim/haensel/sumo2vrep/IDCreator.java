@@ -12,6 +12,7 @@ public class IDCreator
 {
     private int _currentJunctionID;
     private int _currentLaneID;
+    private int _currentPlaneID;
     private HashMap<String, String> _vrep2SumoJunctionsMap;
     private HashMap<String, String> _sumo2VrepJunctionsMap;
     private HashMap<String, String> __vrep2SumoLanesMap;
@@ -21,6 +22,7 @@ public class IDCreator
     {
         _currentJunctionID = 0; 
         _currentLaneID = 0;
+        _currentPlaneID = 0;
         _vrep2SumoJunctionsMap = new HashMap<>();
         _sumo2VrepJunctionsMap = new HashMap<>();
         __vrep2SumoLanesMap = new HashMap<>();
@@ -51,6 +53,12 @@ public class IDCreator
         List<LaneType> lanes = edgeType.getLane();
         List<String> result = new ArrayList<>();
         lanes.stream().forEach(lane -> result.add(_sumo2VrepLanesMap.get(lane.getId())));
+        return result;
+    }
+
+    public String createPlaneID()
+    {
+        String result = "map" + String.format("%05d", _currentPlaneID);
         return result;
     }
 }

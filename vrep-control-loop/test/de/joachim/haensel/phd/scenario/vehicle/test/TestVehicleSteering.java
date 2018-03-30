@@ -79,7 +79,7 @@ public class TestVehicleSteering
     @Test
     public void testSteerLeftRight() throws VRepException
     {
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
+        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
 
         IUpperLayerFactory uperFact = () ->
         {
@@ -150,7 +150,7 @@ public class TestVehicleSteering
     @Test
     public void testDriveLeft() throws VRepException
     {
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
+        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
 
         IUpperLayerFactory uperFact = () ->
         {

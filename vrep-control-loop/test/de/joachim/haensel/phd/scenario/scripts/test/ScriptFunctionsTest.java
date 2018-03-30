@@ -68,7 +68,7 @@ public class ScriptFunctionsTest
     @Test
     public void testDriveForward() throws VRepException
     {
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
+        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         float height = vehicleCreator.getVehicleHeight();
         IUpperLayerFactory upperFact = () -> {return new NavigationController();};
         ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};

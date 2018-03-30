@@ -9,13 +9,77 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
+import de.joachim.haensel.vrepshapecreation.shapes.EVRepShapes;
+import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
 import sumobindings.EdgeType;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;
 
 public class VRepMap
 {
-    private float _downScaleFactor;
+    public class XYMinMax
+    {
+        @Override
+        public String toString()
+        {
+            return "Min Max [(" + _curXMin + ", " + _curYMin + ")" + ", (" + _curXMax + ", " + _curYMax + "), <" + distX() + ", " + distY() + ">]";
+        }
+
+        private float _curXMin;
+        private float _curXMax;
+        private float _curYMin;
+        private float _curYMax;
+
+        public XYMinMax()
+        {
+            _curXMin = Float.POSITIVE_INFINITY;
+            _curXMax = Float.NEGATIVE_INFINITY;
+            _curYMin = Float.POSITIVE_INFINITY;
+            _curYMax = Float.NEGATIVE_INFINITY;
+        }
+        
+        public void update(float xPos, float yPos)
+        {
+            if(xPos < _curXMin)
+            {
+                _curXMin = xPos;
+            }
+            if(xPos > _curXMax)
+            {
+                _curXMax = xPos;
+            }
+            if(yPos < _curYMin)
+            {
+                _curYMin = yPos;
+            }
+            if(yPos > _curYMax)
+            {
+                _curYMax = yPos;
+            }
+        }
+
+        public float distX()
+        {
+            return _curXMax - _curXMin;
+        }
+
+        public float distY()
+        {
+            return _curYMax - _curYMin;
+        }
+
+        public double minX()
+        {
+            return _curXMin;
+        }
+
+        public double minY()
+        {
+            return _curYMin;
+        }
+    }
+
+    private float _scaleFactor;
     private float _streetWidth;
     private float _streetHeight;
     private VRepRemoteAPI _vrep;
@@ -25,7 +89,7 @@ public class VRepMap
     
     public VRepMap(float downScaleFactor, float streetWidth, float streetHeight, VRepRemoteAPI vrep, int clientID, VRepObjectCreation vrepObjectCreator)
     {   
-        _downScaleFactor = downScaleFactor;
+        _scaleFactor = downScaleFactor;
         _streetWidth = streetWidth;
         _streetHeight = streetHeight;
         _vrep = vrep;
@@ -33,9 +97,117 @@ public class VRepMap
         _vrepObjectCreator = vrepObjectCreator;
     }
 
+
+    public void createMapSizedPlane(RoadMap roadMap)
+    {
+        if(_elementNameCreator == null)
+        {
+            _elementNameCreator = new IDCreator();
+        }
+        XYMinMax minMax = new XYMinMax();
+        try
+        {
+            List<JunctionType> junctions = roadMap.getJunctions();
+            for (JunctionType curJunction : junctions)
+            {
+                if(curJunction.getType().equals("internal"))
+                {
+                    continue;
+                }
+                updateMinMax(curJunction, minMax);
+            }
+            _vrepObjectCreator.createMapCenter();
+            List<EdgeType> edges = roadMap.getEdges();
+            int numOfLanes = computeNumOfLanes(edges);
+            System.out.println("about to create: " + numOfLanes + " lanes!!");
+            for (EdgeType curEdge : edges)
+            {
+                String function = curEdge.getFunction();
+                if(function == null || function.isEmpty())
+                {
+                    List<LaneType> lanes = curEdge.getLane();
+                    for (LaneType curLane : lanes)
+                    {
+                        String shape = curLane.getShape();
+                        String[] lineCoordinates = shape.split(" ");
+                        int numberCoordinates = lineCoordinates.length;
+                        if(numberCoordinates == 2)
+                        {
+                            String p1 = lineCoordinates[0];
+                            String p2 = lineCoordinates[1];
+                            updateMinMax(curLane, p1, p2, minMax);              
+                        }
+                        else
+                        {
+                            updateMinMaxRecursive(curLane, Arrays.asList(lineCoordinates), minMax);
+                        }
+                    }
+                }
+            }
+            ShapeParameters shapeParameters = new ShapeParameters();
+            shapeParameters.setIsDynamic(false);
+            shapeParameters.setIsRespondable(false);
+            shapeParameters.setMass(10);
+            shapeParameters.setName(_elementNameCreator.createPlaneID());
+            shapeParameters.setOrientation(0.0f, 0.0f, 0.0f);
+            shapeParameters.setRespondableMask(ShapeParameters.GLOBAL_ONLY_RESPONDABLE_MASK);
+            float sizeX = minMax.distX();
+            float sizeY = minMax.distY();
+            System.out.println(minMax);
+            float sizeZ = 0.2f;
+            shapeParameters.setSize(sizeX, sizeY, sizeZ);
+            float posX =  (float) (minMax.minX() + minMax.distX()/2.0);
+            float posY = (float) (minMax.minY() + minMax.distY()/2.0);
+            shapeParameters.setPosition(posX, posY, 0.0f);
+            shapeParameters.setType(EVRepShapes.CUBOID);
+            _vrepObjectCreator.createPrimitive(shapeParameters);
+        }
+        catch (VRepException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private void updateMinMax(JunctionType junction, XYMinMax minMax)
+    {
+        float xPos = junction.getX();
+        float yPos = junction.getY();
+        minMax.update(xPos, yPos);
+    }
+    
+    private void updateMinMaxRecursive(LaneType curLane, List<String> lineCoordinates, XYMinMax minMax)
+    {
+        int listSize = lineCoordinates.size();
+        if(listSize >= 2)
+        {
+            updateMinMax(curLane, lineCoordinates.get(0), lineCoordinates.get(1), minMax);
+            if(listSize >= 3)
+            {
+                updateMinMaxRecursive(curLane, lineCoordinates.subList(1, lineCoordinates.size()), minMax);
+            }
+        }
+    }
+    
+    private void updateMinMax(LaneType curLane, String p1, String p2, XYMinMax minMax)
+    {
+        String[] coordinate1 = p1.split(",");
+        String[] coordinate2 = p2.split(",");
+        
+        float x1 = Float.parseFloat(coordinate1[0]) * _scaleFactor;
+        float y1 = Float.parseFloat(coordinate1[1]) * _scaleFactor;
+        minMax.update(x1, y1);
+        
+        float x2 = Float.parseFloat(coordinate2[0]) * _scaleFactor;
+        float y2 = Float.parseFloat(coordinate2[1]) * _scaleFactor;
+        minMax.update(x2, y2);
+    }
+
     public void createMap(RoadMap roadMap)
     {
-        _elementNameCreator = new IDCreator();
+        if(_elementNameCreator == null)
+        {
+            _elementNameCreator = new IDCreator();
+        }
         try
         {
             List<JunctionType> junctions = roadMap.getJunctions();
@@ -123,8 +295,8 @@ public class VRepMap
 
         FloatWA callParamsFA = new FloatWA(5); 
         float[] floatParameters = callParamsFA.getArray();
-        floatParameters[0] = xPos/_downScaleFactor;
-        floatParameters[1] = yPos/_downScaleFactor;
+        floatParameters[0] = xPos * _scaleFactor;
+        floatParameters[1] = yPos * _scaleFactor;
         floatParameters[2] = 0; // zPos
         floatParameters[3] = _streetWidth;
         floatParameters[4] = _streetHeight;
@@ -143,12 +315,12 @@ public class VRepMap
         String[] coordinate1 = p1.split(",");
         String[] coordinate2 = p2.split(",");
         
-        floatParameters[0] = Float.parseFloat(coordinate1[0])/_downScaleFactor;
-        floatParameters[1] = Float.parseFloat(coordinate1[1])/_downScaleFactor;
+        floatParameters[0] = Float.parseFloat(coordinate1[0]) * _scaleFactor;
+        floatParameters[1] = Float.parseFloat(coordinate1[1]) * _scaleFactor;
 
-        floatParameters[2] = Float.parseFloat(coordinate2[0])/_downScaleFactor;
-        floatParameters[3] = Float.parseFloat(coordinate2[1])/_downScaleFactor;
-        floatParameters[4] = curLane.getLength()/_downScaleFactor;
+        floatParameters[2] = Float.parseFloat(coordinate2[0]) * _scaleFactor;
+        floatParameters[3] = Float.parseFloat(coordinate2[1]) * _scaleFactor;
+        floatParameters[4] = curLane.getLength() * _scaleFactor;
         floatParameters[5] = _streetWidth;
         floatParameters[6] = _streetHeight;
         

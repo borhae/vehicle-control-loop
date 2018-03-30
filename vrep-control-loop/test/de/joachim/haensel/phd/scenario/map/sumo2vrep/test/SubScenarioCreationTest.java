@@ -85,7 +85,7 @@ public class SubScenarioCreationTest implements TestConstants
         VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
         
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
+        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
         Line2D firstLine = route.get(0);
         Position2D startingPoint = new Position2D(firstLine.getX1(), firstLine.getY1());
 
@@ -107,7 +107,7 @@ public class SubScenarioCreationTest implements TestConstants
         RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
         VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
+        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
         float height = vehicleCreator.getVehicleHeight();
 
         IUpperLayerFactory upperFact = () -> {return new NavigationController();};
@@ -124,7 +124,7 @@ public class SubScenarioCreationTest implements TestConstants
         RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
         VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
+        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
         float height = vehicleCreator.getVehicleHeight();
         
         IUpperLayerFactory upperFact = () -> {return new NavigationController();};

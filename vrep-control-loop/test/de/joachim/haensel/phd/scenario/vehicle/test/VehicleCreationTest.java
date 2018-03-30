@@ -50,7 +50,7 @@ public class VehicleCreationTest implements TestConstants
     @Test
     public void testCreateAndDestroyVehicle() throws VRepException
     {
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
+        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         
         IUpperLayerFactory upperFact = () -> {return new NavigationController();};
         ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
@@ -63,7 +63,7 @@ public class VehicleCreationTest implements TestConstants
     @Test
     public void testCreatePositionAndOrientateVehicle() throws VRepException
     {
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
+        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         float height = vehicleCreator.getVehicleHeight();
         
         IUpperLayerFactory upperFact = () -> {return new NavigationController();};
@@ -75,12 +75,25 @@ public class VehicleCreationTest implements TestConstants
     }
     
     @Test
+    public void testScaledCreateVehicle() throws VRepException
+    {
+        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 0.1f);
+        float height = vehicleCreator.getVehicleHeight();
+        
+        IUpperLayerFactory upperFact = () -> {return new NavigationController();};
+        ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+
+        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, null, upperFact, lowerFact);
+        System.out.println("look at me");
+    }
+
+    @Test
     public void testCreateAndPutOnNodeVehicle() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
         VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator);
+        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         float height = vehicleCreator.getVehicleHeight();
         
         IUpperLayerFactory upperFact = () -> {return new NavigationController();};

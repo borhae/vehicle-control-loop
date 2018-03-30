@@ -16,46 +16,93 @@ import de.joachim.haensel.vwpoloproperties.VWPoloDimensions;
 
 public class VehicleCreator
 {
+
     private static final String PHYSICAL_CAR_BODY_NAME = "physicalCarBody";
-    private static final int GLOBAL_ONLY_RESPONDABLE_MASK = 0b1111_1111__0000_0000;
-    private static final int GLOBAL_AND_LOCAL_RESPONDABLE_MASK = 0b1111_1111__1111_1111;
-    private static final float WHEEL_WIDTH = 0.2f;
-    private static final float WHEEL_DIAMETER = 0.5f;
-    private static final float STEERING_DIAMETER = 0.1f;
-    private static final float STEERING_LENGTH = 0.25f;
+
+    private static float REAR_AXIS_DIAMETER = 0.05f;
+    private static float REAR_AXIS_LENGTH = 0.2f;
     
-    private static final float DAMPER_DIAMETER = 0.075f;
-    private static final float DAMPER_LENGTH = 0.3f;
-    private static final float DAMPER_INSET = DAMPER_DIAMETER/2.5f;
+    private static float MOTOR_SIZE_DIAMETER = 0.05f;
+    private static float MOTOR_SIZE_LENGTH = 0.2f;
+
+    private static float MAIN_BODY_MASS = 1000.0f;
+    private static float WHEEL_MASS = 10.0f;
+    
+    private static float WHEEL_WIDTH = 0.2f;
+    private static float WHEEL_DIAMETER = 0.5f;
+
+    private static float STEERING_DIAMETER = 0.1f;
+    private static float STEERING_LENGTH = 0.25f;
+    
+    private static float DAMPER_DIAMETER = 0.075f;
+    private static float DAMPER_LENGTH = 0.3f;
+    private static float DAMPER_INSET_X = DAMPER_DIAMETER/2.5f;
+    private static float DAMPER_INSET_Y = 0.1f;
+    private static float DAMPER_DAMPING_COEFFICIENT_C = 1000.0f;
+    private static float DAMPER_SPRING_CONSTANT_K = 20000.0f;
+    private static float DAMPER_INTERVAL_MAX = 1.0f;
+    private static float DAMPER_INTERVAL_MIN = -0.5f;
+    private static float DAMPER_TARGET_POSITION_BACK = -0.04f;
+    private static float DAMPER_TARGET_POSITION_FRONT = -0.05f;
+    
     private static VRepRemoteAPI _vrep;
     private  int _clientID;
     private float _carHeight;
     private VRepObjectCreation _objectCreator;
+    private float _scaleFactor;
     
-    public VehicleCreator(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator)
+    public VehicleCreator(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator, float scaleFactor)
     {
+        _scaleFactor = scaleFactor;
         _vrep = vrep;
         _clientID = clientID;
         _carHeight = 0.2f;
+        _carHeight *= scaleFactor;
         _objectCreator = objectCreator;
+        WHEEL_WIDTH *= scaleFactor;
+        WHEEL_DIAMETER *= scaleFactor;
+        STEERING_DIAMETER *= scaleFactor;
+        STEERING_LENGTH *= scaleFactor;
+        DAMPER_DIAMETER *= scaleFactor;
+        DAMPER_LENGTH *= scaleFactor;
+        DAMPER_INSET_X *= scaleFactor;
+        DAMPER_INSET_Y *= scaleFactor;
+        MOTOR_SIZE_DIAMETER *= scaleFactor;
+        MOTOR_SIZE_LENGTH *= scaleFactor;
+        REAR_AXIS_DIAMETER *= scaleFactor;
+        REAR_AXIS_LENGTH *= scaleFactor;
+        WHEEL_MASS *= scaleFactor; // TODO should we mess with this? what are the effects
+        MAIN_BODY_MASS *= scaleFactor; // TODO should we mess with this? what are the effects
+        DAMPER_DAMPING_COEFFICIENT_C *= scaleFactor; // TODO should we mess with this? what are the effects
+        DAMPER_SPRING_CONSTANT_K *= scaleFactor; // TODO should we mess with this? what are the effects
+        DAMPER_INTERVAL_MAX *= scaleFactor;
+        DAMPER_INTERVAL_MIN *= scaleFactor;
+        DAMPER_TARGET_POSITION_BACK *= scaleFactor; // TODO should we mess with this? what are the effects
+        DAMPER_TARGET_POSITION_FRONT *= scaleFactor; // TODO should we mess with this? what are the effects
     }
 
     public Vehicle createAt(float x, float y, float z, RoadMap roadMap, IUpperLayerFactory uppperLayerFactory, ILowerLayerFactory lowerLayerFactory)
     {
         try
         {
+            x *= _scaleFactor;
+            y *= _scaleFactor;
+            z *= _scaleFactor;
+            
             VehicleHandles vehicleHandles = new VehicleHandles();
 
             float baseLength = (float) (VWPoloDimensions.getWheelbase() + 100.0)/1000;
+            baseLength *= _scaleFactor;
             float baseWidth = (float) (VWPoloDimensions.getWidth() - 100)/1000;
+            baseWidth *= _scaleFactor;
             
             int physicalBodyHandle = createCarBody(_objectCreator, baseLength, baseWidth, _carHeight, x, y, z);
             
-            int damperRearLeft = createDamper(_objectCreator, physicalBodyHandle, "damperRearLeft", (float)-baseWidth/2 + DAMPER_INSET, (float)-baseLength/2 + 0.1f, DAMPER_LENGTH/4 + _carHeight/2, false);
-            int damperRearRight = createDamper(_objectCreator, physicalBodyHandle, "damperRearRight", (float)baseWidth/2 - DAMPER_INSET, (float)-baseLength/2 + 0.1f, DAMPER_LENGTH/4 + _carHeight/2, false);
-            int damperFrontLeft = createDamper(_objectCreator, physicalBodyHandle, "damperFrontLeft", (float)-baseWidth/2 + DAMPER_INSET, (float)baseLength/2 - 0.1f, DAMPER_LENGTH/4 + _carHeight/2, true);
-            int damperFrontRight = createDamper(_objectCreator, physicalBodyHandle, "damperFrontRight", (float)baseWidth/2 - DAMPER_INSET, (float)baseLength/2 - 0.1f, DAMPER_LENGTH/4 + _carHeight/2, true);
-            int rearWheelDummy = createObjectAttachedVisualization(_objectCreator, physicalBodyHandle, "rearWheelVisualization", 0.0f, (float)-baseLength/2 + 0.1f, 0.0f, (float) (Math.PI/2.0), (float) (Math.PI/2.0), 0.0f);
+            int damperRearLeft = createDamper(_objectCreator, physicalBodyHandle, "damperRearLeft", (float)-baseWidth/2 + DAMPER_INSET_X, (float)-baseLength/2 + DAMPER_INSET_Y, DAMPER_LENGTH/4 + _carHeight/2, false);
+            int damperRearRight = createDamper(_objectCreator, physicalBodyHandle, "damperRearRight", (float)baseWidth/2 - DAMPER_INSET_X, (float)-baseLength/2 + DAMPER_INSET_Y, DAMPER_LENGTH/4 + _carHeight/2, false);
+            int damperFrontLeft = createDamper(_objectCreator, physicalBodyHandle, "damperFrontLeft", (float)-baseWidth/2 + DAMPER_INSET_X, (float)baseLength/2 - DAMPER_INSET_Y, DAMPER_LENGTH/4 + _carHeight/2, true);
+            int damperFrontRight = createDamper(_objectCreator, physicalBodyHandle, "damperFrontRight", (float)baseWidth/2 - DAMPER_INSET_X, (float)baseLength/2 - DAMPER_INSET_Y, DAMPER_LENGTH/4 + _carHeight/2, true);
+            int rearWheelDummy = createObjectAttachedVisualization(_objectCreator, physicalBodyHandle, "rearWheelVisualization", 0.0f, (float)-baseLength/2 + DAMPER_INSET_Y, 0.0f, (float) (Math.PI/2.0), (float) (Math.PI/2.0), 0.0f);
 
             int steeringFrontLeft = createSteering(_objectCreator, "steeringFrontLeft", - STEERING_LENGTH/2.0f, 0.0f, 0.0f);
             int steeringFrontRight = createSteering(_objectCreator, "steeringFrontRight", - STEERING_LENGTH/2.0f, 0.0f, 0.0f);
@@ -117,10 +164,10 @@ public class VehicleCreator
         carBodyParams.setPosition(posX, posY, posZ);
         carBodyParams.setOrientation(0.0f, 0.0f, 0.0f);
         carBodyParams.setSize(baseWidth, baseLength, height);
-        carBodyParams.setMass(1000.0f);
+        carBodyParams.setMass(MAIN_BODY_MASS);
         carBodyParams.setType(EVRepShapes.CUBOID);
         carBodyParams.setIsRespondable(true);
-        carBodyParams.setRespndableMask(GLOBAL_ONLY_RESPONDABLE_MASK);
+        carBodyParams.setRespondableMask(ShapeParameters.GLOBAL_ONLY_RESPONDABLE_MASK);
         carBodyParams.setIsDynamic(true);
 
         int physicalBodyHandle = creator.createPrimitive(carBodyParams);
@@ -134,10 +181,10 @@ public class VehicleCreator
         params.setPosition(0f, 0f, 0f);
         params.setOrientation(0.0f, 0.0f, 0.0f);
         params.setSize(diameter, width, width);
-        params.setMass(10.0f);
+        params.setMass(WHEEL_MASS);
         params.setType(EVRepShapes.CYLINDER);
         params.setIsRespondable(true);
-        params.setRespndableMask(GLOBAL_AND_LOCAL_RESPONDABLE_MASK);
+        params.setRespondableMask(ShapeParameters.GLOBAL_AND_LOCAL_RESPONDABLE_MASK);
         params.setIsDynamic(true);
         int wheel = creator.createPrimitive(params);
         creator.setParentForChild(parent, wheel, false);
@@ -148,7 +195,7 @@ public class VehicleCreator
     {
         JointParameters params = new JointParameters();
         params.setPosition(x, y, z);
-        params.setSize(0.2f, 0.05f);
+        params.setSize(REAR_AXIS_LENGTH, REAR_AXIS_DIAMETER);
         params.setOrientation(0.0f, 0.0f, 0.0f);
         params.setCyclic(true);
         params.setInterval(new float[]{0.0f, 0.0f});
@@ -162,7 +209,7 @@ public class VehicleCreator
     {
         JointParameters params = new JointParameters();
         params.setPosition(x, y, z);
-        params.setSize(0.2f, 0.05f);
+        params.setSize(MOTOR_SIZE_LENGTH, MOTOR_SIZE_DIAMETER);
         params.setOrientation(0.0f, 0.0f, 0.0f);
         params.setCyclic(true);
         params.setMotorEnabled(true);
@@ -220,15 +267,15 @@ public class VehicleCreator
         params.setSize(DAMPER_LENGTH, DAMPER_DIAMETER);
         params.setType(EVRepJointTypes.PRISMATIC);
         params.setMode(EVRepJointModes.FORCE);
-        params.setInterval(new float[] {-0.5f, 1.0f});
+        params.setInterval(new float[] {DAMPER_INTERVAL_MIN, DAMPER_INTERVAL_MAX});
         params.setMotorEnabled(true);
         params.setTargetVelocity(0.5f);
         params.setMaximumForce(20000.0f);
-        params.setTargetPosition(front ? -0.05f : -0.04f);
+        params.setTargetPosition(front ? DAMPER_TARGET_POSITION_FRONT : DAMPER_TARGET_POSITION_BACK);
         params.setControlLoopEnabled(true);
         params.setSpringDamperMode(true);
-        params.setSpringConstantK(20000.0f);
-        params.setDampingCoefficientC(1000.0f);
+        params.setSpringConstantK(DAMPER_SPRING_CONSTANT_K);
+        params.setDampingCoefficientC(DAMPER_DAMPING_COEFFICIENT_C);
 
         int springDamperHandle = creator.createJoint(params);
         creator.setParentForChild(physicalBodyHandle, springDamperHandle, false);

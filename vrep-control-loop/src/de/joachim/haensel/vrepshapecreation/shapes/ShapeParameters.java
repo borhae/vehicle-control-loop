@@ -6,6 +6,9 @@ import de.joachim.haensel.vrepshapecreation.parameters.Parameters;
 
 public class ShapeParameters extends Parameters
 {
+    public static final int GLOBAL_AND_LOCAL_RESPONDABLE_MASK = 0b1111_1111__1111_1111;
+    public static final int GLOBAL_ONLY_RESPONDABLE_MASK = 0b1111_1111__0000_0000;
+
     private static final int CUT_UPPER_BITMASK = 0b0000_0000_0000_0000_1111_1111_1111_1111;
     private float _sizeX;
     private float _sizeY;
@@ -77,7 +80,7 @@ public class ShapeParameters extends Parameters
      * Setting the local and global respondable bit mask
      * @param bitMask 0b xxxx xxxx gggg gggg llll llll with x - ignored, g - global and l - local
      */
-    public void setRespndableMask(int bitMask)
+    public void setRespondableMask(int bitMask)
     {
         _respondableMask = bitMask & CUT_UPPER_BITMASK;
     }

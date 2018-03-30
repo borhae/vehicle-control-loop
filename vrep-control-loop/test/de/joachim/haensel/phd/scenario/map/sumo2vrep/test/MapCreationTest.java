@@ -26,6 +26,8 @@ import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.sumo2vrep.VRepMap;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
+import de.joachim.haensel.vrepshapecreation.shapes.EVRepShapes;
+import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
 import sumobindings.EdgeType;
 import sumobindings.LaneType;
 
@@ -151,5 +153,76 @@ public class MapCreationTest implements TestConstants
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
         VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
+    }
+    
+    @Test
+    public void testLoadRealWorlMapPlaneVisualization()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
+        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMapSizedPlane(roadMap);
+    }
+    
+    @Test
+    public void testLoadRealWorldMapCheckPlaneVsRoads()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
+        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMapSizedPlane(roadMap);
+        mapCreator.createMap(roadMap);
+    }
+    
+    @Test
+    public void testLoadRealWorldJustPlanMapAndStartSimulation() throws VRepException
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
+        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMapSizedPlane(roadMap);
+        
+        ShapeParameters cubeParams = new ShapeParameters();
+        cubeParams.setIsDynamic(true);
+        cubeParams.setIsRespondable(true);
+        cubeParams.setMass(10);
+        cubeParams.setName("dropme");
+        cubeParams.setOrientation(0.0f, 0.0f, 0.0f);
+        cubeParams.setPosition(4588.0f, 3701.0f, 40.0f);
+        cubeParams.setRespondableMask(ShapeParameters.GLOBAL_AND_LOCAL_RESPONDABLE_MASK);
+        cubeParams.setSize(10.0f, 10.0f, 10.0f);
+        cubeParams.setType(EVRepShapes.CUBOID);
+        _objectCreator.createPrimitive(cubeParams);
+        
+        _vrep.simxStartSimulation(_clientID, remoteApi.simx_opmode_blocking);
+        _vrep.simxStopSimulation(_clientID, remoteApi.simx_opmode_blocking);
+    }
+    
+    @Test
+    public void testSizeIssues() throws VRepException
+    {
+        ShapeParameters planeParams = new ShapeParameters();
+        planeParams.setIsDynamic(false);
+        planeParams.setIsRespondable(false);
+        planeParams.setMass(10);
+        planeParams.setName("plane");
+        planeParams.setOrientation(0.0f, 0.0f, 0.0f);
+        planeParams.setPosition(4588.0f, 3701.0f, 0.0f);
+        planeParams.setRespondableMask(ShapeParameters.GLOBAL_AND_LOCAL_RESPONDABLE_MASK);
+        planeParams.setSize(100.0f, 100.0f, 1.0f);
+        planeParams.setType(EVRepShapes.CUBOID);
+        _objectCreator.createPrimitive(planeParams);
+
+        ShapeParameters cubeParams = new ShapeParameters();
+        cubeParams.setIsDynamic(true);
+        cubeParams.setIsRespondable(true);
+        cubeParams.setMass(10);
+        cubeParams.setName("dropme");
+        cubeParams.setOrientation(0.0f, 0.0f, 0.0f);
+        cubeParams.setPosition(4588.0f, 3701.0f, 40.0f);
+        cubeParams.setRespondableMask(ShapeParameters.GLOBAL_AND_LOCAL_RESPONDABLE_MASK);
+        cubeParams.setSize(10.0f, 10.0f, 10.0f);
+        cubeParams.setType(EVRepShapes.CUBOID);
+        _objectCreator.createPrimitive(cubeParams);
+        
+        _vrep.simxStartSimulation(_clientID, remoteApi.simx_opmode_blocking);
+        _vrep.simxStopSimulation(_clientID, remoteApi.simx_opmode_blocking);
     }
 }
