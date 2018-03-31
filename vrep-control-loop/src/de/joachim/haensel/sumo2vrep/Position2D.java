@@ -144,10 +144,16 @@ public class Position2D
         return this;
     }
 
-    public void transform(TMatrix transformationMatrix)
+    public Position2D transform(TMatrix transformationMatrix)
     {
         double[] result = transformationMatrix.transform(_x, _y);
         _x = result[0];
         _y = result[1];
+        return this;
+    }
+
+    public String toSumoString()
+    {
+        return _x + "," + _y ;
     }
 }

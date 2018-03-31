@@ -5,11 +5,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -293,16 +297,60 @@ public class RoadMap
         String junctionCustomShape = junction.getCustomShape();
         if(junctionCustomShape != null && !junctionCustomShape.isEmpty())
         {
-//            TODO continue if we have the matrix transformation sorted
-//            String[] junctionCustomShape = junctionCustomShape.split(" ");
-            
+            String transformed = transformStringCoordinateList(transformationMatrix, junctionCustomShape);
+            junction.setCustomShape(transformed);
         }
-        
         String junctionShape = junction.getShape();
+        if(junctionShape != null && !junctionShape.isEmpty())
+        {
+            String transformed = transformStringCoordinateList(transformationMatrix, junctionShape);
+            junction.setShape(transformed);
+        }
     }
-
+    
     private void transformEdge(EdgeType edge, TMatrix transformationMatrix)
     {
-        // TODO Auto-generated method stub
+        String edgeShape = edge.getShape();
+        String transformed = transformStringCoordinateList(transformationMatrix, edgeShape);
+        edge.setShape(transformed);
+        List<LaneType> lanes = edge.getLane();
+        for (LaneType curLane : lanes)
+        {
+            String laneShape = curLane.getShape();
+            if(laneShape != null && !laneShape.isEmpty())
+            {
+                Stream<Position2D> transformedPositions = transformIntoPosition2D(transformationMatrix, laneShape);
+                // TODO continue here
+//                transformedPositions.
+                curLane.setShape(position2DToString(transformedPositions));
+            }
+            String laneCustomShape = curLane.getCustomShape();
+            if(laneCustomShape != null && !laneCustomShape.isEmpty())
+            {
+                String transformedLaneCustomShape = transformStringCoordinateList(transformationMatrix, laneCustomShape);
+                curLane.setShape(transformedLaneCustomShape);
+            }
+        }
+        
+    }
+    
+    private String transformStringCoordinateList(TMatrix transformationMatrix, String coordinates)
+    {
+        Stream<Position2D> transformedPositions = transformIntoPosition2D(transformationMatrix, coordinates);
+        return position2DToString(transformedPositions);
+    }
+
+    private Stream<Position2D> transformIntoPosition2D(TMatrix transformationMatrix, String laneShape)
+    {
+        Stream<String> stringCoordinates = Arrays.asList(laneShape.split(" ")).stream();
+        Stream<Position2D> posCoordinates = stringCoordinates.map(coordinate -> new Position2D(coordinate));
+        Stream<Position2D> transformedPositions = posCoordinates.map(position -> position.transform(transformationMatrix));
+        return transformedPositions;
+    }
+
+    private String position2DToString(Stream<Position2D> transformedPositions)
+    {
+        Stream<String> transformedAsString = transformedPositions.map(position -> position.toSumoString());
+        return transformedAsString.collect(Collectors.joining());
     }
 }
