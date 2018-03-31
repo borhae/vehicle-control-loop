@@ -93,7 +93,9 @@ public class MapCreationTest implements TestConstants
     public void testLoadSimpleMap() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
-        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
+
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
     }
 
@@ -101,7 +103,9 @@ public class MapCreationTest implements TestConstants
     public void testCheckRoadMapAssignements() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
-        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
+
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
         IDCreator idMapper = mapCreator.getIDMapper();
         EdgeType edgeZero = getFirstNonInternal(roadMap);
@@ -143,7 +147,9 @@ public class MapCreationTest implements TestConstants
     public void testMidRangeSyntheticMap() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/testMap5Streets.net.xml");
-        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
+
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
     }
 
@@ -151,7 +157,9 @@ public class MapCreationTest implements TestConstants
     public void testLoadRealWorldMap() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
-        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
+
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
     }
     
@@ -159,7 +167,9 @@ public class MapCreationTest implements TestConstants
     public void testLoadRealWorlMapPlaneVisualization()
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
-        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
+
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMapSizedPlane(roadMap);
     }
     
@@ -167,7 +177,9 @@ public class MapCreationTest implements TestConstants
     public void testLoadRealWorldMapCheckPlaneVsRoads()
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
-        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
+
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMapSizedPlane(roadMap);
         mapCreator.createMap(roadMap);
     }
@@ -176,7 +188,9 @@ public class MapCreationTest implements TestConstants
     public void testLoadRealWorldJustPlanMapAndStartSimulation() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
-        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
+
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMapSizedPlane(roadMap);
         
         ShapeParameters cubeParams = new ShapeParameters();

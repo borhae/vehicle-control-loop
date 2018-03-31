@@ -78,11 +78,12 @@ public class SubScenarioCreationTest implements TestConstants
     public void testRouteFollow3JunctionMap() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/testing3Junctions2Edges2Lanes.net.xml");
+        roadMap.transform(DOWN_SCALE_FACTOR, 0.0, 0.0);
         Navigator navigator = new Navigator(roadMap);
         Position2D startPosition = new Position2D(11.4f, 101.4f);
         Position2D destinationPosition = new Position2D(101.81f, 9.23f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
@@ -105,7 +106,8 @@ public class SubScenarioCreationTest implements TestConstants
     public void testSetVehicleOnSimpleRoadNetwork() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
-        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        roadMap.transform(DOWN_SCALE_FACTOR, 0.0, 0.0);
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
         float height = vehicleCreator.getVehicleHeight();
@@ -122,7 +124,8 @@ public class SubScenarioCreationTest implements TestConstants
     public void testShortDrive() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
-        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        roadMap.transform(DOWN_SCALE_FACTOR, 0.0, 0.0);
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
         float height = vehicleCreator.getVehicleHeight();

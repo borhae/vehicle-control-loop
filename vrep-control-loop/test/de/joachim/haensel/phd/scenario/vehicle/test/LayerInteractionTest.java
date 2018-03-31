@@ -139,11 +139,12 @@ public class LayerInteractionTest implements TestConstants
     public void testRouteFollow3JunctionMap() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/testing3Junctions2Edges2Lanes.net.xml");
+        roadMap.transform(DOWN_SCALE_FACTOR, 0.0, 0.0);
         Navigator navigator = new Navigator(roadMap);
         Position2D startPosition = new Position2D(11.4f, 101.4f);
         Position2D destinationPosition = new Position2D(101.81f, 9.23f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
@@ -213,11 +214,12 @@ public class LayerInteractionTest implements TestConstants
     public void testRouteFollowRealMapNoVisualization() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
+        roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
         Navigator navigator = new Navigator(roadMap);
         Position2D startPosition = new Position2D(5747.01f, 2979.22f);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMapSizedPlane(roadMap);
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
@@ -285,11 +287,13 @@ public class LayerInteractionTest implements TestConstants
     public void testRouteFollowRealMap() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
+        roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
+
         Navigator navigator = new Navigator(roadMap);
         Position2D startPosition = new Position2D(5747.01f, 2979.22f);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMap(roadMap);
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
@@ -357,11 +361,13 @@ public class LayerInteractionTest implements TestConstants
     {
         float scaleFactor = 0.1f;
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
+        roadMap.transform(scaleFactor, 0.0f, 0.0f);
+
         Navigator navigator = new Navigator(roadMap);
         Position2D startPosition = new Position2D(5747.01f, 2979.22f).mul(scaleFactor);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).mul(scaleFactor);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        VRepMap mapCreator = new VRepMap(scaleFactor, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMapSizedPlane(roadMap);
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, scaleFactor);

@@ -99,7 +99,9 @@ public class VehicleCreationTest implements TestConstants
     public void testCreateAndPutOnNodeVehicle() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
-        VRepMap mapCreator = new VRepMap(DOWN_SCALE_FACTOR, STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        roadMap.transform(DOWN_SCALE_FACTOR, 0.0, 0.0);
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        
         mapCreator.createMap(roadMap);
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         float height = vehicleCreator.getVehicleHeight();

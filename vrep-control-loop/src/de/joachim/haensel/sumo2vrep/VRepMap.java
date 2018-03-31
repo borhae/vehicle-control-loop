@@ -79,7 +79,6 @@ public class VRepMap
         }
     }
 
-    private float _scaleFactor;
     private float _streetWidth;
     private float _streetHeight;
     private VRepRemoteAPI _vrep;
@@ -87,9 +86,8 @@ public class VRepMap
     private VRepObjectCreation _vrepObjectCreator;
     private IDCreator _elementNameCreator;
     
-    public VRepMap(float downScaleFactor, float streetWidth, float streetHeight, VRepRemoteAPI vrep, int clientID, VRepObjectCreation vrepObjectCreator)
+    public VRepMap(float streetWidth, float streetHeight, VRepRemoteAPI vrep, int clientID, VRepObjectCreation vrepObjectCreator)
     {   
-        _scaleFactor = downScaleFactor;
         _streetWidth = streetWidth;
         _streetHeight = streetHeight;
         _vrep = vrep;
@@ -193,12 +191,12 @@ public class VRepMap
         String[] coordinate1 = p1.split(",");
         String[] coordinate2 = p2.split(",");
         
-        float x1 = Float.parseFloat(coordinate1[0]) * _scaleFactor;
-        float y1 = Float.parseFloat(coordinate1[1]) * _scaleFactor;
+        float x1 = Float.parseFloat(coordinate1[0]);
+        float y1 = Float.parseFloat(coordinate1[1]);
         minMax.update(x1, y1);
         
-        float x2 = Float.parseFloat(coordinate2[0]) * _scaleFactor;
-        float y2 = Float.parseFloat(coordinate2[1]) * _scaleFactor;
+        float x2 = Float.parseFloat(coordinate2[0]);
+        float y2 = Float.parseFloat(coordinate2[1]);
         minMax.update(x2, y2);
     }
 
@@ -295,8 +293,8 @@ public class VRepMap
 
         FloatWA callParamsFA = new FloatWA(5); 
         float[] floatParameters = callParamsFA.getArray();
-        floatParameters[0] = xPos * _scaleFactor;
-        floatParameters[1] = yPos * _scaleFactor;
+        floatParameters[0] = xPos;
+        floatParameters[1] = yPos;
         floatParameters[2] = 0; // zPos
         floatParameters[3] = _streetWidth;
         floatParameters[4] = _streetHeight;
@@ -315,12 +313,12 @@ public class VRepMap
         String[] coordinate1 = p1.split(",");
         String[] coordinate2 = p2.split(",");
         
-        floatParameters[0] = Float.parseFloat(coordinate1[0]) * _scaleFactor;
-        floatParameters[1] = Float.parseFloat(coordinate1[1]) * _scaleFactor;
+        floatParameters[0] = Float.parseFloat(coordinate1[0]);
+        floatParameters[1] = Float.parseFloat(coordinate1[1]);
 
-        floatParameters[2] = Float.parseFloat(coordinate2[0]) * _scaleFactor;
-        floatParameters[3] = Float.parseFloat(coordinate2[1]) * _scaleFactor;
-        floatParameters[4] = curLane.getLength() * _scaleFactor;
+        floatParameters[2] = Float.parseFloat(coordinate2[0]);
+        floatParameters[3] = Float.parseFloat(coordinate2[1]);
+        floatParameters[4] = curLane.getLength();
         floatParameters[5] = _streetWidth;
         floatParameters[6] = _streetHeight;
         

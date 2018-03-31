@@ -15,6 +15,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import de.joachim.haensel.phd.scenario.math.TMatrix;
 import sumobindings.EdgeType;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;
@@ -31,6 +32,7 @@ public class RoadMap
     private Map<String, EdgeType> _nameToEdgeMap;
 
     private Map<Position2D, LaneType> _positionToLaneMap;
+    private TMatrix _transformationMatrix;
 
 
     public RoadMap(String networkFileName)
@@ -263,5 +265,44 @@ public class RoadMap
     public Node getNode(JunctionType junction)
     {
         return _navigableNetwork.get(junction);
+    }
+
+    public void transform(double scale, double offX, double offY)
+    {
+        _transformationMatrix = new TMatrix(scale, offX, offY);
+        transform(_transformationMatrix);
+    }
+
+    public void transform(TMatrix transformationMatrix)
+    {
+        List<JunctionType> junctions = getJunctions();
+        List<EdgeType> edges = getEdges();
+        
+        junctions.forEach(junction -> transformJunction(junction, transformationMatrix));
+        edges.forEach(edge -> transformEdge(edge, transformationMatrix));
+    }
+    
+    private void transformJunction(JunctionType junction, TMatrix transformationMatrix)
+    {
+        //ignore z-part since we only deal with 2d maps yet
+        Position2D pos = new Position2D(junction.getX(), junction.getY());
+        pos.transform(transformationMatrix);
+        junction.setX((float) pos.getX());
+        junction.setY((float) pos.getY());
+
+        String junctionCustomShape = junction.getCustomShape();
+        if(junctionCustomShape != null && !junctionCustomShape.isEmpty())
+        {
+//            TODO continue if we have the matrix transformation sorted
+//            String[] junctionCustomShape = junctionCustomShape.split(" ");
+            
+        }
+        
+        String junctionShape = junction.getShape();
+    }
+
+    private void transformEdge(EdgeType edge, TMatrix transformationMatrix)
+    {
+        // TODO Auto-generated method stub
     }
 }

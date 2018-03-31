@@ -1,6 +1,7 @@
 package de.joachim.haensel.sumo2vrep;
 
 import coppelia.FloatWA;
+import de.joachim.haensel.phd.scenario.math.TMatrix;
 
 public class Position2D
 {
@@ -84,6 +85,19 @@ public class Position2D
         return distance(other) <= epsilon;
     }
     
+    @Override
+    public boolean equals(Object other)
+    {
+        if(other instanceof Position2D)
+        {
+            return equals((Position2D)other, Math.ulp(0.0));
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     public double distance(String coordinates)
     {
         return distance(this, new Position2D(coordinates));
@@ -128,5 +142,12 @@ public class Position2D
         _x *= scaleFactor;
         _y *= scaleFactor;
         return this;
+    }
+
+    public void transform(TMatrix transformationMatrix)
+    {
+        double[] result = transformationMatrix.transform(_x, _y);
+        _x = result[0];
+        _y = result[1];
     }
 }
