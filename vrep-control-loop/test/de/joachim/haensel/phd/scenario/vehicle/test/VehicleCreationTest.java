@@ -54,7 +54,7 @@ public class VehicleCreationTest implements TestConstants
     {
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         
-        IUpperLayerFactory upperFact = () -> {return new NavigationController();};
+        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0);};
         ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
 
         float height = vehicleCreator.getVehicleHeight();
@@ -68,7 +68,7 @@ public class VehicleCreationTest implements TestConstants
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         float height = vehicleCreator.getVehicleHeight();
         
-        IUpperLayerFactory upperFact = () -> {return new NavigationController();};
+        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0);};
         ILowerLayerFactory lowerFact = () -> {ILowLevelController<PurePursuitParameters> ctrl = new BadReactiveController(); ctrl.setParameters(new PurePursuitParameters(5.0)); return ctrl;};
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, null, upperFact, lowerFact);
@@ -80,7 +80,7 @@ public class VehicleCreationTest implements TestConstants
     public void testScaledCreateVehicle() throws VRepException
     {
         float scaleFactor = 0.1f;
-        double lookahead = 5.0/scaleFactor;
+        double lookahead = 5.0 * scaleFactor;
         ILowLevelController<PurePursuitParameters> ctrl = new BadReactiveController(); 
         ctrl.setParameters(new PurePursuitParameters(lookahead));
         
@@ -88,7 +88,7 @@ public class VehicleCreationTest implements TestConstants
         float height = vehicleCreator.getVehicleHeight();
         
         
-        IUpperLayerFactory upperFact = () -> {return new NavigationController();};
+        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0 * scaleFactor);};
         ILowerLayerFactory lowerFact = () -> {return ctrl;};
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + scaleFactor, null, upperFact, lowerFact);
@@ -106,7 +106,7 @@ public class VehicleCreationTest implements TestConstants
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         float height = vehicleCreator.getVehicleHeight();
         
-        IUpperLayerFactory upperFact = () -> {return new NavigationController();};
+        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0);};
         ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap, upperFact, lowerFact);

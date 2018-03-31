@@ -70,7 +70,7 @@ public class ScriptFunctionsTest
     {
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         float height = vehicleCreator.getVehicleHeight();
-        IUpperLayerFactory upperFact = () -> {return new NavigationController();};
+        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0);};
         ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
 
         Vehicle vehicle = vehicleCreator.createAt(-2.0f, 0.0f, height + 0.1f, null, upperFact, lowerFact);

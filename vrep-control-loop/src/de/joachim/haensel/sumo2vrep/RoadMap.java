@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.xml.bind.JAXBContext;
@@ -283,7 +284,11 @@ public class RoadMap
         List<EdgeType> edges = getEdges();
         
         junctions.forEach(junction -> transformJunction(junction, transformationMatrix));
-        edges.forEach(edge -> transformEdge(edge, transformationMatrix));
+        for(int idx = 0; idx < edges.size(); idx++)
+        {
+            EdgeType curEdge = edges.get(idx);
+            transformEdge(curEdge, transformationMatrix);     
+        }
     }
     
     private void transformJunction(JunctionType junction, TMatrix transformationMatrix)
@@ -320,9 +325,14 @@ public class RoadMap
             if(laneShape != null && !laneShape.isEmpty())
             {
                 Stream<Position2D> transformedPositions = transformIntoPosition2D(transformationMatrix, laneShape);
-                // TODO continue here
-//                transformedPositions.
-                curLane.setShape(position2DToString(transformedPositions));
+                List<Position2D> transPos = transformedPositions.collect(Collectors.toList());
+                double newLength = 0.0;
+                for(int idx = 0; idx < transPos.size() -1; idx++)
+                {
+                    newLength += Position2D.distance(transPos.get(idx), transPos.get(idx + 1));
+                }
+                curLane.setLength((float) newLength);
+                curLane.setShape(position2DToString(transPos.stream()));
             }
             String laneCustomShape = curLane.getCustomShape();
             if(laneCustomShape != null && !laneCustomShape.isEmpty())
@@ -340,17 +350,107 @@ public class RoadMap
         return position2DToString(transformedPositions);
     }
 
-    private Stream<Position2D> transformIntoPosition2D(TMatrix transformationMatrix, String laneShape)
+    private Stream<Position2D> transformIntoPosition2D(TMatrix transformationMatrix, String coordinates)
     {
-        Stream<String> stringCoordinates = Arrays.asList(laneShape.split(" ")).stream();
-        Stream<Position2D> posCoordinates = stringCoordinates.map(coordinate -> new Position2D(coordinate));
-        Stream<Position2D> transformedPositions = posCoordinates.map(position -> position.transform(transformationMatrix));
-        return transformedPositions;
+        if(coordinates == null)
+        {
+            return Stream.empty();
+        }
+        else
+        {
+            Stream<String> stringCoordinates = Arrays.asList(coordinates.split(" ")).stream();
+            Stream<Position2D> posCoordinates = stringCoordinates.map(coordinate -> new Position2D(coordinate));
+            Stream<Position2D> transformedPositions = posCoordinates.map(position -> position.transform(transformationMatrix));
+            return transformedPositions;
+        }
     }
 
     private String position2DToString(Stream<Position2D> transformedPositions)
     {
         Stream<String> transformedAsString = transformedPositions.map(position -> position.toSumoString());
-        return transformedAsString.collect(Collectors.joining());
+        return transformedAsString.collect(Collectors.joining(" "));
+    }
+
+    public void center(double centerX, double centerY)
+    {
+        XYMinMax dimensions = computeMapDimensions();
+        double offX = centerX - dimensions.minX() - dimensions.distX()/2.0;
+        double offY = centerY - dimensions.minY() - dimensions.distY()/2.0;
+        TMatrix m = new TMatrix(1.0, offX, offY);
+        transform(m);
+    }
+
+    public XYMinMax computeMapDimensions()
+    {
+        XYMinMax minMax = new XYMinMax();
+        List<JunctionType> junctions = getJunctions();
+        for (JunctionType curJunction : junctions)
+        {
+            if(curJunction.getType().equals("internal"))
+            {
+                continue;
+            }
+            updateMinMax(curJunction, minMax);
+        }
+        List<EdgeType> edges = getEdges();
+        for (EdgeType curEdge : edges)
+        {
+            String function = curEdge.getFunction();
+            if(function == null || function.isEmpty())
+            {
+                List<LaneType> lanes = curEdge.getLane();
+                for (LaneType curLane : lanes)
+                {
+                    String shape = curLane.getShape();
+                    String[] lineCoordinates = shape.split(" ");
+                    int numberCoordinates = lineCoordinates.length;
+                    if(numberCoordinates == 2)
+                    {
+                        String p1 = lineCoordinates[0];
+                        String p2 = lineCoordinates[1];
+                        updateMinMax(curLane, p1, p2, minMax);              
+                    }
+                    else
+                    {
+                        updateMinMaxRecursive(curLane, Arrays.asList(lineCoordinates), minMax);
+                    }
+                }
+            }
+        }
+        return minMax;
+    }
+
+    private void updateMinMax(JunctionType junction, XYMinMax minMax)
+    {
+        float xPos = junction.getX();
+        float yPos = junction.getY();
+        minMax.update(xPos, yPos);
+    }
+    
+    private void updateMinMaxRecursive(LaneType curLane, List<String> lineCoordinates, XYMinMax minMax)
+    {
+        int listSize = lineCoordinates.size();
+        if(listSize >= 2)
+        {
+            updateMinMax(curLane, lineCoordinates.get(0), lineCoordinates.get(1), minMax);
+            if(listSize >= 3)
+            {
+                updateMinMaxRecursive(curLane, lineCoordinates.subList(1, lineCoordinates.size()), minMax);
+            }
+        }
+    }
+
+    private void updateMinMax(LaneType curLane, String p1, String p2, XYMinMax minMax)
+    {
+        String[] coordinate1 = p1.split(",");
+        String[] coordinate2 = p2.split(",");
+        
+        float x1 = Float.parseFloat(coordinate1[0]);
+        float y1 = Float.parseFloat(coordinate1[1]);
+        minMax.update(x1, y1);
+        
+        float x2 = Float.parseFloat(coordinate2[0]);
+        float y2 = Float.parseFloat(coordinate2[1]);
+        minMax.update(x2, y2);
     }
 }

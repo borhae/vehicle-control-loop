@@ -31,6 +31,7 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
     private double _lookahead;
     private IVrepDrawing _vrepDrawing;
     private PurePursuitParameters _parameters;
+    private double _debugHeight;
 
     public class DefaultReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
@@ -78,8 +79,9 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
     }
 
     @Override
-    public void activateDebugging(IVrepDrawing vrepDrawing)
+    public void activateDebugging(IVrepDrawing vrepDrawing, double zValue)
     {
+        _debugHeight = zValue;
         _vrepDrawing = vrepDrawing;
         _vrepDrawing.registerDrawingObject(CURRENT_SEGMENT_DEBUG_KEY, DrawingType.LINE, Color.RED);
         _vrepDrawing.registerDrawingObject(CAR_CIRCLE_DEBUG_KEY, DrawingType.CIRCLE, Color.MAGENTA);
@@ -137,8 +139,8 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
         ensureBufferSize();
         chooseCurrentSegment(_actuatorsSensors.getRearWheelCenterPosition());
 
-        _vrepDrawing.updateLine(CURRENT_SEGMENT_DEBUG_KEY, _currentSegment.getVector(), Color.RED);
-        _vrepDrawing.updateCircle(CAR_CIRCLE_DEBUG_KEY, _actuatorsSensors.getRearWheelCenterPosition(), _lookahead, Color.BLUE);
+        _vrepDrawing.updateLine(CURRENT_SEGMENT_DEBUG_KEY, _currentSegment.getVector(), _debugHeight, Color.RED);
+        _vrepDrawing.updateCircle(CAR_CIRCLE_DEBUG_KEY, _actuatorsSensors.getRearWheelCenterPosition(), _debugHeight, _lookahead, Color.BLUE);
         
         float targetWheelRotation = computeTargetWheelRotationSpeed();
         float targetSteeringAngle = computeTargetSteeringAngle();

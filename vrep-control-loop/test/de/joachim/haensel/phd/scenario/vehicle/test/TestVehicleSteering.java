@@ -124,7 +124,7 @@ public class TestVehicleSteering
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging();
+        vehicle.activateDebugging(1.0);
         vehicle.start();
         
         System.out.println("wait here");
@@ -197,7 +197,7 @@ public class TestVehicleSteering
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging();
+        vehicle.activateDebugging(1.0);
         vehicle.start();
         
         System.out.println("wait here");
@@ -276,11 +276,11 @@ public class TestVehicleSteering
             IVrepDrawing vrepDrawing = (IVrepDrawing)_actuatorsSensors;
             String drawingObjectKey = "TargetCircle";
             vrepDrawing.registerDrawingObject(drawingObjectKey, DrawingType.CIRCLE, Color.BLUE);
-            vrepDrawing.updateCircle(drawingObjectKey, new Position2D(0.0, 0.0), 5.0, Color.BLUE);
+            vrepDrawing.updateCircle(drawingObjectKey, new Position2D(0.0, 0.0), 1.0, 5.0, Color.BLUE);
         }
 
         @Override
-        public void activateDebugging(IVrepDrawing actuatingSensing)
+        public void activateDebugging(IVrepDrawing drawing, double zValue)
         {
         }
 
@@ -324,7 +324,7 @@ public class TestVehicleSteering
         }
 
         @Override
-        public void activateDebugging(IVrepDrawing actuatingSensing)
+        public void activateDebugging(IVrepDrawing drawing, double zValue)
         {
         }
 

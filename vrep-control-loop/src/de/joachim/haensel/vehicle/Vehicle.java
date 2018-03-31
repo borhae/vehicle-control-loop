@@ -44,9 +44,9 @@ public class Vehicle
         _roadMap = roadMap;
     }
 
-    public void activateDebugging()
+    public void activateDebugging(double zValue)
     {
-        _lowerControlLayer.activateDebugging((IVrepDrawing)_actuatingSensing);
+        _lowerControlLayer.activateDebugging((IVrepDrawing)_actuatingSensing, zValue);
     }
     
     public void deacvtivateDebugging()

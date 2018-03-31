@@ -11,6 +11,7 @@ import coppelia.IntWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
@@ -18,6 +19,7 @@ import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.sumo2vrep.VRepMap;
+import de.joachim.haensel.sumo2vrep.XYMinMax;
 import de.joachim.haensel.vehicle.BadReactiveController;
 import de.joachim.haensel.vehicle.IActuatingSensing;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
@@ -79,7 +81,7 @@ public class LayerInteractionTest implements TestConstants
     public void testNavigationController()
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/testing3Junctions2Edges2Lanes.net.xml");
-        NavigationController controller = new NavigationController();
+        NavigationController controller = new NavigationController(2.0);
         Position2D destinationPosition = new Position2D(101.81f, 9.23f);
         IActuatingSensing sensorsActuators = new IActuatingSensing() {
             @Override
@@ -154,7 +156,7 @@ public class LayerInteractionTest implements TestConstants
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
-        IUpperLayerFactory uperFact = () -> {return new NavigationController();};
+        IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0);};
         BadReactiveController ctrl = new BadReactiveController(); 
         ctrl.setParameters(new PurePursuitParameters(5.0 * DOWN_SCALE_FACTOR));
         ILowerLayerFactory lowerFact = () -> {return ctrl;};
@@ -162,7 +164,7 @@ public class LayerInteractionTest implements TestConstants
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
         
         Vector2D carOrientation = vehicle.getOrientation();
-        NavigationController fakeNav = new NavigationController();
+        NavigationController fakeNav = new NavigationController(2.0);
         fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
         int size = fakeNav.getSegmentBufferSize();
@@ -192,7 +194,7 @@ public class LayerInteractionTest implements TestConstants
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging();
+        vehicle.activateDebugging(1.0 * DOWN_SCALE_FACTOR);
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");
@@ -209,7 +211,7 @@ public class LayerInteractionTest implements TestConstants
         }
     }
 
-    //dimensions issue won't simulate
+    //dimensions issue; won't simulate
     @Test
     public void testRouteFollowRealMapNoVisualization() throws VRepException
     {
@@ -229,13 +231,13 @@ public class LayerInteractionTest implements TestConstants
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
-        IUpperLayerFactory uperFact = () -> {return new NavigationController();};
+        IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0);};
         ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
         
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
         
         Vector2D carOrientation = vehicle.getOrientation();
-        NavigationController fakeNav = new NavigationController();
+        NavigationController fakeNav = new NavigationController(2.0);
         fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
         int size = fakeNav.getSegmentBufferSize();
@@ -265,7 +267,7 @@ public class LayerInteractionTest implements TestConstants
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging();
+        vehicle.activateDebugging(DOWN_SCALE_FACTOR);
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");
@@ -303,13 +305,13 @@ public class LayerInteractionTest implements TestConstants
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
-        IUpperLayerFactory uperFact = () -> {return new NavigationController();};
+        IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0);};
         ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
         
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
         
         Vector2D carOrientation = vehicle.getOrientation();
-        NavigationController fakeNav = new NavigationController();
+        NavigationController fakeNav = new NavigationController(2.0);
         fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
         int size = fakeNav.getSegmentBufferSize();
@@ -339,7 +341,7 @@ public class LayerInteractionTest implements TestConstants
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging();
+        vehicle.activateDebugging(DOWN_SCALE_FACTOR);
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");
@@ -357,18 +359,26 @@ public class LayerInteractionTest implements TestConstants
     }
 
     @Test
-    public void testRouteFollowRealMapNoVisualizationScaledDown() throws VRepException
+    public void testRouteFollowRealMapScaledDown() throws VRepException
     {
         float scaleFactor = 0.1f;
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
-        roadMap.transform(scaleFactor, 0.0f, 0.0f);
+        XYMinMax dimensions = roadMap.computeMapDimensions();
+        double offX = dimensions.minX() + dimensions.distX()/2.0;
+        double offY = dimensions.minY() + dimensions.distY()/2.0;
+        offX *= scaleFactor;
+        offY *= scaleFactor;
+
+        TMatrix scaleOffsetMatrix = new TMatrix(scaleFactor, -offX, -offY);
+        roadMap.transform(scaleOffsetMatrix);
 
         Navigator navigator = new Navigator(roadMap);
-        Position2D startPosition = new Position2D(5747.01f, 2979.22f).mul(scaleFactor);
-        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).mul(scaleFactor);
+        Position2D startPosition = new Position2D(5747.01f, 2979.22f).transform(scaleOffsetMatrix);
+        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).transform(scaleOffsetMatrix);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMapSizedPlane(roadMap);
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH * scaleFactor, STREET_HEIGHT * scaleFactor, _vrep, _clientID, _objectCreator);
+//        mapCreator.createMapSizedPlane(roadMap);
+        mapCreator.createMap(roadMap);
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, scaleFactor);
         Line2D firstLine = route.get(0);
@@ -377,15 +387,17 @@ public class LayerInteractionTest implements TestConstants
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
-        IUpperLayerFactory uperFact = () -> {return new NavigationController();};
+        IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0 * scaleFactor);};
         BadReactiveController ctrl = new BadReactiveController(); 
-        ctrl.setParameters(new PurePursuitParameters(5.0/scaleFactor));
+        ctrl.setParameters(new PurePursuitParameters(5.0 * scaleFactor));
         ILowerLayerFactory lowerFact = () -> {return ctrl;};
         
-        Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
+//        float vehicleZPos = 0.0f + vehicleCreator.getVehicleHeight() + 0.2f;
+        float vehicleZPos = 0.5f;
+        Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), vehicleZPos, roadMap, uperFact , lowerFact);
         
         Vector2D carOrientation = vehicle.getOrientation();
-        NavigationController fakeNav = new NavigationController();
+        NavigationController fakeNav = new NavigationController(2.0 *  scaleFactor);
         fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
         int size = fakeNav.getSegmentBufferSize();
@@ -415,7 +427,92 @@ public class LayerInteractionTest implements TestConstants
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging();
+        vehicle.activateDebugging(scaleFactor);
+        vehicle.start();
+        vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
+        System.out.println("wait here");
+        vehicle.stop();
+        vehicle.deacvtivateDebugging();
+        _vrep.simxStopSimulation(_clientID, remoteApi.simx_opmode_blocking);
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException exc)
+        {
+            exc.printStackTrace();
+        }
+    }
+    
+    @Test
+    public void testRouteFollowSimpleMapScaledDown() throws VRepException
+    {
+        float scaleFactor = 0.1f;
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
+        XYMinMax dimensions = roadMap.computeMapDimensions();
+        double offX = dimensions.minX() + dimensions.distX()/2.0;
+        double offY = dimensions.minY() + dimensions.distY()/2.0;
+        offX *= scaleFactor;
+        offY *= scaleFactor;
+
+        TMatrix scaleOffsetMatrix = new TMatrix(scaleFactor, -offX, -offY);
+        roadMap.transform(scaleOffsetMatrix);
+        
+        Navigator navigator = new Navigator(roadMap);
+        Position2D startPosition = new Position2D(-5.0f, 5.0f);
+        Position2D destinationPosition = new Position2D(5.0f, -5.0f);
+        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH * scaleFactor, STREET_HEIGHT * scaleFactor, _vrep, _clientID, _objectCreator);
+//        mapCreator.createMapSizedPlane(roadMap);
+        mapCreator.createMap(roadMap);
+        
+        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, scaleFactor);
+        Line2D firstLine = route.get(0);
+        Position2D startingPoint = new Position2D(firstLine.getX1(), firstLine.getY1());
+
+        Line2D lastLine = route.get(route.size() - 1);
+        Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
+        
+        IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0 * scaleFactor);};
+        BadReactiveController ctrl = new BadReactiveController(); 
+        ctrl.setParameters(new PurePursuitParameters(5.0 * scaleFactor));
+        ILowerLayerFactory lowerFact = () -> {return ctrl;};
+        
+        float vehicleZPos = 0.25f;
+        Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), vehicleZPos, roadMap, uperFact , lowerFact);
+        
+        Vector2D carOrientation = vehicle.getOrientation();
+        NavigationController fakeNav = new NavigationController(2.0 *  scaleFactor);
+        fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
+        fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
+        int size = fakeNav.getSegmentBufferSize();
+        
+        Trajectory firstSeg = fakeNav.segmentsPeek();
+        Vector2D firstSegOrientation = firstSeg.getVector();
+        
+        double correctionAngle = Vector2D.computeAngle(carOrientation, firstSegOrientation) + Math.PI;
+        
+        vehicle.setOrientation(0.0f, 0.0f, (float)correctionAngle);
+
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException exc)
+        {
+            exc.printStackTrace();
+        }
+        
+       _vrep.simxStartSimulation(_clientID, remoteApi.simx_opmode_blocking);
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException exc)
+        {
+            exc.printStackTrace();
+        }
+        vehicle.activateDebugging(scaleFactor);
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");

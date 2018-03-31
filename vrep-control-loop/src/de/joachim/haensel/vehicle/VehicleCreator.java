@@ -85,10 +85,6 @@ public class VehicleCreator
     {
         try
         {
-            x *= _scaleFactor;
-            y *= _scaleFactor;
-            z *= _scaleFactor;
-            
             VehicleHandles vehicleHandles = new VehicleHandles();
 
             float baseLength = (float) (VWPoloDimensions.getWheelbase() + 100.0)/1000;

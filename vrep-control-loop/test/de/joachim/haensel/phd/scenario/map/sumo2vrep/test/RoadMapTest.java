@@ -2,6 +2,8 @@ package de.joachim.haensel.phd.scenario.map.sumo2vrep.test;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -12,11 +14,13 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.sumo2vrep.VRepMap;
+import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
+import sumobindings.EdgeType;
 import sumobindings.LaneType;
 
 public class RoadMapTest implements TestConstants
@@ -64,5 +68,89 @@ public class RoadMapTest implements TestConstants
         Position2D pos2d = new Position2D(pos3d);
         
         LaneType closestLaneFor = roadMap.getClosestLaneFor(pos2d);
+    }
+    
+    @Test
+    public void testMapScaling()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
+        List<EdgeType> edges = roadMap.getEdges();
+        System.out.println("before transform");
+        edges.stream().filter(edge -> isInternal(edge)).forEach(edge -> System.out.println(edge.getLane().get(0).getLength()));
+
+        roadMap.transform(new TMatrix(1/93.5, 0.0, 0.0));
+        edges = roadMap.getEdges();
+        System.out.println("after transform");
+        edges.stream().filter(edge -> isInternal(edge)).forEach(edge -> System.out.println(edge.getLane().get(0).getLength()));
+    }
+    
+    @Test
+    public void testMapScalingVisualTest() throws VRepException
+    {
+        double scaleFactor = 0.5;
+
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
+        List<EdgeType> edges = roadMap.getEdges();
+        System.out.println("before transform");
+        edges.stream().filter(edge -> isInternal(edge)).forEach(edge -> System.out.println(edge.getLane().get(0).getLength()));
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMap(roadMap);
+
+        roadMap.transform(new TMatrix(scaleFactor, 0.0, 0.0));
+        edges = roadMap.getEdges();
+        System.out.println("after transform");
+        edges.stream().filter(edge -> isInternal(edge)).forEach(edge -> System.out.println(edge.getLane().get(0).getLength()));
+        mapCreator.setStreetWidthAndHeight(STREET_WIDTH * (float)scaleFactor, STREET_HEIGHT * (float)scaleFactor);
+        mapCreator.createMap(roadMap);
+        System.out.println("do we have two different sized maps?");
+    }
+    
+    
+    @Test
+    public void testMapOffsetVisualTest() throws VRepException
+    {
+        double scaleFactor = 1.0;
+
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
+        List<EdgeType> edges = roadMap.getEdges();
+        System.out.println("before transform");
+        edges.stream().filter(edge -> isInternal(edge)).forEach(edge -> System.out.println(edge.getLane().get(0).getLength()));
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMap(roadMap);
+
+        roadMap.transform(new TMatrix(scaleFactor, -50.0, -50.0));
+        edges = roadMap.getEdges();
+        System.out.println("after transform");
+        edges.stream().filter(edge -> isInternal(edge)).forEach(edge -> System.out.println(edge.getLane().get(0).getLength()));
+        mapCreator.setStreetWidthAndHeight(STREET_WIDTH * (float)scaleFactor, STREET_HEIGHT * (float)scaleFactor);
+        mapCreator.createMap(roadMap);
+        System.out.println("do we have two different sized maps?");
+    }
+
+    @Test
+    public void testMapCenterVisualTest() throws VRepException
+    {
+        double scaleFactor = 1.0;
+
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
+        List<EdgeType> edges = roadMap.getEdges();
+        System.out.println("before transform");
+        edges.stream().filter(edge -> isInternal(edge)).forEach(edge -> System.out.println(edge.getLane().get(0).getLength()));
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMap(roadMap);
+
+        roadMap.center(0.0, 0.0);
+        edges = roadMap.getEdges();
+        System.out.println("after transform");
+        edges.stream().filter(edge -> isInternal(edge)).forEach(edge -> System.out.println(edge.getLane().get(0).getLength()));
+        mapCreator.setStreetWidthAndHeight(STREET_WIDTH * (float)scaleFactor, STREET_HEIGHT * (float)scaleFactor);
+        mapCreator.createMap(roadMap);
+        System.out.println("do we have two different sized maps?");
+    }
+
+    private boolean isInternal(EdgeType edge)
+    {
+        String function = edge.getFunction();
+        return function == null ? true : !function.equals("internal");
     }
 }

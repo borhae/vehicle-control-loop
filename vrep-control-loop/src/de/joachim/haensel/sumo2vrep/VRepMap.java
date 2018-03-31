@@ -17,68 +17,6 @@ import sumobindings.LaneType;
 
 public class VRepMap
 {
-    public class XYMinMax
-    {
-        @Override
-        public String toString()
-        {
-            return "Min Max [(" + _curXMin + ", " + _curYMin + ")" + ", (" + _curXMax + ", " + _curYMax + "), <" + distX() + ", " + distY() + ">]";
-        }
-
-        private float _curXMin;
-        private float _curXMax;
-        private float _curYMin;
-        private float _curYMax;
-
-        public XYMinMax()
-        {
-            _curXMin = Float.POSITIVE_INFINITY;
-            _curXMax = Float.NEGATIVE_INFINITY;
-            _curYMin = Float.POSITIVE_INFINITY;
-            _curYMax = Float.NEGATIVE_INFINITY;
-        }
-        
-        public void update(float xPos, float yPos)
-        {
-            if(xPos < _curXMin)
-            {
-                _curXMin = xPos;
-            }
-            if(xPos > _curXMax)
-            {
-                _curXMax = xPos;
-            }
-            if(yPos < _curYMin)
-            {
-                _curYMin = yPos;
-            }
-            if(yPos > _curYMax)
-            {
-                _curYMax = yPos;
-            }
-        }
-
-        public float distX()
-        {
-            return _curXMax - _curXMin;
-        }
-
-        public float distY()
-        {
-            return _curYMax - _curYMin;
-        }
-
-        public double minX()
-        {
-            return _curXMin;
-        }
-
-        public double minY()
-        {
-            return _curYMin;
-        }
-    }
-
     private float _streetWidth;
     private float _streetHeight;
     private VRepRemoteAPI _vrep;
@@ -102,49 +40,13 @@ public class VRepMap
         {
             _elementNameCreator = new IDCreator();
         }
-        XYMinMax minMax = new XYMinMax();
         try
         {
-            List<JunctionType> junctions = roadMap.getJunctions();
-            for (JunctionType curJunction : junctions)
-            {
-                if(curJunction.getType().equals("internal"))
-                {
-                    continue;
-                }
-                updateMinMax(curJunction, minMax);
-            }
+            XYMinMax minMax = roadMap.computeMapDimensions();
             _vrepObjectCreator.createMapCenter();
-            List<EdgeType> edges = roadMap.getEdges();
-            int numOfLanes = computeNumOfLanes(edges);
-            System.out.println("about to create: " + numOfLanes + " lanes!!");
-            for (EdgeType curEdge : edges)
-            {
-                String function = curEdge.getFunction();
-                if(function == null || function.isEmpty())
-                {
-                    List<LaneType> lanes = curEdge.getLane();
-                    for (LaneType curLane : lanes)
-                    {
-                        String shape = curLane.getShape();
-                        String[] lineCoordinates = shape.split(" ");
-                        int numberCoordinates = lineCoordinates.length;
-                        if(numberCoordinates == 2)
-                        {
-                            String p1 = lineCoordinates[0];
-                            String p2 = lineCoordinates[1];
-                            updateMinMax(curLane, p1, p2, minMax);              
-                        }
-                        else
-                        {
-                            updateMinMaxRecursive(curLane, Arrays.asList(lineCoordinates), minMax);
-                        }
-                    }
-                }
-            }
             ShapeParameters shapeParameters = new ShapeParameters();
             shapeParameters.setIsDynamic(false);
-            shapeParameters.setIsRespondable(false);
+            shapeParameters.setIsRespondable(true);
             shapeParameters.setMass(10);
             shapeParameters.setName(_elementNameCreator.createPlaneID());
             shapeParameters.setOrientation(0.0f, 0.0f, 0.0f);
@@ -164,40 +66,6 @@ public class VRepMap
         {
             e.printStackTrace();
         }
-    }
-
-    private void updateMinMax(JunctionType junction, XYMinMax minMax)
-    {
-        float xPos = junction.getX();
-        float yPos = junction.getY();
-        minMax.update(xPos, yPos);
-    }
-    
-    private void updateMinMaxRecursive(LaneType curLane, List<String> lineCoordinates, XYMinMax minMax)
-    {
-        int listSize = lineCoordinates.size();
-        if(listSize >= 2)
-        {
-            updateMinMax(curLane, lineCoordinates.get(0), lineCoordinates.get(1), minMax);
-            if(listSize >= 3)
-            {
-                updateMinMaxRecursive(curLane, lineCoordinates.subList(1, lineCoordinates.size()), minMax);
-            }
-        }
-    }
-    
-    private void updateMinMax(LaneType curLane, String p1, String p2, XYMinMax minMax)
-    {
-        String[] coordinate1 = p1.split(",");
-        String[] coordinate2 = p2.split(",");
-        
-        float x1 = Float.parseFloat(coordinate1[0]);
-        float y1 = Float.parseFloat(coordinate1[1]);
-        minMax.update(x1, y1);
-        
-        float x2 = Float.parseFloat(coordinate2[0]);
-        float y2 = Float.parseFloat(coordinate2[1]);
-        minMax.update(x2, y2);
     }
 
     public void createMap(RoadMap roadMap)
@@ -335,5 +203,12 @@ public class VRepMap
     public IDCreator getIDMapper()
     {
         return _elementNameCreator;
+    }
+
+
+    public void setStreetWidthAndHeight(float streetWidth, float streetHeight)
+    {
+        _streetWidth = streetWidth;
+        _streetHeight = streetHeight;
     }
 }

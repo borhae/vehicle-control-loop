@@ -220,17 +220,17 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     }
 
     @Override
-    public void updateLine(String key, Vector2D vector, Color color)
+    public void updateLine(String key, Vector2D vector, double zValue, Color color)
     {
         int handle = _drawingObjectsStore.get(key).getHandle();
         FloatWA callParamsF = new FloatWA(6);
         float[] floatParamsArray = callParamsF.getArray();
         floatParamsArray[0] = (float) vector.getBase().getX();
         floatParamsArray[1] = (float) vector.getBase().getY();
-        floatParamsArray[2] = 1.0f;
+        floatParamsArray[2] = (float) zValue;
         floatParamsArray[3] = (float) vector.getTip().getX();
         floatParamsArray[4] = (float) vector.getTip().getY();
-        floatParamsArray[5] = 1.0f;
+        floatParamsArray[5] = (float) zValue;
         String parentObj = VRepObjectCreation.VREP_LOADING_SCRIPT_PARENT_OBJECT;
         IntWA inHandle = new IntWA(1);
         inHandle.getArray()[0] = handle;
@@ -245,14 +245,14 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     }
 
     @Override
-    public void updateCircle(String key, Position2D center, double radius, Color color)
+    public void updateCircle(String key, Position2D center, double zValue, double radius, Color color)
     {
         int handle = _drawingObjectsStore.get(key).getHandle();
         FloatWA callParamsF = new FloatWA(6);
         float[] floatParamsArray = callParamsF.getArray();
         floatParamsArray[0] = (float) center.getX();
         floatParamsArray[1] = (float) center.getY();
-        floatParamsArray[2] = 1.0f;
+        floatParamsArray[2] = (float) zValue;
         floatParamsArray[3] = (float) radius;
         try
         {
