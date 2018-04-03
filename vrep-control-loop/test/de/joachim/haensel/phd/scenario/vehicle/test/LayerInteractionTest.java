@@ -1,6 +1,11 @@
 package de.joachim.haensel.phd.scenario.vehicle.test;
 
+import java.awt.Color;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -13,6 +18,7 @@ import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
+import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.sumo2vrep.Line2D;
@@ -463,7 +469,6 @@ public class LayerInteractionTest implements TestConstants
         Position2D destinationPosition = new Position2D(5.0f, -5.0f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH * scaleFactor, STREET_HEIGHT * scaleFactor, _vrep, _clientID, _objectCreator);
-//        mapCreator.createMapSizedPlane(roadMap);
         mapCreator.createMap(roadMap);
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, scaleFactor);
@@ -471,7 +476,8 @@ public class LayerInteractionTest implements TestConstants
         Position2D startingPoint = new Position2D(firstLine.getX1(), firstLine.getY1());
 
         Line2D lastLine = route.get(route.size() - 1);
-        Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
+        Position2D target = new Position2D(lastLine.getX2(), lastLine.getY2());
+        
         
         IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0 * scaleFactor);};
         BadReactiveController ctrl = new BadReactiveController(); 
@@ -486,6 +492,13 @@ public class LayerInteractionTest implements TestConstants
         fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
         int size = fakeNav.getSegmentBufferSize();
+
+        Deque<Vector2D> input = fakeNav.getNewSegments(fakeNav.getSegmentBufferSize()).stream().map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
+        Vector2DVisualizer visualizer = new Vector2DVisualizer();
+        visualizer.addVectorSet(input, Color.BLUE);
+        visualizer.updateVisuals();
+        visualizer.setVisible(true);
+        System.out.println("stop");
         
         Trajectory firstSeg = fakeNav.segmentsPeek();
         Vector2D firstSegOrientation = firstSeg.getVector();

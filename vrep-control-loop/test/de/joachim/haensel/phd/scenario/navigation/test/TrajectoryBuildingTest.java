@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.navigation.test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.awt.BasicStroke;
@@ -9,15 +10,17 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
+import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.bezier.Spline2D;
 import de.joachim.haensel.phd.scenario.math.bezier.SplineTrajectorizer;
 import de.joachim.haensel.phd.scenario.math.interpolation.InterpolationTrajectorizerTrigonometry;
 import de.joachim.haensel.phd.scenario.math.interpolation.IterativeInterpolationTrajectorizer;
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
+import de.joachim.haensel.phd.scenario.navigation.visualization.ContentElememnt;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
@@ -26,6 +29,8 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
+import de.joachim.haensel.sumo2vrep.XYMinMax;
+import de.joachim.haensel.vehicle.NavigationController;
 import de.joachim.haensel.vehiclecontrol.Navigator;
 
 public class TrajectoryBuildingTest implements TestConstants
@@ -681,7 +686,45 @@ public class TrajectoryBuildingTest implements TestConstants
         frame.setVisible(true);
         System.out.println("wait!");
     }
-    
+ 
+    @Test
+    public void testRouteOnSuperSimpleMapScaledDown()
+    {
+        float scaleFactor = 0.1f;
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
+        XYMinMax dimensions = roadMap.computeMapDimensions();
+        double offX = dimensions.minX() + dimensions.distX() / 2.0;
+        double offY = dimensions.minY() + dimensions.distY() / 2.0;
+        offX *= scaleFactor;
+        offY *= scaleFactor;
+
+        TMatrix scaleOffsetMatrix = new TMatrix(scaleFactor, -offX, -offY);
+        roadMap.transform(scaleOffsetMatrix);
+
+        Navigator navigator = new Navigator(roadMap);
+        Position2D startPosition = new Position2D(-5.0f, 5.0f);
+        Position2D destinationPosition = new Position2D(5.0f, -5.0f);
+        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
+
+        Line2D firstLine = route.get(0);
+        Position2D startingPoint = new Position2D(firstLine.getX1(), firstLine.getY1());
+
+        Line2D lastLine = route.get(route.size() - 1);
+        Position2D target = new Position2D(lastLine.getX2(), lastLine.getY2());
+
+        NavigationController nav = new NavigationController(2.0 * scaleFactor);
+        nav.initController(new Positioner(startingPoint), roadMap);
+        nav.buildSegmentBuffer(destinationPosition, roadMap);
+        Stream<Trajectory> segmentStream = nav.getNewSegments(nav.getSegmentBufferSize()).stream();
+        Deque<Vector2D> segmentBufferAsVectors = segmentStream.map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
+        Vector2DVisualizer visualizer = new Vector2DVisualizer();
+        ContentElememnt updateableContent = new ContentElememnt(segmentBufferAsVectors, Color.BLUE, new BasicStroke(0.5f), 0.1);
+        visualizer.addContentElement(updateableContent);
+        visualizer.updateVisuals();
+        visualizer.setVisible(true);
+        System.out.println("stop");
+    }
+
     private List<Line2D> transform(List<Line2D> route, float scale, float xTrans, float yTrans)
     {
         List<Line2D> result = new ArrayList<>();

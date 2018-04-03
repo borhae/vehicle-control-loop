@@ -32,16 +32,20 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
         int addCnt = 0;
         while(addCnt < elementsToAdd)
         {
-            Vector2D vec1 = overlay.pop();
-            addCnt++;
-            Trajectory elem1 = new Trajectory(vec1);
-            
-            Vector2D vec2 = quantizedRoute.pop();
-            addCnt++;
-            Trajectory elem2 = new Trajectory(vec2);
-            
-            result.add(elem1);
-            result.add(elem2);
+            if(!overlay.isEmpty())
+            {
+                Vector2D vec1 = overlay.pop();
+                addCnt++;
+                Trajectory elem1 = new Trajectory(vec1);
+                result.add(elem1);
+            }
+            if(!quantizedRoute.isEmpty())
+            {
+                Vector2D vec2 = quantizedRoute.pop();
+                addCnt++;
+                Trajectory elem2 = new Trajectory(vec2);
+                result.add(elem2);
+            }
         }
         //TODO add velocity profile information to Trajectory 
         return result;

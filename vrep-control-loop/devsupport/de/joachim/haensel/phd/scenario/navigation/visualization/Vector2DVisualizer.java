@@ -27,50 +27,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
-import de.joachim.haensel.streamextensions.IndexAdder;
 
 public class Vector2DVisualizer extends JFrame
 {
-    public class ContentElememnt
-    {
-        // holds information in the following way
-        // first dimension is an ordered set of vectors to draw
-        // second dimension is [baseX, baseY, tipX, tipY] of each vector
-        private double[][] _content;
-        private Color _color;
-        private Stroke _stroke;
-
-        public ContentElememnt(Deque<Vector2D> vectors, Color color, Stroke stroke)
-        {
-            if(_content == null || vectors.size() != _content.length)
-            {
-                _content = new double[vectors.size()][];
-                initVectors(_content);
-            }
-            vectors.stream().map(IndexAdder.indexed()).forEachOrdered(v -> addInto(_content, v));
-            _color = color;
-            _stroke = stroke;
-        }
-        
-        private void addInto(double[][] content, IndexAdder<Vector2D> v)
-        {
-            int idx = v.idx();
-            Vector2D vector = v.v();
-            content[idx][0] = vector.getbX();
-            content[idx][1] = vector.getbY();
-            content[idx][2] = vector.getbX() + vector.getdX();
-            content[idx][3] = vector.getbY() + vector.getdY();
-        }
-        
-        private void initVectors(double[][] initializee)
-        {
-            for(int idx = 0; idx < initializee.length; idx++)
-            {
-                initializee[idx] = new double[4];
-            }
-        }
-    }
-
     private static final Dimension FRAME_SIZE = new Dimension(2560, 1440);
 
     public class Vector2DVisualizerPanel extends JPanel implements MouseWheelListener, MouseListener, MouseMotionListener
@@ -132,11 +91,11 @@ public class Vector2DVisualizer extends JFrame
             // draw stuff here
             for (ContentElememnt content : _contentList)
             {
-                double[][] transformedContent = transform(content._content, _zoomFactor, _xOffset, _yOffset);
+                double[][] transformedContent = transform(content.getContent(), _zoomFactor, _xOffset, _yOffset);
                 g2.setColor(content._color);
                 Stroke strokeConfig = content._stroke == null ? new BasicStroke((float) 2.0) : content._stroke;
                 g2.setStroke(strokeConfig);
-                Arrays.asList(transformedContent).stream().forEach(v -> drawVector(g2, v));
+                Arrays.asList(transformedContent).stream().forEach(v -> drawVector(g2, v, content.getTipSize()));
             }
         }
 
@@ -154,15 +113,31 @@ public class Vector2DVisualizer extends JFrame
             return transformedContent;
         }
 
-        private void drawVector(Graphics2D g2, double[] v)
+        private void drawVector(Graphics2D g2, double[] v, double tipSize)
         {
             double xB = v[0];
             double yB = v[1];
             double xT = v[2];
             double yT = v[3];
             g2.drawLine((int)xB, (int)yB, (int)xT, (int)yT);
+            drawCircleTip(g2, tipSize, xB, yB, xT, yT);
+//            drawArrowTip(g2, tipSize, xB, yB, xT, yT);
+        }
+
+//        private void drawArrowTip(Graphics2D g2, double tipSize, double xB, double yB, double xT, double yT)
+//        {
+//            double angle = Math.atan2(yT - yB, xT - xB);
+//            Vector2D v1 = new Vector2D(0, 0, )
+//        }
+
+        private void drawCircleTip(Graphics2D g2, double tipSize, double xB, double yB, double xT, double yT)
+        {
             //tip. oval instead of arrow, cause it's easier
             double size = (ARROW_SIZE * _zoomFactor);
+            if(tipSize > 0.0)
+            {
+                size *= tipSize;
+            }
             double dx = xT - xB;
             double dy = yT - yB;
             double l = Math.sqrt(dx * dx + dy * dy);
@@ -261,6 +236,16 @@ public class Vector2DVisualizer extends JFrame
         {
             _contentList.add(new ContentElememnt(vectors, color, stroke));
         }
+
+        public void addVectorSet(Deque<Vector2D> vectors, Color color, Stroke stroke, double tipSize)
+        {
+            _contentList.add(new ContentElememnt(vectors, color, stroke, tipSize));
+        }
+
+        public void addContentElement(ContentElememnt updateableContent)
+        {
+            _contentList.add(updateableContent);
+        }
     }
 
     private Vector2DVisualizerPanel _panel;
@@ -313,9 +298,20 @@ public class Vector2DVisualizer extends JFrame
         _panel.addVectorSet(vectors, color, null);
     }
     
+    public void addVectorSet(Deque<Vector2D> vectors, Color color, double width, double tipSize)
+    {
+        Stroke stroke = new BasicStroke((float)width);
+        _panel.addVectorSet(vectors, color, stroke, tipSize);
+    }
+    
     public void addVectorSet(Deque<Vector2D> vectors, Color color, Stroke stroke)
     {
         _panel.addVectorSet(vectors, color, stroke);
+    }
+    
+    public void addContentElement(ContentElememnt updateableContent)
+    {
+        _panel.addContentElement(updateableContent);
     }
     
     public void updateVisuals()

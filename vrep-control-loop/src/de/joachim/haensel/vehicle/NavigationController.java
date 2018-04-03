@@ -40,7 +40,6 @@ public class NavigationController implements ITopLayerControl
         Navigator navigator = new Navigator(_roadMap);
         List<Line2D> routeBasis = navigator.getRoute(currentPosition, targetPosition);
         
-        _segmentSize = 2.0;
         IterativeInterpolationTrajectorizer trajectorizer = new IterativeInterpolationTrajectorizer(_segmentSize);
         _currentRoute.createRoute(trajectorizer.createTrajectory(routeBasis));
     }
