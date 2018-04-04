@@ -9,11 +9,13 @@ import java.util.stream.Collectors;
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.sumo2vrep.Position2D;
+import de.joachim.haensel.vehicle.ISegmentBuildingListener;
 
 public abstract class AbstractTrajectorizer implements ITrajectorizer
 {
     protected static final double EPSILON = 0.00001;
     protected double _stepSize;
+    protected List<ISegmentBuildingListener> _segmentBuildingListeners;
 
     public AbstractTrajectorizer(double stepSize)
     {
@@ -26,6 +28,7 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
         List<Trajectory> result = new ArrayList<>();
         LinkedList<Vector2D> srcRoute = lineListToVectorList(route);
         LinkedList<Vector2D> quantizedRoute = new LinkedList<>();
+        notifyOriginalTrajectory(quantizedRoute);
         quantize(srcRoute, quantizedRoute, _stepSize);
         Deque<Vector2D> overlay = createOverlay(srcRoute, _stepSize);
         int elementsToAdd = quantizedRoute.size() + overlay.size();
@@ -49,6 +52,16 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
         }
         //TODO add velocity profile information to Trajectory 
         return result;
+    }
+
+    private void notifyOriginalTrajectory(LinkedList<Vector2D> emptyRoute)
+    {
+        _segmentBuildingListeners.forEach(listener -> listener.notifyStartOriginalTrajectory(emptyRoute));
+    }
+    
+    private void notifyOverlayTrajectory(Deque<Vector2D> emptyOverlay)
+    {
+        _segmentBuildingListeners.forEach(listener -> listener.notifyStartOverlayTrajectory(emptyOverlay));
     }
 
     public LinkedList<Vector2D> lineListToVectorList(List<Line2D> route)
@@ -91,6 +104,7 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
     {
         Deque<Vector2D> inputCopy = new LinkedList<>();
         Deque<Vector2D> result = new LinkedList<>();
+        notifyOverlayTrajectory(result);
         input.stream().forEach(v -> inputCopy.add(new Vector2D(v)));
 
         Deque<Vector2D> startSector = computeStartSector(stepSize / 2.0, inputCopy);
@@ -154,4 +168,15 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
     }
     
     public abstract void quantize(Deque<Vector2D> source, Deque<Vector2D> result, double stepSize);
+
+    @Override
+    public void addSegmentBuildingListeners(List<ISegmentBuildingListener> segmentBuildingListeners)
+    {
+        _segmentBuildingListeners = segmentBuildingListeners;
+    }
+    
+    protected void notifyUpdateTrajectory(Vector2D newVector, Deque<Vector2D> updatedList)
+    {
+        _segmentBuildingListeners.forEach(listener -> listener.updateTrajectory(newVector, updatedList));
+    }
 }

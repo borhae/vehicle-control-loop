@@ -29,6 +29,7 @@ public class IterativeInterpolationTrajectorizer extends AbstractTrajectorizer
             {
                 Vector2D newElem = curVector.cutLengthFrom(stepSize);
                 result.add(newElem);
+                notifyUpdateTrajectory(newElem, result);
                 srcCopy.push(curVector);
             }
             else if(!srcCopy.isEmpty())
@@ -46,7 +47,9 @@ public class IterativeInterpolationTrajectorizer extends AbstractTrajectorizer
                 if(distance <= stepSize)
                 {
                     //even taken together the elements won't be long enough. So last element
-                    result.add(new Vector2D(curBase, nextTip));
+                    Vector2D newElem = new Vector2D(curBase, nextTip);
+                    result.add(newElem);
+                    notifyUpdateTrajectory(newElem, result);
                 }
                 else
                 {
@@ -54,6 +57,7 @@ public class IterativeInterpolationTrajectorizer extends AbstractTrajectorizer
                     Position2D newElemTip = binaryFindNewTip(curBase, nextBase, nextBase, nextTip, stepSize, RECURSION_LIMIT);
                     Vector2D newElem = new Vector2D(curBase, newElemTip);
                     result.add(newElem);
+                    notifyUpdateTrajectory(newElem, result);
                     Vector2D residue = new Vector2D(newElemTip, nextTip);
                     srcCopy.push(residue);
                 }
@@ -62,6 +66,7 @@ public class IterativeInterpolationTrajectorizer extends AbstractTrajectorizer
             {
                 //last element
                 result.add(curVector);
+                notifyUpdateTrajectory(curVector, result);
             }
         }
     }

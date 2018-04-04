@@ -7,6 +7,7 @@ import de.joachim.haensel.sumo2vrep.Edge;
 import de.joachim.haensel.sumo2vrep.Node;
 import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
+import de.joachim.haensel.vehicle.ISegmentBuildingListener;
 import de.joachim.haensel.sumo2vrep.Line2D;
 import de.joachim.haensel.vehiclecontrol.navigation.DijkstraAlgo;
 import de.joachim.haensel.vehiclecontrol.navigation.IShortestPathAlgorithm;
@@ -17,10 +18,12 @@ import sumobindings.LaneType;
 public class Navigator
 {
     private RoadMap _roadMap;
+    private List<ISegmentBuildingListener> _segmentBuildingListeners;
 
     public Navigator(RoadMap roadMap)
     {
         _roadMap = roadMap;
+        _segmentBuildingListeners = new ArrayList<>();
     }
     
     public List<Line2D> getRoute(Position2D currentPosition, Position2D targetPosition)
@@ -36,9 +39,16 @@ public class Navigator
         shortestPathSolver.setSource(startJunction);
         shortestPathSolver.setTarget(targetJunction);
         List<Node> path = shortestPathSolver.getPath();
-        return createLinesFromPath(path);
+        List<Line2D> result = createLinesFromPath(path);
+        notifyListeners(result);
+        return result;
     }
     
+    private void notifyListeners(List<Line2D> result)
+    {
+        _segmentBuildingListeners.forEach(listener -> listener.notifyNewRoute(result));
+    }
+
     private List<Line2D> createLinesFromPath(List<Node> path)
     {
         List<Line2D> result = new ArrayList<>();
@@ -63,5 +73,10 @@ public class Navigator
     {
         Edge edgeToNext = cur.getOutgoingEdge(next);
         return edgeToNext.getSumoEdge();
+    }
+
+    public void addSegmentBuildingListeners(List<ISegmentBuildingListener> segmentBuildingListeners)
+    {
+        _segmentBuildingListeners = segmentBuildingListeners;
     }
 }

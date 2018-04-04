@@ -1,5 +1,6 @@
 package de.joachim.haensel.vehicle;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.interpolation.IterativeInterpolationTrajectorizer;
@@ -16,10 +17,12 @@ public class NavigationController implements ITopLayerControl
     private IActuatingSensing _sensorsActuators;
     private Route _currentRoute;
     private double _segmentSize;
+    private List<ISegmentBuildingListener> _segmentBuildingListeners;
     
     public NavigationController(double segmentSize)
     {
         _segmentSize = segmentSize;
+        _segmentBuildingListeners = new ArrayList<ISegmentBuildingListener>();
     }
 
     @Override
@@ -38,9 +41,11 @@ public class NavigationController implements ITopLayerControl
         _sensorsActuators.computeAndLockSensorData();
         Position2D currentPosition = _sensorsActuators.getPosition();
         Navigator navigator = new Navigator(_roadMap);
+        navigator.addSegmentBuildingListeners(_segmentBuildingListeners);
         List<Line2D> routeBasis = navigator.getRoute(currentPosition, targetPosition);
         
         IterativeInterpolationTrajectorizer trajectorizer = new IterativeInterpolationTrajectorizer(_segmentSize);
+        trajectorizer.addSegmentBuildingListeners(_segmentBuildingListeners);
         _currentRoute.createRoute(trajectorizer.createTrajectory(routeBasis));
     }
 
@@ -58,5 +63,10 @@ public class NavigationController implements ITopLayerControl
     public int getSegmentBufferSize()
     {
         return _currentRoute.getSize();
+    }
+        
+    public void addSegmentBuilderListener(ISegmentBuildingListener listener)
+    {
+        _segmentBuildingListeners.add(listener);
     }
 }

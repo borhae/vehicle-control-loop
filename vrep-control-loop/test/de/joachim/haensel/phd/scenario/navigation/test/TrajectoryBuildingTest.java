@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,6 +22,7 @@ import de.joachim.haensel.phd.scenario.math.interpolation.InterpolationTrajector
 import de.joachim.haensel.phd.scenario.math.interpolation.IterativeInterpolationTrajectorizer;
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.phd.scenario.navigation.visualization.ContentElememnt;
+import de.joachim.haensel.phd.scenario.navigation.visualization.SegmentBuildingAdapter;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
@@ -712,17 +714,16 @@ public class TrajectoryBuildingTest implements TestConstants
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX2(), lastLine.getY2());
 
+        Vector2DVisualizer visualizer = new Vector2DVisualizer();
+        visualizer.setVisible(true);
+        System.out.println("stop");
+
         NavigationController nav = new NavigationController(2.0 * scaleFactor);
+        nav.addSegmentBuilderListener(new SegmentBuildingAdapter(visualizer));
         nav.initController(new Positioner(startingPoint), roadMap);
         nav.buildSegmentBuffer(destinationPosition, roadMap);
         Stream<Trajectory> segmentStream = nav.getNewSegments(nav.getSegmentBufferSize()).stream();
         Deque<Vector2D> segmentBufferAsVectors = segmentStream.map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
-        Vector2DVisualizer visualizer = new Vector2DVisualizer();
-        ContentElememnt updateableContent = new ContentElememnt(segmentBufferAsVectors, Color.BLUE, new BasicStroke(0.5f), 0.1);
-        visualizer.addContentElement(updateableContent);
-        visualizer.updateVisuals();
-        visualizer.setVisible(true);
-        System.out.println("stop");
     }
 
     private List<Line2D> transform(List<Line2D> route, float scale, float xTrans, float yTrans)
