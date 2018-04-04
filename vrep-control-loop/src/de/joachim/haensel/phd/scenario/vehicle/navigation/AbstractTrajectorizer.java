@@ -26,7 +26,8 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
     public List<Trajectory> createTrajectory(List<Line2D> route)
     {
         List<Trajectory> result = new ArrayList<>();
-        LinkedList<Vector2D> srcRoute = lineListToVectorList(route);
+        LinkedList<Vector2D> unpatchedRoute = lineListToVectorList(route);
+        LinkedList<Vector2D> srcRoute = patchHolesInRoute(unpatchedRoute);
         LinkedList<Vector2D> quantizedRoute = new LinkedList<>();
         notifyOriginalTrajectory(quantizedRoute);
         quantize(srcRoute, quantizedRoute, _stepSize);
