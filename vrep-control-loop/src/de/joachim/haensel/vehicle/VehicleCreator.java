@@ -71,14 +71,22 @@ public class VehicleCreator
         MOTOR_SIZE_LENGTH *= scaleFactor;
         REAR_AXIS_DIAMETER *= scaleFactor;
         REAR_AXIS_LENGTH *= scaleFactor;
-        WHEEL_MASS *= scaleFactor; // TODO should we mess with this? what are the effects
-        MAIN_BODY_MASS *= scaleFactor; // TODO should we mess with this? what are the effects
-        DAMPER_DAMPING_COEFFICIENT_C *= scaleFactor; // TODO should we mess with this? what are the effects
-        DAMPER_SPRING_CONSTANT_K *= scaleFactor; // TODO should we mess with this? what are the effects
+
+//        WHEEL_MASS *= scaleFactor; // TODO should we mess with this? what are the effects
+//        MAIN_BODY_MASS *= scaleFactor; // TODO should we mess with this? what are the effects
+//        DAMPER_DAMPING_COEFFICIENT_C *= scaleFactor; // TODO should we mess with this? what are the effects
+//        DAMPER_SPRING_CONSTANT_K *= scaleFactor; // TODO should we mess with this? what are the effects
+        WHEEL_MASS *= 1.0; // TODO experiment: what is the right amount?
+        MAIN_BODY_MASS *= 1.0; // TODO experiment: what is the right amount?
+        DAMPER_DAMPING_COEFFICIENT_C *= 1.0; // TODO experiment: what is the right amount?
+        DAMPER_SPRING_CONSTANT_K *= 1.0; // TODO experiment: what is the right amount?
+
         DAMPER_INTERVAL_MAX *= scaleFactor;
         DAMPER_INTERVAL_MIN *= scaleFactor;
-        DAMPER_TARGET_POSITION_BACK *= scaleFactor; // TODO should we mess with this? what are the effects
-        DAMPER_TARGET_POSITION_FRONT *= scaleFactor; // TODO should we mess with this? what are the effects
+//        DAMPER_TARGET_POSITION_BACK *= scaleFactor; // TODO should we mess with this? what are the effects
+//        DAMPER_TARGET_POSITION_FRONT *= scaleFactor; // TODO should we mess with this? what are the effects
+        DAMPER_TARGET_POSITION_BACK *= 1.0; // TODO experiment: what is the right amount?
+        DAMPER_TARGET_POSITION_FRONT *= 1.0; // TODO experiment: what is the right amount?
     }
 
     public Vehicle createAt(float x, float y, float z, RoadMap roadMap, IUpperLayerFactory uppperLayerFactory, ILowerLayerFactory lowerLayerFactory)

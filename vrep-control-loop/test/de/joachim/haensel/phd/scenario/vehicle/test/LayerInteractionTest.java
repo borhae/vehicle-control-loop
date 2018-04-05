@@ -173,7 +173,6 @@ public class LayerInteractionTest implements TestConstants
         NavigationController fakeNav = new NavigationController(2.0);
         fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
-        int size = fakeNav.getSegmentBufferSize();
         
         Trajectory firstSeg = fakeNav.segmentsPeek();
         Vector2D firstSegOrientation = firstSeg.getVector();
@@ -217,36 +216,46 @@ public class LayerInteractionTest implements TestConstants
         }
     }
 
-    //dimensions issue; won't simulate
     @Test
     public void testRouteFollowRealMapNoVisualization() throws VRepException
     {
+        float scale = 1.0f;
+        double segmentSize = 2.0;
+        double lookahead = 10.0;
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
-        roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
+        
+        XYMinMax dimensions = roadMap.computeMapDimensions();
+        double offX = dimensions.minX() + dimensions.distX()/2.0;
+        double offY = dimensions.minY() + dimensions.distY()/2.0;
+        TMatrix scaleOffsetMatrix = new TMatrix(scale, -offX, -offY);
+        roadMap.transform(scaleOffsetMatrix);
+        
         Navigator navigator = new Navigator(roadMap);
-        Position2D startPosition = new Position2D(5747.01f, 2979.22f);
-        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
+        Position2D startPosition = new Position2D(5747.01f, 2979.22f).transform(scaleOffsetMatrix);
+        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).transform(scaleOffsetMatrix);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMapSizedPlane(roadMap);
         
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
+        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, scale);
         Line2D firstLine = route.get(0);
         Position2D startingPoint = new Position2D(firstLine.getX1(), firstLine.getY1());
 
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
-        
-        IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0);};
-        ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+        IUpperLayerFactory uperFact = () -> {return new NavigationController(segmentSize);};
+        BadReactiveController ctrl = new BadReactiveController();
+        PurePursuitParameters reactiveControllerParameters = new PurePursuitParameters(lookahead);
+        reactiveControllerParameters.setSpeed(lookahead);
+        ctrl.setParameters(reactiveControllerParameters);
+        ILowerLayerFactory lowerFact = () -> {return ctrl;};
         
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
         
         Vector2D carOrientation = vehicle.getOrientation();
-        NavigationController fakeNav = new NavigationController(2.0);
+        NavigationController fakeNav = new NavigationController(segmentSize);
         fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
-        int size = fakeNav.getSegmentBufferSize();
         
         Trajectory firstSeg = fakeNav.segmentsPeek();
         Vector2D firstSegOrientation = firstSeg.getVector();
@@ -320,7 +329,6 @@ public class LayerInteractionTest implements TestConstants
         NavigationController fakeNav = new NavigationController(2.0);
         fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
-        int size = fakeNav.getSegmentBufferSize();
         
         Trajectory firstSeg = fakeNav.segmentsPeek();
         Vector2D firstSegOrientation = firstSeg.getVector();
@@ -383,8 +391,8 @@ public class LayerInteractionTest implements TestConstants
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).transform(scaleOffsetMatrix);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH * scaleFactor, STREET_HEIGHT * scaleFactor, _vrep, _clientID, _objectCreator);
-//        mapCreator.createMapSizedPlane(roadMap);
-        mapCreator.createMap(roadMap);
+        mapCreator.createMapSizedPlane(roadMap);
+//        mapCreator.createMap(roadMap);
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, scaleFactor);
         Line2D firstLine = route.get(0);
@@ -406,7 +414,6 @@ public class LayerInteractionTest implements TestConstants
         NavigationController fakeNav = new NavigationController(2.0 *  scaleFactor);
         fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
-        int size = fakeNav.getSegmentBufferSize();
         
         Trajectory firstSeg = fakeNav.segmentsPeek();
         Vector2D firstSegOrientation = firstSeg.getVector();
@@ -491,7 +498,6 @@ public class LayerInteractionTest implements TestConstants
         NavigationController fakeNav = new NavigationController(2.0 *  scaleFactor);
         fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
-        int size = fakeNav.getSegmentBufferSize();
 
         Deque<Vector2D> input = fakeNav.getNewSegments(fakeNav.getSegmentBufferSize()).stream().map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
         Vector2DVisualizer visualizer = new Vector2DVisualizer();

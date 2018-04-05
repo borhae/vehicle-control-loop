@@ -3,14 +3,13 @@ package de.joachim.haensel.phd.scenario.navigation.visualization;
 import java.awt.Color;
 import java.awt.Stroke;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.streamextensions.IndexAdder;
 
-public class ContentElememnt
+public class ContentElement
 {
     // holds information in the following way
     // first dimension is an ordered set of vectors to draw
@@ -22,7 +21,7 @@ public class ContentElememnt
     Stroke _stroke;
     private double _tipSize;
 
-    public ContentElememnt(Deque<Vector2D> vectors, Color color, Stroke stroke)
+    public ContentElement(Deque<Vector2D> vectors, Color color, Stroke stroke)
     {
         _dirtyFlag = false;
         _arrayContent = null;
@@ -38,7 +37,7 @@ public class ContentElememnt
         _tipSize = -1.0;
     }
     
-    public ContentElememnt(Deque<Vector2D> vectors, Color color, Stroke stroke, double tipSize)
+    public ContentElement(Deque<Vector2D> vectors, Color color, Stroke stroke, double tipSize)
     {
         this(vectors, color, stroke);
         _tipSize = tipSize;

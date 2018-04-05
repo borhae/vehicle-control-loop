@@ -31,7 +31,7 @@ public class Vector2DVisualizerTest
         Vector2DVisualizer visualizer = new Vector2DVisualizer();
         Deque<Vector2D> input = new LinkedList<>();
         input.add(new Vector2D(0, 0, 10, 10));
-        ContentElememnt visualizee = new ContentElememnt(input, Color.BLUE, new BasicStroke(1.0f));
+        ContentElement visualizee = new ContentElement(input, Color.BLUE, new BasicStroke(1.0f));
         visualizer.addContentElement(visualizee);
         visualizer.updateVisuals();
         visualizer.setVisible(true);

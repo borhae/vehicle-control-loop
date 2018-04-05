@@ -91,7 +91,7 @@ public class VehicleCreationTest implements TestConstants
         IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0 * scaleFactor);};
         ILowerLayerFactory lowerFact = () -> {return ctrl;};
 
-        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + scaleFactor, null, upperFact, lowerFact);
+        vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + scaleFactor, null, upperFact, lowerFact);
         System.out.println("look at me");
     }
 

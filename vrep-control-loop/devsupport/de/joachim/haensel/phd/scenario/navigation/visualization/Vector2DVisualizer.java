@@ -46,7 +46,7 @@ public class Vector2DVisualizer extends JFrame
         private double _xOffset;
         private double _yOffset;
         private double _prevZoomFactor;
-        private ArrayList<ContentElememnt> _contentList;
+        private ArrayList<ContentElement> _contentList;
 
         public Vector2DVisualizerPanel()
         {
@@ -89,7 +89,7 @@ public class Vector2DVisualizer extends JFrame
             }
             
             // draw stuff here
-            for (ContentElememnt content : _contentList)
+            for (ContentElement content : _contentList)
             {
                 double[][] transformedContent = transform(content.getContent(), _zoomFactor, _xOffset, _yOffset);
                 g2.setColor(content._color);
@@ -234,15 +234,15 @@ public class Vector2DVisualizer extends JFrame
         
         public void addVectorSet(Deque<Vector2D> vectors, Color color, Stroke stroke)
         {
-            _contentList.add(new ContentElememnt(vectors, color, stroke));
+            _contentList.add(new ContentElement(vectors, color, stroke));
         }
 
         public void addVectorSet(Deque<Vector2D> vectors, Color color, Stroke stroke, double tipSize)
         {
-            _contentList.add(new ContentElememnt(vectors, color, stroke, tipSize));
+            _contentList.add(new ContentElement(vectors, color, stroke, tipSize));
         }
 
-        public void addContentElement(ContentElememnt updateableContent)
+        public void addContentElement(ContentElement updateableContent)
         {
             _contentList.add(updateableContent);
         }
@@ -309,7 +309,7 @@ public class Vector2DVisualizer extends JFrame
         _panel.addVectorSet(vectors, color, stroke);
     }
     
-    public void addContentElement(ContentElememnt updateableContent)
+    public void addContentElement(ContentElement updateableContent)
     {
         _panel.addContentElement(updateableContent);
     }

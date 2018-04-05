@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import coppelia.FloatWA;
-
 public class Line2D
 {
     private double _x1;

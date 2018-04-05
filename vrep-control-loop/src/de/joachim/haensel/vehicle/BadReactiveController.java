@@ -245,7 +245,7 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
 
     protected float computeTargetWheelRotationSpeed()
     {
-        return -1.5f;
+        return (float)- _parameters.getV();
     }
 
     @Override

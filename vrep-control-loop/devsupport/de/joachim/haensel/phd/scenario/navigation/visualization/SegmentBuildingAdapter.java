@@ -15,12 +15,12 @@ import de.joachim.haensel.vehicle.ISegmentBuildingListener;
 public class SegmentBuildingAdapter implements ISegmentBuildingListener
 {
     private Vector2DVisualizer _visualizer;
-    private HashMap<SegmentBuildingListenerTypes, ContentElememnt> _listToContentMap;
+    private HashMap<SegmentBuildingListenerTypes, ContentElement> _listToContentMap;
 
     public SegmentBuildingAdapter(Vector2DVisualizer visualizer)
     {
         _visualizer = visualizer;
-        _listToContentMap = new HashMap<SegmentBuildingListenerTypes, ContentElememnt>();
+        _listToContentMap = new HashMap<SegmentBuildingListenerTypes, ContentElement>();
     }
 
     @Override
@@ -28,7 +28,7 @@ public class SegmentBuildingAdapter implements ISegmentBuildingListener
     {
         Deque<Vector2D> vectors = new LinkedList<>();
         route.forEach(line -> vectors.addFirst(new Vector2D(line)));
-        ContentElememnt updateableContent = new ContentElememnt(vectors, Color.BLACK, new BasicStroke(2.0f), 0.5);
+        ContentElement updateableContent = new ContentElement(vectors, Color.BLACK, new BasicStroke(2.0f), 0.5);
         _visualizer.addContentElement(updateableContent);
         _visualizer.updateVisuals();
     }
@@ -36,7 +36,7 @@ public class SegmentBuildingAdapter implements ISegmentBuildingListener
     @Override
     public void notifyStartOriginalTrajectory(LinkedList<Vector2D> emptyRoute)
     {
-        ContentElememnt updateableContent = new ContentElememnt(emptyRoute, Color.ORANGE, new BasicStroke(2.0f), 0.05);
+        ContentElement updateableContent = new ContentElement(emptyRoute, Color.ORANGE, new BasicStroke(2.0f), 0.05);
         _visualizer.addContentElement(updateableContent);
         _visualizer.updateVisuals();
         SegmentBuildingListenerTypes.ORIGINAL.setList(emptyRoute);
@@ -46,7 +46,7 @@ public class SegmentBuildingAdapter implements ISegmentBuildingListener
     @Override
     public void notifyStartOverlayTrajectory(Deque<Vector2D> emptyOverlay)
     {
-        ContentElememnt updateableContent = new ContentElememnt(emptyOverlay, Color.BLUE, new BasicStroke(2.0f), 0.05);
+        ContentElement updateableContent = new ContentElement(emptyOverlay, Color.BLUE, new BasicStroke(2.0f), 0.05);
         _visualizer.addContentElement(updateableContent);
         _visualizer.updateVisuals();
         SegmentBuildingListenerTypes.OVERLAY.setList(emptyOverlay);
@@ -58,13 +58,13 @@ public class SegmentBuildingAdapter implements ISegmentBuildingListener
     {
         if(updatedList == SegmentBuildingListenerTypes.ORIGINAL.getList())
         {
-            ContentElememnt elementToUpdate = _listToContentMap.get(SegmentBuildingListenerTypes.ORIGINAL);
+            ContentElement elementToUpdate = _listToContentMap.get(SegmentBuildingListenerTypes.ORIGINAL);
             elementToUpdate.addVector(newVector);
             _visualizer.updateVisuals();
         }
         else if (updatedList == SegmentBuildingListenerTypes.OVERLAY.getList())
         {
-            ContentElememnt elementToUpdate = _listToContentMap.get(SegmentBuildingListenerTypes.OVERLAY);
+            ContentElement elementToUpdate = _listToContentMap.get(SegmentBuildingListenerTypes.OVERLAY);
             elementToUpdate.addVector(newVector);
             _visualizer.updateVisuals();
         }
