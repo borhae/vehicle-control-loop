@@ -372,6 +372,26 @@ addAndAttachScriptNonThreaded = function(inInts, inFloats, inStrings, inBuffer)
   return {scriptHandle}, {}, {}, "" 
 end
 
+textureOnRectangle = function(inInts, inFloats, inStrings, inBuffer)
+	local handle = inInts[1]
+	local textureName = inStrings[1]
+	local textureFileName = inStrings[2]
+	sim.addStatusbarMessage("absolute filename: "..textureFileName)
+	
+	local textureShapeHandle = sim.createTexture(textureFileName, 2, {1, 1}, nil, nil, 0, nil)
+	if (textureShapeHandle ~= -1) then
+		textureId = sim.getShapeTextureId(textureShapeHandle)
+		if (textureId ~= -1) then
+			if (handle ~= -1) then
+			    -- I have no idea why the 400, 400 scaling delivers the required result 
+				sim.setShapeTexture(handle, textureId, sim.texturemap_plane, 1, {400, 400}, nil, nil)
+			end
+		end
+	end
+	table.insert(createdObjects, textureShapeHandle) -- for later removal
+	return {}, {}, {}, "" 
+end
+
 -- Added for debugging
 -- Convert a lua table into a lua syntactically correct string
 table_to_string = function(tbl)

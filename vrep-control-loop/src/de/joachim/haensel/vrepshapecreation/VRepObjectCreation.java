@@ -1,6 +1,7 @@
 package de.joachim.haensel.vrepshapecreation;
 
 import java.awt.Color;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -272,5 +273,20 @@ public class VRepObjectCreation
     public void deleteAll() throws VRepException
     {
         _vrep.simxCallScriptFunction(_clientID, "ScriptLoader", 6, "deleteCreated", null, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+    }
+
+    public void putTextureOnRectangle(File tmp, int rectangleHandle) throws VRepException
+    {
+        IntWA callParamsI = new IntWA(1);
+        StringWA callParamsS = new StringWA(2);
+        
+        int[] intParameters = callParamsI.getArray();
+        intParameters[0] = rectangleHandle;
+        
+        String[] stringParameters = callParamsS.getArray();
+        String absolutePath = tmp.getAbsolutePath();
+        stringParameters[0] = tmp.getName();
+        stringParameters[1] = absolutePath;
+        _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "textureOnRectangle", callParamsI, null, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
     }
 }

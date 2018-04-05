@@ -6,7 +6,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.sumo2vrep.Line2D;

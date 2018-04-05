@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.junit.After;
@@ -235,7 +234,7 @@ public class LayerInteractionTest implements TestConstants
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).transform(scaleOffsetMatrix);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMapSizedPlane(roadMap);
+        mapCreator.createMapSizedRectangle(roadMap);
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, scale);
         Line2D firstLine = route.get(0);
@@ -391,7 +390,7 @@ public class LayerInteractionTest implements TestConstants
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).transform(scaleOffsetMatrix);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH * scaleFactor, STREET_HEIGHT * scaleFactor, _vrep, _clientID, _objectCreator);
-        mapCreator.createMapSizedPlane(roadMap);
+        mapCreator.createMapSizedRectangle(roadMap);
 //        mapCreator.createMap(roadMap);
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, scaleFactor);

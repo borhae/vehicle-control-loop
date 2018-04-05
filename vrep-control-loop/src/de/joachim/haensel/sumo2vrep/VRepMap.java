@@ -4,6 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +18,7 @@ import coppelia.StringWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import de.joachim.haensel.vrepshapecreation.shapes.EVRepShapes;
 import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
@@ -42,33 +44,11 @@ public class VRepMap
         _vrepObjectCreator = vrepObjectCreator;
     }
 
-    public void createMapSizedPlane(RoadMap roadMap)
+    public void createMapSizedRectangle(RoadMap roadMap)
     {
-        if(_elementNameCreator == null)
-        {
-            _elementNameCreator = new IDCreator();
-        }
         try
         {
-            XYMinMax minMax = roadMap.computeMapDimensions();
-            _vrepObjectCreator.createMapCenter();
-            ShapeParameters shapeParameters = new ShapeParameters();
-            shapeParameters.setIsDynamic(false);
-            shapeParameters.setIsRespondable(true);
-            shapeParameters.setMass(10);
-            shapeParameters.setName(_elementNameCreator.createPlaneID());
-            shapeParameters.setOrientation(0.0f, 0.0f, 0.0f);
-            shapeParameters.setRespondableMask(ShapeParameters.GLOBAL_ONLY_RESPONDABLE_MASK);
-            float sizeX = minMax.distX();
-            float sizeY = minMax.distY();
-            System.out.println(minMax);
-            float sizeZ = 0.2f;
-            shapeParameters.setSize(sizeX, sizeY, sizeZ);
-            float posX =  (float) (minMax.minX() + minMax.distX()/2.0);
-            float posY = (float) (minMax.minY() + minMax.distY()/2.0);
-            shapeParameters.setPosition(posX, posY, 0.0f);
-            shapeParameters.setType(EVRepShapes.CUBOID);
-            _vrepObjectCreator.createPrimitive(shapeParameters);
+            createMapSizedVRepRectangle(roadMap);
         }
         catch (VRepException e)
         {
@@ -76,53 +56,21 @@ public class VRepMap
         }
     }
 
-    public void createTextureAndSingleRectangleBasedMap(RoadMap roadMap)
+    public void createMapSizedRectangleWithMapTexture(RoadMap roadMap)
     {
-        if(_elementNameCreator == null)
-        {
-            _elementNameCreator = new IDCreator();
-        }
         try
         {
             XYMinMax minMax = roadMap.computeMapDimensions();
-            _vrepObjectCreator.createMapCenter();
-            ShapeParameters shapeParameters = new ShapeParameters();
-            shapeParameters.setIsDynamic(false);
-            shapeParameters.setIsRespondable(true);
-            shapeParameters.setMass(10);
-            shapeParameters.setName(_elementNameCreator.createPlaneID());
-            shapeParameters.setOrientation(0.0f, 0.0f, 0.0f);
-            shapeParameters.setRespondableMask(ShapeParameters.GLOBAL_ONLY_RESPONDABLE_MASK);
-            float sizeX = minMax.distX();
-            float sizeY = minMax.distY();
-            System.out.println(minMax);
-            float sizeZ = 0.2f;
-            shapeParameters.setSize(sizeX, sizeY, sizeZ);
-            float posX =  (float) (minMax.minX() + minMax.distX()/2.0);
-            float posY = (float) (minMax.minY() + minMax.distY()/2.0);
-            shapeParameters.setPosition(posX, posY, 0.0f);
-            shapeParameters.setType(EVRepShapes.CUBOID);
-            _vrepObjectCreator.createPrimitive(shapeParameters);
+            int rectangleHandle = createMapSizedVRepRectangle(roadMap);
             
-            int width = (int)minMax.distX();
-            int height = (int)minMax.distY();
-            BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D graphics2dObject = img.createGraphics();
-            graphics2dObject.setColor(Color.LIGHT_GRAY);
-            graphics2dObject.fillRect(0, 0, width, height);
-            graphics2dObject.setColor(Color.BLACK);
-            
-            int xCenter = (int) (minMax.distX()/2.0);
-            int yCenter = (int) (minMax.distY()/2.0);
-            IJunctionCreator junctionCreator = (junction) -> drawJunction(graphics2dObject, xCenter, yCenter, junction);
-            ILaneCreator laneCreator = (lane, p1, p2) -> drawLane(graphics2dObject, xCenter, yCenter, lane, p1, p2);
-            createMapStructure(roadMap, junctionCreator, laneCreator);
+            BufferedImage img = createTexture(roadMap, minMax);
             File tmp = new File("tmpmap.png");
             if(tmp.exists())
             {
                 tmp.delete();
             }
             ImageIO.write(img, "png", tmp);
+            _vrepObjectCreator.putTextureOnRectangle(tmp, rectangleHandle);
         }
         catch (VRepException e)
         {
@@ -132,6 +80,68 @@ public class VRepMap
         {
             exc.printStackTrace();
         }
+    }
+
+    public void createSimplesShapeBasedMap(RoadMap roadMap)
+    {
+        if(_elementNameCreator == null)
+        {
+            _elementNameCreator = new IDCreator();
+        }
+        IJunctionCreator junctionCreator = (junction) -> createVRepJunction(_vrep, _clientID, _elementNameCreator, junction);
+        ILaneCreator laneCreator = (curLane, p1, p2) -> createVRepLane(_vrep, _clientID, _elementNameCreator, curLane, p1, p2);
+        createMapStructure(roadMap, junctionCreator, laneCreator);
+    }
+
+    private BufferedImage createTexture(RoadMap roadMap, XYMinMax minMax)
+    {
+        double scaleY = 10.0;
+        double scaleX = 10.0;
+        int width = (int)minMax.distX();
+        int height = (int)minMax.distY();
+        BufferedImage img = new BufferedImage(width * (int)scaleX, height * (int)scaleY, BufferedImage.TYPE_INT_ARGB);
+        AffineTransform transformation = new AffineTransform();
+        transformation.scale(scaleX, scaleY);
+        transformation.rotate(Math.toRadians(180), width/2, height/2);
+        Graphics2D graphics2dObject = img.createGraphics();
+        graphics2dObject.transform(transformation);
+        graphics2dObject.setColor(Color.LIGHT_GRAY);
+        graphics2dObject.fillRect(0, 0, width, height);
+        graphics2dObject.setColor(Color.BLACK);
+        
+        int xCenter = (int) (minMax.distX()/2.0);
+        int yCenter = (int) (minMax.distY()/2.0);
+        IJunctionCreator junctionCreator = (junction) -> drawJunction(graphics2dObject, xCenter, yCenter, junction);
+        ILaneCreator laneCreator = (lane, p1, p2) -> drawLane(graphics2dObject, xCenter, yCenter, lane, p1, p2);
+        createMapStructure(roadMap, junctionCreator, laneCreator);
+        return img;
+    }
+
+    private int createMapSizedVRepRectangle(RoadMap roadMap) throws VRepException
+    {
+        if(_elementNameCreator == null)
+        {
+            _elementNameCreator = new IDCreator();
+        }
+        XYMinMax minMax = roadMap.computeMapDimensions();
+        _vrepObjectCreator.createMapCenter();
+        ShapeParameters shapeParameters = new ShapeParameters();
+        shapeParameters.setIsDynamic(false);
+        shapeParameters.setIsRespondable(true);
+        shapeParameters.setMass(10);
+        shapeParameters.setName(_elementNameCreator.createPlaneID());
+        shapeParameters.setOrientation(0.0f, 0.0f, 0.0f);
+        shapeParameters.setRespondableMask(ShapeParameters.GLOBAL_ONLY_RESPONDABLE_MASK);
+        float sizeX = minMax.distX();
+        float sizeY = minMax.distY();
+        float sizeZ = 0.2f;
+        shapeParameters.setSize(sizeX, sizeY, sizeZ);
+        float posX =  (float) (minMax.minX() + minMax.distX()/2.0);
+        float posY = (float) (minMax.minY() + minMax.distY()/2.0);
+        shapeParameters.setPosition(posX, posY, 0.0f);
+        shapeParameters.setType(EVRepShapes.CUBOID);
+        int rectangleHandle = _vrepObjectCreator.createPrimitive(shapeParameters);
+        return rectangleHandle;
     }
 
     private void drawLane(Graphics2D graphics2dObject, int xCenter, int yCenter, LaneType lane, String p1, String p2)
@@ -160,21 +170,10 @@ public class VRepMap
         float yPos = junction.getY();
         int width = 10;
         int height = 10;
-        int x = (int) (xPos - width /2.0) + xCenter;
-        int y = (int) (yPos - height / 2.0) + yCenter;
+        int x = (int) ((xPos - width /2.0) + xCenter);
+        int y = (int) ((yPos - height / 2.0) + yCenter);
         
         graphics2dObject.drawOval(x, y, width, height);
-    }
-
-    public void createSimplesShapeBasedMap(RoadMap roadMap)
-    {
-        if(_elementNameCreator == null)
-        {
-            _elementNameCreator = new IDCreator();
-        }
-        IJunctionCreator junctionCreator = (junction) -> createVRepJunction(_vrep, _clientID, _elementNameCreator, junction);
-        ILaneCreator laneCreator = (curLane, p1, p2) -> createVRepLane(_vrep, _clientID, _elementNameCreator, curLane, p1, p2);
-        createMapStructure(roadMap, junctionCreator, laneCreator);
     }
 
     private void createMapStructure(RoadMap roadMap, IJunctionCreator junctionCreator, ILaneCreator laneCreator)

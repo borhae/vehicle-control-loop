@@ -172,7 +172,7 @@ public class MapCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
 
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMapSizedPlane(roadMap);
+        mapCreator.createMapSizedRectangle(roadMap);
     }
     
     @Test
@@ -182,7 +182,7 @@ public class MapCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
 
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMapSizedPlane(roadMap);
+        mapCreator.createMapSizedRectangle(roadMap);
         mapCreator.createSimplesShapeBasedMap(roadMap);
     }
     
@@ -195,7 +195,20 @@ public class MapCreationTest implements TestConstants
         roadMap.transform(centerMatrix);
         
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createTextureAndSingleRectangleBasedMap(roadMap);
+        mapCreator.createMapSizedRectangleWithMapTexture(roadMap);
+    }
+    
+    @Test 
+    public void testLoadMidRangeSyntheticMapTextureOnPlaneAndSimpleShapes()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/testMap5Streets.net.xml");
+        XYMinMax mapDimensions = roadMap.computeMapDimensions();
+        TMatrix centerMatrix = TMatrix.createCenterMatrix(mapDimensions);
+        roadMap.transform(centerMatrix);
+        
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMapSizedRectangleWithMapTexture(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
     }
     
     @Test 
@@ -207,7 +220,7 @@ public class MapCreationTest implements TestConstants
         roadMap.transform(centerMatrix);
         
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createTextureAndSingleRectangleBasedMap(roadMap);
+        mapCreator.createMapSizedRectangleWithMapTexture(roadMap);
     }
 
     @Test
@@ -217,7 +230,7 @@ public class MapCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
 
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMapSizedPlane(roadMap);
+        mapCreator.createMapSizedRectangle(roadMap);
         
         ShapeParameters cubeParams = new ShapeParameters();
         cubeParams.setIsDynamic(true);
