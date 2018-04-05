@@ -102,7 +102,7 @@ public class VehicleCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0, 0.0);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         float height = vehicleCreator.getVehicleHeight();
         

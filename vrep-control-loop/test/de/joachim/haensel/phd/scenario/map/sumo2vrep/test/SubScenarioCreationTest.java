@@ -84,7 +84,7 @@ public class SubScenarioCreationTest implements TestConstants
         Position2D destinationPosition = new Position2D(101.81f, 9.23f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
         Line2D firstLine = route.get(0);
@@ -108,7 +108,7 @@ public class SubScenarioCreationTest implements TestConstants
         RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0, 0.0);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
         float height = vehicleCreator.getVehicleHeight();
 
@@ -126,7 +126,7 @@ public class SubScenarioCreationTest implements TestConstants
         RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0, 0.0);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
         float height = vehicleCreator.getVehicleHeight();
         

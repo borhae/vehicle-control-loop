@@ -20,11 +20,13 @@ import coppelia.StringWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.sumo2vrep.IDCreator;
 import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.sumo2vrep.VRepMap;
+import de.joachim.haensel.sumo2vrep.XYMinMax;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import de.joachim.haensel.vrepshapecreation.shapes.EVRepShapes;
 import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
@@ -96,7 +98,7 @@ public class MapCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
 
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
     }
 
     @Test
@@ -106,7 +108,7 @@ public class MapCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
 
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
         IDCreator idMapper = mapCreator.getIDMapper();
         EdgeType edgeZero = getFirstNonInternal(roadMap);
         assert(edgeZero != null);
@@ -150,7 +152,7 @@ public class MapCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
 
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
     }
 
     @Test
@@ -160,7 +162,7 @@ public class MapCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
 
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
     }
     
     @Test
@@ -181,9 +183,33 @@ public class MapCreationTest implements TestConstants
 
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMapSizedPlane(roadMap);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
     }
     
+    @Test 
+    public void testLoadMidRangeSyntheticMapTextureOnPlane()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/testMap5Streets.net.xml");
+        XYMinMax mapDimensions = roadMap.computeMapDimensions();
+        TMatrix centerMatrix = TMatrix.createCenterMatrix(mapDimensions);
+        roadMap.transform(centerMatrix);
+        
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createTextureAndSingleRectangleBasedMap(roadMap);
+    }
+    
+    @Test 
+    public void testLoadRealWorldMapTextureOnPlane()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
+        XYMinMax mapDimensions = roadMap.computeMapDimensions();
+        TMatrix centerMatrix = TMatrix.createCenterMatrix(mapDimensions);
+        roadMap.transform(centerMatrix);
+        
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createTextureAndSingleRectangleBasedMap(roadMap);
+    }
+
     @Test
     public void testLoadRealWorldJustPlanMapAndStartSimulation() throws VRepException
     {

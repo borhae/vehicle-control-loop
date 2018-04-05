@@ -55,7 +55,7 @@ public class RoadMapTest implements TestConstants
         RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0, 0.0);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
         
         ShapeParameters dummyObjParams = new ShapeParameters();
         dummyObjParams.setName("dummy");
@@ -94,14 +94,14 @@ public class RoadMapTest implements TestConstants
         System.out.println("before transform");
         edges.stream().filter(edge -> isInternal(edge)).forEach(edge -> System.out.println(edge.getLane().get(0).getLength()));
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
 
         roadMap.transform(new TMatrix(scaleFactor, 0.0, 0.0));
         edges = roadMap.getEdges();
         System.out.println("after transform");
         edges.stream().filter(edge -> isInternal(edge)).forEach(edge -> System.out.println(edge.getLane().get(0).getLength()));
         mapCreator.setStreetWidthAndHeight(STREET_WIDTH * (float)scaleFactor, STREET_HEIGHT * (float)scaleFactor);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
         System.out.println("do we have two different sized maps?");
     }
     
@@ -116,14 +116,14 @@ public class RoadMapTest implements TestConstants
         System.out.println("before transform");
         edges.stream().filter(edge -> isInternal(edge)).forEach(edge -> System.out.println(edge.getLane().get(0).getLength()));
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
 
         roadMap.transform(new TMatrix(scaleFactor, -50.0, -50.0));
         edges = roadMap.getEdges();
         System.out.println("after transform");
         edges.stream().filter(edge -> isInternal(edge)).forEach(edge -> System.out.println(edge.getLane().get(0).getLength()));
         mapCreator.setStreetWidthAndHeight(STREET_WIDTH * (float)scaleFactor, STREET_HEIGHT * (float)scaleFactor);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
         System.out.println("do we have two different sized maps?");
     }
 
@@ -137,14 +137,14 @@ public class RoadMapTest implements TestConstants
         System.out.println("before transform");
         edges.stream().filter(edge -> isInternal(edge)).forEach(edge -> System.out.println(edge.getLane().get(0).getLength()));
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
 
         roadMap.center(0.0, 0.0);
         edges = roadMap.getEdges();
         System.out.println("after transform");
         edges.stream().filter(edge -> isInternal(edge)).forEach(edge -> System.out.println(edge.getLane().get(0).getLength()));
         mapCreator.setStreetWidthAndHeight(STREET_WIDTH * (float)scaleFactor, STREET_HEIGHT * (float)scaleFactor);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
         System.out.println("do we have two different sized maps?");
     }
 

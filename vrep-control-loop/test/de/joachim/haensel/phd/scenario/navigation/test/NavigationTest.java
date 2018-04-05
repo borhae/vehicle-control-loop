@@ -55,7 +55,7 @@ public class NavigationTest implements TestConstants
         Position2D destinationPosition = new Position2D(101.81f, 9.23f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
         drawRoute(route, _objectCreator);
     }
 
@@ -70,7 +70,7 @@ public class NavigationTest implements TestConstants
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMap(roadMap);
+        mapCreator.createSimplesShapeBasedMap(roadMap);
         drawRoute(route, _objectCreator);
         System.out.println("done");
     }

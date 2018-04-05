@@ -1,5 +1,7 @@
 package de.joachim.haensel.phd.scenario.math;
 
+import de.joachim.haensel.sumo2vrep.XYMinMax;
+
 /**
  * For now this first scales and then adds an offset. Rotation not tested yet
  * @author dummy
@@ -44,5 +46,13 @@ public class TMatrix
         // cut the last value
         result = new double[]{result[0], result[1]};
         return result;
+    }
+
+    public static TMatrix createCenterMatrix(XYMinMax dimensions)
+    {
+        double offX = dimensions.minX() + dimensions.distX()/2.0;
+        double offY = dimensions.minY() + dimensions.distY()/2.0;
+
+        return new TMatrix(1.0, -offX, -offY);
     }
 }
