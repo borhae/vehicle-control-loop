@@ -11,12 +11,12 @@ import coppelia.IntWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
-import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.CarControlInterface;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingObject;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
-import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing

@@ -1,5 +1,7 @@
 package de.joachim.haensel.sumo2vrep;
 
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+
 public class OrientedPosition
 {
     private Position2D _pos;

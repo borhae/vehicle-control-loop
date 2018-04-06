@@ -26,7 +26,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
 public class Vector2DVisualizer extends JFrame
 {

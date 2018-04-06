@@ -5,9 +5,9 @@ import java.util.LinkedList;
 
 import de.joachim.haensel.phd.scenario.math.TriangleError;
 import de.joachim.haensel.phd.scenario.math.TriangleSolver;
-import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
-import de.joachim.haensel.sumo2vrep.Position2D;
 
 public class InterpolationTrajectorizerTrigonometry extends AbstractTrajectorizer
 {

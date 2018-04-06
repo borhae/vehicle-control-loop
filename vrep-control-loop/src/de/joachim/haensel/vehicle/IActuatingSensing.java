@@ -1,7 +1,7 @@
 package de.joachim.haensel.vehicle;
 
-import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
-import de.joachim.haensel.sumo2vrep.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
 public interface IActuatingSensing
 {

@@ -16,12 +16,12 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
-import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
-import de.joachim.haensel.sumo2vrep.Line2D;
-import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.sumo2vrep.VRepMap;
 import de.joachim.haensel.sumo2vrep.XYMinMax;
@@ -355,6 +355,97 @@ public class LayerInteractionTest implements TestConstants
             exc.printStackTrace();
         }
         vehicle.activateDebugging(DOWN_SCALE_FACTOR);
+        vehicle.start();
+        vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
+        System.out.println("wait here");
+        vehicle.stop();
+        vehicle.deacvtivateDebugging();
+        _vrep.simxStopSimulation(_clientID, remoteApi.simx_opmode_blocking);
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException exc)
+        {
+            exc.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testRouteFollowRealMapTexture() throws VRepException
+    {
+        double scaleFactor = 1.0;
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
+        XYMinMax dimensions = roadMap.computeMapDimensions();
+        double offX = dimensions.minX() + dimensions.distX()/2.0;
+        double offY = dimensions.minY() + dimensions.distY()/2.0;
+        offX *= scaleFactor;
+        offY *= scaleFactor;
+
+        TMatrix scaleOffsetMatrix = new TMatrix(scaleFactor, -offX, -offY);
+        roadMap.transform(scaleOffsetMatrix);
+
+        Navigator navigator = new Navigator(roadMap);
+        Position2D startPosition = new Position2D(5747.01f, 2979.22f).transform(scaleOffsetMatrix);
+        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).transform(scaleOffsetMatrix);
+        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMapSizedRectangleWithMapTexture(roadMap);
+        
+        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, (float)scaleFactor);
+        Line2D firstLine = route.get(0);
+        Position2D startingPoint = new Position2D(firstLine.getX1(), firstLine.getY1());
+
+        Line2D lastLine = route.get(route.size() - 1);
+        Position2D target = new Position2D(lastLine.getX2(), lastLine.getY2());
+        
+        
+        IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0 * scaleFactor);};
+        BadReactiveController ctrl = new BadReactiveController(); 
+        ctrl.setParameters(new PurePursuitParameters(5.0 * scaleFactor));
+        ILowerLayerFactory lowerFact = () -> {return ctrl;};
+        
+        float vehicleZPos = 0.25f;
+        Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), vehicleZPos, roadMap, uperFact , lowerFact);
+        
+        Vector2D carOrientation = vehicle.getOrientation();
+        NavigationController fakeNav = new NavigationController(2.0 *  scaleFactor);
+        fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
+        fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
+
+        Deque<Vector2D> input = fakeNav.getNewSegments(fakeNav.getSegmentBufferSize()).stream().map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
+        Vector2DVisualizer visualizer = new Vector2DVisualizer();
+        visualizer.addVectorSet(input, Color.BLUE);
+        visualizer.updateVisuals();
+        visualizer.setVisible(true);
+        System.out.println("stop");
+        
+        Trajectory firstSeg = fakeNav.segmentsPeek();
+        Vector2D firstSegOrientation = firstSeg.getVector();
+        
+        double correctionAngle = Vector2D.computeAngle(carOrientation, firstSegOrientation) + Math.PI;
+        
+        vehicle.setOrientation(0.0f, 0.0f, (float)correctionAngle);
+
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException exc)
+        {
+            exc.printStackTrace();
+        }
+        
+        _vrep.simxStartSimulation(_clientID, remoteApi.simx_opmode_blocking);
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException exc)
+        {
+            exc.printStackTrace();
+        }
+        vehicle.activateDebugging(scaleFactor);
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");

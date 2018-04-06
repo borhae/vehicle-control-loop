@@ -379,7 +379,7 @@ textureOnRectangle = function(inInts, inFloats, inStrings, inBuffer)
 	sim.addStatusbarMessage("absolute filename: "..textureFileName)
 	
 	local textureShapeHandle = sim.createTexture(textureFileName, 2, {1, 1}, nil, nil, 0, nil)
-	if (textureShapeHandle ~= -1) then
+	if (textureShap eHandle ~= -1) then
 		textureId = sim.getShapeTextureId(textureShapeHandle)
 		if (textureId ~= -1) then
 			if (handle ~= -1) then
@@ -393,11 +393,7 @@ textureOnRectangle = function(inInts, inFloats, inStrings, inBuffer)
 end
 
 createMesh = function(inInts, inFloats, inStrings, inBuffer)
-	
-	meshHandle = sim.createMeshShape(2, 20*math.pi/180, inFloats, inInts)
-	sim.setObjectName(meshHandle, inStrings[1])
-	
-	table.insert(createdObjects, meshHandle) -- for later removal
+
 	return {}, {}, {}, "" 
 end
 

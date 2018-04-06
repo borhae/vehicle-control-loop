@@ -5,7 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerMsg;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerStates;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
@@ -14,7 +15,6 @@ import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
 import de.joachim.haensel.statemachine.Guard;
 import de.joachim.haensel.statemachine.States;
-import de.joachim.haensel.sumo2vrep.Position2D;
 
 public class BadReactiveController implements ILowLevelController<PurePursuitParameters>
 {

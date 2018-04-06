@@ -1,10 +1,7 @@
-package de.joachim.haensel.phd.scenario.math.vector;
+package de.joachim.haensel.phd.scenario.math.geometry;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import de.joachim.haensel.sumo2vrep.Line2D;
-import de.joachim.haensel.sumo2vrep.Position2D;
 
 public class Vector2D
 {

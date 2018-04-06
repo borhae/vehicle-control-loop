@@ -4,7 +4,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import de.joachim.haensel.phd.scenario.math.TMatrix;
-import de.joachim.haensel.sumo2vrep.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 
 public class TMatrixTest
 {

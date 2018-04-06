@@ -4,10 +4,11 @@ package de.joachim.haensel.phd.scenario.math.test;
 import java.util.List;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
-import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
-import de.joachim.haensel.sumo2vrep.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+
+import static org.junit.Assert.*;
 
 public class Vector2DTest
 {

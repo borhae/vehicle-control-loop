@@ -7,7 +7,7 @@ import java.util.LinkedList;
 
 import org.junit.Test;
 
-import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
 public class Vector2DVisualizerTest
 {

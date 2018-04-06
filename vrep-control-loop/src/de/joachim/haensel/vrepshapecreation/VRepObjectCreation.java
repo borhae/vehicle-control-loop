@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 import coppelia.FloatWA;
 import coppelia.IntWA;
@@ -12,7 +13,8 @@ import coppelia.StringWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
-import de.joachim.haensel.sumo2vrep.Line2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Point3D;
 import de.joachim.haensel.vrepshapecreation.dummy.DummyParameters;
 import de.joachim.haensel.vrepshapecreation.joints.JointParameters;
 import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
@@ -288,5 +290,33 @@ public class VRepObjectCreation
         stringParameters[0] = tmp.getName();
         stringParameters[1] = absolutePath;
         _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "textureOnRectangle", callParamsI, null, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+    }
+
+    public void createMesh(List<Point3D> vertices, List<Integer> indices, String name) throws VRepException
+    {
+        IntWA callParamsI = new IntWA(indices.size());
+        int[] intParameters = callParamsI.getArray();
+        
+        for(int idx = 0; idx < intParameters.length; idx++)
+        {
+            intParameters[idx] = indices.get(idx);
+        }
+        
+        FloatWA callParamsF = new FloatWA(vertices.size() * 3);
+        float[] floatParameters = callParamsF.getArray();
+        
+        for (int idx = 0; idx < vertices.size(); idx++)
+        {
+            int arrayIndex = idx * 3;
+            double[] verticeArray = vertices.get(idx).getArray();
+            floatParameters[arrayIndex] = (float)verticeArray[0];
+            floatParameters[arrayIndex + 1] = (float)verticeArray[1];
+            floatParameters[arrayIndex + 2] = (float)verticeArray[2];
+        }
+        StringWA callParamsS = new StringWA(1);
+        String[] stringParameters = callParamsS.getArray();
+        stringParameters[0] = name;
+        
+        _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "createMesh", callParamsI, callParamsF, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
     }
 }

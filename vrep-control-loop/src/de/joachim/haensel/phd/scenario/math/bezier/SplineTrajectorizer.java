@@ -2,8 +2,8 @@ package de.joachim.haensel.phd.scenario.math.bezier;
 
 import java.util.Deque;
 
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.math.interpolation.IterativeInterpolationTrajectorizer;
-import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
 import de.joachim.haensel.streamextensions.IndexAdder;

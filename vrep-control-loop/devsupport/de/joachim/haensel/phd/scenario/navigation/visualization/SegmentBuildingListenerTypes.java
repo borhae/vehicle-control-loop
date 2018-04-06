@@ -2,7 +2,7 @@ package de.joachim.haensel.phd.scenario.navigation.visualization;
 
 import java.util.Deque;
 
-import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
 public enum SegmentBuildingListenerTypes
 {

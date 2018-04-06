@@ -1,7 +1,7 @@
 package de.joachim.haensel.vehicle;
 
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
-import de.joachim.haensel.sumo2vrep.Position2D;
 
 public interface ILowLevelController<P>
 {

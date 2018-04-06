@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
-import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.streamextensions.IndexAdder;
 
 public class ContentElement

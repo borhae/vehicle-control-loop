@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+import javax.media.j3d.Node;
 
 import coppelia.FloatWA;
 import coppelia.StringWA;
@@ -82,6 +83,10 @@ public class VRepMap
         }
     }
 
+    /** 
+     * Creates a map in VRep out of basic shapes. Works well for small examples with not more than 100 elements.
+     * @param roadMap The map information in SUMO format
+     */
     public void createSimplesShapeBasedMap(RoadMap roadMap)
     {
         if(_elementNameCreator == null)
@@ -92,11 +97,33 @@ public class VRepMap
         ILaneCreator laneCreator = (curLane, p1, p2) -> createVRepLane(_vrep, _clientID, _elementNameCreator, curLane, p1, p2);
         createMapStructure(roadMap, junctionCreator, laneCreator);
     }
+    
+    public void createMeshBasedMap(RoadMap roadMap)
+    {
+        if(_elementNameCreator == null)
+        {
+            _elementNameCreator = new IDCreator();
+        }
+
+        IJunctionCreator junctionCreator = (junction) -> createVRepMeshJunction(_vrep, _clientID, _elementNameCreator, junction);
+        ILaneCreator laneCreator = (curLane, p1, p2) -> createVRepMeshLane(_vrep, _clientID, _elementNameCreator, curLane, p1, p2);
+        createMapStructure(roadMap, junctionCreator, laneCreator);
+    }
+
+    private void createVRepMeshLane(VRepRemoteAPI vrep, int clientID, IDCreator elementNameCreator, LaneType curLane, String p1, String p2)
+    {
+        //TODO unfinished!
+    }
+
+    private void createVRepMeshJunction(VRepRemoteAPI vrep, int clientID, IDCreator elementNameCreator, JunctionType junction)
+    {
+        //TODO unfinished!
+    }
 
     private BufferedImage createTexture(RoadMap roadMap, XYMinMax minMax)
     {
-        double scaleY = 10.0;
-        double scaleX = 10.0;
+        double scaleY = 2.0;
+        double scaleX = 2.0;
         int width = (int)minMax.distX();
         int height = (int)minMax.distY();
         BufferedImage img = new BufferedImage(width * (int)scaleX, height * (int)scaleY, BufferedImage.TYPE_INT_ARGB);

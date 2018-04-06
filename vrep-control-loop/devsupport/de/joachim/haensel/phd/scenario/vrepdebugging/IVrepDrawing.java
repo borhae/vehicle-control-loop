@@ -2,8 +2,8 @@ package de.joachim.haensel.phd.scenario.vrepdebugging;
 
 import java.awt.Color;
 
-import de.joachim.haensel.phd.scenario.math.vector.Vector2D;
-import de.joachim.haensel.sumo2vrep.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
 public interface IVrepDrawing
 {

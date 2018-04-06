@@ -3,11 +3,11 @@ package de.joachim.haensel.vehicle;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.interpolation.IterativeInterpolationTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Route;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
-import de.joachim.haensel.sumo2vrep.Line2D;
-import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.vehiclecontrol.Navigator;
 

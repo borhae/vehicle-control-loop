@@ -1,7 +1,8 @@
 package de.joachim.haensel.phd.scenario.map.sumo2vrep.test;
 
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,9 +22,9 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.sumo2vrep.IDCreator;
-import de.joachim.haensel.sumo2vrep.Position2D;
 import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.sumo2vrep.VRepMap;
 import de.joachim.haensel.sumo2vrep.XYMinMax;
@@ -99,6 +100,16 @@ public class MapCreationTest implements TestConstants
 
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createSimplesShapeBasedMap(roadMap);
+    }
+    
+    @Test
+    public void testLoadSimpleMapMesh()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
+        roadMap.center(0.0, 0.0);
+        
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMeshBasedMap(roadMap);
     }
 
     @Test
