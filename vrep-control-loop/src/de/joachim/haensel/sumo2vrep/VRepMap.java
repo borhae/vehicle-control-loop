@@ -8,11 +8,11 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.imageio.ImageIO;
-import javax.media.j3d.Node;
 
 import coppelia.FloatWA;
 import coppelia.StringWA;
@@ -20,6 +20,9 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
+import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Point3D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import de.joachim.haensel.vrepshapecreation.shapes.EVRepShapes;
 import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
@@ -98,26 +101,73 @@ public class VRepMap
         createMapStructure(roadMap, junctionCreator, laneCreator);
     }
     
-    public void createMeshBasedMap(RoadMap roadMap)
+    public void createMeshBasedMap(RoadMap roadMap) throws VRepException
     {
         if(_elementNameCreator == null)
         {
             _elementNameCreator = new IDCreator();
         }
 
-        IJunctionCreator junctionCreator = (junction) -> createVRepMeshJunction(_vrep, _clientID, _elementNameCreator, junction);
-        ILaneCreator laneCreator = (curLane, p1, p2) -> createVRepMeshLane(_vrep, _clientID, _elementNameCreator, curLane, p1, p2);
+        List<Point3D> vertices = new ArrayList<>();
+        List<Integer> indices = new ArrayList<>();
+        IJunctionCreator junctionCreator = (junction) -> createVRepMeshJunction(vertices, indices, junction);
+        ILaneCreator laneCreator = (curLane, p1, p2) -> createVRepMeshLane(vertices, indices, curLane, p1, p2);
         createMapStructure(roadMap, junctionCreator, laneCreator);
+        _vrepObjectCreator.createMesh(vertices, indices, "Map");
+    }
+    
+    /**
+     * For now create a quad, in future we read the shape
+     * @param vertices
+     * @param indices
+     * @param junction
+     */
+    private void createVRepMeshJunction(List<Point3D> vertices, List<Integer> indices, JunctionType junction)
+    {
+        int startingIndex = vertices.size();
+        
+        float xPos = junction.getX();
+        float yPos = junction.getY();
+        double width = 10;
+        double height = 10;
+        double wH = width / 2.0;
+        double hH = height / 2.0;
+            
+        vertices.add(new Point3D(xPos - wH, yPos - hH));
+        vertices.add(new Point3D(xPos - wH, yPos + hH));
+        vertices.add(new Point3D(xPos + wH, yPos + hH));
+        vertices.add(new Point3D(xPos + wH, yPos - hH));
+        
+        indices.add(startingIndex + 0);
+        indices.add(startingIndex + 1);
+        indices.add(startingIndex + 2);
+
+        indices.add(startingIndex + 2);
+        indices.add(startingIndex + 3);
+        indices.add(startingIndex + 0);
     }
 
-    private void createVRepMeshLane(VRepRemoteAPI vrep, int clientID, IDCreator elementNameCreator, LaneType curLane, String p1, String p2)
+    private void createVRepMeshLane(List<Point3D> vertices, List<Integer> indices, LaneType curLane, String p1, String p2)
     {
-        //TODO unfinished!
-    }
+        int startingIndex = vertices.size();
 
-    private void createVRepMeshJunction(VRepRemoteAPI vrep, int clientID, IDCreator elementNameCreator, JunctionType junction)
-    {
-        //TODO unfinished!
+        Vector2D v = new Vector2D(new Line2D(p1, p2));
+        Vector2D l = v.shift(_streetWidth);
+        Vector2D r = v.shift(-_streetWidth);
+        
+        vertices.add(r.getBase().toPoint3D());
+        vertices.add(r.getTip().toPoint3D());
+
+        vertices.add(l.getBase().toPoint3D());
+        vertices.add(l.getTip().toPoint3D());
+        
+        indices.add(startingIndex + 0);
+        indices.add(startingIndex + 1);
+        indices.add(startingIndex + 3);
+
+        indices.add(startingIndex + 3);
+        indices.add(startingIndex + 2);
+        indices.add(startingIndex + 0);
     }
 
     private BufferedImage createTexture(RoadMap roadMap, XYMinMax minMax)

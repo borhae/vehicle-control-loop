@@ -18,10 +18,5 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/java3d-1.6/gluegen-rt.jar"/>
-	<classpathentry kind="lib" path="lib/java3d-1.6/j3dcore.jar"/>
-	<classpathentry kind="lib" path="lib/java3d-1.6/j3dutils.jar"/>
-	<classpathentry kind="lib" path="lib/java3d-1.6/jogl-all.jar"/>
-	<classpathentry kind="lib" path="lib/java3d-1.6/vecmath.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

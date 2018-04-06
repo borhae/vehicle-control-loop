@@ -156,4 +156,9 @@ public class Position2D
     {
         return _x + "," + _y ;
     }
+
+    public Point3D toPoint3D()
+    {
+        return new Point3D(_x, _y);
+    }
 }

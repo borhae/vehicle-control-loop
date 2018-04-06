@@ -296,4 +296,32 @@ public class Vector2D
         }
         return result;
     }
+
+    /**
+     * Create a copy shifted orthogonally. (negative means right, positive means left)
+     * @param shift
+     * @return
+     */
+    public Vector2D shift(double shift)
+    {
+        double mX = 0.0;
+        double mY = 0.0;
+        if(shift < 0)
+        {
+            mX = -_normY;
+            mY = _normX;
+        }
+        else if (shift > 0)
+        {
+            mX = _normY;
+            mY = -_normX;
+        } 
+        mX *= Math.abs(shift);
+        mY *= Math.abs(shift);
+        double bX = _bX + mX;
+        double bY = _bY + mY;
+        Vector2D result = new Vector2D(bX, bY, _dX, _dY);
+        // nothing done if shift == 0
+        return result;
+    }
 }

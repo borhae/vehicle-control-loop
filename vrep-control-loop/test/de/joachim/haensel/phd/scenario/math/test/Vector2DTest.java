@@ -140,5 +140,15 @@ public class Vector2DTest
         assertEquals(expectedRight, actualRight, Math.ulp(0.0));
         assertEquals(expectedLeft, actualLeft, Math.ulp(0.0));
     }
+    
+    @Test
+    public void testShiftVector()
+    {
+        Vector2D expected = new Vector2D(1.0, 0.0, 0.0, 1.0);
+        Vector2D v = new Vector2D(0.0, 0.0, 0.0, 1.0);
+        Vector2D actual = v.shift(-1.0);
+        
+        assertEquals(expected, actual);
+    }
 }
 

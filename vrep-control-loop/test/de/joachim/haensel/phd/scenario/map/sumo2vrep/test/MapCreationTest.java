@@ -103,7 +103,7 @@ public class MapCreationTest implements TestConstants
     }
     
     @Test
-    public void testLoadSimpleMapMesh()
+    public void testLoadSimpleMapMesh() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/superSimpleMap.net.xml");
         roadMap.center(0.0, 0.0);
@@ -232,6 +232,18 @@ public class MapCreationTest implements TestConstants
         
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMapSizedRectangleWithMapTexture(roadMap);
+    }
+    
+    @Test 
+    public void testLoadRealWorldMapMesh() throws VRepException
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
+        XYMinMax mapDimensions = roadMap.computeMapDimensions();
+        TMatrix centerMatrix = TMatrix.createCenterMatrix(mapDimensions);
+        roadMap.transform(centerMatrix);
+        
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMeshBasedMap(roadMap);
     }
 
     @Test
