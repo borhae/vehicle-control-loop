@@ -298,7 +298,7 @@ public class LayerInteractionTest implements TestConstants
         }
     }
     
-    // Does not work, simulation too slow ;( or dimensions error
+    // Does not work, simulation too slow. Creating simple shapes is just too many objects to simulate
     @Test
     public void testRouteFollowRealMap() throws VRepException
     {
@@ -371,6 +371,7 @@ public class LayerInteractionTest implements TestConstants
         }
     }
 
+    //Kind of works, creates huge texture with bad resolution. dropped it too
     @Test
     public void testRouteFollowRealMapTexture() throws VRepException
     {
@@ -462,6 +463,100 @@ public class LayerInteractionTest implements TestConstants
         }
     }
 
+    @Test
+    public void testRouteFollowRealMapMesh() throws VRepException
+    {
+        double scaleFactor = 1.0;
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
+        XYMinMax dimensions = roadMap.computeMapDimensions();
+        double offX = dimensions.minX() + dimensions.distX()/2.0;
+        double offY = dimensions.minY() + dimensions.distY()/2.0;
+        offX *= scaleFactor;
+        offY *= scaleFactor;
+
+        TMatrix scaleOffsetMatrix = new TMatrix(scaleFactor, -offX, -offY);
+        roadMap.transform(scaleOffsetMatrix);
+
+        Navigator navigator = new Navigator(roadMap);
+        Position2D startPosition = new Position2D(5747.01f, 2979.22f).transform(scaleOffsetMatrix);
+        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).transform(scaleOffsetMatrix);
+        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
+        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMeshBasedMap(roadMap);
+        mapCreator.createMapSizedRectangle(roadMap);
+        
+        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, (float)scaleFactor);
+        Line2D firstLine = route.get(0);
+        Position2D startingPoint = new Position2D(firstLine.getX1(), firstLine.getY1());
+
+        Line2D lastLine = route.get(route.size() - 1);
+        Position2D target = new Position2D(lastLine.getX2(), lastLine.getY2());
+        
+        
+        IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0 * scaleFactor);};
+        BadReactiveController ctrl = new BadReactiveController(); 
+        PurePursuitParameters parameters = new PurePursuitParameters(5.0 * scaleFactor);
+        parameters.setSpeed(5.0);
+        ctrl.setParameters(parameters);
+        ILowerLayerFactory lowerFact = () -> {return ctrl;};
+        
+        float vehicleZPos = 0.25f;
+        Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), vehicleZPos, roadMap, uperFact , lowerFact);
+        
+        Vector2D carOrientation = vehicle.getOrientation();
+        NavigationController fakeNav = new NavigationController(2.0 *  scaleFactor);
+        fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
+        fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
+
+        Deque<Vector2D> input = fakeNav.getNewSegments(fakeNav.getSegmentBufferSize()).stream().map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
+        Vector2DVisualizer visualizer = new Vector2DVisualizer();
+        visualizer.addVectorSet(input, Color.BLUE);
+        visualizer.updateVisuals();
+        visualizer.setVisible(true);
+        System.out.println("stop");
+        
+        Trajectory firstSeg = fakeNav.segmentsPeek();
+        Vector2D firstSegOrientation = firstSeg.getVector();
+        
+        double correctionAngle = Vector2D.computeAngle(carOrientation, firstSegOrientation) + Math.PI;
+        
+        vehicle.setOrientation(0.0f, 0.0f, (float)correctionAngle);
+
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException exc)
+        {
+            exc.printStackTrace();
+        }
+        
+        _vrep.simxStartSimulation(_clientID, remoteApi.simx_opmode_blocking);
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException exc)
+        {
+            exc.printStackTrace();
+        }
+        vehicle.activateDebugging(scaleFactor);
+        vehicle.start();
+        vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
+        System.out.println("wait here");
+        vehicle.stop();
+        vehicle.deacvtivateDebugging();
+        _vrep.simxStopSimulation(_clientID, remoteApi.simx_opmode_blocking);
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException exc)
+        {
+            exc.printStackTrace();
+        }
+    }
+    
     @Test
     public void testRouteFollowRealMapScaledDown() throws VRepException
     {
