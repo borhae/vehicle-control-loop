@@ -41,4 +41,9 @@ public class CarControlInterface
         inFloats.getArray()[1] = (float)targetWheelRotationSpeed;
         _vrep.simxCallScriptFunction(_clientID, _scriptParentName, remoteApi.sim_scripttype_childscript, "control", null, inFloats, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
     }
+
+    public String getVehicleScriptParentName()
+    {
+        return _scriptParentName;
+    }
 }

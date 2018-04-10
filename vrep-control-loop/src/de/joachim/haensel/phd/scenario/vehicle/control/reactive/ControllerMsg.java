@@ -4,5 +4,5 @@ import de.joachim.haensel.statemachine.Messages;
 
 public enum ControllerMsg implements Messages
 {
-    DRIVE_TO, CONTROL_EVENT
+    DRIVE_TO, CONTROL_EVENT, STOP
 }

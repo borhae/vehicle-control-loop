@@ -11,4 +11,5 @@ public interface ILowLevelController<P>
     public void activateDebugging(IVrepDrawing actuatingSensing, double zValue);
     public void deactivateDebugging();
     public void setParameters(P parameters);
+    public void stop();
 }

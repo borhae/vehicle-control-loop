@@ -7,15 +7,21 @@ import java.util.TimerTask;
 public class LowLevelEventGenerator extends TimerTask
 {
     private List<ILowLevelController> _eventListeners;
+    private long _lastEventTimeStamp;
 
     public LowLevelEventGenerator()
     {
         _eventListeners = new ArrayList<>();
+        _lastEventTimeStamp = System.currentTimeMillis();
     }
 
     @Override
     public void run()
     {
+        long curTime = System.currentTimeMillis();
+        long diff = curTime - _lastEventTimeStamp;
+        _lastEventTimeStamp = curTime;
+        System.out.println("time between events in millis: " + diff);
         _eventListeners.stream().forEach(listener -> listener.controlEvent());
     }
 

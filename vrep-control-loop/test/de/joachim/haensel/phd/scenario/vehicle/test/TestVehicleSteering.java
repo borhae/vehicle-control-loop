@@ -293,6 +293,11 @@ public class TestVehicleSteering
         public void setParameters(Object parameters)
         {
         }
+
+        @Override
+        public void stop()
+        {
+        }
     }
     
     public class TestJustSteeringController implements ILowLevelController<Object>
@@ -335,6 +340,11 @@ public class TestVehicleSteering
 
         @Override
         public void setParameters(Object parameters)
+        {
+        }
+
+        @Override
+        public void stop()
         {
         }
     }

@@ -32,6 +32,7 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
     private IVrepDrawing _vrepDrawing;
     private PurePursuitParameters _parameters;
     private double _debugHeight;
+    private boolean _debugging;
 
     public class DefaultReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
@@ -49,6 +50,8 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
             
             createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, arrivedAtTargetGuard, ControllerStates.IDLE, breakAndStopAction);
             createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, notArrivedGuard, ControllerStates.DRIVING, driveAction);
+            
+            createTransition(ControllerStates.DRIVING, ControllerMsg.STOP, null, ControllerStates.IDLE, breakAndStopAction);
             
             setInitialState(ControllerStates.IDLE);
             reset();
@@ -68,32 +71,37 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
             transition(ControllerMsg.DRIVE_TO, target);
         }
 
-        public void controlEvent(BadReactiveController badReactiveController)
+        public void controlEvent(BadReactiveController controller)
         {
-            transition(ControllerMsg.CONTROL_EVENT, badReactiveController);
+            transition(ControllerMsg.CONTROL_EVENT, controller);
+        }
+
+        public void stop(BadReactiveController controller)
+        {
+            transition(ControllerMsg.STOP, controller);
         }
     }
     
     public BadReactiveController()
     {
+        _debugging = false;
     }
 
     @Override
     public void activateDebugging(IVrepDrawing vrepDrawing, double zValue)
     {
+        _debugging = true;
         _debugHeight = zValue;
         _vrepDrawing = vrepDrawing;
         _vrepDrawing.registerDrawingObject(CURRENT_SEGMENT_DEBUG_KEY, DrawingType.LINE, Color.RED);
         _vrepDrawing.registerDrawingObject(CAR_CIRCLE_DEBUG_KEY, DrawingType.CIRCLE, Color.MAGENTA);
     }
     
-
     @Override
     public void deactivateDebugging()
     {
         _vrepDrawing.removeAllDrawigObjects();
     }
-
 
     @Override
     public void setParameters(PurePursuitParameters parameters)
@@ -121,6 +129,12 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
         Position2D currentPosition = _actuatorsSensors.getPosition();
         chooseCurrentSegment(currentPosition);
     }
+    
+    @Override
+    public void stop()
+    {
+        _stateMachine.stop(this);
+    }
 
     @Override
     public void controlEvent()
@@ -139,13 +153,15 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
         ensureBufferSize();
         chooseCurrentSegment(_actuatorsSensors.getRearWheelCenterPosition());
 
-        _vrepDrawing.updateLine(CURRENT_SEGMENT_DEBUG_KEY, _currentSegment.getVector(), _debugHeight, Color.RED);
-        _vrepDrawing.updateCircle(CAR_CIRCLE_DEBUG_KEY, _actuatorsSensors.getRearWheelCenterPosition(), _debugHeight, _lookahead, Color.BLUE);
+        if(_debugging)
+        {
+            _vrepDrawing.updateLine(CURRENT_SEGMENT_DEBUG_KEY, _currentSegment.getVector(), _debugHeight, Color.RED);
+            _vrepDrawing.updateCircle(CAR_CIRCLE_DEBUG_KEY, _actuatorsSensors.getRearWheelCenterPosition(), _debugHeight, _lookahead, Color.BLUE);
+        }
         
         float targetWheelRotation = computeTargetWheelRotationSpeed();
         float targetSteeringAngle = computeTargetSteeringAngle();
         _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
-//        System.out.println("drive called with: v:(" + targetWheelRotation + "), delta:(" + targetSteeringAngle + ")");
     }
 
     private void chooseCurrentSegment(Position2D currentPosition)

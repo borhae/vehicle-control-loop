@@ -14,13 +14,20 @@ public interface IActuatingSensing
      */
     public void computeAndLockSensorData();
     
+    public Vector2D getOrientation();
+    
     /**
+     * This will gives 
      * Will give the vehicles position at the time that {@code IActuatingSensing.computeAndLockSensorData()} was called.
      * @return 
      */
     public Position2D getPosition();
 
-    public Vector2D getOrientation();
+    /**
+     * Use this when simulation is not running!
+     * @return
+     */
+    public Position2D getNonDynamicPosition();
 
     /**
      * Will give the vehicles center position between rear wheels at the time that {@code IActuatingSensing.computeAndLockSensorData()} was called.

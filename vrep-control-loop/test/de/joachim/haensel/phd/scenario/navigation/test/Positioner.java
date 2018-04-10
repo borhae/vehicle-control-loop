@@ -40,6 +40,12 @@ public class Positioner implements IActuatingSensing
     {
         return _position;
     }
+    
+    @Override
+    public Position2D getNonDynamicPosition()
+    {
+        return _position;
+    }
 
     @Override
     public Vector2D getOrientation()

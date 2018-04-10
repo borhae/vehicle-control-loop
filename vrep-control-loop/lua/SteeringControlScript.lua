@@ -2,74 +2,93 @@
 -- Normally, one would use a non-threaded script for that
 
 threadFunction = function()
-    while simGetSimulationState()~=sim_simulation_advancing_abouttostop do
-        -- Read the keyboard messages (make sure the focus is on the main window, scene view):
-        message,auxiliaryData = simGetSimulatorMessage()
-        while message~=-1 do
-            if (message==sim_message_keypress) then
-                if (auxiliaryData[1]==2007) then
-                    -- up key
-                    desiredWheelRotSpeed=desiredWheelRotSpeed+wheelRotSpeedDx
-                end
-                if (auxiliaryData[1]==2008) then
-                    -- down key
-                    desiredWheelRotSpeed = desiredWheelRotSpeed-wheelRotSpeedDx
-                end
-                if (auxiliaryData[1]==2009) then
-                    -- left key
-                    desiredSteeringAngle = desiredSteeringAngle+steeringAngleDx
-                    if (desiredSteeringAngle>45*math.pi/180) then
-                        desiredSteeringAngle = 45*math.pi/180
-                    end
-                end
-                if (auxiliaryData[1]==2010) then
-                    -- right key
-                    desiredSteeringAngle = desiredSteeringAngle-steeringAngleDx
-                    if (desiredSteeringAngle<-45*math.pi/180) then
-                        desiredSteeringAngle = -45*math.pi/180
-                    end
-                end
-            end
-            message,auxiliaryData = simGetSimulatorMessage()
-        end
+  while simGetSimulationState()~=sim_simulation_advancing_abouttostop do
+    -- Steering (Ackermann steering):
+    steeringAngleLeft = math.atan(l/(-d+l/math.tan(desiredSteeringAngle)))
+    steeringAngleRight = math.atan(l/(d+l/math.tan(desiredSteeringAngle)))
+    sim.setJointTargetPosition(steeringLeft,steeringAngleLeft)
+    sim.setJointTargetPosition(steeringRight,steeringAngleRight)
 
-        -- Steering (Ackermann steering):
-        steeringAngleLeft = math.atan(l/(-d+l/math.tan(desiredSteeringAngle)))
-        steeringAngleRight = math.atan(l/(d+l/math.tan(desiredSteeringAngle)))
-        simSetJointTargetPosition(steeringLeft,steeringAngleLeft)
-        simSetJointTargetPosition(steeringRight,steeringAngleRight)
+    -- Wheel rotation speed:
+    sim.setJointTargetVelocity(motorLeft,desiredWheelRotSpeed)
+    sim.setJointTargetVelocity(motorRight,desiredWheelRotSpeed)
 
-        -- Wheel rotation speed:
-        simSetJointTargetVelocity(motorLeft,desiredWheelRotSpeed)
-        simSetJointTargetVelocity(motorRight,desiredWheelRotSpeed)
+    -- Compute current location stats for reading from external control:
+    local fLWP = sim.getObjectPosition(frontLeftWheel, -1)
+    local fRWP = sim.getObjectPosition(frontRightWheel, -1)
 
-        -- Since this script is threaded, don't waste time here:
-        simSwitchThread() -- Resume the script at next simulation loop start
-    end
+    local rLWP = sim.getObjectPosition(rearLeftWheel, -1)
+    local rRWP = sim.getObjectPosition(rearRightWheel, -1)
+
+    local posi = sim.getObjectPosition(physicalBody, -1)
+
+    local rWCP = {(rLWP[1] + rRWP[1])/2, (rLWP[2] + rRWP[2])/2}
+    local fWCP = {(fLWP[1] + fRWP[1])/2, (fLWP[2] + fRWP[2])/2}
+    local carPos = {posi[1], posi[2]}
+    -- car center position, front wheel position, rear wheel position (2D)
+    positions = {carPos[1], carPos[2], fWCP[1], fWCP[2], rWCP[1], rWCP[2]}
+
+    -- Since this script is threaded, don't waste time here:
+    simSwitchThread() -- Resume the script at next simulation loop start
+  end
 end
 
 control = function(inInts, inFloats, inStrings, inBuffer)
   local targetAngle = inFloats[1]
   local targetVelocity = inFloats[2]
   
-  simAddStatusbarMessage("setting new steering val: "..targetAngle..", was "..desiredSteeringAngle.." before")
+  -- simAddStatusbarMessage("setting new steering val: "..targetAngle..", was "..desiredSteeringAngle.." before")
   
   desiredSteeringAngle = targetAngle
   desiredWheelRotSpeed = targetVelocity
   return {}, {}, {}, "" 
 end
 
+sense = function(inInts, inFloats, inStrings, inBuffer)
+  -- positions computed in main loop, provided for external usage
+  if (positions == nil) then
+    positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+  end 
+  return {}, {positions[1], positions[2], positions[3], positions[4], positions[5], positions[6]}, {}, "" 
+end
+
+debugCircle = function(inInts, inFloats, inStrings, inBuffer)
+--	local emissiveColor = {0.8, 0.8, 0.0}
+--	local pointSize = 0.01
+--	local handle = sim.addDrawingObject(sim.drawing_spherepoints, pointSize, 0, -1, 99999999, nil, nil, nil, emissiveColor)
+--	
+	sim.addDrawingObjectItem(handle, nil)
+	local pointDistance = 0.5
+	local centerX = inFloats[1]
+	local centerY = inFloats[2]
+	local centerZ = inFloats[3]
+	local radius = inFloats[4]
+	
+	local currentPoint = {0.0, 0.0, 0.0}
+	currentPoint[3] = centerZ
+
+	for idx = 0, 360, pointDistance do
+		currentPoint[1] = centerX + radius * math.cos(idx * math.pi / 180)
+		currentPoint[2] = centerY + radius * math.sin(idx * math.pi / 180)
+		sim.addDrawingObjectItem(handle, currentPoint)
+	end
+  return {}, {}, {}, "" 
+end 
+
 -- Initialization
 -- Retrieving handles and setting initial values:
-steeringLeft = simGetObjectHandle('steeringFrontLeft')
-steeringRight = simGetObjectHandle('steeringFrontRight')
+steeringLeft = sim.getObjectHandle('steeringFrontLeft')
+steeringRight = sim.getObjectHandle('steeringFrontRight')
 
-motorLeft = simGetObjectHandle('motorFrontLeft')
-motorRight = simGetObjectHandle('motorFrontRight')
+motorLeft = sim.getObjectHandle('motorFrontLeft')
+motorRight = sim.getObjectHandle('motorFrontRight')
 
-frontLeftWheel = simGetObjectHandle('frontLeftWheel')
-frontRightWheel = simGetObjectHandle('frontRightWheel')
-rearRightWheel = simGetObjectHandle('rearRightWheel')
+frontLeftWheel = sim.getObjectHandle('frontLeftWheel')
+frontRightWheel = sim.getObjectHandle('frontRightWheel')
+rearLeftWheel = sim.getObjectHandle('rearLeftWheel')
+rearRightWheel = sim.getObjectHandle('rearRightWheel')
+
+physicalBody = sim.getObjectHandle('physicalCarBody')
 
 desiredSteeringAngle = 0
 desiredWheelRotSpeed = 0
@@ -79,8 +98,8 @@ wheelRotSpeedDx = 20*math.pi/180
 
 local outerDistWheels = -1
 local wheelsThickness = -1
-errVal, wheelThickMin = simGetObjectFloatParameter(frontLeftWheel, sim_objfloatparam_objbbox_min_z)
-errVal, wheelThickMax = simGetObjectFloatParameter(frontLeftWheel, sim_objfloatparam_objbbox_max_z)
+errVal, wheelThickMin = sim.getObjectFloatParameter(frontLeftWheel, sim_objfloatparam_objbbox_min_z)
+errVal, wheelThickMax = sim.getObjectFloatParameter(frontLeftWheel, sim_objfloatparam_objbbox_max_z)
 
 if errVal == 0 or 1 then
   wheelsThickness = wheelThickMax - wheelThickMin
@@ -100,8 +119,8 @@ end
 local lengthFR = -1 
 local wheelDiam = -1 
 
-errVal, wheelDiamMin = simGetObjectFloatParameter(frontLeftWheel, sim_objfloatparam_objbbox_min_x)
-errVal, wheelDiamMax = simGetObjectFloatParameter(frontLeftWheel, sim_objfloatparam_objbbox_max_x)
+errVal, wheelDiamMin = sim.getObjectFloatParameter(frontLeftWheel, sim_objfloatparam_objbbox_min_x)
+errVal, wheelDiamMax = sim.getObjectFloatParameter(frontLeftWheel, sim_objfloatparam_objbbox_max_x)
 
 if errVal == 0 or 1 then
   wheelDiam = wheelDiamMax - wheelDiamMin
@@ -111,18 +130,20 @@ end
 
 local middleDistWheelsFR = -1
 local outerDistWheelsFR = -1
-errVal, distanceData = simCheckDistance(frontRightWheel, rearRightWheel, 100)
+errVal, distanceData = sim.checkDistance(frontRightWheel, rearRightWheel, 100)
 if errVal == 0 or 1 then
   outerDistWheelsFR = distanceData[7]
   middleDistWheelsFR = outerDistWheelsFR + wheelDiam
 else
-  simAddStatusbarMessage("error while trying to read distance: "..errVal)
+  sim.addStatusbarMessage("error while trying to read distance: "..errVal)
 end
 
 --d = 0.755 -- 2*d = distance between left and right wheels
 d = middleDistWheels / 2 -- 2*d = distance between left and right wheels
 --l = 2.5772 -- l = distance between front and rear wheels
 l = middleDistWheelsFR -- l = distance between front and rear wheels
+
+positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 
 -- Execution of regular thread code
 res,err = xpcall(threadFunction, function(err) return debug.traceback(err) end)

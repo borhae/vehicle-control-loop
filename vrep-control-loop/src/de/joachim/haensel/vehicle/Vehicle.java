@@ -96,6 +96,7 @@ public class Vehicle
     public void stop()
     {
         _timer.cancel();
+        _lowerControlLayer.stop();
     }
 
     public void putOnJunctionHeadingTo(JunctionType junction, LaneType laneToHeadFor) throws VRepException

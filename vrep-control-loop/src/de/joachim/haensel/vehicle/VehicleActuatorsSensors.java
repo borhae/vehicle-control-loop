@@ -27,6 +27,7 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     private Position2D _frontWheelCenterPosition;
     private double _vehicleLength;
     private CarControlInterface _controlInterface;
+    private String _vehicleScriptParentName;
     private VRepRemoteAPI _vrep;
     private int _clientID;
     private Map<String, DrawingObject> _drawingObjectsStore;
@@ -35,6 +36,7 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     {
         _vehicleHandles = vehicleHandles;
         _controlInterface = controller;
+        _vehicleScriptParentName = controller.getVehicleScriptParentName();
         _curPosition = new Position2D(0, 0);
         _rearWheelCenterPosition = new Position2D(0, 0);
         _frontWheelCenterPosition = new Position2D(0.0, 0.0);
@@ -66,12 +68,13 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     {
         try
         {
-            FloatWA physicalBodyPosition = new FloatWA(3);
-            _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getPhysicalBody(), -1, physicalBodyPosition, remoteApi.simx_opmode_blocking);
-            _curPosition.setXY(physicalBodyPosition.getArray());
-            
-            computeRearWheelCenterPosition();
-            computeFrontWheelCenterPosition();
+            FloatWA returnValF = new FloatWA(4);
+            _vrep.simxCallScriptFunction(_clientID, _vehicleScriptParentName, remoteApi.sim_scripttype_childscript, "sense", 
+                    null, null, null, null, null, returnValF, null, null, remoteApi.simx_opmode_blocking);
+            float[] vals = returnValF.getArray();
+            _curPosition.setXY(vals[0], vals[1]);
+            _frontWheelCenterPosition.setXY(vals[2], vals[3]);
+            _rearWheelCenterPosition.setXY(vals[4], vals[5]);
         }
         catch (VRepException exc)
         {
@@ -79,30 +82,6 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
         }
     }
 
-    private void computeFrontWheelCenterPosition() throws VRepException
-    {
-        FloatWA frontWheelPosition = new FloatWA(3);
-        _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getFrontLeftWheel(), -1, frontWheelPosition, remoteApi.simx_opmode_blocking);
-        float xL = frontWheelPosition.getArray()[0];
-        float yL = frontWheelPosition.getArray()[1];
-        _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getFrontRightWheel(), -1, frontWheelPosition, remoteApi.simx_opmode_blocking);
-        float xR = frontWheelPosition.getArray()[0];
-        float yR = frontWheelPosition.getArray()[1];
-        _frontWheelCenterPosition.setXY((xL + xR) / 2.0, (yL + yR) / 2.0);
-    }
-
-    private void computeRearWheelCenterPosition() throws VRepException
-    {
-        FloatWA rearWheelPosition = new FloatWA(3);
-        _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getRearLeftWheel(), -1, rearWheelPosition, remoteApi.simx_opmode_blocking);
-        float xL = rearWheelPosition.getArray()[0];
-        float yL = rearWheelPosition.getArray()[1];
-        _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getRearRightWheel(), -1, rearWheelPosition, remoteApi.simx_opmode_blocking);
-        float xR = rearWheelPosition.getArray()[0];
-        float yR = rearWheelPosition.getArray()[1];
-        _rearWheelCenterPosition.setXY((xL + xR) / 2.0, (yL + yR) / 2.0);
-    }
-    
     @Override
     public Position2D getPosition()
     {
@@ -304,5 +283,22 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
         Position2D p1 = new Position2D(rearLeftWheelPos);
         Position2D p2 = new Position2D(frontLeftWheelPos);
         return new Vector2D(p1, p2);
+    }
+
+    @Override
+    public Position2D getNonDynamicPosition()
+    {
+        try
+        {
+            FloatWA pos3d = new FloatWA(3);
+            _vrep.simxGetObjectPosition(_clientID, _vehicleHandles.getPhysicalBody(), -1, pos3d, remoteApi.simx_opmode_blocking);
+            Position2D result = new Position2D(pos3d);
+            return result;
+        }
+        catch (VRepException exc)
+        {
+            exc.printStackTrace();
+        }
+        return new Position2D(0.0, 0.0);
     }
 }

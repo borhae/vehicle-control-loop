@@ -38,8 +38,7 @@ public class NavigationController implements ITopLayerControl
     public void buildSegmentBuffer(Position2D targetPosition, RoadMap roadMap)
     {
         _roadMap = roadMap;
-        _sensorsActuators.computeAndLockSensorData();
-        Position2D currentPosition = _sensorsActuators.getPosition();
+        Position2D currentPosition = _sensorsActuators.getNonDynamicPosition();
         Navigator navigator = new Navigator(_roadMap);
         navigator.addSegmentBuildingListeners(_segmentBuildingListeners);
         List<Line2D> routeBasis = navigator.getRoute(currentPosition, targetPosition);

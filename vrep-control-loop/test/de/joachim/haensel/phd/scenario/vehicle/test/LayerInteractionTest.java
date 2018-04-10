@@ -136,6 +136,12 @@ public class LayerInteractionTest implements TestConstants
             {
                 return null;
             }
+
+            @Override
+            public Position2D getNonDynamicPosition()
+            {
+                return null;
+            }
         };
         controller.initController(sensorsActuators, roadMap);
         controller.buildSegmentBuffer(destinationPosition, roadMap);
@@ -493,10 +499,10 @@ public class LayerInteractionTest implements TestConstants
         Position2D target = new Position2D(lastLine.getX2(), lastLine.getY2());
         
         
-        IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0 * scaleFactor);};
+        IUpperLayerFactory uperFact = () -> {return new NavigationController(4.0 * scaleFactor);};
         BadReactiveController ctrl = new BadReactiveController(); 
-        PurePursuitParameters parameters = new PurePursuitParameters(5.0 * scaleFactor);
-        parameters.setSpeed(5.0);
+        PurePursuitParameters parameters = new PurePursuitParameters(10.0 * scaleFactor);
+        parameters.setSpeed(1.5);
         ctrl.setParameters(parameters);
         ILowerLayerFactory lowerFact = () -> {return ctrl;};
         
@@ -540,12 +546,12 @@ public class LayerInteractionTest implements TestConstants
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging(scaleFactor);
+//        vehicle.activateDebugging(scaleFactor);
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");
         vehicle.stop();
-        vehicle.deacvtivateDebugging();
+//        vehicle.deacvtivateDebugging();
         _vrep.simxStopSimulation(_clientID, remoteApi.simx_opmode_blocking);
         try
         {
