@@ -183,6 +183,8 @@ createPrimitive = function(inInts, inFloats, inStrings, inBuffer)
       local isDynamic = inInts[2] -- 1 for yes, 0 for no
       local isRespondable = inInts[3] -- 1 for yes, 0 for no
       local respondableMask = inInts[4] -- a bit mask for local and global respondability
+      local visibilityLayerMask = inInts[5] -- a bit mask defining the layers on which this object will be camera visible
+      
       
       local name = inStrings[1]
       -- OPTIONS
@@ -207,22 +209,21 @@ createPrimitive = function(inInts, inFloats, inStrings, inBuffer)
           shapeIsRespondable = 0 
       end
 
-      simAddStatusbarMessage("values set, creating pure shape")
       local objectHandle = simCreatePureShape(shape, EDGE_VIS + shapeIsStatic + shapeIsRespondable, size, mass, nil)
-      simAddStatusbarMessage("created, now positioning shape")
 --    POSITION
       local posResult = simSetObjectPosition(objectHandle, sim_handle_parent, position)
       
 --    RESPONDABLE MASK
       simSetObjectInt32Parameter(objectHandle, sim_shapeintparam_respondable_mask, respondableMask)
       
-      simAddStatusbarMessage("positioned, now giving orientation")
+--    CAMERA VISIBILITY       
+      sim.setObjectInt32Parameter(objectHandle, sim.objintparam_visibility_layer, visibilityLayerMask)            
+      
+      
 --    ORIENTATION
       simSetObjectOrientation(objectHandle, -1, angle)
-      simAddStatusbarMessage("oriented, now giving it a name")
 --    NAMING
       simSetObjectName(objectHandle, name)
-      simAddStatusbarMessage("name added, now returning")
       table.insert(createdObjects, objectHandle) -- for later removal
       
       return {objectHandle}, {}, {}, "" 

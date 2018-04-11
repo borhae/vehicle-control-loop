@@ -183,7 +183,7 @@ public class MapCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
 
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMapSizedRectangle(roadMap);
+        mapCreator.createMapSizedRectangle(roadMap, true);
     }
     
     @Test
@@ -193,7 +193,7 @@ public class MapCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
 
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMapSizedRectangle(roadMap);
+        mapCreator.createMapSizedRectangle(roadMap, true);
         mapCreator.createSimplesShapeBasedMap(roadMap);
     }
     
@@ -253,7 +253,7 @@ public class MapCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
 
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMapSizedRectangle(roadMap);
+        mapCreator.createMapSizedRectangle(roadMap, true);
         
         ShapeParameters cubeParams = new ShapeParameters();
         cubeParams.setIsDynamic(true);

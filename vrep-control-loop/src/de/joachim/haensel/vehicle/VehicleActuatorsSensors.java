@@ -180,7 +180,7 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     @Override
     public void attachDebugCircle(double lookahead)
     {
-        String parentObj = VRepObjectCreation.VREP_LOADING_SCRIPT_PARENT_OBJECT;
+        String parentObj = VehicleCreator.PHYSICAL_CAR_BODY_NAME;
         Color lineColor = Color.ORANGE;
         FloatWA floatParamsIn = new FloatWA(4);
         float[] floatsIn = floatParamsIn.getArray();
@@ -193,7 +193,7 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
         intParamsIn.getArray()[0] = _vehicleHandles.getRearWheelDummy();
         try
         {
-            _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_customizationscript, "createDrawingObjectCircle", 
+            _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_childscript, "debugCircle", 
                     intParamsIn, floatParamsIn, null, null, 
                     null, null, null, null, remoteApi.simx_opmode_blocking);
         }

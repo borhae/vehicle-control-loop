@@ -240,7 +240,7 @@ public class LayerInteractionTest implements TestConstants
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).transform(scaleOffsetMatrix);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMapSizedRectangle(roadMap);
+        mapCreator.createMapSizedRectangle(roadMap, true);
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, scale);
         Line2D firstLine = route.get(0);
@@ -489,7 +489,7 @@ public class LayerInteractionTest implements TestConstants
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMeshBasedMap(roadMap);
-        mapCreator.createMapSizedRectangle(roadMap);
+        mapCreator.createMapSizedRectangle(roadMap, false);
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, (float)scaleFactor);
         Line2D firstLine = route.get(0);
@@ -582,7 +582,7 @@ public class LayerInteractionTest implements TestConstants
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).transform(scaleOffsetMatrix);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH * scaleFactor, STREET_HEIGHT * scaleFactor, _vrep, _clientID, _objectCreator);
-        mapCreator.createMapSizedRectangle(roadMap);
+        mapCreator.createMapSizedRectangle(roadMap, true);
 //        mapCreator.createMap(roadMap);
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, scaleFactor);

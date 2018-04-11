@@ -18,6 +18,7 @@ public class ShapeParameters extends Parameters
     private boolean _isRespondable;
     private boolean _isDynamic;
     private int _respondableMask;
+    private int _visibilityLayerMask;
 
     public ShapeParameters()
     {
@@ -29,6 +30,7 @@ public class ShapeParameters extends Parameters
         _isRespondable = false;
         _isDynamic = false;
         _respondableMask = 0b0;
+        _visibilityLayerMask = 0b1111_1111__1111_1111 & CUT_UPPER_BITMASK;
     }
     
     @Override
@@ -38,6 +40,7 @@ public class ShapeParameters extends Parameters
         paramList.add(_isDynamic ? 1 : 0);
         paramList.add(_isRespondable ? 1 : 0);
         paramList.add(_respondableMask);
+        paramList.add(_visibilityLayerMask);
     }
 
     @Override
@@ -83,5 +86,17 @@ public class ShapeParameters extends Parameters
     public void setRespondableMask(int bitMask)
     {
         _respondableMask = bitMask & CUT_UPPER_BITMASK;
+    }
+
+    public void setVisibility(boolean visible)
+    {
+        if(visible)
+        {
+            _visibilityLayerMask = 0b1111_1111__1111_1111 & CUT_UPPER_BITMASK;
+        }
+        else
+        {
+            _visibilityLayerMask = 0b0000_0000__0000_0000 & CUT_UPPER_BITMASK;
+        }
     }
 }

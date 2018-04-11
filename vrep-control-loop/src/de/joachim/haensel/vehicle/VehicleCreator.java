@@ -17,7 +17,7 @@ import de.joachim.haensel.vwpoloproperties.VWPoloDimensions;
 public class VehicleCreator
 {
 
-    private static final String PHYSICAL_CAR_BODY_NAME = "physicalCarBody";
+    public static final String PHYSICAL_CAR_BODY_NAME = "physicalCarBody";
 
     private static float REAR_AXIS_DIAMETER = 0.05f;
     private static float REAR_AXIS_LENGTH = 0.2f;

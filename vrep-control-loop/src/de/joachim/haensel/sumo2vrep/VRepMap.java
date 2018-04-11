@@ -48,11 +48,11 @@ public class VRepMap
         _vrepObjectCreator = vrepObjectCreator;
     }
 
-    public void createMapSizedRectangle(RoadMap roadMap)
+    public void createMapSizedRectangle(RoadMap roadMap, boolean isVisible)
     {
         try
         {
-            createMapSizedVRepRectangle(roadMap);
+            createMapSizedVRepRectangle(roadMap, isVisible);
         }
         catch (VRepException e)
         {
@@ -65,7 +65,7 @@ public class VRepMap
         try
         {
             XYMinMax minMax = roadMap.computeMapDimensions();
-            int rectangleHandle = createMapSizedVRepRectangle(roadMap);
+            int rectangleHandle = createMapSizedVRepRectangle(roadMap, false);
             
             BufferedImage img = createTexture(roadMap, minMax);
             File tmp = new File("tmpmap.png");
@@ -194,7 +194,7 @@ public class VRepMap
         return img;
     }
 
-    private int createMapSizedVRepRectangle(RoadMap roadMap) throws VRepException
+    private int createMapSizedVRepRectangle(RoadMap roadMap, boolean isVisible) throws VRepException
     {
         if(_elementNameCreator == null)
         {
@@ -217,6 +217,7 @@ public class VRepMap
         float posY = (float) (minMax.minY() + minMax.distY()/2.0);
         shapeParameters.setPosition(posX, posY, 0.0f);
         shapeParameters.setType(EVRepShapes.CUBOID);
+        shapeParameters.setVisibility(isVisible);
         int rectangleHandle = _vrepObjectCreator.createPrimitive(shapeParameters);
         return rectangleHandle;
     }
