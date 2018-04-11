@@ -33,6 +33,7 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
     private PurePursuitParameters _parameters;
     private double _debugHeight;
     private boolean _debugging;
+    private boolean _debugginCircleAttached;
 
     public class DefaultReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
@@ -62,7 +63,6 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
             _actuatorsSensors.computeAndLockSensorData(); 
             Position2D curPos = _actuatorsSensors.getPosition();
             double distance = Position2D.distance(curPos, _expectedTarget);
-            System.out.println("d: " + distance + " (target: " + _expectedTarget + ", current position" + curPos);
             return distance < 2.0;
         }
 
@@ -91,10 +91,11 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
     public void activateDebugging(IVrepDrawing vrepDrawing, double zValue)
     {
         _debugging = true;
+        _debugginCircleAttached = false;
         _debugHeight = zValue;
         _vrepDrawing = vrepDrawing;
         _vrepDrawing.registerDrawingObject(CURRENT_SEGMENT_DEBUG_KEY, DrawingType.LINE, Color.RED);
-        _vrepDrawing.registerDrawingObject(CAR_CIRCLE_DEBUG_KEY, DrawingType.CIRCLE, Color.MAGENTA);
+//        _vrepDrawing.registerDrawingObject(CAR_CIRCLE_DEBUG_KEY, DrawingType.CIRCLE, Color.MAGENTA);
     }
     
     @Override
@@ -155,8 +156,13 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
 
         if(_debugging)
         {
+            if(!_debugginCircleAttached)
+            {
+                _vrepDrawing.attachDebugCircle(_lookahead);
+                _debugginCircleAttached = true;
+            }
             _vrepDrawing.updateLine(CURRENT_SEGMENT_DEBUG_KEY, _currentSegment.getVector(), _debugHeight, Color.RED);
-            _vrepDrawing.updateCircle(CAR_CIRCLE_DEBUG_KEY, _actuatorsSensors.getRearWheelCenterPosition(), _debugHeight, _lookahead, Color.BLUE);
+//            _vrepDrawing.updateCircle(CAR_CIRCLE_DEBUG_KEY, _actuatorsSensors.getRearWheelCenterPosition(), _debugHeight, _lookahead, Color.BLUE);
         }
         
         float targetWheelRotation = computeTargetWheelRotationSpeed();
@@ -231,14 +237,12 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
         Vector2D rearWheelToFrontWheel = new Vector2D(rearWheelPosition, frontWheelPosition);
         if(rearWheelToLookAhead == null)
         {
-//            System.out.println("!!!!! no rear wheel to current segment vector of desired length");
             return 0.0f;
         }
         else
         {
             double alpha = Vector2D.computeAngle(rearWheelToLookAhead, rearWheelToFrontWheel) * rearWheelToLookAhead.side(rearWheelToFrontWheel) * -1.0;
             double delta = Math.atan( (2.0 *_actuatorsSensors.getVehicleLength() * Math.sin(alpha)) / (rearWheelToLookAhead.length()) );
-//            System.out.println(", angle delta: " + delta);
             return (float) delta;
         }
     }

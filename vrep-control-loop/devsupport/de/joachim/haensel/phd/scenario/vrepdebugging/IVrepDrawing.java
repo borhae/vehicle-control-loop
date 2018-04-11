@@ -20,4 +20,6 @@ public interface IVrepDrawing
     public void updateCircle(String objectKey, Position2D position, double zValue, double radius, Color color);
 
     public void removeAllDrawigObjects();
+
+    public void attachDebugCircle(double lookahead);
 }

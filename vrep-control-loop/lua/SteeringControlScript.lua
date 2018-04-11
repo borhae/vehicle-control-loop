@@ -53,16 +53,25 @@ sense = function(inInts, inFloats, inStrings, inBuffer)
 end
 
 debugCircle = function(inInts, inFloats, inStrings, inBuffer)
---	local emissiveColor = {0.8, 0.8, 0.0}
---	local pointSize = 0.01
---	local handle = sim.addDrawingObject(sim.drawing_spherepoints, pointSize, 0, -1, 99999999, nil, nil, nil, emissiveColor)
---	
+  sim.addStatusBarMessage("debug circle called")
+  
+	local pointSize = 5.5
+  local parentHandle = inInts[1]
+  local emissiveColor = {inFloats[2], inFloats[3], inFloats[4]}
+  local handle = sim.addDrawingObject(sim.drawing_spherepoints, pointSize, 0, parentHandle, 99999999, nil, nil, nil, emissiveColor)
+
 	sim.addDrawingObjectItem(handle, nil)
 	local pointDistance = 0.5
-	local centerX = inFloats[1]
-	local centerY = inFloats[2]
-	local centerZ = inFloats[3]
-	local radius = inFloats[4]
+--	local centerX = inFloats[1]
+--	local centerY = inFloats[2]
+--	local centerZ = inFloats[3]
+--	local radius = inFloats[4]
+  parentHandlePos = sim.getObjectPosition(parentHandle, -1)
+  local centerX = parentHandlePos[1]
+  local centerY = parentHandlePos[2]
+  local centerZ = parentHandlePos[3]
+	-- local radius = inFloats[
+  local radius = 100.0
 	
 	local currentPoint = {0.0, 0.0, 0.0}
 	currentPoint[3] = centerZ

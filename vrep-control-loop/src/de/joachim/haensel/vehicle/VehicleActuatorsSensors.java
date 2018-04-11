@@ -176,6 +176,32 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
         System.out.println("Added drawing object with handle" + handle);
         _drawingObjectsStore.put(key, new DrawingObject(type, handle));
     }
+    
+    @Override
+    public void attachDebugCircle(double lookahead)
+    {
+        String parentObj = VRepObjectCreation.VREP_LOADING_SCRIPT_PARENT_OBJECT;
+        Color lineColor = Color.ORANGE;
+        FloatWA floatParamsIn = new FloatWA(4);
+        float[] floatsIn = floatParamsIn.getArray();
+        floatsIn[0] = (float) lookahead;
+        floatsIn[1] = lineColor.getRed() / 255.0f;
+        floatsIn[2] = lineColor.getGreen() / 255.0f;
+        floatsIn[3] = lineColor.getBlue() / 255.0f;
+
+        IntWA intParamsIn = new IntWA(1);
+        intParamsIn.getArray()[0] = _vehicleHandles.getRearWheelDummy();
+        try
+        {
+            _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_customizationscript, "createDrawingObjectCircle", 
+                    intParamsIn, floatParamsIn, null, null, 
+                    null, null, null, null, remoteApi.simx_opmode_blocking);
+        }
+        catch (VRepException exc)
+        {
+            exc.printStackTrace();
+        }
+    }
 
     @Override
     public void removeAllDrawigObjects()

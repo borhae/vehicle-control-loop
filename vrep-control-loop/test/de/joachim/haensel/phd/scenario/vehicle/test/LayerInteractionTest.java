@@ -546,12 +546,12 @@ public class LayerInteractionTest implements TestConstants
         {
             exc.printStackTrace();
         }
-//        vehicle.activateDebugging(scaleFactor);
+        vehicle.activateDebugging(scaleFactor);
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");
         vehicle.stop();
-//        vehicle.deacvtivateDebugging();
+        vehicle.deacvtivateDebugging();
         _vrep.simxStopSimulation(_clientID, remoteApi.simx_opmode_blocking);
         try
         {

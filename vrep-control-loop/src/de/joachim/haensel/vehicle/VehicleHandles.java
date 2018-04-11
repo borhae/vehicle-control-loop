@@ -69,4 +69,9 @@ public class VehicleHandles
     {
         return _frontRightWheel;
     }
+
+    public int getRearWheelDummy()
+    {
+        return _rearWheelDummy;
+    }
 }

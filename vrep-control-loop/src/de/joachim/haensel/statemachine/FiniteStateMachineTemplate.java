@@ -71,7 +71,7 @@ public class FiniteStateMachineTemplate
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public<T> void transition(Messages msg, T parameter)
+    synchronized public<T> void transition(Messages msg, T parameter)
     {
         States fromState = getCurrentState();
         Map<Messages, Map<Guard,ActionTargetStatePair>> transitions = _transitionTable.get(fromState);
