@@ -25,7 +25,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.sumo2vrep.VRepMap;
 import de.joachim.haensel.sumo2vrep.XYMinMax;
-import de.joachim.haensel.vehicle.BadReactiveController;
+import de.joachim.haensel.vehicle.PurePursuitController;
 import de.joachim.haensel.vehicle.IActuatingSensing;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
@@ -168,7 +168,7 @@ public class LayerInteractionTest implements TestConstants
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
         IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0);};
-        BadReactiveController ctrl = new BadReactiveController(); 
+        PurePursuitController ctrl = new PurePursuitController(); 
         ctrl.setParameters(new PurePursuitParameters(5.0 * DOWN_SCALE_FACTOR));
         ILowerLayerFactory lowerFact = () -> {return ctrl;};
         
@@ -249,7 +249,7 @@ public class LayerInteractionTest implements TestConstants
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         IUpperLayerFactory uperFact = () -> {return new NavigationController(segmentSize);};
-        BadReactiveController ctrl = new BadReactiveController();
+        PurePursuitController ctrl = new PurePursuitController();
         PurePursuitParameters reactiveControllerParameters = new PurePursuitParameters(lookahead);
         reactiveControllerParameters.setSpeed(lookahead);
         ctrl.setParameters(reactiveControllerParameters);
@@ -326,7 +326,7 @@ public class LayerInteractionTest implements TestConstants
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
         IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0);};
-        ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
         
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
         
@@ -408,7 +408,7 @@ public class LayerInteractionTest implements TestConstants
         
         
         IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0 * scaleFactor);};
-        BadReactiveController ctrl = new BadReactiveController(); 
+        PurePursuitController ctrl = new PurePursuitController(); 
         ctrl.setParameters(new PurePursuitParameters(5.0 * scaleFactor));
         ILowerLayerFactory lowerFact = () -> {return ctrl;};
         
@@ -498,9 +498,8 @@ public class LayerInteractionTest implements TestConstants
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX2(), lastLine.getY2());
         
-        
         IUpperLayerFactory uperFact = () -> {return new NavigationController(4.0 * scaleFactor);};
-        BadReactiveController ctrl = new BadReactiveController(); 
+        PurePursuitController ctrl = new PurePursuitController(); 
         PurePursuitParameters parameters = new PurePursuitParameters(10.0 * scaleFactor);
         parameters.setSpeed(1.5);
         ctrl.setParameters(parameters);
@@ -593,7 +592,7 @@ public class LayerInteractionTest implements TestConstants
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
         IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0 * scaleFactor);};
-        BadReactiveController ctrl = new BadReactiveController(); 
+        PurePursuitController ctrl = new PurePursuitController(); 
         ctrl.setParameters(new PurePursuitParameters(5.0 * scaleFactor));
         ILowerLayerFactory lowerFact = () -> {return ctrl;};
         
@@ -678,7 +677,7 @@ public class LayerInteractionTest implements TestConstants
         
         
         IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0 * scaleFactor);};
-        BadReactiveController ctrl = new BadReactiveController(); 
+        PurePursuitController ctrl = new PurePursuitController(); 
         ctrl.setParameters(new PurePursuitParameters(5.0 * scaleFactor));
         ILowerLayerFactory lowerFact = () -> {return ctrl;};
         

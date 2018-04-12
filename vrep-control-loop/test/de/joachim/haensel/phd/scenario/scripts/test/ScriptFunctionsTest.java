@@ -10,7 +10,7 @@ import coppelia.IntWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
-import de.joachim.haensel.vehicle.BadReactiveController;
+import de.joachim.haensel.vehicle.PurePursuitController;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.vehicle.NavigationController;
@@ -71,7 +71,7 @@ public class ScriptFunctionsTest
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         float height = vehicleCreator.getVehicleHeight();
         IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0);};
-        ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
 
         Vehicle vehicle = vehicleCreator.createAt(-2.0f, 0.0f, height + 0.1f, null, upperFact, lowerFact);
 

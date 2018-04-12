@@ -283,12 +283,12 @@ public class Vector2D
             double t1 = (-b + Math.sqrt(root))/(2*a);
             double t2 = (-b - Math.sqrt(root))/(2*a);
             
-            if(0 < t1 && t1 <= 1)
+            if(0 <= t1 && t1 <= 1)
             {
                 Vector2D v1 = new Vector2D(x0, y0, t1 * dx, t1 * dy);
                 result.add(v1);
             }
-            if(0 < t2 && t2 <= 1)
+            if(0 <= t2 && t2 <= 1)
             {
                 Vector2D v2 = new Vector2D(x0, y0, t2 * dx, t2 * dy);
                 result.add(v2);

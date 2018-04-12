@@ -53,8 +53,6 @@ sense = function(inInts, inFloats, inStrings, inBuffer)
 end
 
 debugCircle = function(inInts, inFloats, inStrings, inBuffer)
-  sim.addStatusbarMessage("debug circle called---------------------------------------------------")
-  
 	local pointSize = 0.05
   local parentHandle = inInts[1]
   local emissiveColor = {inFloats[2], inFloats[3], inFloats[4]}
@@ -121,7 +119,7 @@ if errVal == 0 or 1 then
   outerDistWheels = distanceData[7]
   middleDistWheels = outerDistWheels + wheelsThickness
 else
-  simAddStatusbarMessage("error while trying to read distance: "..errVal)
+  simAddStatusbarMessage("error while trying to read left-right wheel distance: "..errVal)
 end
 
 local lengthFR = -1 
@@ -143,7 +141,7 @@ if errVal == 0 or 1 then
   outerDistWheelsFR = distanceData[7]
   middleDistWheelsFR = outerDistWheelsFR + wheelDiam
 else
-  sim.addStatusbarMessage("error while trying to read distance: "..errVal)
+  sim.addStatusbarMessage("error while trying to read front-back wheel distance: "..errVal)
 end
 
 --d = 0.755 -- 2*d = distance between left and right wheels

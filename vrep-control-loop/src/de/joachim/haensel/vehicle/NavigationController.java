@@ -5,7 +5,9 @@ import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.interpolation.InterpolationTrajectorizerCircleIntersection;
 import de.joachim.haensel.phd.scenario.math.interpolation.IterativeInterpolationTrajectorizer;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Route;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.sumo2vrep.RoadMap;
@@ -43,7 +45,7 @@ public class NavigationController implements ITopLayerControl
         navigator.addSegmentBuildingListeners(_segmentBuildingListeners);
         List<Line2D> routeBasis = navigator.getRoute(currentPosition, targetPosition);
         
-        IterativeInterpolationTrajectorizer trajectorizer = new IterativeInterpolationTrajectorizer(_segmentSize);
+        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerCircleIntersection(_segmentSize);
         trajectorizer.addSegmentBuildingListeners(_segmentBuildingListeners);
         _currentRoute.createRoute(trajectorizer.createTrajectory(routeBasis));
     }

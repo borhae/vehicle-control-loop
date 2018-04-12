@@ -10,7 +10,7 @@ import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.sumo2vrep.VRepMap;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.sumo2vrep.RoadMap;
-import de.joachim.haensel.vehicle.BadReactiveController;
+import de.joachim.haensel.vehicle.PurePursuitController;
 import de.joachim.haensel.vehicle.ILowLevelController;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
@@ -55,7 +55,7 @@ public class VehicleCreationTest implements TestConstants
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         
         IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0);};
-        ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
 
         float height = vehicleCreator.getVehicleHeight();
         vehicleCreator.createAt(-3f, 0, height + 0.1f, null, upperFact, lowerFact);
@@ -69,7 +69,7 @@ public class VehicleCreationTest implements TestConstants
         float height = vehicleCreator.getVehicleHeight();
         
         IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0);};
-        ILowerLayerFactory lowerFact = () -> {ILowLevelController<PurePursuitParameters> ctrl = new BadReactiveController(); ctrl.setParameters(new PurePursuitParameters(5.0)); return ctrl;};
+        ILowerLayerFactory lowerFact = () -> {ILowLevelController<PurePursuitParameters> ctrl = new PurePursuitController(); ctrl.setParameters(new PurePursuitParameters(5.0)); return ctrl;};
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, null, upperFact, lowerFact);
         vehicle.setOrientation(1.0f, 1.0f, 1.0f);
@@ -81,7 +81,7 @@ public class VehicleCreationTest implements TestConstants
     {
         float scaleFactor = 0.1f;
         double lookahead = 5.0 * scaleFactor;
-        ILowLevelController<PurePursuitParameters> ctrl = new BadReactiveController(); 
+        ILowLevelController<PurePursuitParameters> ctrl = new PurePursuitController(); 
         ctrl.setParameters(new PurePursuitParameters(lookahead));
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, scaleFactor);
@@ -107,7 +107,7 @@ public class VehicleCreationTest implements TestConstants
         float height = vehicleCreator.getVehicleHeight();
         
         IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0);};
-        ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap, upperFact, lowerFact);
         NetType network = roadMap.getNetwork();

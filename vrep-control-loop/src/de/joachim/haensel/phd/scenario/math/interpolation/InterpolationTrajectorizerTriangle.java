@@ -9,10 +9,10 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
 
-public class InterpolationTrajectorizerTrigonometry extends AbstractTrajectorizer
+public class InterpolationTrajectorizerTriangle extends AbstractTrajectorizer
 {
     
-    public InterpolationTrajectorizerTrigonometry(double stepSize)
+    public InterpolationTrajectorizerTriangle(double stepSize)
     {
         super(stepSize);
     }

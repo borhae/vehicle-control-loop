@@ -16,7 +16,7 @@ import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
 import de.joachim.haensel.statemachine.Guard;
 import de.joachim.haensel.statemachine.States;
 
-public class BadReactiveController implements ILowLevelController<PurePursuitParameters>
+public class PurePursuitController implements ILowLevelController<PurePursuitParameters>
 {
     private static final String CAR_CIRCLE_DEBUG_KEY = "carCircle";
     private static final String CURRENT_SEGMENT_DEBUG_KEY = "curSeg";
@@ -40,8 +40,8 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
         public DefaultReactiveControllerStateMachine()
         {
             Consumer<Position2D> driveToAction = target -> _expectedTarget = target; 
-            Consumer<BadReactiveController> driveAction = controller -> controller.driveAction();
-            Consumer<BadReactiveController> breakAndStopAction = controller -> controller.breakAndStopAction();
+            Consumer<PurePursuitController> driveAction = controller -> controller.driveAction();
+            Consumer<PurePursuitController> breakAndStopAction = controller -> controller.breakAndStopAction();
             
 
             createTransition(ControllerStates.IDLE, ControllerMsg.DRIVE_TO, null, ControllerStates.DRIVING, driveToAction);
@@ -71,18 +71,18 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
             transition(ControllerMsg.DRIVE_TO, target);
         }
 
-        public void controlEvent(BadReactiveController controller)
+        public void controlEvent(PurePursuitController controller)
         {
             transition(ControllerMsg.CONTROL_EVENT, controller);
         }
 
-        public void stop(BadReactiveController controller)
+        public void stop(PurePursuitController controller)
         {
             transition(ControllerMsg.STOP, controller);
         }
     }
     
-    public BadReactiveController()
+    public PurePursuitController()
     {
         _debugging = false;
     }
@@ -95,7 +95,6 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
         _debugHeight = zValue;
         _vrepDrawing = vrepDrawing;
         _vrepDrawing.registerDrawingObject(CURRENT_SEGMENT_DEBUG_KEY, DrawingType.LINE, Color.RED);
-//        _vrepDrawing.registerDrawingObject(CAR_CIRCLE_DEBUG_KEY, DrawingType.CIRCLE, Color.MAGENTA);
     }
     
     @Override
@@ -162,7 +161,6 @@ public class BadReactiveController implements ILowLevelController<PurePursuitPar
                 _debugginCircleAttached = true;
             }
             _vrepDrawing.updateLine(CURRENT_SEGMENT_DEBUG_KEY, _currentSegment.getVector(), _debugHeight, Color.RED);
-//            _vrepDrawing.updateCircle(CAR_CIRCLE_DEBUG_KEY, _actuatorsSensors.getRearWheelCenterPosition(), _debugHeight, _lookahead, Color.BLUE);
         }
         
         float targetWheelRotation = computeTargetWheelRotationSpeed();

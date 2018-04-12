@@ -20,6 +20,7 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
     public AbstractTrajectorizer(double stepSize)
     {
         _stepSize = stepSize;
+        _segmentBuildingListeners = new ArrayList<>();
     }
     
     @Override 

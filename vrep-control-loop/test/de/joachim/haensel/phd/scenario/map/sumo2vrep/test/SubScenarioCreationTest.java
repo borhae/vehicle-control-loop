@@ -17,7 +17,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.sumo2vrep.OrientedPosition;
 import de.joachim.haensel.sumo2vrep.RoadMap;
-import de.joachim.haensel.vehicle.BadReactiveController;
+import de.joachim.haensel.vehicle.PurePursuitController;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.vehicle.NavigationController;
@@ -94,7 +94,7 @@ public class SubScenarioCreationTest implements TestConstants
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
         IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0);};
-        ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
 
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, upperFact, lowerFact);
         vehicle.setOrientation(0.0f, 0.0f, 0.0f);
@@ -113,7 +113,7 @@ public class SubScenarioCreationTest implements TestConstants
         float height = vehicleCreator.getVehicleHeight();
 
         IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0);};
-        ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap, upperFact, lowerFact);
         vehicle.setOrientation(0.0f, 0.0f, 0.0f);
@@ -131,7 +131,7 @@ public class SubScenarioCreationTest implements TestConstants
         float height = vehicleCreator.getVehicleHeight();
         
         IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0);};
-        ILowerLayerFactory lowerFact = () -> {return new BadReactiveController();};
+        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap, upperFact, lowerFact);
 

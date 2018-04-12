@@ -20,7 +20,8 @@ import de.joachim.haensel.phd.scenario.math.bezier.SplineTrajectorizer;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.math.interpolation.InterpolationTrajectorizerTrigonometry;
+import de.joachim.haensel.phd.scenario.math.interpolation.InterpolationTrajectorizerCircleIntersection;
+import de.joachim.haensel.phd.scenario.math.interpolation.InterpolationTrajectorizerTriangle;
 import de.joachim.haensel.phd.scenario.math.interpolation.IterativeInterpolationTrajectorizer;
 import de.joachim.haensel.phd.scenario.navigation.visualization.SegmentBuildingAdapter;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
@@ -43,7 +44,7 @@ public class TrajectoryBuildingTest implements TestConstants
         Position2D startPosition = new Position2D(5747.01f, 2979.22f);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTrigonometry(5);
+        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTriangle(5);
         LinkedList<Vector2D> lineListToVectorList = trajectorizer.lineListToVectorList(route);
         lineListToVectorList.stream().forEach(v -> checkValid(v));
     }
@@ -56,7 +57,7 @@ public class TrajectoryBuildingTest implements TestConstants
         Position2D startPosition = new Position2D(5747.01f, 2979.22f);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTrigonometry(5);
+        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTriangle(5);
         LinkedList<Vector2D> lineListToVectorList = trajectorizer.lineListToVectorList(route);
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(lineListToVectorList);
         patchedRoute.stream().forEach(v -> checkValid(v));
@@ -70,7 +71,7 @@ public class TrajectoryBuildingTest implements TestConstants
         Position2D startPosition = new Position2D(5747.01f, 2979.22f);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTrigonometry(5);
+        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTriangle(5);
         LinkedList<Vector2D> lineListToVectorList = trajectorizer.lineListToVectorList(route);
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(lineListToVectorList);
         patchedRoute.stream().forEach(v -> checkValid(v));
@@ -101,7 +102,7 @@ public class TrajectoryBuildingTest implements TestConstants
         Position2D startPosition = new Position2D(5747.01f, 2979.22f);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTrigonometry(15);
+        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTriangle(15);
         LinkedList<Vector2D> routeAsVectors = trajectorizer.lineListToVectorList(route);
         routeAsVectors.stream().forEach(v -> checkValid(v));
         double min = Double.MAX_VALUE;
@@ -136,7 +137,7 @@ public class TrajectoryBuildingTest implements TestConstants
         Position2D startPosition = new Position2D(5747.01f, 2979.22f);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTrigonometry(15);
+        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerTriangle(15);
         LinkedList<Vector2D> routeAsVectors = trajectorizer.lineListToVectorList(route);
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(routeAsVectors);
         routeAsVectors.stream().forEach(v -> checkValid(v));
@@ -172,7 +173,7 @@ public class TrajectoryBuildingTest implements TestConstants
         input.add(new Vector2D(10, 0, 0, 10));
         input.add(new Vector2D(10, 10, -10, 0));
         
-        InterpolationTrajectorizerTrigonometry trajecorizer = new InterpolationTrajectorizerTrigonometry(6);
+        InterpolationTrajectorizerTriangle trajecorizer = new InterpolationTrajectorizerTriangle(6);
         LinkedList<Vector2D> patchedRoute = trajecorizer.patchHolesInRoute(input);
         Deque<Vector2D> result = new LinkedList<>();
         trajecorizer.interpolateRecursiveNonWorking(patchedRoute, null, result, 6);
@@ -535,6 +536,62 @@ public class TrajectoryBuildingTest implements TestConstants
         assert(quantizedLastTip.equals(lastTip, 0.0000000000001));
         assert(overlayLastTip.equals(lastTip, 0.0000000000001));
     }
+    
+    @Test
+    public void test2SyntheticVectorsSquareOverlayedTrajectoriesAlignOriginalStepsizeExactTwoThirdCircleIntersection()
+    {
+        LinkedList<Vector2D> input = new LinkedList<>();
+        input.add(new Vector2D(0, 0, 9.0, 0));
+        input.add(new Vector2D(9.0, 0, 0.0, 9.0));
+        
+        int stepSize = 6;
+        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerCircleIntersection(stepSize);
+
+        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
+
+        Deque<Vector2D> comparisonRoute = new LinkedList<>();
+        patchedRoute.stream().forEach(v -> comparisonRoute.add(new Vector2D(v)));
+        
+        Deque<Vector2D> overlaySrc = new LinkedList<>();
+        patchedRoute.stream().forEach(v -> overlaySrc.add(new Vector2D(v)));
+        
+        Deque<Vector2D> quantizedRoute = new LinkedList<>();
+        trajectorizer.quantize(patchedRoute, quantizedRoute, stepSize);
+        Deque<Vector2D> overlayRoute = trajectorizer.createOverlay(overlaySrc, stepSize);
+        quantizedRoute.stream().forEach(v -> checkValid(v));
+        overlayRoute.stream().forEach(v -> checkValid(v));
+        
+
+        Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.addVectorSet(patchedRoute, Color.BLACK, new BasicStroke(6.0f));
+        frame.addVectorSet(quantizedRoute, Color.BLUE, new BasicStroke(4.0f));
+        frame.addVectorSet(overlayRoute, Color.ORANGE, new BasicStroke(2.0f));
+        frame.setVisible(true);
+        frame.updateVisuals();
+
+
+        Vector2D lastInInput = patchedRoute.peekLast();
+        Vector2D lastInQuantized = quantizedRoute.peekLast();
+
+        Vector2D firstInOverlay = overlayRoute.peek();
+        Vector2D lastInOverlay = overlayRoute.peekLast();
+        
+        Position2D lastTip = lastInInput.getTip();
+        Position2D quantizedLastTip = lastInQuantized.getTip();
+        Position2D overlayLastTip = lastInOverlay.getTip();
+
+        assert(quantizedRoute.size() == 3);
+        assert(overlayRoute.size() == 4);
+
+        assert(firstInOverlay.length() == stepSize / 2.0);
+        assert(overlayRoute.pop().getLength() == (stepSize / 2.0)); 
+        assert(overlayRoute.pop().getLength() == stepSize); 
+        assert(overlayRoute.pop().getLength() == stepSize); 
+        assert(overlayRoute.pop().getLength() == (stepSize / 2.0)); 
+        
+        assert(quantizedLastTip.equals(lastTip, 0.0000000000001));
+        assert(overlayLastTip.equals(lastTip, 0.0000000000001));
+    }
 
     @Test
     public void testRealWorldOverlayedTrajectoriesAlignOriginal()
@@ -624,7 +681,7 @@ public class TrajectoryBuildingTest implements TestConstants
         LinkedList<Vector2D> originalDownsacledVectorRoute = new LinkedList<>();
         downscaledRoute.stream().forEach(l -> originalDownsacledVectorRoute.add(new Vector2D(l)));
         
-        InterpolationTrajectorizerTrigonometry trajectorizer = new InterpolationTrajectorizerTrigonometry(5);
+        InterpolationTrajectorizerTriangle trajectorizer = new InterpolationTrajectorizerTriangle(5);
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(originalDownsacledVectorRoute);
         List<Trajectory> trajectory = trajectorizer.createTrajectory(downscaledRoute);
         
