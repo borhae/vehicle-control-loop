@@ -1,4 +1,4 @@
-package de.joachim.haensel.sumo2vrep;
+package de.joachim.haensel.phd.scenario.sumo2vrep;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 

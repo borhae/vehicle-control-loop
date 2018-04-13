@@ -19,10 +19,12 @@ public class Point3D
      */
     public Point3D(double x, double y)
     {
-        _content = new double[3];
-        _content[0] = x;
-        _content[1] = y;
-        _content[2] = 0.0;
+        this(x, y, 0.0);
+    }
+
+    public Point3D(Position2D pos2d)
+    {
+        this(pos2d.getX(), pos2d.getY());
     }
 
     public double[] getArray()

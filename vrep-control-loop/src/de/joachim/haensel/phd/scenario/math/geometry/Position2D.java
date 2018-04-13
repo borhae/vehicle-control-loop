@@ -59,16 +59,6 @@ public class Position2D
         _y = y;
     }
     
-    public static Position2D[] valueOf(String[] coordinates)
-    {
-        Position2D[] result = new Position2D[coordinates.length];
-        for (int idx = 0; idx < coordinates.length; idx++)
-        {
-            result[idx] = new Position2D(coordinates[idx]);
-        }
-        return result;
-    }
-    
     /**
      * The point between p1 and p2
      * @param p1
@@ -98,45 +88,6 @@ public class Position2D
         }
     }
 
-    public double distance(String coordinates)
-    {
-        return distance(this, new Position2D(coordinates));
-    }
-    
-    public double distance(double x, double y)
-    {
-        return distance(this._x, this._y, x, y);
-    }
-
-    public double distance(Position2D other)
-    {
-        return distance(this, other);
-    }
-
-    public static boolean equals(Position2D p1, Position2D p2, double epsilon)
-    {
-        return distance(p1, p2) < epsilon;
-    }
-
-    public static double distance(Position2D p1, Position2D p2)
-    {
-        return distance(p1._x,  p1._y, p2._x, p2._y);
-    }
-
-    public static double distance(double x1, double y1, double x2, double y2)
-    {
-        double dx = x2 - x1;
-        double dy = y2 - y1;
-        
-        return Math.sqrt(dx*dx + dy*dy);
-    }
-
-    @Override
-    public String toString()
-    {
-        return "p:(" + _x  + ", " + _y + ")";
-    }
-
     public Position2D mul(double scaleFactor)
     {
         _x *= scaleFactor;
@@ -160,5 +111,105 @@ public class Position2D
     public Point3D toPoint3D()
     {
         return new Point3D(_x, _y);
+    }
+    
+    public double distance(String coordinates)
+    {
+        return distance(this, new Position2D(coordinates));
+    }
+    
+    public double distance(double x, double y)
+    {
+        return distance(this._x, this._y, x, y);
+    }
+    
+    public double distance(Position2D other)
+    {
+        return distance(this, other);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "p:(" + _x  + ", " + _y + ")";
+    }
+    
+    public static Position2D[] valueOf(String[] coordinates)
+    {
+        Position2D[] result = new Position2D[coordinates.length];
+        for (int idx = 0; idx < coordinates.length; idx++)
+        {
+            result[idx] = new Position2D(coordinates[idx]);
+        }
+        return result;
+    }
+    
+    public static Position2D[] valueOfString(String coords)
+    {
+        return valueOf(coords.split(" "));
+    }
+
+    /**
+     * Search for the closest position in the input array regarding the reference position. 
+     * @param reference
+     * @param positionsToLookIn
+     * @return Index in incoming array of closest position. -1 if input data is not valid
+     */
+    public static int getClosestIdx(Position2D reference, Position2D[] positionsToLookIn)
+    {
+        if(reference == null || positionsToLookIn == null || positionsToLookIn.length == 0)
+        {
+            return -1;
+        }
+        int closestIdx = 0;
+        double curMinimumDistance = Double.MAX_VALUE;
+        for (int idx = 0; idx < positionsToLookIn.length; idx++)
+        {
+            Position2D curPosition = positionsToLookIn[idx];
+            double curDistance = distance(reference, curPosition);
+            if(curDistance < curMinimumDistance)
+            {
+                closestIdx = idx;
+            }
+        }
+        return closestIdx;
+    }
+
+    public static boolean equals(Position2D p1, Position2D p2, double epsilon)
+    {
+        return distance(p1, p2) < epsilon;
+    }
+
+    public static double distance(Position2D p1, Position2D p2)
+    {
+        return distance(p1._x,  p1._y, p2._x, p2._y);
+    }
+
+    public static double distance(double x1, double y1, double x2, double y2)
+    {
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        
+        return Math.sqrt(dx*dx + dy*dy);
+    }
+
+    public static Position2D minus(Position2D a, Position2D b)
+    {
+        return new Position2D(a._x - b._x, a._y - b._y);
+    }
+    
+    public static Position2D plus(Position2D a, Position2D b)
+    {
+        return new Position2D(a._x + b._x, a._y + b._y);
+    }
+
+    public static double crossProduct2D(Position2D a, Position2D b)
+    {
+        return a._x * b._y - a._y * b._x;
+    }
+
+    public static Position2D multiply(double mult, Position2D pos)
+    {
+        return new Position2D(pos._x * mult, pos._y * mult);
     }
 }

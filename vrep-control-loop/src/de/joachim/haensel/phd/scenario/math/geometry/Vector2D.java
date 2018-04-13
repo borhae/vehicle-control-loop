@@ -1,6 +1,7 @@
 package de.joachim.haensel.phd.scenario.math.geometry;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Vector2D
@@ -154,7 +155,7 @@ public class Vector2D
         return (double)Math.acos(divsionResult);
     }
 
-    private static double dotProduct(Vector2D a, Vector2D b)
+    public static double dotProduct(Vector2D a, Vector2D b)
     {
         return a._dX * b._dX + a._dY * b._dY;
     }
@@ -296,7 +297,7 @@ public class Vector2D
         }
         return result;
     }
-
+    
     /**
      * Create a copy shifted orthogonally. (negative means right, positive means left)
      * @param shift
@@ -324,4 +325,96 @@ public class Vector2D
         // nothing done if shift == 0
         return result;
     }
+
+    /** Intersects the two line segments and returns the intersection point in intersection.
+     * 
+     * @param p1 The first point of the first line segment
+     * @param p2 The second point of the first line segment
+     * @param p3 The first point of the second line segment
+     * @param p4 The second point of the second line segment
+     * @param intersection The intersection point. May be null.
+     * @return Whether the two line segments intersect */
+//    public static boolean intersectSegments (Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, Vector2 intersection) 
+//    {
+//        float x1 = p1.x;
+//        float y1 = p1.y;
+//        float x2 = p2.x;
+//        float y2 = p2.y;
+//        float x3 = p3.x;
+//        float y3 = p3.y;
+//        float x4 = p4.x;
+//        float y4 = p4.y;
+//        
+//        float d = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+//        if (d == 0) return false;
+//        
+//        float yd = y1 - y3;
+//        float xd = x1 - x3;
+//        float ua = ((x4 - x3) * yd - (y4 - y3) * xd) / d;
+//        if (ua < 0 || ua > 1) return false;
+//        
+//        float ub = ((x2 - x1) * yd - (y2 - y1) * xd) / d;
+//        if (ub < 0 || ub > 1) return false;
+//        
+//        if (intersection != null) intersection.set(x1 + (x2 - x1) * ua, y1 + (y2 - y1) * ua);
+//        return true;
+//    }
+
+    public Position2D intersectPolygon(Position2D[] polygon)
+    {
+        for(int idx = 0; idx < polygon.length - 1; idx++)
+        {
+            Vector2D curSide = new Vector2D(polygon[idx], polygon[idx + 1]);
+//            Position2D intersection = Vector2D.intersect(this, curSide);
+            double t = scalarIntersect(this, curSide);
+        }
+        
+        return null;
+    }
+
+    public static double scalarIntersect(Vector2D a, Vector2D b)
+    {
+        // t = (a.base - b.base) x a.dir / b.dir x a.dir
+        // u = (a.base - b.base) x b.dir / b.dir x a.dir
+        Position2D basDiff = Position2D.minus(a.getBase(), b.getBase());
+        double crossDir = Position2D.crossProduct2D(b.getDir(), a.getDir());
+        
+        double tNumerator = Position2D.crossProduct2D(basDiff, a.getDir());
+        double uNumerator = Position2D.crossProduct2D(basDiff, b.getDir());
+        
+        if(crossDir != 0.0)
+        {
+            double t = tNumerator / crossDir;
+            double u = uNumerator / crossDir;
+            if(((0 <= t) && (t <= 1)) && ((0 <= u) && (u <= 1)))
+            {
+                return t;
+            }
+        }
+        return Double.NaN;
+    }
+
+    public static Position2D intersect(Vector2D a, Vector2D b)
+    {
+        // t = (a.base - b.base) x a.dir / b.dir x a.dir
+        // u = (a.base - b.base) x b.dir / b.dir x a.dir
+        Position2D basDiff = Position2D.minus(a.getBase(), b.getBase());
+        double crossDir = Position2D.crossProduct2D(b.getDir(), a.getDir());
+        
+        double tNumerator = Position2D.crossProduct2D(basDiff, a.getDir());
+        double uNumerator = Position2D.crossProduct2D(basDiff, b.getDir());
+        
+        if(crossDir != 0.0)
+        {
+            double t = tNumerator / crossDir;
+            double u = uNumerator / crossDir;
+            if(((0 <= t) && (t <= 1)) && ((0 <= u) && (u <= 1)))
+            {
+                return Position2D.plus(b.getBase(), Position2D.multiply(t, b.getDir()));
+            }
+        }
+        return null;
+    }
+    
+    
 }

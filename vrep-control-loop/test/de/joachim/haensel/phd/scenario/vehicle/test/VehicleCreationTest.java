@@ -7,9 +7,9 @@ import org.junit.Test;
 
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
-import de.joachim.haensel.sumo2vrep.VRepMap;
+import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
+import de.joachim.haensel.phd.scenario.sumo2vrep.VRepMap;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
-import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.vehicle.PurePursuitController;
 import de.joachim.haensel.vehicle.ILowLevelController;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;

@@ -1,4 +1,4 @@
-package de.joachim.haensel.sumo2vrep;
+package de.joachim.haensel.phd.scenario.sumo2vrep;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -22,7 +22,9 @@ import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Point3D;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.phd.scenario.sumo2vrep.triangulation.Earcut;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import de.joachim.haensel.vrepshapecreation.shapes.EVRepShapes;
 import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
@@ -98,7 +100,7 @@ public class VRepMap
         }
         IJunctionCreator junctionCreator = (junction) -> createVRepJunction(_vrep, _clientID, _elementNameCreator, junction);
         ILaneCreator laneCreator = (curLane, p1, p2) -> createVRepLane(_vrep, _clientID, _elementNameCreator, curLane, p1, p2);
-        createMapStructure(roadMap, junctionCreator, laneCreator);
+        visitMap(roadMap, junctionCreator, laneCreator);
     }
     
     public void createMeshBasedMap(RoadMap roadMap) throws VRepException
@@ -110,19 +112,142 @@ public class VRepMap
 
         List<Point3D> vertices = new ArrayList<>();
         List<Integer> indices = new ArrayList<>();
-        IJunctionCreator junctionCreator = (junction) -> createVRepMeshJunction(vertices, indices, junction);
-        ILaneCreator laneCreator = (curLane, p1, p2) -> createVRepMeshLane(vertices, indices, curLane, p1, p2);
-        createMapStructure(roadMap, junctionCreator, laneCreator);
+        IJunctionCreator junctionCreator = (junction) -> createVRepMeshJunctionPolygon(vertices, indices, junction);
+//        ILaneCreator laneCreator = (curLane, p1, p2) -> createVRepMeshLane(vertices, indices, curLane, p1, p2);
+//        ILaneCreator laneCreator = (curLane, p1, p2) -> createVRepMeshLanePolygon(vertices, indices, curLane, p1, p2);
+        IWholeLaneCreator laneCreator = (curLane, curEdge, fromJunction, toJunction) -> createVRepMeshLane(vertices, indices, curLane, curEdge, fromJunction, toJunction);
+        visitMapStitchingAdjacentElements(roadMap, junctionCreator, laneCreator);
         _vrepObjectCreator.createMesh(vertices, indices, "Map");
     }
     
+    private void createVRepMeshLane(List<Point3D> vertices, List<Integer> indices, LaneType curLane, EdgeType curEdge, JunctionType fromJunction, JunctionType toJunction)
+    {
+        int startIndex = vertices.size();
+        Position2D[] fromJunctionCoords = Position2D.valueOfString(fromJunction.getShape());
+        Position2D[] toJunctionCoords = Position2D.valueOfString(toJunction.getShape());
+        Position2D[] lanePoints = Position2D.valueOfString(curLane.getShape());
+        Float width = curLane.getWidth();
+        
+        List<Vector2D> leftSide = new ArrayList<>();
+        List<Vector2D> rightSide = new ArrayList<>();
+        List<Vector2D> center = new ArrayList<>();
+        for(int idx = 0; idx < lanePoints.length; idx += 2)
+        {
+            Position2D pos1 = lanePoints[idx];
+            Position2D pos2 = lanePoints[idx + 1];
+            Vector2D v = new Vector2D(pos1, pos2);
+            Vector2D l = v.shift(width);
+            Vector2D r = v.shift(-width);
+            rightSide.add(r);
+            leftSide.add(l);
+        }
+        Vector2D firstLeft = leftSide.get(0);
+        Vector2D reverseFirstLeft = new Vector2D(firstLeft.getTip(), firstLeft.getBase());
+        Position2D intersection = reverseFirstLeft.intersectPolygon(fromJunctionCoords);
+    }
+
+    private void garbage(List<Point3D> vertices, List<Integer> indices, LaneType curLane, EdgeType curEdge, JunctionType fromJunction, JunctionType toJunction)
+    {
+        List<Vector2D> leftSide = new ArrayList<>();
+        List<Vector2D> rightSide = new ArrayList<>();
+        Position2D[] fromJunctionCoords = Position2D.valueOfString(fromJunction.getShape());
+        Position2D[] toJunctionCoords = Position2D.valueOfString(toJunction.getShape());
+        
+        Position2D leftFirst = leftSide.get(0).getBase();
+        Position2D leftLast = leftSide.get(leftSide.size() - 1).getTip();
+        Position2D rightFirst = rightSide.get(0).getBase();
+        Position2D rightLast = rightSide.get(rightSide.size() - 1).getTip();
+
+        Position2D leftFirstIntersection = fromJunctionCoords[Position2D.getClosestIdx(leftFirst, fromJunctionCoords)];
+        Position2D leftLastIntersection = toJunctionCoords[Position2D.getClosestIdx(leftLast, toJunctionCoords)];
+        
+        Position2D rightFirstIntersection = fromJunctionCoords[Position2D.getClosestIdx(rightFirst, fromJunctionCoords)];
+        Position2D rightLastIntersection = toJunctionCoords[Position2D.getClosestIdx(rightLast, toJunctionCoords)];
+        
+        if((leftFirstIntersection != rightFirstIntersection) || (leftLastIntersection != rightLastIntersection))
+        {
+            System.out.println("bummer, look here");
+        }
+        double leftFirstDist = Position2D.distance(leftFirst, leftFirstIntersection);
+        double rightFirstDist = Position2D.distance(rightFirst, rightFirstIntersection);
+
+        vertices.add(new Point3D(leftFirstIntersection));
+        if(leftFirstDist < rightFirstDist)
+        {
+            
+        }
+        else
+        {
+            
+        }
+
+        double leftLastDist = Position2D.distance(leftLast, leftLastIntersection);
+        double rightLastDist = Position2D.distance(rightLast, rightLastIntersection);
+
+    }
+    
+    private void createVRepMeshLanePolygon(List<Point3D> vertices, List<Integer> indices, LaneType curLane, String p1, String p2)
+    {
+        int startingIndex = vertices.size();
+        
+        Vector2D v = new Vector2D(new Line2D(p1, p2));
+        Vector2D l = v.shift(_streetWidth);
+        Vector2D r = v.shift(-_streetWidth);
+        
+        vertices.add(r.getBase().toPoint3D());
+        vertices.add(r.getTip().toPoint3D());
+
+        vertices.add(l.getBase().toPoint3D());
+        vertices.add(l.getTip().toPoint3D());
+        
+        indices.add(startingIndex + 0);
+        indices.add(startingIndex + 1);
+        indices.add(startingIndex + 3);
+
+        indices.add(startingIndex + 3);
+        indices.add(startingIndex + 2);
+        indices.add(startingIndex + 0);
+        
+        String shape = curLane.getShape();
+        String[] coordinatesString = shape.split("[ ,]");
+        double[] coordinates = new double[coordinatesString.length];
+        for (int idx = 0; idx < coordinatesString.length; idx++)
+        {
+            coordinates[idx] = Double.valueOf(coordinatesString[idx]);
+        }
+        List<Integer> triangles = Earcut.earcut(coordinates);
+        for(int idx = 0; idx < coordinates.length; idx += 2)
+        {
+            vertices.add(new Point3D(coordinates[idx], coordinates[idx + 1]));
+        }
+        triangles.forEach(triangleIdx -> indices.add(triangleIdx + startingIndex));
+    }
+
+    private void createVRepMeshJunctionPolygon(List<Point3D> vertices, List<Integer> indices, JunctionType junction)
+    {
+        int startingIndex = vertices.size();
+        String shape = junction.getShape();
+        String[] coordinatesString = shape.split("[ ,]");
+        double[] coordinates = new double[coordinatesString.length];
+        for (int idx = 0; idx < coordinatesString.length; idx++)
+        {
+            coordinates[idx] = Double.valueOf(coordinatesString[idx]);
+        }
+        List<Integer> triangles = Earcut.earcut(coordinates);
+        for(int idx = 0; idx < coordinates.length; idx += 2)
+        {
+            vertices.add(new Point3D(coordinates[idx], coordinates[idx + 1]));
+        }
+        triangles.forEach(triangleIdx -> indices.add(triangleIdx + startingIndex));
+    }
+
     /**
      * For now create a quad, in future we read the shape
      * @param vertices
      * @param indices
      * @param junction
      */
-    private void createVRepMeshJunction(List<Point3D> vertices, List<Integer> indices, JunctionType junction)
+    private void createVRepMeshJunctionQuads(List<Point3D> vertices, List<Integer> indices, JunctionType junction)
     {
         int startingIndex = vertices.size();
         
@@ -190,7 +315,7 @@ public class VRepMap
         int yCenter = (int) (minMax.distY()/2.0);
         IJunctionCreator junctionCreator = (junction) -> drawJunction(graphics2dObject, xCenter, yCenter, junction);
         ILaneCreator laneCreator = (lane, p1, p2) -> drawLane(graphics2dObject, xCenter, yCenter, lane, p1, p2);
-        createMapStructure(roadMap, junctionCreator, laneCreator);
+        visitMap(roadMap, junctionCreator, laneCreator);
         return img;
     }
 
@@ -254,7 +379,7 @@ public class VRepMap
         graphics2dObject.drawOval(x, y, width, height);
     }
 
-    private void createMapStructure(RoadMap roadMap, IJunctionCreator junctionCreator, ILaneCreator laneCreator)
+    private void visitMap(RoadMap roadMap, IJunctionCreator junctionCreator, ILaneCreator laneCreator)
     {
         try
         {
@@ -267,7 +392,6 @@ public class VRepMap
                 }
                 junctionCreator.create(curJunction);
             }
-            _vrepObjectCreator.createMapCenter();
             List<EdgeType> edges = roadMap.getEdges();
             int numOfLanes = computeNumOfLanes(edges);
             System.out.println("about to create: " + numOfLanes + " lanes!!");
@@ -302,6 +426,37 @@ public class VRepMap
         }
     }
     
+    private void visitMapStitchingAdjacentElements(RoadMap roadMap, IJunctionCreator junctionCreator, IWholeLaneCreator laneCreator)
+    {
+        List<JunctionType> junctions = roadMap.getJunctions();
+        for (JunctionType curJunction : junctions)
+        {
+            if(curJunction.getType().equals("internal"))
+            {
+                continue;
+            }
+            junctionCreator.create(curJunction);
+        }
+        List<EdgeType> edges = roadMap.getEdges();
+        int numOfLanes = computeNumOfLanes(edges);
+        System.out.println("about to create: " + numOfLanes + " lanes!!");
+        for (EdgeType curEdge : edges)
+        {
+            String function = curEdge.getFunction();
+            if(function == null || function.isEmpty())
+            {
+                List<LaneType> lanes = curEdge.getLane();
+                for (LaneType curLane : lanes)
+                {
+                    JunctionType fromJunction = roadMap.getJunctionForName(curEdge.getFrom());
+                    JunctionType toJunction = roadMap.getJunctionForName(curEdge.getTo());
+                    
+                    laneCreator.create(curLane, curEdge, fromJunction, toJunction);
+                }
+            }
+        }
+    }
+
     private void createLaneRecursive(ILaneCreator laneCreator, LaneType curLane, List<String> lineCoordinates) throws VRepException
     {
         int listSize = lineCoordinates.size();

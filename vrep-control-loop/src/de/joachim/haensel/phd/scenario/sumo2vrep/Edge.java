@@ -1,4 +1,4 @@
-package de.joachim.haensel.sumo2vrep;
+package de.joachim.haensel.phd.scenario.sumo2vrep;
 
 import sumobindings.EdgeType;
 import sumobindings.LaneType;

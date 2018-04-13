@@ -23,11 +23,11 @@ import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.sumo2vrep.IDCreator;
+import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
+import de.joachim.haensel.phd.scenario.sumo2vrep.VRepMap;
+import de.joachim.haensel.phd.scenario.sumo2vrep.XYMinMax;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
-import de.joachim.haensel.sumo2vrep.IDCreator;
-import de.joachim.haensel.sumo2vrep.RoadMap;
-import de.joachim.haensel.sumo2vrep.VRepMap;
-import de.joachim.haensel.sumo2vrep.XYMinMax;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import de.joachim.haensel.vrepshapecreation.shapes.EVRepShapes;
 import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
@@ -242,7 +242,7 @@ public class MapCreationTest implements TestConstants
         TMatrix centerMatrix = TMatrix.createCenterMatrix(mapDimensions);
         roadMap.transform(centerMatrix);
         
-        VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        VRepMap mapCreator = new VRepMap(1.6f, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMeshBasedMap(roadMap);
     }
 

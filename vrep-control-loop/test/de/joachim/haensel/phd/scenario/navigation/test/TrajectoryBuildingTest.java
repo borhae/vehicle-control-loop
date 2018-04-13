@@ -25,12 +25,12 @@ import de.joachim.haensel.phd.scenario.math.interpolation.InterpolationTrajector
 import de.joachim.haensel.phd.scenario.math.interpolation.IterativeInterpolationTrajectorizer;
 import de.joachim.haensel.phd.scenario.navigation.visualization.SegmentBuildingAdapter;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
+import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
+import de.joachim.haensel.phd.scenario.sumo2vrep.XYMinMax;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
-import de.joachim.haensel.sumo2vrep.RoadMap;
-import de.joachim.haensel.sumo2vrep.XYMinMax;
 import de.joachim.haensel.vehicle.NavigationController;
 import de.joachim.haensel.vehiclecontrol.Navigator;
 

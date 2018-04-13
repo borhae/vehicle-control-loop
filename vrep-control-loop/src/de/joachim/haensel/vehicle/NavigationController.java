@@ -7,10 +7,10 @@ import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.interpolation.InterpolationTrajectorizerCircleIntersection;
 import de.joachim.haensel.phd.scenario.math.interpolation.IterativeInterpolationTrajectorizer;
+import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Route;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
-import de.joachim.haensel.sumo2vrep.RoadMap;
 import de.joachim.haensel.vehiclecontrol.Navigator;
 
 public class NavigationController implements ITopLayerControl

@@ -1,6 +1,6 @@
 package de.joachim.haensel.phd.scenario.math;
 
-import de.joachim.haensel.sumo2vrep.XYMinMax;
+import de.joachim.haensel.phd.scenario.sumo2vrep.XYMinMax;
 
 /**
  * For now this first scales and then adds an offset. Rotation not tested yet

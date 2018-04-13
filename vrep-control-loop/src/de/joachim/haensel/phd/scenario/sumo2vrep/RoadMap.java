@@ -1,4 +1,4 @@
-package de.joachim.haensel.sumo2vrep;
+package de.joachim.haensel.phd.scenario.sumo2vrep;
 
 import java.awt.geom.Point2D;
 import java.io.File;
