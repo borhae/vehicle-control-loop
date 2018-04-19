@@ -113,10 +113,11 @@ public class VRepMap
         List<Point3D> vertices = new ArrayList<>();
         List<Integer> indices = new ArrayList<>();
         IJunctionCreator junctionCreator = (junction) -> createVRepMeshJunctionPolygon(vertices, indices, junction);
-//        ILaneCreator laneCreator = (curLane, p1, p2) -> createVRepMeshLane(vertices, indices, curLane, p1, p2);
+        ILaneCreator laneCreator = (curLane, p1, p2) -> createVRepMeshLane(vertices, indices, curLane, p1, p2);
 //        ILaneCreator laneCreator = (curLane, p1, p2) -> createVRepMeshLanePolygon(vertices, indices, curLane, p1, p2);
-        IWholeLaneCreator laneCreator = (curLane, curEdge, fromJunction, toJunction) -> createVRepMeshLane(vertices, indices, curLane, curEdge, fromJunction, toJunction);
-        visitMapStitchingAdjacentElements(roadMap, junctionCreator, laneCreator);
+//        IWholeLaneCreator laneCreator = (curLane, curEdge, fromJunction, toJunction) -> createVRepMeshLane(vertices, indices, curLane, curEdge, fromJunction, toJunction);
+//        visitMapStitchingAdjacentElements(roadMap, junctionCreator, laneCreator);
+        visitMap(roadMap, junctionCreator, laneCreator);
         _vrepObjectCreator.createMesh(vertices, indices, "Map");
     }
     

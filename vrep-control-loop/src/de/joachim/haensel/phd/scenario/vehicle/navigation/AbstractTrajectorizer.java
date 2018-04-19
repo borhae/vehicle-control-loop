@@ -26,6 +26,13 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
     @Override 
     public List<Trajectory> createTrajectory(List<Line2D> route)
     {
+        List<Trajectory> result = createSegments(route);
+        
+        return result;
+    }
+
+    private List<Trajectory> createSegments(List<Line2D> route)
+    {
         List<Trajectory> result = new ArrayList<>();
         LinkedList<Vector2D> unpatchedRoute = lineListToVectorList(route);
         LinkedList<Vector2D> srcRoute = patchHolesInRoute(unpatchedRoute);
@@ -52,7 +59,6 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
                 result.add(elem2);
             }
         }
-        //TODO add velocity profile information to Trajectory 
         return result;
     }
 

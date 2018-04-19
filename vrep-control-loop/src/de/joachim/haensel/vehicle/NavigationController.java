@@ -6,7 +6,6 @@ import java.util.List;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.interpolation.InterpolationTrajectorizerCircleIntersection;
-import de.joachim.haensel.phd.scenario.math.interpolation.IterativeInterpolationTrajectorizer;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Route;
