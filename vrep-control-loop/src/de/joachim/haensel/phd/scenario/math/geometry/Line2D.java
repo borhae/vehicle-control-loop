@@ -2,7 +2,9 @@ package de.joachim.haensel.phd.scenario.math.geometry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Line2D
 {
@@ -120,5 +122,10 @@ public class Line2D
         builder.append(cB);
         builder.append("]");
         return builder.toString();
+    }
+
+    public static LinkedList<Vector2D> lineListToVectorList(List<Line2D> route)
+    {
+        return route.stream().map(line -> new Vector2D(line)).collect(Collectors.toCollection(LinkedList::new));
     }
 }

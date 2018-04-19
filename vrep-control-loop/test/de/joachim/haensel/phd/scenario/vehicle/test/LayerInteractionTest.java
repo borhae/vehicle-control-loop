@@ -469,6 +469,7 @@ public class LayerInteractionTest implements TestConstants
         }
     }
 
+    //TODO this test doesn't work because setting the orientation does not working
     @Test
     public void testRouteFollowRealMapMesh() throws VRepException
     {
@@ -616,7 +617,8 @@ public class LayerInteractionTest implements TestConstants
         Trajectory firstSeg = fakeNav.segmentsPeek();
         Vector2D firstSegOrientation = firstSeg.getVector();
         
-        double correctionAngle = Vector2D.computeAngle(carOrientation, firstSegOrientation) + Math.PI;
+        //TODO I removed the + Math.PI at the end not in the previous test. What's the difference?
+        double correctionAngle = Vector2D.computeAngle(carOrientation, firstSegOrientation);
         
         vehicle.setOrientation(0.0f, 0.0f, (float)correctionAngle);
 

@@ -1,17 +1,16 @@
-package de.joachim.haensel.phd.scenario.math.interpolation;
+package de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation;
 
 import java.util.Deque;
 import java.util.LinkedList;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
 
-public class IterativeInterpolationTrajectorizer extends AbstractTrajectorizer
+public class IterativeInterpolationSegmenter extends AbstractSegmenter
 {
     private static final int RECURSION_LIMIT = 20;
 
-    public IterativeInterpolationTrajectorizer(double stepSize)
+    public IterativeInterpolationSegmenter(double stepSize)
     {
         super(stepSize);
     }

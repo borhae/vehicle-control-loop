@@ -1,40 +1,45 @@
-package de.joachim.haensel.phd.scenario.vehicle.navigation;
+package de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation;
 
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.vehicle.ISegmentBuildingListener;
 
-public abstract class AbstractTrajectorizer implements ITrajectorizer
+public abstract class AbstractSegmenter implements ISegmenter
 {
     protected static final double EPSILON = 0.00001;
     protected double _stepSize;
     protected List<ISegmentBuildingListener> _segmentBuildingListeners;
-
-    public AbstractTrajectorizer(double stepSize)
+   
+    public AbstractSegmenter(double stepSize)
     {
         _stepSize = stepSize;
         _segmentBuildingListeners = new ArrayList<>();
     }
-    
-    @Override 
-    public List<Trajectory> createTrajectory(List<Line2D> route)
+
+    @Override
+    public void addSegmentBuildingListeners(List<ISegmentBuildingListener> segmentBuildingListeners)
     {
-        List<Trajectory> result = createSegments(route);
-        
-        return result;
+        _segmentBuildingListeners = segmentBuildingListeners;
     }
 
-    private List<Trajectory> createSegments(List<Line2D> route)
+
+    @Override
+    public void notifyUpdateTrajectory(Vector2D newVector, Deque<Vector2D> updatedList)
+    {
+        _segmentBuildingListeners.forEach(listener -> listener.updateTrajectory(newVector, updatedList));
+    }
+
+    public List<Trajectory> createSegments(List<Line2D> route)
     {
         List<Trajectory> result = new ArrayList<>();
-        LinkedList<Vector2D> unpatchedRoute = lineListToVectorList(route);
+        LinkedList<Vector2D> unpatchedRoute = Line2D.lineListToVectorList(route);
         LinkedList<Vector2D> srcRoute = patchHolesInRoute(unpatchedRoute);
         LinkedList<Vector2D> quantizedRoute = new LinkedList<>();
         notifyOriginalTrajectory(quantizedRoute);
@@ -62,20 +67,7 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
         return result;
     }
 
-    private void notifyOriginalTrajectory(LinkedList<Vector2D> emptyRoute)
-    {
-        _segmentBuildingListeners.forEach(listener -> listener.notifyStartOriginalTrajectory(emptyRoute));
-    }
-    
-    private void notifyOverlayTrajectory(Deque<Vector2D> emptyOverlay)
-    {
-        _segmentBuildingListeners.forEach(listener -> listener.notifyStartOverlayTrajectory(emptyOverlay));
-    }
-
-    public LinkedList<Vector2D> lineListToVectorList(List<Line2D> route)
-    {
-        return route.stream().map(line -> new Vector2D(line)).collect(Collectors.toCollection(LinkedList::new));
-    }
+    public abstract void quantize(Deque<Vector2D> input, Deque<Vector2D> result, double stepSize);
 
     public LinkedList<Vector2D> patchHolesInRoute(LinkedList<Vector2D> unevenVectorRoute)
     {
@@ -99,7 +91,6 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
         }
         return patchedList;
     }
-
     /**
      * Create a list of vectors that will all have stepsize length. The
      * resulting first vector will have the same base as the first vector of the input list, the tip of the last vector of the result 
@@ -174,17 +165,14 @@ public abstract class AbstractTrajectorizer implements ITrajectorizer
         }
         return result;
     }
-    
-    public abstract void quantize(Deque<Vector2D> source, Deque<Vector2D> result, double stepSize);
 
-    @Override
-    public void addSegmentBuildingListeners(List<ISegmentBuildingListener> segmentBuildingListeners)
+    private void notifyOriginalTrajectory(LinkedList<Vector2D> emptyRoute)
     {
-        _segmentBuildingListeners = segmentBuildingListeners;
+        _segmentBuildingListeners.forEach(listener -> listener.notifyStartOriginalTrajectory(emptyRoute));
     }
     
-    protected void notifyUpdateTrajectory(Vector2D newVector, Deque<Vector2D> updatedList)
+    private void notifyOverlayTrajectory(Deque<Vector2D> emptyOverlay)
     {
-        _segmentBuildingListeners.forEach(listener -> listener.updateTrajectory(newVector, updatedList));
+        _segmentBuildingListeners.forEach(listener -> listener.notifyStartOverlayTrajectory(emptyOverlay));
     }
 }

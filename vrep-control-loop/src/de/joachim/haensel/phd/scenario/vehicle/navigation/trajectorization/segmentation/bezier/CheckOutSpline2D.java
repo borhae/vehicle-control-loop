@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.math.bezier;
+package de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.bezier;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

@@ -2,7 +2,7 @@
  * Created on Sep 23, 2005
  */
 
-package de.joachim.haensel.phd.scenario.math.bezier;
+package de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.bezier;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,15 +1,14 @@
-package de.joachim.haensel.phd.scenario.math.interpolation;
+package de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation;
 
 import java.util.Deque;
 import java.util.LinkedList;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
 
-public class InterpolationTrajectorizerCircleIntersection extends AbstractTrajectorizer
+public class InterpolationSegmenterCircleIntersection extends AbstractSegmenter
 {
-    public InterpolationTrajectorizerCircleIntersection(double stepSize)
+    public InterpolationSegmenterCircleIntersection(double stepSize)
     {
         super(stepSize);
     }

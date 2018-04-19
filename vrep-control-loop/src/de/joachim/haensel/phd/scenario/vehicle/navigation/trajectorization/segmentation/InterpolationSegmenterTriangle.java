@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.math.interpolation;
+package de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation;
 
 import java.util.Deque;
 import java.util.LinkedList;
@@ -7,12 +7,10 @@ import de.joachim.haensel.phd.scenario.math.TriangleError;
 import de.joachim.haensel.phd.scenario.math.TriangleSolver;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
 
-public class InterpolationTrajectorizerTriangle extends AbstractTrajectorizer
+public class InterpolationSegmenterTriangle extends AbstractSegmenter
 {
-    
-    public InterpolationTrajectorizerTriangle(double stepSize)
+    public InterpolationSegmenterTriangle(double stepSize)
     {
         super(stepSize);
     }
@@ -41,7 +39,7 @@ public class InterpolationTrajectorizerTriangle extends AbstractTrajectorizer
                 unevenVectorRoute.push(newFirstElement);
                 interpolateRecursiveNonWorking(unevenVectorRoute, residue, resultList, stepSize);
             }
-            else
+            else    
             {
                 if(residue == null)
                 {

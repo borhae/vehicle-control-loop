@@ -5,11 +5,13 @@ import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
-import de.joachim.haensel.phd.scenario.math.interpolation.InterpolationTrajectorizerCircleIntersection;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Route;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.Trajectorizer;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.ISegmenterFactory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterCircleIntersection;
 import de.joachim.haensel.vehiclecontrol.Navigator;
 
 public class NavigationController implements ITopLayerControl
@@ -43,8 +45,8 @@ public class NavigationController implements ITopLayerControl
         Navigator navigator = new Navigator(_roadMap);
         navigator.addSegmentBuildingListeners(_segmentBuildingListeners);
         List<Line2D> routeBasis = navigator.getRoute(currentPosition, targetPosition);
-        
-        AbstractTrajectorizer trajectorizer = new InterpolationTrajectorizerCircleIntersection(_segmentSize);
+        ISegmenterFactory segmenterFactory = segmentSize -> new InterpolationSegmenterCircleIntersection(segmentSize);
+        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, _segmentSize);
         trajectorizer.addSegmentBuildingListeners(_segmentBuildingListeners);
         _currentRoute.createRoute(trajectorizer.createTrajectory(routeBasis));
     }

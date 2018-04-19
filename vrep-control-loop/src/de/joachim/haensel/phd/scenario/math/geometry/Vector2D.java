@@ -1,7 +1,6 @@
 package de.joachim.haensel.phd.scenario.math.geometry;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Vector2D
@@ -299,7 +298,7 @@ public class Vector2D
     }
     
     /**
-     * Create a copy shifted orthogonally. (negative means right, positive means left)
+     * Create a copy shifted perpendicularly. (negative means right, positive means left)
      * @param shift
      * @return
      */
@@ -360,6 +359,7 @@ public class Vector2D
 //        return true;
 //    }
 
+    //TODO unfinished!!
     public Position2D intersectPolygon(Position2D[] polygon)
     {
         for(int idx = 0; idx < polygon.length - 1; idx++)

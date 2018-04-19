@@ -1,20 +1,19 @@
-package de.joachim.haensel.phd.scenario.math.bezier;
+package de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.bezier;
 
 import java.util.Deque;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.math.interpolation.IterativeInterpolationTrajectorizer;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.AbstractTrajectorizer;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.AbstractSegmenter;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.IterativeInterpolationSegmenter;
 import de.joachim.haensel.streamextensions.IndexAdder;
 
 /**
- * For now this class is abandoned. Use {@link IterativeInterpolationTrajectorizer} instead.
+ * For now this class is abandoned. Use {@link IterativeInterpolationSegmenter} instead.
  * @author dummy
  *
  */
 @Deprecated
-public class SplineTrajectorizer extends AbstractTrajectorizer implements ITrajectorizer
+public class SplineTrajectorizer extends AbstractSegmenter
 {
     private Spline2D _traversableSpline;
 
