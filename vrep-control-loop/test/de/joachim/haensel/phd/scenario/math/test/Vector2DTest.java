@@ -150,5 +150,65 @@ public class Vector2DTest
         
         assertEquals(expected, actual);
     }
+    
+    @Test
+    public void testGetPerpendicular()
+    {
+        Vector2D v = new Vector2D(0.0 ,0.0, 1.0, 1.0);
+        Vector2D actual = v.getPerpendicular();
+        Vector2D expected = new Vector2D(0.0, 0.0, -1.0, 1.0);
+        assertEquals(expected, actual);
+    }
+    
+    @Test
+    public void testResetBase()
+    {
+        Vector2D actual = new Vector2D(0.0, 0.0, 2.4, 2.5);
+        actual.resetBase(1.0, 0.0);
+        Vector2D expected = new Vector2D(1.0, 0.0, 2.4, 2.5);
+        assertEquals(expected, actual);
+    }
+ 
+    @Test
+    public void testMiddlePerpendicular()
+    {
+        Vector2D v = new Vector2D(new Position2D(-1.0, -1.0), new Position2D(1.0, 1.0));
+        Vector2D actual = v.getMiddlePerpendicular();
+        Vector2D expected = new Vector2D(0.0, 0.0, -2.0, 2.0);
+        assertEquals(expected, actual);
+    }
+    
+    @Test
+    public void testVectorIntersect()
+    {
+        Vector2D v1 = new Vector2D(new Position2D(-1.0, -1.0), new Position2D(1.0, 1.0));
+        Vector2D v2 = new Vector2D(new Position2D(-1.0, 1.0), new Position2D(1.0, -1.0));
+        Position2D actual = Vector2D.intersect(v1, v2);
+        Position2D expected = new Position2D(0.0, 0.0);
+        
+        assertEquals(expected, actual);
+    }
+    
+    @Test
+    public void testVectorUnrangedIntersect1()
+    {
+        Vector2D v1 = new Vector2D(new Position2D(-1.0, -1.0), new Position2D(1.0, 1.0));
+        Vector2D v2 = new Vector2D(new Position2D(-1.0, 1.0), new Position2D(1.0, -1.0));
+        Position2D actual = Vector2D.unrangedIntersect(v1, v2);
+        Position2D expected = new Position2D(0.0, 0.0);
+        
+        assertEquals(expected, actual);
+    }
+    
+    @Test
+    public void testVectorUnrangedIntersect2()
+    {
+        Vector2D v1 = new Vector2D(1.0, 1.0, 1.0, 1.0);
+        Vector2D v2 = new Vector2D(0.0, 0.0, -1.0, 1.0);
+        Position2D actual = Vector2D.unrangedIntersect(v1, v2);
+        Position2D expected = new Position2D(0.0, 0.0);
+        
+        assertEquals(expected, actual);
+    }
 }
 

@@ -54,6 +54,7 @@ public abstract class AbstractSegmenter implements ISegmenter
                 Vector2D vec1 = overlay.pop();
                 addCnt++;
                 Trajectory elem1 = new Trajectory(vec1);
+                elem1.setIsOverlay();
                 result.add(elem1);
             }
             if(!quantizedRoute.isEmpty())
@@ -61,6 +62,7 @@ public abstract class AbstractSegmenter implements ISegmenter
                 Vector2D vec2 = quantizedRoute.pop();
                 addCnt++;
                 Trajectory elem2 = new Trajectory(vec2);
+                elem2.setIsOriginal();
                 result.add(elem2);
             }
         }

@@ -12,6 +12,8 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.Trajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.ISegmenterFactory;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterCircleIntersection;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.BasicVelocityAssigner;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.IVelocityAssignerFactory;
 import de.joachim.haensel.vehiclecontrol.Navigator;
 
 public class NavigationController implements ITopLayerControl
@@ -40,13 +42,15 @@ public class NavigationController implements ITopLayerControl
     @Override
     public void buildSegmentBuffer(Position2D targetPosition, RoadMap roadMap)
     {
+        double maxVelocity = 30.0;
         _roadMap = roadMap;
         Position2D currentPosition = _sensorsActuators.getNonDynamicPosition();
         Navigator navigator = new Navigator(_roadMap);
         navigator.addSegmentBuildingListeners(_segmentBuildingListeners);
         List<Line2D> routeBasis = navigator.getRoute(currentPosition, targetPosition);
         ISegmenterFactory segmenterFactory = segmentSize -> new InterpolationSegmenterCircleIntersection(segmentSize);
-        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, _segmentSize);
+        IVelocityAssignerFactory velocityAssignerFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, maxVelocity);
+        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , _segmentSize);
         trajectorizer.addSegmentBuildingListeners(_segmentBuildingListeners);
         _currentRoute.createRoute(trajectorizer.createTrajectory(routeBasis));
     }

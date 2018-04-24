@@ -416,5 +416,42 @@ public class Vector2D
         return null;
     }
     
-    
+    public static Position2D unrangedIntersect(Vector2D a, Vector2D b)
+    {
+        // t = (a.base - b.base) x a.dir / b.dir x a.dir
+        // u = (a.base - b.base) x b.dir / b.dir x a.dir
+        Position2D basDiff = Position2D.minus(a.getBase(), b.getBase());
+        double crossDir = Position2D.crossProduct2D(b.getDir(), a.getDir());
+        
+        double tNumerator = Position2D.crossProduct2D(basDiff, a.getDir());
+        double uNumerator = Position2D.crossProduct2D(basDiff, b.getDir());
+
+        //if crossDir is 0.0 we have parallel lines...
+        if(crossDir != 0.0)
+        {
+            double t = tNumerator / crossDir;
+            return Position2D.plus(b.getBase(), Position2D.multiply(t, b.getDir()));
+        }
+        return null;
+    }
+
+    public Vector2D getPerpendicular()
+    {
+        return new Vector2D(_bX, _bY, -_dY, _dX);
+    }
+
+    public Vector2D getMiddlePerpendicular()
+    {
+        Vector2D result = getPerpendicular();
+        double newBX = _bX + _dX * 0.5;
+        double newBY = _bY + _dY * 0.5;
+        result.resetBase(newBX, newBY);
+        return result;
+    }
+
+    public void resetBase(double bX, double bY)
+    {
+        _bX = bX;
+        _bY = bY;
+    }
 }
