@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.navigation.test;
+package de.joachim.haensel.phd.scenario.vehicle.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -18,6 +18,7 @@ import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.phd.scenario.navigation.test.Positioner;
 import de.joachim.haensel.phd.scenario.navigation.visualization.SegmentBuildingAdapter;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;

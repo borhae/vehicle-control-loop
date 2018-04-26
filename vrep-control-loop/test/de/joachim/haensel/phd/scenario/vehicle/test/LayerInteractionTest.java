@@ -469,7 +469,7 @@ public class LayerInteractionTest implements TestConstants
         }
     }
 
-    //TODO this test doesn't work because setting the orientation does not working
+    //TODO this test doesn't work because setting the orientation is not working
     @Test
     public void testRouteFollowRealMapMesh() throws VRepException
     {
@@ -612,7 +612,6 @@ public class LayerInteractionTest implements TestConstants
         visualizer.addVectorSet(input, Color.BLUE);
         visualizer.updateVisuals();
         visualizer.setVisible(true);
-        System.out.println("stop");
         
         Trajectory firstSeg = fakeNav.segmentsPeek();
         Vector2D firstSegOrientation = firstSeg.getVector();

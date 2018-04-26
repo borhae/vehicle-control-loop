@@ -18,10 +18,10 @@ import de.joachim.haensel.statemachine.States;
 
 public class PurePursuitController implements ILowLevelController<PurePursuitParameters>
 {
-    private static final String CAR_CIRCLE_DEBUG_KEY = "carCircle";
     private static final String CURRENT_SEGMENT_DEBUG_KEY = "curSeg";
     private static final int MIN_SEGMENT_BUFFER_SIZE = 5;
     private static final int SEGMENT_BUFFER_SIZE = 10;
+    private static final float SPEED_TO_WHEEL_ROTATION_FACTOR = - 0.25f;
     private Position2D _expectedTarget;
     private IActuatingSensing _actuatorsSensors;
     private DefaultReactiveControllerStateMachine _stateMachine;
@@ -263,7 +263,8 @@ public class PurePursuitController implements ILowLevelController<PurePursuitPar
 
     protected float computeTargetWheelRotationSpeed()
     {
-        return (float)- _parameters.getV();
+        double speed = _currentSegment.getSpeed();
+        return (float) speed * SPEED_TO_WHEEL_ROTATION_FACTOR;
     }
 
     @Override
