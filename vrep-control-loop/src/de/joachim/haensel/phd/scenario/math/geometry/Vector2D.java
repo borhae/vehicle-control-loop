@@ -359,7 +359,7 @@ public class Vector2D
 //        return true;
 //    }
 
-    //TODO unfinished!!
+    //TODO unfinished!! Low Priority
     public Position2D intersectPolygon(Position2D[] polygon)
     {
         for(int idx = 0; idx < polygon.length - 1; idx++)

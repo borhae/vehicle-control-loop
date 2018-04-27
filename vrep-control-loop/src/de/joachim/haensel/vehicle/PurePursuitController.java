@@ -263,7 +263,7 @@ public class PurePursuitController implements ILowLevelController<PurePursuitPar
 
     protected float computeTargetWheelRotationSpeed()
     {
-        double speed = _currentSegment.getSpeed();
+        double speed = _currentSegment.getVelocity();
         return (float) speed * SPEED_TO_WHEEL_ROTATION_FACTOR;
     }
 
