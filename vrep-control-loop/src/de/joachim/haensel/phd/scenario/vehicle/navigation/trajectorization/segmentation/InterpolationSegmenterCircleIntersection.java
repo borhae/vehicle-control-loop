@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
-public class InterpolationSegmenterCircleIntersection extends AbstractSegmenter
+public class InterpolationSegmenterCircleIntersection extends AbstractOverlaySegmenter
 {
     public InterpolationSegmenterCircleIntersection(double stepSize)
     {

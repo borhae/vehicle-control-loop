@@ -6,7 +6,7 @@ import java.util.TimerTask;
 
 public class LowLevelEventGenerator extends TimerTask
 {
-    private List<ILowLevelController> _eventListeners;
+    private List<ILowerLayerControl> _eventListeners;
     private long _lastEventTimeStamp;
 
     public LowLevelEventGenerator()
@@ -25,7 +25,7 @@ public class LowLevelEventGenerator extends TimerTask
         _eventListeners.stream().forEach(listener -> listener.controlEvent());
     }
 
-    public void addEventListener(ILowLevelController lowerLevelController)
+    public void addEventListener(ILowerLayerControl lowerLevelController)
     {
         _eventListeners.add(lowerLevelController);
     }

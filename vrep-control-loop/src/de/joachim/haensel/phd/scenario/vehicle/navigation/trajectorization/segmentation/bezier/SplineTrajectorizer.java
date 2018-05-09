@@ -3,7 +3,7 @@ package de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segm
 import java.util.Deque;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.AbstractSegmenter;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.AbstractOverlaySegmenter;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.IterativeInterpolationSegmenter;
 import de.joachim.haensel.streamextensions.IndexAdder;
 
@@ -13,7 +13,7 @@ import de.joachim.haensel.streamextensions.IndexAdder;
  *
  */
 @Deprecated
-public class SplineTrajectorizer extends AbstractSegmenter
+public class SplineTrajectorizer extends AbstractOverlaySegmenter
 {
     private Spline2D _traversableSpline;
 

@@ -8,7 +8,7 @@ import de.joachim.haensel.phd.scenario.math.TriangleSolver;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
-public class InterpolationSegmenterTriangle extends AbstractSegmenter
+public class InterpolationSegmenterTriangle extends AbstractOverlaySegmenter
 {
     public InterpolationSegmenterTriangle(double stepSize)
     {

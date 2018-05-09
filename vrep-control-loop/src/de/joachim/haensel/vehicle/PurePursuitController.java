@@ -17,7 +17,7 @@ import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
 import de.joachim.haensel.statemachine.Guard;
 import de.joachim.haensel.statemachine.States;
 
-public class PurePursuitController implements ILowLevelController<PurePursuitParameters>
+public class PurePursuitController implements ILowerLayerControl<PurePursuitParameters>
 {
     private static final String CURRENT_SEGMENT_DEBUG_KEY = "curSeg";
     private static final int MIN_SEGMENT_BUFFER_SIZE = 5;

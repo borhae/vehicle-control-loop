@@ -19,8 +19,8 @@ public class Vehicle
 {
     private static final int CONTROL_LOOP_EXECUTION_DENSITY = 100; //milliseconds
 
-    private ITopLayerControl _upperControlLayer;
-    private ILowLevelController _lowerControlLayer;
+    private IUpperLayerControl _upperControlLayer;
+    private ILowerLayerControl _lowerControlLayer;
     private LowLevelEventGenerator _controlEventGenerator;
     private Timer _timer;
     private RoadMap _roadMap;

@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
-public class IterativeInterpolationSegmenter extends AbstractSegmenter
+public class IterativeInterpolationSegmenter extends AbstractOverlaySegmenter
 {
     private static final int RECURSION_LIMIT = 20;
 

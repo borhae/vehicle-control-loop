@@ -23,7 +23,7 @@ import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualiz
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.sumo2vrep.XYMinMax;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Route;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.SegmentBuffer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.Trajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.ISegmenterFactory;
@@ -62,6 +62,7 @@ public class SpeedProfileTest
         ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , segmentSize);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.showOnScreen(1);
         IProfileChangeListener listener = profile -> _visualizationIdVelocities = visualize(profile, frame, _visualizationIdVelocities);
         ICurvatureChangeListener curveListener = profile -> _visualizationIdCurve = visualizeCurvature(profile, frame, _visualizationIdCurve);
         trajectorizer.getVelocityAssigner().addProfileChangeListener(listener);
@@ -69,8 +70,8 @@ public class SpeedProfileTest
         frame.setVisible(true);
         frame.updateVisuals();
         
-        Route route = new Route();
-        route.createRoute(trajectorizer.createTrajectory(lineRoute));
+        SegmentBuffer route = new SegmentBuffer();
+        route.fillBuffer(trajectorizer.createTrajectory(lineRoute));
         List<Trajectory> trajectories = route.getSegments(route.getSize());
         
         for(int idx = 0; idx < trajectories.size(); idx++)
@@ -114,8 +115,8 @@ public class SpeedProfileTest
         frame.setVisible(true);
         frame.updateVisuals();
         
-        Route route = new Route();
-        route.createRoute(trajectorizer.createTrajectory(lineRoute));
+        SegmentBuffer route = new SegmentBuffer();
+        route.fillBuffer(trajectorizer.createTrajectory(lineRoute));
         List<Trajectory> trajectories = route.getSegments(route.getSize());
         
         double expectedMaxVelocity = maxVelocity;
@@ -160,8 +161,8 @@ public class SpeedProfileTest
         frame.setVisible(true);
         frame.updateVisuals();
         
-        Route route = new Route();
-        route.createRoute(trajectorizer.createTrajectory(lineRoute));
+        SegmentBuffer route = new SegmentBuffer();
+        route.fillBuffer(trajectorizer.createTrajectory(lineRoute));
         List<Trajectory> trajectories = route.getSegments(route.getSize());
         
         double expectedMaxLateralAcceleration = maxLateralAcc;
@@ -228,8 +229,8 @@ public class SpeedProfileTest
         frame.setVisible(true);
         frame.updateVisuals();
         
-        Route route = new Route();
-        route.createRoute(trajectorizer.createTrajectory(lineRoute));
+        SegmentBuffer route = new SegmentBuffer();
+        route.fillBuffer(trajectorizer.createTrajectory(lineRoute));
         List<Trajectory> trajectories = route.getSegments(route.getSize());
         
         double expectedMaxLongitudinalAcceleration = maxLongAcc;
@@ -282,8 +283,8 @@ public class SpeedProfileTest
         frame.setVisible(true);
         frame.updateVisuals();
         
-        Route route = new Route();
-        route.createRoute(trajectorizer.createTrajectory(lineRoute));
+        SegmentBuffer route = new SegmentBuffer();
+        route.fillBuffer(trajectorizer.createTrajectory(lineRoute));
         List<Trajectory> trajectories = route.getSegments(route.getSize());
         
         double expectedMaxLongitudinalDeceleration = maxLongDec;
@@ -336,8 +337,8 @@ public class SpeedProfileTest
         frame.setVisible(true);
         frame.updateVisuals();
         
-        Route route = new Route();
-        route.createRoute(trajectorizer.createTrajectory(lineRoute));
+        SegmentBuffer route = new SegmentBuffer();
+        route.fillBuffer(trajectorizer.createTrajectory(lineRoute));
         List<Trajectory> trajectories = route.getSegments(route.getSize());
         
         double sumOfAccelerationsDecelerations = 0.0;
@@ -390,8 +391,8 @@ public class SpeedProfileTest
         frame.setVisible(true);
         frame.updateVisuals();
         
-        Route route = new Route();
-        route.createRoute(trajectorizer.createTrajectory(lineRoute));
+        SegmentBuffer route = new SegmentBuffer();
+        route.fillBuffer(trajectorizer.createTrajectory(lineRoute));
         List<Trajectory> trajectories = route.getSegments(route.getSize());
         
         for(int idx = 0; idx < trajectories.size() - 1; idx++)
@@ -449,8 +450,8 @@ public class SpeedProfileTest
         frame.setVisible(true);
         frame.updateVisuals();
         
-        Route route = new Route();
-        route.createRoute(trajectorizer.createTrajectory(lineRoute));
+        SegmentBuffer route = new SegmentBuffer();
+        route.fillBuffer(trajectorizer.createTrajectory(lineRoute));
         List<Trajectory> trajectories = route.getSegments(route.getSize());
         
         for(int idx = 0; idx < trajectories.size(); idx++)

@@ -4,7 +4,7 @@ import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 
-public interface ILowLevelController<P>
+public interface ILowerLayerControl<P>
 {
     public void controlEvent();
     public void driveTo(Position2D position);

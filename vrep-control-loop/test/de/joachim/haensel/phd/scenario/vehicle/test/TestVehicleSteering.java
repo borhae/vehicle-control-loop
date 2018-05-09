@@ -19,9 +19,9 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import de.joachim.haensel.vehicle.IActuatingSensing;
-import de.joachim.haensel.vehicle.ILowLevelController;
+import de.joachim.haensel.vehicle.ILowerLayerControl;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
-import de.joachim.haensel.vehicle.ITopLayerControl;
+import de.joachim.haensel.vehicle.IUpperLayerControl;
 import de.joachim.haensel.vehicle.ITrajectoryProvider;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.vehicle.Vehicle;
@@ -80,7 +80,7 @@ public class TestVehicleSteering
 
         IUpperLayerFactory uperFact = () ->
         {
-            return new ITopLayerControl() {
+            return new IUpperLayerControl() {
 
                 @Override
                 public List<Trajectory> getNewSegments(int segmentRequestSize)
@@ -154,7 +154,7 @@ public class TestVehicleSteering
 
         IUpperLayerFactory uperFact = () ->
         {
-            return new ITopLayerControl() {
+            return new IUpperLayerControl() {
 
                 @Override
                 public List<Trajectory> getNewSegments(int segmentRequestSize)
@@ -233,7 +233,7 @@ public class TestVehicleSteering
         public boolean isOnPath(Position2D pos);
     }
 
-    public class TestCheckingSteeringController implements ILowLevelController<Object>
+    public class TestCheckingSteeringController implements ILowerLayerControl<Object>
     {
         private IActuatingSensing _actuatorsSensors;
         private float _targetAngle;
@@ -307,7 +307,7 @@ public class TestVehicleSteering
         }
     }
     
-    public class TestJustSteeringController implements ILowLevelController<Object>
+    public class TestJustSteeringController implements ILowerLayerControl<Object>
     {
         private IActuatingSensing _actuatorsSensors;
         private float _currentAngle;
