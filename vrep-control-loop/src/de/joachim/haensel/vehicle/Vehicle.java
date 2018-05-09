@@ -4,6 +4,7 @@ import java.util.Timer;
 
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.OrientedPosition;
@@ -44,9 +45,9 @@ public class Vehicle
         _roadMap = roadMap;
     }
 
-    public void activateDebugging(double zValue)
+    public void activateDebugging(DebugParams params)
     {
-        _lowerControlLayer.activateDebugging((IVrepDrawing)_actuatingSensing, zValue);
+        _lowerControlLayer.activateDebugging((IVrepDrawing)_actuatingSensing, params);
     }
     
     public void deacvtivateDebugging()

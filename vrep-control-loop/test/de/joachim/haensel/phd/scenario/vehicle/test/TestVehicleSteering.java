@@ -12,6 +12,7 @@ import coppelia.IntWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
@@ -124,7 +125,10 @@ public class TestVehicleSteering
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging(1.0);
+        DebugParams debParam = new DebugParams();
+        debParam.setSimulationDebugMarkerHeight(1.0);
+        vehicle.activateDebugging(debParam);
+
         vehicle.start();
         
         System.out.println("wait here");
@@ -197,7 +201,10 @@ public class TestVehicleSteering
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging(1.0);
+        DebugParams debParam = new DebugParams();
+        debParam.setSimulationDebugMarkerHeight(1.0);
+        vehicle.activateDebugging(debParam);
+
         vehicle.start();
         
         System.out.println("wait here");
@@ -280,7 +287,7 @@ public class TestVehicleSteering
         }
 
         @Override
-        public void activateDebugging(IVrepDrawing drawing, double zValue)
+        public void activateDebugging(IVrepDrawing actuatingSensing, DebugParams debugParams)
         {
         }
 
@@ -329,7 +336,7 @@ public class TestVehicleSteering
         }
 
         @Override
-        public void activateDebugging(IVrepDrawing drawing, double zValue)
+        public void activateDebugging(IVrepDrawing drawing, DebugParams debugParams)
         {
         }
 

@@ -1,5 +1,7 @@
 package de.joachim.haensel.phd.scenario.math.geometry;
 
+import java.awt.Graphics2D;
+
 import coppelia.FloatWA;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 
@@ -211,5 +213,20 @@ public class Position2D
     public static Position2D multiply(double mult, Position2D pos)
     {
         return new Position2D(pos._x * mult, pos._y * mult);
+    }
+
+    public Position2D copy()
+    {
+        return new Position2D(_x, _y);
+    }
+
+    public void normalize()
+    {
+        double length = distance(0.0, 0.0);
+        if(length != 0.0)
+        {
+            _x = _x / length;
+            _y = _y / length;
+        }
     }
 }

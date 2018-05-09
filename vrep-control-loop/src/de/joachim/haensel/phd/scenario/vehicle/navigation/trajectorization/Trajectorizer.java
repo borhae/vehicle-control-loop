@@ -35,4 +35,10 @@ public class Trajectorizer implements ITrajectorizer
     {
         _segmenter.addSegmentBuildingListeners(listeners);
     }
+
+    @Override
+    public IVelocityAssigner getVelocityAssigner()
+    {
+        return _velocitizer;
+    }
 }

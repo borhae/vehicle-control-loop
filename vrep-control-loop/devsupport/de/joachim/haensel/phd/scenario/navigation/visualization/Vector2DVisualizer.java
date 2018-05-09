@@ -17,25 +17,43 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import de.joachim.haensel.phd.scenario.math.TMatrix;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
 public class Vector2DVisualizer extends JFrame
 {
+    public enum IDCreator
+    {
+        INSTANCE;
+        
+        private Integer _counter = Integer.valueOf(0);
+        
+        public Integer getNextID()
+        {
+            Integer next = Integer.valueOf(_counter.intValue() + 1);
+            _counter = next;
+            return _counter;
+        }
+    }
+
     private static final Dimension FRAME_SIZE = new Dimension(2560, 1440);
 
     public class Vector2DVisualizerPanel extends JPanel implements MouseWheelListener, MouseListener, MouseMotionListener
     {
 
-        private static final double ARROW_SIZE = 1.0;
+        private static final double ARROW_SIZE = 5.0;
         private boolean _zoomer;
         private double _zoomFactor;
         private Point _startPoint;
@@ -46,7 +64,7 @@ public class Vector2DVisualizer extends JFrame
         private double _xOffset;
         private double _yOffset;
         private double _prevZoomFactor;
-        private ArrayList<ContentElement> _contentList;
+        private Map<Integer, ContentElement> _contentMap;
 
         public Vector2DVisualizerPanel()
         {
@@ -54,16 +72,26 @@ public class Vector2DVisualizer extends JFrame
             _yOffset = 0.0;
             _zoomFactor = 1.0;
             _prevZoomFactor = 1.0;
-            _contentList = new ArrayList<>();
+            _contentMap = new HashMap<>();
             addMouseWheelListener(this);
             addMouseMotionListener(this);
             addMouseListener(this);
         }
 
+        public Map<Integer, ContentElement> accessContentMap()
+        {
+            return _contentMap;
+        }
+        
+        /**
+         * Switched Y-axis because almost all of the input is y-up
+         */
         @Override
         public void paint(Graphics g)
         {
             super.paint(g);
+            int compWidth = getWidth();
+            int compHeight = getHeight();
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             if (_zoomer)
@@ -83,19 +111,19 @@ public class Vector2DVisualizer extends JFrame
                 if (_released)
                 {
                     _xOffset += _xDiff;
-                    _yOffset += _yDiff;
+                    _yOffset -= _yDiff;
                     _dragger = false;
                 }
             }
-            
             // draw stuff here
-            for (ContentElement content : _contentList)
+            Collection<ContentElement> contentList = accessContentMap().values();
+            for (ContentElement content : contentList)
             {
                 double[][] transformedContent = transform(content.getContent(), _zoomFactor, _xOffset, _yOffset);
                 g2.setColor(content._color);
                 Stroke strokeConfig = content._stroke == null ? new BasicStroke((float) 2.0) : content._stroke;
                 g2.setStroke(strokeConfig);
-                Arrays.asList(transformedContent).stream().forEach(v -> drawVector(g2, v, content.getTipSize()));
+                Arrays.asList(transformedContent).stream().forEach(v -> drawVector(g2, v, content.getTipSize(), compWidth, compHeight));
             }
         }
 
@@ -113,22 +141,40 @@ public class Vector2DVisualizer extends JFrame
             return transformedContent;
         }
 
-        private void drawVector(Graphics2D g2, double[] v, double tipSize)
+        private void drawVector(Graphics2D g2, double[] v, double tipSize, int compWidth, int compHeight)
         {
             double xB = v[0];
             double yB = v[1];
             double xT = v[2];
             double yT = v[3];
-            g2.drawLine((int)xB, (int)yB, (int)xT, (int)yT);
-            drawCircleTip(g2, tipSize, xB, yB, xT, yT);
-//            drawArrowTip(g2, tipSize, xB, yB, xT, yT);
+            g2.drawLine((int)xB, compHeight - (int)yB, (int)xT, compHeight - (int)yT);
+            drawArrowTip(g2, tipSize, xB, compHeight - yB, xT, compHeight - yT);
         }
 
-//        private void drawArrowTip(Graphics2D g2, double tipSize, double xB, double yB, double xT, double yT)
-//        {
-//            double angle = Math.atan2(yT - yB, xT - xB);
-//            Vector2D v1 = new Vector2D(0, 0, )
-//        }
+        private void drawArrowTip(Graphics2D g2, double tipSize, double xB, double yB, double xT, double yT)
+        {
+            if((xB == xT) && (yB == yT))
+            {
+//                if there is no direction, there is no way we can point this anywhere 
+                drawCircleTip(g2, tipSize, xB, yB, xT, yT);
+            }
+            else
+            {
+                Position2D norm = new Position2D(xT - xB, yT - yB);
+                norm.normalize();
+                
+                double size = (ARROW_SIZE * _zoomFactor);
+                if(tipSize > 0.0)
+                {
+                    size *= tipSize;
+                }
+                
+                Position2D leftWing = norm.copy().transform(new TMatrix(size, 0.0, 0.0, 1.25 * Math.PI));
+                Position2D rightWing = norm.copy().transform(new TMatrix(size, 0.0, 0.0, 0.75 * Math.PI));
+                g2.drawLine((int)xT, (int)yT, (int)(xT + leftWing.getX()), (int)(yT + leftWing.getY()));
+                g2.drawLine((int)xT, (int)yT, (int)(xT + rightWing.getX()), (int)(yT + rightWing.getY()));
+            }
+        }
 
         private void drawCircleTip(Graphics2D g2, double tipSize, double xB, double yB, double xT, double yT)
         {
@@ -140,11 +186,18 @@ public class Vector2DVisualizer extends JFrame
             }
             double dx = xT - xB;
             double dy = yT - yB;
-            double l = Math.sqrt(dx * dx + dy * dy);
-            double nx = dx / l;
-            double ny = dy / l;
-            double delX = size/2.0 * (1.0 + nx);
-            double delY = size/2.0 * (1.0 + ny);
+            
+            double delX = size/2.0;
+            double delY = size/2.0;
+            
+            if( (dx != 0.0) || (dy != 0.0) )
+            {
+                double l = Math.sqrt(dx * dx + dy * dy);
+                double nx = dx / l;
+                double ny = dy / l;
+                delX = size/2.0 * (1.0 + nx);
+                delY = size/2.0 * (1.0 + ny);
+            }
             double x = xT - delX;
             double y = yT - delY;
             g2.drawOval((int)x, (int)y, (int)size, (int)size);
@@ -232,19 +285,32 @@ public class Vector2DVisualizer extends JFrame
         {
         }
         
-        public void addVectorSet(Deque<Vector2D> vectors, Color color, Stroke stroke)
+        public Integer addVectorSet(Deque<Vector2D> vectors, Color color, Stroke stroke)
         {
-            _contentList.add(new ContentElement(vectors, color, stroke));
+            
+            Integer nextID = IDCreator.INSTANCE.getNextID();
+            accessContentMap().put(nextID, new ContentElement(vectors, color, stroke));
+            return nextID;
         }
 
-        public void addVectorSet(Deque<Vector2D> vectors, Color color, Stroke stroke, double tipSize)
+        public Integer addVectorSet(Deque<Vector2D> vectors, Color color, Stroke stroke, double tipSize)
         {
-            _contentList.add(new ContentElement(vectors, color, stroke, tipSize));
+            Integer nextID = IDCreator.INSTANCE.getNextID();
+            accessContentMap().put(nextID, new ContentElement(vectors, color, stroke, tipSize));
+            return nextID;
         }
 
-        public void addContentElement(ContentElement updateableContent)
+        public Integer addContentElement(ContentElement updateableContent)
         {
-            _contentList.add(updateableContent);
+            Integer nextID = IDCreator.INSTANCE.getNextID();
+            accessContentMap().put(nextID, updateableContent);
+            return nextID;
+        }
+
+        public void updateContentElement(Integer id, Deque<Vector2D> vectors)
+        {
+            ContentElement contentElement = accessContentMap().get(id);
+            contentElement.reset(vectors);
         }
     }
 
@@ -273,7 +339,6 @@ public class Vector2DVisualizer extends JFrame
         this.add(_infoLabel);
         _infoLabel.setVisible(true);
     }
-    
 
     public void showOnScreen(int screen)
     {
@@ -293,25 +358,30 @@ public class Vector2DVisualizer extends JFrame
         }
     }
     
-    public void addVectorSet(Deque<Vector2D> vectors, Color color)
+    public int addVectorSet(Deque<Vector2D> vectors, Color color)
     {
-        _panel.addVectorSet(vectors, color, null);
+        return _panel.addVectorSet(vectors, color, null);
     }
     
-    public void addVectorSet(Deque<Vector2D> vectors, Color color, double width, double tipSize)
+    public int addVectorSet(Deque<Vector2D> vectors, Color color, double width, double tipSize)
     {
         Stroke stroke = new BasicStroke((float)width);
-        _panel.addVectorSet(vectors, color, stroke, tipSize);
+        return _panel.addVectorSet(vectors, color, stroke, tipSize);
     }
     
-    public void addVectorSet(Deque<Vector2D> vectors, Color color, Stroke stroke)
+    public int addVectorSet(Deque<Vector2D> vectors, Color color, Stroke stroke)
     {
-        _panel.addVectorSet(vectors, color, stroke);
+        return _panel.addVectorSet(vectors, color, stroke);
     }
     
-    public void addContentElement(ContentElement updateableContent)
+    public int addContentElement(ContentElement updateableContent)
     {
-        _panel.addContentElement(updateableContent);
+        return _panel.addContentElement(updateableContent);
+    }
+    
+    public void updateContentElement(int id, Deque<Vector2D> vectors)
+    {
+        _panel.updateContentElement(id, vectors);
     }
     
     public void updateVisuals()

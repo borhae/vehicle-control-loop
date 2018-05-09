@@ -336,7 +336,7 @@ public class VRepMap
         shapeParameters.setRespondableMask(ShapeParameters.GLOBAL_ONLY_RESPONDABLE_MASK);
         float sizeX = minMax.distX();
         float sizeY = minMax.distY();
-        float sizeZ = 0.2f;
+        float sizeZ = 0.0f;
         shapeParameters.setSize(sizeX, sizeY, sizeZ);
         float posX =  (float) (minMax.minX() + minMax.distX()/2.0);
         float posY = (float) (minMax.minY() + minMax.distY()/2.0);

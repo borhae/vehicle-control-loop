@@ -54,14 +54,14 @@ public class Vector2D
     {
         _bX = baseX;
         _bY = baseY;
-        _length = computeLength(dirX, dirY);
+        _dX = dirX;
+        _dY = dirY;
+        updateLength();
         if(Double.isNaN(_bX) || Double.isNaN(_bY) || Double.isNaN(_length))
         {
             System.out.println("Illegal instantiation");
             throw new RuntimeException("Illegal vector instantiation (" + _bX + ", " + _bY + ", " + _length + ") (baseX, baseY, length)");
         }
-        _dX = dirX;
-        _dY = dirY;
         _normX = _dX / _length;
         _normY = _dY / _length;
     }
@@ -94,6 +94,11 @@ public class Vector2D
     private double computeLength(double dirX, double dirY)
     {
         return (double)Math.sqrt(dirX * dirX + dirY * dirY);
+    }
+    
+    private void updateLength()
+    {
+        _length = Math.sqrt(_dX * _dX + _dY * _dY);
     }
 
     public double length()
@@ -213,7 +218,7 @@ public class Vector2D
         _bY *= f;
         _dX *= f;
         _dY *= f;
-        _length = computeLength(_dX, _dY);
+        updateLength();
     }
 
     public double side(Vector2D left)
@@ -372,7 +377,7 @@ public class Vector2D
         return null;
     }
 
-    public static double scalarIntersect(Vector2D a, Vector2D b)
+    public static Double scalarIntersect(Vector2D a, Vector2D b)
     {
         // t = (a.base - b.base) x a.dir / b.dir x a.dir
         // u = (a.base - b.base) x b.dir / b.dir x a.dir
@@ -447,6 +452,14 @@ public class Vector2D
         double newBY = _bY + _dY * 0.5;
         result.resetBase(newBX, newBY);
         return result;
+    }
+    
+    public Vector2D scale(double s)
+    {
+        _dX = _normX * s;
+        _dY = _normY * s;
+        updateLength();
+        return this;
     }
 
     public void resetBase(double bX, double bY)

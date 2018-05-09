@@ -23,6 +23,18 @@ public class ContentElement
 
     public ContentElement(Deque<Vector2D> vectors, Color color, Stroke stroke)
     {
+        init(vectors, color, stroke);
+        _tipSize = -1.0;
+    }
+
+    public ContentElement(Deque<Vector2D> vectors, Color color, Stroke stroke, double tipSize)
+    {
+        this(vectors, color, stroke);
+        _tipSize = tipSize;
+    }
+    
+    private void init(Deque<Vector2D> vectors, Color color, Stroke stroke)
+    {
         _dirtyFlag = false;
         _arrayContent = null;
         if(_content == null || vectors.size() != _content.size())
@@ -34,15 +46,8 @@ public class ContentElement
             _color = color;
             _stroke = stroke;
         }
-        _tipSize = -1.0;
     }
     
-    public ContentElement(Deque<Vector2D> vectors, Color color, Stroke stroke, double tipSize)
-    {
-        this(vectors, color, stroke);
-        _tipSize = tipSize;
-    }
-
     public void addVector(Vector2D v)
     {
         _content.add(new double[]{v.getbX(), v.getbY(), v.getbX() + v.getdX(), v.getbY() + v.getdY()});
@@ -85,5 +90,11 @@ public class ContentElement
         {
             return _arrayContent;
         }
+    }
+
+    public void reset(Deque<Vector2D> vectors)
+    {
+        _content = null;
+        init(vectors, _color, _stroke);
     }
 }

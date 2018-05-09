@@ -15,6 +15,8 @@ import coppelia.IntWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.debug.DebugParams;
+import de.joachim.haensel.phd.scenario.debug.Speedometer;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
@@ -204,7 +206,9 @@ public class LayerInteractionTest implements TestConstants
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging(1.0 * DOWN_SCALE_FACTOR);
+        DebugParams debParam = new DebugParams();
+        debParam.setSimulationDebugMarkerHeight(1.0 * DOWN_SCALE_FACTOR);
+        vehicle.activateDebugging(debParam);
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");
@@ -287,7 +291,11 @@ public class LayerInteractionTest implements TestConstants
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging(DOWN_SCALE_FACTOR);
+        
+        DebugParams debParam = new DebugParams();
+        debParam.setSimulationDebugMarkerHeight(DOWN_SCALE_FACTOR);
+        vehicle.activateDebugging(debParam);
+
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");
@@ -360,11 +368,15 @@ public class LayerInteractionTest implements TestConstants
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging(DOWN_SCALE_FACTOR);
+        DebugParams debParam = new DebugParams();
+        debParam.setSimulationDebugMarkerHeight(1.0 * DOWN_SCALE_FACTOR);
+        vehicle.activateDebugging(debParam);
+
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");
         vehicle.stop();
+        
         vehicle.deacvtivateDebugging();
         _vrep.simxStopSimulation(_clientID, remoteApi.simx_opmode_blocking);
         try
@@ -452,7 +464,10 @@ public class LayerInteractionTest implements TestConstants
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging(scaleFactor);
+        DebugParams debParam = new DebugParams();
+        debParam.setSimulationDebugMarkerHeight(scaleFactor);
+        vehicle.activateDebugging(debParam);
+
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");
@@ -469,7 +484,7 @@ public class LayerInteractionTest implements TestConstants
         }
     }
 
-    //TODO this test doesn't work because setting the orientation is not working
+    //TODO this test is not really working. I fixed it temporarily by adding PI to the correction angle
     @Test
     public void testRouteFollowRealMapMesh() throws VRepException
     {
@@ -514,12 +529,8 @@ public class LayerInteractionTest implements TestConstants
         fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
 
-        Deque<Vector2D> input = fakeNav.getNewSegments(fakeNav.getSegmentBufferSize()).stream().map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
         Vector2DVisualizer visualizer = new Vector2DVisualizer();
-        visualizer.addVectorSet(input, Color.BLUE);
-        visualizer.updateVisuals();
         visualizer.setVisible(true);
-        System.out.println("stop");
         
         Trajectory firstSeg = fakeNav.segmentsPeek();
         Vector2D firstSegOrientation = firstSeg.getVector();
@@ -546,7 +557,12 @@ public class LayerInteractionTest implements TestConstants
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging(scaleFactor);
+        DebugParams debParam = new DebugParams();
+        debParam.setSimulationDebugMarkerHeight(scaleFactor);
+        Speedometer speedometer = Speedometer.createWindow();
+        debParam.setSpeedometer(speedometer);
+        vehicle.activateDebugging(debParam);
+
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");
@@ -639,7 +655,10 @@ public class LayerInteractionTest implements TestConstants
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging(scaleFactor);
+        DebugParams debParam = new DebugParams();
+        debParam.setSimulationDebugMarkerHeight(scaleFactor);
+        vehicle.activateDebugging(debParam);
+
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");
@@ -724,7 +743,10 @@ public class LayerInteractionTest implements TestConstants
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging(scaleFactor);
+        DebugParams debParam = new DebugParams();
+        debParam.setSimulationDebugMarkerHeight(scaleFactor);
+        vehicle.activateDebugging(debParam);
+
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");
@@ -815,7 +837,10 @@ public class LayerInteractionTest implements TestConstants
         {
             exc.printStackTrace();
         }
-        vehicle.activateDebugging(scaleFactor);
+        DebugParams debParam = new DebugParams();
+        debParam.setSimulationDebugMarkerHeight(scaleFactor);
+        vehicle.activateDebugging(debParam);
+
         vehicle.start();
         vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
         System.out.println("wait here");

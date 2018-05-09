@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerMsg;
@@ -31,9 +32,9 @@ public class PurePursuitController implements ILowLevelController<PurePursuitPar
     private double _lookahead;
     private IVrepDrawing _vrepDrawing;
     private PurePursuitParameters _parameters;
-    private double _debugHeight;
     private boolean _debugging;
-    private boolean _debugginCircleAttached;
+    private boolean _debuggingCircleAttached;
+    private DebugParams _debugParams;
 
     public class DefaultReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
@@ -88,11 +89,11 @@ public class PurePursuitController implements ILowLevelController<PurePursuitPar
     }
 
     @Override
-    public void activateDebugging(IVrepDrawing vrepDrawing, double zValue)
+    public void activateDebugging(IVrepDrawing vrepDrawing, DebugParams debugParams)
     {
         _debugging = true;
-        _debugginCircleAttached = false;
-        _debugHeight = zValue;
+        _debuggingCircleAttached = false;
+        _debugParams = debugParams;
         _vrepDrawing = vrepDrawing;
         _vrepDrawing.registerDrawingObject(CURRENT_SEGMENT_DEBUG_KEY, DrawingType.LINE, Color.RED);
     }
@@ -155,16 +156,20 @@ public class PurePursuitController implements ILowLevelController<PurePursuitPar
 
         if(_debugging)
         {
-            if(!_debugginCircleAttached)
+            if(!_debuggingCircleAttached)
             {
                 _vrepDrawing.attachDebugCircle(_lookahead);
-                _debugginCircleAttached = true;
+                _debuggingCircleAttached = true;
             }
-            _vrepDrawing.updateLine(CURRENT_SEGMENT_DEBUG_KEY, _currentSegment.getVector(), _debugHeight, Color.RED);
+            _vrepDrawing.updateLine(CURRENT_SEGMENT_DEBUG_KEY, _currentSegment.getVector(), _debugParams.getSimulationDebugMarkerHeight(), Color.RED);
         }
         
         float targetWheelRotation = computeTargetWheelRotationSpeed();
         float targetSteeringAngle = computeTargetSteeringAngle();
+        if(_debugging)
+        {
+            _debugParams.getSpeedometer().updateSpeed(targetWheelRotation);
+        }
         _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
     }
 

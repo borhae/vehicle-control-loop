@@ -9,6 +9,13 @@ import de.joachim.haensel.phd.scenario.sumo2vrep.XYMinMax;
  */
 public class TMatrix
 {
+    public static final TMatrix WEST = new TMatrix(1.0, 0.0, 0.0, 0.5 * Math.PI);
+    public static final TMatrix SOUTH_WEST = new TMatrix(1.0, 0.0, 0.0, 0.75 * Math.PI);
+    public static final TMatrix EAST = new TMatrix(1.0, 0.0, 0.0, 1.5 * Math.PI);
+    public static final TMatrix SOUTH_EAST = new TMatrix(1.0, 0.0, 0.0, 1.25 * Math.PI);
+    public static final TMatrix SOUTH = new TMatrix(1.0, 0.0, 0.0, Math.PI);
+    
+    
     private double[][] _m;
 
     public TMatrix(double scale, double offX, double offY)

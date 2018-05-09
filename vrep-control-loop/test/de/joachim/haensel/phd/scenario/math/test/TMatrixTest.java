@@ -47,4 +47,14 @@ public class TMatrixTest
         Position2D expected = new Position2D(5.5, 9);
         assertEquals(expected, actual);
     }
+    
+    @Test
+    public void testRotate()
+    {
+        Position2D actual = new Position2D(1.0, 0.0);
+        TMatrix m = new TMatrix(1.0, 0.0, 0.0, Math.PI/2.0);
+        actual.transform(m);
+        Position2D expected = new Position2D(0.0, 1.0);
+        assertEquals(expected, actual);
+    }
 }
