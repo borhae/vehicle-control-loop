@@ -28,6 +28,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.Trajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.ISegmenterFactory;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterCircleIntersection;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.Segmenter;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.BasicVelocityAssigner;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.BasicVelocityAssigner.ICurvatureChangeListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.BasicVelocityAssigner.IProfileChangeListener;
@@ -56,10 +57,7 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
 
-        ISegmenterFactory segmenterFactory = segmentSizeParam -> new InterpolationSegmenterCircleIntersection(segmentSizeParam);
-        //        IVelocityAssignerFactory velocityAssignerFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, maxVelocity);
-        IVelocityAssignerFactory velocityAssignerFactory = segmentSizeParam -> new BasicVelocityAssigner(segmentSizeParam, maxVelocity, maxLateralAcc , maxLongAcc , maxLongDec);
-        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , segmentSize);
+        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
         frame.showOnScreen(1);
@@ -102,12 +100,11 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
 
-        ISegmenterFactory segmenterFactory = segmentSizeParam -> new InterpolationSegmenterCircleIntersection(segmentSizeParam);
-        //        IVelocityAssignerFactory velocityAssignerFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, maxVelocity);
-        IVelocityAssignerFactory velocityAssignerFactory = segmentSizeParam -> new BasicVelocityAssigner(segmentSizeParam, maxVelocity, maxLateralAcc , maxLongAcc , maxLongDec);
-        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , segmentSize);
+        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.showOnScreen(1);
+
         IProfileChangeListener listener = profile -> _visualizationIdVelocities = visualize(profile, frame, _visualizationIdVelocities);
         ICurvatureChangeListener curveListener = profile -> _visualizationIdCurve = visualizeCurvature(profile, frame, _visualizationIdCurve);
         trajectorizer.getVelocityAssigner().addProfileChangeListener(listener);
@@ -148,12 +145,11 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
 
-        ISegmenterFactory segmenterFactory = segmentSizeParam -> new InterpolationSegmenterCircleIntersection(segmentSizeParam);
-        //        IVelocityAssignerFactory velocityAssignerFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, maxVelocity);
-        IVelocityAssignerFactory velocityAssignerFactory = segmentSizeParam -> new BasicVelocityAssigner(segmentSizeParam, maxVelocity, maxLateralAcc , maxLongAcc , maxLongDec);
-        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , segmentSize);
+        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.showOnScreen(1);
+
         IProfileChangeListener listener = profile -> _visualizationIdVelocities = visualize(profile, frame, _visualizationIdVelocities);
         ICurvatureChangeListener curveListener = profile -> _visualizationIdCurve = visualizeCurvature(profile, frame, _visualizationIdCurve);
         trajectorizer.getVelocityAssigner().addProfileChangeListener(listener);
@@ -216,12 +212,11 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
 
-        ISegmenterFactory segmenterFactory = segmentSizeParam -> new InterpolationSegmenterCircleIntersection(segmentSizeParam);
-        //        IVelocityAssignerFactory velocityAssignerFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, maxVelocity);
-        IVelocityAssignerFactory velocityAssignerFactory = segmentSizeParam -> new BasicVelocityAssigner(segmentSizeParam, maxVelocity, maxLateralAcc , maxLongAcc , maxLongDec);
-        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , segmentSize);
+        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.showOnScreen(1);
+
         IProfileChangeListener listener = profile -> _visualizationIdVelocities = visualize(profile, frame, _visualizationIdVelocities);
         ICurvatureChangeListener curveListener = profile -> _visualizationIdCurve = visualizeCurvature(profile, frame, _visualizationIdCurve);
         trajectorizer.getVelocityAssigner().addProfileChangeListener(listener);
@@ -271,11 +266,11 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0; // 2 m^2/s
         double maxLateralAcc = 3.0; // 3 m^2/s
 
-        ISegmenterFactory segmenterFactory = segmentSizeParam -> new InterpolationSegmenterCircleIntersection(segmentSizeParam);
-        IVelocityAssignerFactory velocityAssignerFactory = segmentSizeParam -> new BasicVelocityAssigner(segmentSizeParam, maxVelocity, maxLateralAcc , maxLongAcc , maxLongDec);
-        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , segmentSize);
+        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.showOnScreen(1);
+
         IProfileChangeListener listener = profile -> _visualizationIdVelocities = visualize(profile, frame, _visualizationIdVelocities);
         ICurvatureChangeListener curveListener = profile -> _visualizationIdCurve = visualizeCurvature(profile, frame, _visualizationIdCurve);
         trajectorizer.getVelocityAssigner().addProfileChangeListener(listener);
@@ -325,11 +320,11 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
 
-        ISegmenterFactory segmenterFactory = segmentSizeParam -> new InterpolationSegmenterCircleIntersection(segmentSizeParam);
-        IVelocityAssignerFactory velocityAssignerFactory = segmentSizeParam -> new BasicVelocityAssigner(segmentSizeParam, maxVelocity, maxLateralAcc , maxLongAcc , maxLongDec);
-        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , segmentSize);
+        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.showOnScreen(1);
+
         IProfileChangeListener listener = profile -> _visualizationIdVelocities = visualize(profile, frame, _visualizationIdVelocities);
         ICurvatureChangeListener curveListener = profile -> _visualizationIdCurve = visualizeCurvature(profile, frame, _visualizationIdCurve);
         trajectorizer.getVelocityAssigner().addProfileChangeListener(listener);
@@ -379,11 +374,11 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
 
-        ISegmenterFactory segmenterFactory = segmentSizeParam -> new InterpolationSegmenterCircleIntersection(segmentSizeParam);
-        IVelocityAssignerFactory velocityAssignerFactory = segmentSizeParam -> new BasicVelocityAssigner(segmentSizeParam, maxVelocity, maxLateralAcc , maxLongAcc , maxLongDec);
-        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , segmentSize);
+        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.showOnScreen(1);
+
         IProfileChangeListener listener = profile -> _visualizationIdVelocities = visualize(profile, frame, _visualizationIdVelocities);
         ICurvatureChangeListener curveListener = profile -> _visualizationIdCurve = visualizeCurvature(profile, frame, _visualizationIdCurve);
         trajectorizer.getVelocityAssigner().addProfileChangeListener(listener);
@@ -438,11 +433,11 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
 
-        ISegmenterFactory segmenterFactory = segmentSizeParam -> new InterpolationSegmenterCircleIntersection(segmentSizeParam);
-        IVelocityAssignerFactory velocityAssignerFactory = segmentSizeParam -> new BasicVelocityAssigner(segmentSizeParam, maxVelocity, maxLateralAcc , maxLongAcc , maxLongDec);
-        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , segmentSize);
+        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.showOnScreen(1);
+
         IProfileChangeListener listener = profile -> _visualizationIdVelocities = visualize(profile, frame, _visualizationIdVelocities);
         ICurvatureChangeListener curveListener = profile -> _visualizationIdCurve = visualizeCurvature(profile, frame, _visualizationIdCurve);
         trajectorizer.getVelocityAssigner().addProfileChangeListener(listener);
@@ -462,6 +457,15 @@ public class SpeedProfileTest
                 assertThat("speed should always be above zero (index: " + idx + ").", trajectories.get(idx).getVelocity(), greaterThan(0.0));
             }
         }
+    }
+
+    private ITrajectorizer createTrajectorizer(double maxVelocity, double segmentSize, double maxLongDec,
+            double maxLongAcc, double maxLateralAcc)
+    {
+        ISegmenterFactory segmenterFactory = segmentSizeParam -> new Segmenter(segmentSizeParam, new InterpolationSegmenterCircleIntersection());
+        IVelocityAssignerFactory velocityAssignerFactory = segmentSizeParam -> new BasicVelocityAssigner(segmentSizeParam, maxVelocity, maxLateralAcc , maxLongAcc , maxLongDec);
+        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , segmentSize);
+        return trajectorizer;
     }
 
     private TMatrix centerMap(RoadMap roadMap)

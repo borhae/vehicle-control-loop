@@ -1,7 +1,7 @@
 package de.joachim.haensel.phd.scenario.vehicle.test;
 
+
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -25,162 +25,17 @@ import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.sumo2vrep.XYMinMax;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.AbstractOverlaySegmenter;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.ISegmenter;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterBinarySearch;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterCircleIntersection;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterTriangle;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.IterativeInterpolationSegmenter;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.OverlaySegmenter;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.Segmenter;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.bezier.SegmenterBezier;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.bezier.Spline2D;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.bezier.SplineTrajectorizer;
 import de.joachim.haensel.vehicle.NavigationController;
 import de.joachim.haensel.vehiclecontrol.Navigator;
 
-public class TrajectoryBuildingTest implements TestConstants
+public class SegmentBuildingTest implements TestConstants
 {
-    @Test
-    public void testTransformLineToVectorNotANumber()
-    {
-        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
-        Navigator navigator = new Navigator(roadMap);
-        Position2D startPosition = new Position2D(5747.01f, 2979.22f);
-        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
-        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        AbstractOverlaySegmenter trajectorizer = new InterpolationSegmenterTriangle(5);
-        LinkedList<Vector2D> lineListToVectorList = Line2D.lineListToVectorList(route);
-        lineListToVectorList.stream().forEach(v -> checkValid(v));
-    }
-    
-    @Test
-    public void testFillEmptyPartsNotNotANumber()
-    {
-        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
-        Navigator navigator = new Navigator(roadMap);
-        Position2D startPosition = new Position2D(5747.01f, 2979.22f);
-        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
-        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        AbstractOverlaySegmenter trajectorizer = new InterpolationSegmenterTriangle(5);
-        LinkedList<Vector2D> lineListToVectorList = Line2D.lineListToVectorList(route);
-        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(lineListToVectorList);
-        patchedRoute.stream().forEach(v -> checkValid(v));
-    }
-    
-    @Test
-    public void testMinimalDistance()
-    {
-        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
-        Navigator navigator = new Navigator(roadMap);
-        Position2D startPosition = new Position2D(5747.01f, 2979.22f);
-        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
-        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        AbstractOverlaySegmenter trajectorizer = new InterpolationSegmenterTriangle(5);
-        LinkedList<Vector2D> lineListToVectorList = Line2D.lineListToVectorList(route);
-        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(lineListToVectorList);
-        patchedRoute.stream().forEach(v -> checkValid(v));
-        double min = Double.MAX_VALUE;
-        double max = Double.MIN_VALUE;
-        for(int idx = 0; idx + 1 < patchedRoute.size(); idx++)
-        {
-            double distance = Position2D.distance(patchedRoute.get(idx).getTip(), patchedRoute.get(idx + 1).getBase());
-            if(distance < min)
-            {
-                min = distance;
-            }
-            else if(distance > max)
-            {
-                max = distance;
-            }
-        }
-        assertTrue(min >= 0);
-        assertTrue(max <= 0.0000000000000000000000000001);
-        System.out.println("Min: " + min + ", max: " + max);
-    }
-    
-    @Test
-    public void checkMinimalDistanceUnpatched()
-    {
-        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
-        Navigator navigator = new Navigator(roadMap);
-        Position2D startPosition = new Position2D(5747.01f, 2979.22f);
-        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
-        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        AbstractOverlaySegmenter trajectorizer = new InterpolationSegmenterTriangle(15);
-        LinkedList<Vector2D> routeAsVectors = Line2D.lineListToVectorList(route);
-        routeAsVectors.stream().forEach(v -> checkValid(v));
-        double min = Double.MAX_VALUE;
-        double max = Double.MIN_VALUE;
-        List<Double> distances = new ArrayList<>();
-        for(int idx = 0; idx + 1 < routeAsVectors.size(); idx++)
-        {
-            double distance = Position2D.distance(routeAsVectors.get(idx).getTip(), routeAsVectors.get(idx + 1).getBase());
-            if(distance < min)
-            {
-                min = distance;
-            }
-            else if(distance > max)
-            {
-                max = distance;
-            }
-            if(distance > 0.000000000000001)
-            {
-                distances.add(new Double(distance));
-            }
-        }
-        System.out.println("Min: " + min + ", max: " + max);
-        System.out.println(distances);
-        System.out.println(distances.size());
-    }
-    
-    @Test
-    public void checkLengths()
-    {
-        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
-        Navigator navigator = new Navigator(roadMap);
-        Position2D startPosition = new Position2D(5747.01f, 2979.22f);
-        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
-        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        AbstractOverlaySegmenter trajectorizer = new InterpolationSegmenterTriangle(15);
-        LinkedList<Vector2D> routeAsVectors = Line2D.lineListToVectorList(route);
-        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(routeAsVectors);
-        routeAsVectors.stream().forEach(v -> checkValid(v));
-        double min = Double.MAX_VALUE;
-        double max = Double.MIN_VALUE;
-        List<Double> smallLengths = new ArrayList<>();
-        for(int idx = 0; idx < patchedRoute.size(); idx++)
-        {
-            double length = patchedRoute.get(idx).getLength();
-            if(length < min)
-            {
-                min = length;
-            }
-            else if(length > max)
-            {
-                max = length;
-            }
-            if(length < 0.1)
-            {
-                smallLengths.add(new Double(length));
-            }
-        }
-        System.out.println("Min: " + min + ", max: " + max);
-        System.out.println(smallLengths);
-        System.out.println(smallLengths.size());
-    }
-
-    @Test 
-    public void test3SyntheticVectorsSquareInterpolationTrigonometry()
-    {
-        LinkedList<Vector2D> input = new LinkedList<>();
-        input.add(new Vector2D(0, 0, 10, 0));
-        input.add(new Vector2D(10, 0, 0, 10));
-        input.add(new Vector2D(10, 10, -10, 0));
-        
-        InterpolationSegmenterTriangle trajecorizer = new InterpolationSegmenterTriangle(6);
-        LinkedList<Vector2D> patchedRoute = trajecorizer.patchHolesInRoute(input);
-        Deque<Vector2D> result = new LinkedList<>();
-        trajecorizer.interpolateRecursiveNonWorking(patchedRoute, null, result, 6);
-        result.stream().forEach(v -> checkValid(v));
-    }
-    
     @Test
     public void test3SyntheticVectorsSquareInterpolationIterative()
     {
@@ -189,7 +44,7 @@ public class TrajectoryBuildingTest implements TestConstants
         input.add(new Vector2D(10, 0, 0, 10));
         input.add(new Vector2D(10, 10, -10, 0));
 
-        IterativeInterpolationSegmenter trajectorizer = new IterativeInterpolationSegmenter(6);
+        OverlaySegmenter trajectorizer = new OverlaySegmenter(6, new InterpolationSegmenterBinarySearch()); 
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
         Deque<Vector2D> comparisonRoute = new LinkedList<>();
         patchedRoute.stream().forEach(v -> comparisonRoute.add(v));
@@ -216,7 +71,7 @@ public class TrajectoryBuildingTest implements TestConstants
         input.add(new Vector2D(10, 10, -10, 0));
         
         int stepSize = 6;
-        AbstractOverlaySegmenter trajectorizer = new IterativeInterpolationSegmenter(stepSize);
+        OverlaySegmenter trajectorizer = new OverlaySegmenter(stepSize, new InterpolationSegmenterBinarySearch()); 
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
 
         Deque<Vector2D> comparisonRoute = new LinkedList<>();
@@ -242,7 +97,7 @@ public class TrajectoryBuildingTest implements TestConstants
         input.add(new Vector2D(0, 0, 10, 0));
         
         int stepSize = 6;
-        AbstractOverlaySegmenter trajectorizer = new IterativeInterpolationSegmenter(stepSize);
+        OverlaySegmenter trajectorizer = new OverlaySegmenter(stepSize, new InterpolationSegmenterBinarySearch()); 
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
 
         Deque<Vector2D> comparisonRoute = new LinkedList<>();
@@ -269,7 +124,7 @@ public class TrajectoryBuildingTest implements TestConstants
         input.add(new Vector2D(10, 0, 0, 10));
         
         int stepSize = 6;
-        AbstractOverlaySegmenter trajectorizer = new IterativeInterpolationSegmenter(stepSize);
+        OverlaySegmenter trajectorizer = new OverlaySegmenter(stepSize, new InterpolationSegmenterBinarySearch()); 
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
 
         Deque<Vector2D> comparisonRoute = new LinkedList<>();
@@ -297,7 +152,7 @@ public class TrajectoryBuildingTest implements TestConstants
         input.add(new Vector2D(10, 10, -10, 0));
         
         int stepSize = 6;
-        AbstractOverlaySegmenter trajectorizer = new IterativeInterpolationSegmenter(stepSize);
+        OverlaySegmenter trajectorizer = new OverlaySegmenter(stepSize, new InterpolationSegmenterBinarySearch()); 
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
 
         Deque<Vector2D> comparisonRoute = new LinkedList<>();
@@ -327,7 +182,7 @@ public class TrajectoryBuildingTest implements TestConstants
         input.add(new Vector2D(0, 0, 10, 0));
         
         int stepSize = 6;
-        AbstractOverlaySegmenter trajectorizer = new IterativeInterpolationSegmenter(stepSize);
+        OverlaySegmenter trajectorizer = new OverlaySegmenter(stepSize, new InterpolationSegmenterBinarySearch()); 
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
 
         Deque<Vector2D> comparisonRoute = new LinkedList<>();
@@ -356,7 +211,7 @@ public class TrajectoryBuildingTest implements TestConstants
         input.add(new Vector2D(0, 0, 10, 0));
         
         int stepSize = 12;
-        AbstractOverlaySegmenter trajectorizer = new IterativeInterpolationSegmenter(stepSize);
+        OverlaySegmenter trajectorizer = new OverlaySegmenter(stepSize, new InterpolationSegmenterBinarySearch()); 
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
 
         Deque<Vector2D> comparisonRoute = new LinkedList<>();
@@ -395,7 +250,7 @@ public class TrajectoryBuildingTest implements TestConstants
         input.add(new Vector2D(5.0, 0, 5.0, 0));
         
         int stepSize = 10;
-        AbstractOverlaySegmenter trajectorizer = new IterativeInterpolationSegmenter(stepSize);
+        OverlaySegmenter trajectorizer = new OverlaySegmenter(stepSize, new InterpolationSegmenterBinarySearch()); 
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
 
         Deque<Vector2D> comparisonRoute = new LinkedList<>();
@@ -435,7 +290,7 @@ public class TrajectoryBuildingTest implements TestConstants
         input.add(new Vector2D(10.0, 0, 0.0, 10.0));
         
         int stepSize = 10;
-        AbstractOverlaySegmenter trajectorizer = new IterativeInterpolationSegmenter(stepSize);
+        OverlaySegmenter trajectorizer = new OverlaySegmenter(stepSize, new InterpolationSegmenterBinarySearch()); 
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
 
         Deque<Vector2D> comparisonRoute = new LinkedList<>();
@@ -491,7 +346,7 @@ public class TrajectoryBuildingTest implements TestConstants
         input.add(new Vector2D(9.0, 0, 0.0, 9.0));
         
         int stepSize = 6;
-        AbstractOverlaySegmenter trajectorizer = new IterativeInterpolationSegmenter(stepSize);
+        OverlaySegmenter trajectorizer = new OverlaySegmenter(stepSize, new InterpolationSegmenterBinarySearch()); 
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
 
         Deque<Vector2D> comparisonRoute = new LinkedList<>();
@@ -546,7 +401,7 @@ public class TrajectoryBuildingTest implements TestConstants
         input.add(new Vector2D(9.0, 0, 0.0, 9.0));
         
         int stepSize = 6;
-        AbstractOverlaySegmenter trajectorizer = new InterpolationSegmenterCircleIntersection(stepSize);
+        OverlaySegmenter trajectorizer = new OverlaySegmenter(stepSize, new InterpolationSegmenterCircleIntersection()); 
 
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(input);
 
@@ -595,7 +450,7 @@ public class TrajectoryBuildingTest implements TestConstants
     }
 
     @Test
-    public void testRealWorldOverlayedTrajectoriesAlignOriginal()
+    public void testRealWorldOverlayedSegmentsAlignOriginal()
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
         Navigator navigator = new Navigator(roadMap);
@@ -607,7 +462,7 @@ public class TrajectoryBuildingTest implements TestConstants
         LinkedList<Vector2D> originalDownsacledVectorRoute = new LinkedList<>();
         downscaledRoute.stream().forEach(l -> originalDownsacledVectorRoute.add(new Vector2D(l)));
         
-        IterativeInterpolationSegmenter trajectorizer = new IterativeInterpolationSegmenter(2);
+        OverlaySegmenter trajectorizer = new OverlaySegmenter(2, new InterpolationSegmenterBinarySearch()); 
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(originalDownsacledVectorRoute);
         Deque<Vector2D> patchedRouteCopy = new LinkedList<>();
         patchedRoute.stream().forEachOrdered(v -> patchedRouteCopy.add(new Vector2D(v)));
@@ -661,43 +516,11 @@ public class TrajectoryBuildingTest implements TestConstants
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         List<Line2D> downscaled = transform(route, 2.5f, -2000.0f, -2700.0f);
         
-        ISegmenter trajectorizer = new SplineTrajectorizer(6.0);
+        double stepSize = 6.0;
+        Segmenter trajectorizer = new Segmenter(stepSize, new SegmenterBezier());
         trajectorizer.createSegments(downscaled);
-        Spline2D traversableSpline = ((SplineTrajectorizer)trajectorizer).getTraversableSpline();
+        Spline2D traversableSpline = ((SegmenterBezier)trajectorizer.getAlgorithm()).getTraversableSpline();
 
-        float scale = 1.5f;
-        System.out.println("done");
-    }
-    
-    @Test
-    public void testInterpolationTrajectorizerTrigonometry()
-    {
-        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
-        Navigator navigator = new Navigator(roadMap);
-        Position2D startPosition = new Position2D(5747.01f, 2979.22f);
-        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
-        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
-        List<Line2D> downscaledRoute = transform(route, 2.5f, -2000.0f, -2700.0f);
-
-        LinkedList<Vector2D> originalDownsacledVectorRoute = new LinkedList<>();
-        downscaledRoute.stream().forEach(l -> originalDownsacledVectorRoute.add(new Vector2D(l)));
-        
-        InterpolationSegmenterTriangle trajectorizer = new InterpolationSegmenterTriangle(5);
-        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(originalDownsacledVectorRoute);
-        List<Trajectory> trajectory = trajectorizer.createSegments(downscaledRoute);
-        
-        String length = trajectory.stream().map(trj -> "l: " + trj.getVector().getLength()).collect(Collectors.joining(System.lineSeparator()));
-        
-        Deque<Vector2D> quantizedRoute = new LinkedList<>();
-        trajectory.stream().forEach(trj -> quantizedRoute.add(trj.getVector()));
-
-        Vector2DVisualizer frame = new Vector2DVisualizer();
-        frame.addVectorSet(quantizedRoute, Color.BLACK);
-        frame.addVectorSet(patchedRoute, Color.BLUE);
-        frame.setVisible(true);
-        frame.updateVisuals();
-        
-        System.out.println(length);
         System.out.println("done");
     }
     
@@ -714,7 +537,7 @@ public class TrajectoryBuildingTest implements TestConstants
         LinkedList<Vector2D> originalDownsacledVectorRoute = new LinkedList<>();
         downscaledRoute.stream().forEach(l -> originalDownsacledVectorRoute.add(new Vector2D(l)));
         
-        IterativeInterpolationSegmenter trajectorizer = new IterativeInterpolationSegmenter(2);
+        OverlaySegmenter trajectorizer = new OverlaySegmenter(2, new InterpolationSegmenterBinarySearch()); 
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(originalDownsacledVectorRoute);
         List<Trajectory> trajectory = trajectorizer.createSegments(downscaledRoute);
         

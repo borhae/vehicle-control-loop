@@ -1,6 +1,6 @@
 package de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation;
 
-public interface ISegmenterFactory
+public interface ISegmentationConstants
 {
-    public ISegmenter create(double segmentSize);
+    public static final double EPSILON = 0.00001;
 }

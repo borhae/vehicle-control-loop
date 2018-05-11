@@ -1,26 +1,24 @@
 package de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.bezier;
 
 import java.util.Deque;
+import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.AbstractOverlaySegmenter;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.IterativeInterpolationSegmenter;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.ISegmentationAlgorithm;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterBinarySearch;
 import de.joachim.haensel.streamextensions.IndexAdder;
+import de.joachim.haensel.vehicle.ISegmentBuildingListener;
 
 /**
- * For now this class is abandoned. Use {@link IterativeInterpolationSegmenter} instead.
+ * For now this class is abandoned. Use {@link InterpolationSegmenterBinarySearch} instead.
  * @author dummy
  *
  */
 @Deprecated
-public class SplineTrajectorizer extends AbstractOverlaySegmenter
+public class SegmenterBezier implements ISegmentationAlgorithm
 {
     private Spline2D _traversableSpline;
-
-    public SplineTrajectorizer(double stepSize)
-    {
-        super(stepSize);
-    }
+    private List<ISegmentBuildingListener> _segmentBuildingListeners;
 
     public Spline2D getTraversableSpline()
     {
@@ -41,5 +39,11 @@ public class SplineTrajectorizer extends AbstractOverlaySegmenter
         
         point[curElem.idx()][0] = curElem.v().getbX();
         point[curElem.idx()][1] = curElem.v().getbY();
+    }
+
+    @Override
+    public void setSegmentBuildingListeners(List<ISegmentBuildingListener> segmentBuildingListeners)
+    {
+        _segmentBuildingListeners = segmentBuildingListeners;
     }
 }

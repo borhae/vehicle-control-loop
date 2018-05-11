@@ -8,11 +8,13 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.vehicle.ISegmentBuildingListener;
 
-public interface ISegmenter
+public interface ISegmenter extends ISegmentationConstants
 {
     public List<Trajectory> createSegments(List<Line2D> route);
 
     public void addSegmentBuildingListeners(List<ISegmentBuildingListener> segmentBuildingListeners);
 
     public void notifyUpdateTrajectory(Vector2D newVector, Deque<Vector2D> updatedList);
+    
+    public ISegmentationAlgorithm getAlgorithm();
 }

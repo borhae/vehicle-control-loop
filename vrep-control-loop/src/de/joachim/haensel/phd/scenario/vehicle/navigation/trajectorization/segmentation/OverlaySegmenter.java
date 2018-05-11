@@ -11,16 +11,18 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.vehicle.ISegmentBuildingListener;
 
-public abstract class AbstractOverlaySegmenter implements ISegmenter
+public class OverlaySegmenter implements ISegmenter
 {
-    protected static final double EPSILON = 0.00001;
     protected double _stepSize;
     protected List<ISegmentBuildingListener> _segmentBuildingListeners;
+    private ISegmentationAlgorithm _algorithm;
    
-    public AbstractOverlaySegmenter(double stepSize)
+    public OverlaySegmenter(double stepSize, ISegmentationAlgorithm algorithm)
     {
         _stepSize = stepSize;
         _segmentBuildingListeners = new ArrayList<>();
+        _algorithm = algorithm;
+        _algorithm.setSegmentBuildingListeners(_segmentBuildingListeners);
     }
 
     @Override
@@ -43,7 +45,7 @@ public abstract class AbstractOverlaySegmenter implements ISegmenter
         LinkedList<Vector2D> srcRoute = patchHolesInRoute(unpatchedRoute);
         LinkedList<Vector2D> quantizedRoute = new LinkedList<>();
         notifyOriginalTrajectory(quantizedRoute);
-        quantize(srcRoute, quantizedRoute, _stepSize);
+        _algorithm.quantize(srcRoute, quantizedRoute, _stepSize);
         Deque<Vector2D> overlay = createOverlay(srcRoute, _stepSize);
         int elementsToAdd = quantizedRoute.size() + overlay.size();
         int addCnt = 0;
@@ -69,7 +71,7 @@ public abstract class AbstractOverlaySegmenter implements ISegmenter
         return result;
     }
 
-    public abstract void quantize(Deque<Vector2D> input, Deque<Vector2D> result, double stepSize);
+//    public abstract void quantize(Deque<Vector2D> input, Deque<Vector2D> result, double stepSize);
 
     public LinkedList<Vector2D> patchHolesInRoute(LinkedList<Vector2D> unevenVectorRoute)
     {
@@ -111,7 +113,7 @@ public abstract class AbstractOverlaySegmenter implements ISegmenter
         Deque<Vector2D> startSector = computeStartSector(stepSize / 2.0, inputCopy);
         // here the start segment will have length equal or more of (stepsize/2.0)
         Deque<Vector2D> quantizedStartSegment = new LinkedList<>();
-        quantize(startSector, quantizedStartSegment, stepSize / 2.0);
+        _algorithm.quantize(startSector, quantizedStartSegment, stepSize / 2.0);
         // firstVector is of length (stepsize/2.0) 
         if(inputCopy.isEmpty())
         {
@@ -137,7 +139,7 @@ public abstract class AbstractOverlaySegmenter implements ISegmenter
             Vector2D secondVector = new Vector2D(base, tip);
             
             inputCopy.push(secondVector);
-            quantize(inputCopy, result, stepSize);
+            _algorithm.quantize(inputCopy, result, stepSize);
             result.push(firstVector);
         }
         return result;
@@ -176,5 +178,16 @@ public abstract class AbstractOverlaySegmenter implements ISegmenter
     private void notifyOverlayTrajectory(Deque<Vector2D> emptyOverlay)
     {
         _segmentBuildingListeners.forEach(listener -> listener.notifyStartOverlayTrajectory(emptyOverlay));
+    }
+
+    public void quantize(LinkedList<Vector2D> srcRoute, Deque<Vector2D> quantizedRoute, double stepSize)
+    {
+        _algorithm.quantize(srcRoute, quantizedRoute, stepSize);
+    }
+
+    @Override
+    public ISegmentationAlgorithm getAlgorithm()
+    {
+        return _algorithm;
     }
 }

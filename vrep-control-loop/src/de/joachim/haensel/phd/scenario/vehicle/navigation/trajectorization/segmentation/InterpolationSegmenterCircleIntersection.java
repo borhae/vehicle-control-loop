@@ -2,16 +2,15 @@ package de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segm
 
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.vehicle.ISegmentBuildingListener;
 
-public class InterpolationSegmenterCircleIntersection extends AbstractOverlaySegmenter
+public class InterpolationSegmenterCircleIntersection implements ISegmentationAlgorithm
 {
-    public InterpolationSegmenterCircleIntersection(double stepSize)
-    {
-        super(stepSize);
-    }
+    private List<ISegmentBuildingListener> _segmentBuildingListeners;
 
     @Override
     public void quantize(Deque<Vector2D> srcRoute, Deque<Vector2D> result, double stepSize)
@@ -68,5 +67,16 @@ public class InterpolationSegmenterCircleIntersection extends AbstractOverlaySeg
                 notifyUpdateTrajectory(curVector, result);
             }
         }
+    }
+    
+    private void notifyUpdateTrajectory(Vector2D newVector, Deque<Vector2D> updatedList)
+    {
+        _segmentBuildingListeners.forEach(l -> l.updateTrajectory(newVector, updatedList));
+    }
+
+    @Override
+    public void setSegmentBuildingListeners(List<ISegmentBuildingListener> segmentBuildingListeners)
+    {
+        _segmentBuildingListeners = segmentBuildingListeners;
     }
 }

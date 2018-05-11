@@ -176,18 +176,8 @@ public class LayerInteractionTest implements TestConstants
         
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
         
-        Vector2D carOrientation = vehicle.getOrientation();
-        NavigationController fakeNav = new NavigationController(2.0);
-        fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
-        fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
+        correctVehicleOrientation(DOWN_SCALE_FACTOR, roadMap, destinationPosition, vehicle);
         
-        Trajectory firstSeg = fakeNav.segmentsPeek();
-        Vector2D firstSegOrientation = firstSeg.getVector();
-        
-        double correctionAngle = Vector2D.computeAngle(carOrientation, firstSegOrientation) + Math.PI;
-        
-        vehicle.setOrientation(0.0f, 0.0f, (float)correctionAngle);
-
         try
         {
             Thread.sleep(2000);
@@ -261,18 +251,8 @@ public class LayerInteractionTest implements TestConstants
         
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
         
-        Vector2D carOrientation = vehicle.getOrientation();
-        NavigationController fakeNav = new NavigationController(segmentSize);
-        fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
-        fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
+        correctVehicleOrientation(scale, roadMap, destinationPosition, vehicle);
         
-        Trajectory firstSeg = fakeNav.segmentsPeek();
-        Vector2D firstSegOrientation = firstSeg.getVector();
-        
-        double correctionAngle = Vector2D.computeAngle(carOrientation, firstSegOrientation) + Math.PI;
-        
-        vehicle.setOrientation(0.0f, 0.0f, (float)correctionAngle);
-
         try
         {
             Thread.sleep(2000);
@@ -524,21 +504,7 @@ public class LayerInteractionTest implements TestConstants
         float vehicleZPos = 0.25f;
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), vehicleZPos, roadMap, uperFact , lowerFact);
         
-        Vector2D carOrientation = vehicle.getOrientation();
-        NavigationController fakeNav = new NavigationController(2.0 *  scaleFactor);
-        fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
-        fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
-
-        Vector2DVisualizer visualizer = new Vector2DVisualizer();
-        visualizer.setVisible(true);
-        
-        Trajectory firstSeg = fakeNav.segmentsPeek();
-        Vector2D firstSegOrientation = firstSeg.getVector();
-        
-        double correctionAngle = Vector2D.computeAngle(carOrientation, firstSegOrientation) + Math.PI;
-        
-        vehicle.setOrientation(0.0f, 0.0f, (float)correctionAngle);
-
+        correctVehicleOrientation(scaleFactor, roadMap, destinationPosition, vehicle);
         try
         {
             Thread.sleep(2000);
@@ -618,24 +584,7 @@ public class LayerInteractionTest implements TestConstants
         float vehicleZPos = 0.25f;
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), vehicleZPos, roadMap, uperFact , lowerFact);
         
-        Vector2D carOrientation = vehicle.getOrientation();
-        NavigationController fakeNav = new NavigationController(2.0 *  scaleFactor);
-        fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
-        fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
-
-        Deque<Vector2D> input = fakeNav.getNewSegments(fakeNav.getSegmentBufferSize()).stream().map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
-        Vector2DVisualizer visualizer = new Vector2DVisualizer();
-        visualizer.addVectorSet(input, Color.BLUE);
-        visualizer.updateVisuals();
-        visualizer.setVisible(true);
-        
-        Trajectory firstSeg = fakeNav.segmentsPeek();
-        Vector2D firstSegOrientation = firstSeg.getVector();
-        
-        //TODO I removed the + Math.PI at the end not in the previous test. What's the difference?
-        double correctionAngle = Vector2D.computeAngle(carOrientation, firstSegOrientation);
-        
-        vehicle.setOrientation(0.0f, 0.0f, (float)correctionAngle);
+        correctVehicleOrientation(scaleFactor, roadMap, destinationPosition, vehicle);
 
         try
         {
@@ -673,6 +622,29 @@ public class LayerInteractionTest implements TestConstants
         {
             exc.printStackTrace();
         }
+    }
+
+    //TOOD find out about cases were we have an exact 180 degree error
+    private void correctVehicleOrientation(double scaleFactor, RoadMap roadMap, Position2D destinationPosition,
+            Vehicle vehicle) throws VRepException
+    {
+        Vector2D carOrientation = vehicle.getOrientation();
+        NavigationController fakeNav = new NavigationController(2.0 *  scaleFactor);
+        fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
+        fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
+
+        Deque<Vector2D> input = fakeNav.getNewSegments(fakeNav.getSegmentBufferSize()).stream().map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
+        Vector2DVisualizer visualizer = new Vector2DVisualizer();
+        visualizer.addVectorSet(input, Color.BLUE);
+        visualizer.updateVisuals();
+        visualizer.setVisible(true);
+        
+        Trajectory firstSeg = fakeNav.segmentsPeek();
+        Vector2D firstSegOrientation = firstSeg.getVector();
+        
+        double correctionAngle = Vector2D.computeAngle(carOrientation, firstSegOrientation);
+        
+        vehicle.setOrientation(0.0f, 0.0f, (float)correctionAngle);
     }
     
     @Test

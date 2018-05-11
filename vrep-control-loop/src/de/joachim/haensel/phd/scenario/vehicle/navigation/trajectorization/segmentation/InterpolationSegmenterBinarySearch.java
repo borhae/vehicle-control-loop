@@ -2,20 +2,17 @@ package de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segm
 
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.vehicle.ISegmentBuildingListener;
 
-public class IterativeInterpolationSegmenter extends AbstractOverlaySegmenter
+public class InterpolationSegmenterBinarySearch implements ISegmentationAlgorithm
 {
     private static final int RECURSION_LIMIT = 20;
+    private List<ISegmentBuildingListener> _segmentBuildingListeners;
 
-    public IterativeInterpolationSegmenter(double stepSize)
-    {
-        super(stepSize);
-    }
-
-    @Override
     public void quantize(Deque<Vector2D> srcRoute, Deque<Vector2D> result, double stepSize)
     {
         Deque<Vector2D> srcCopy = new LinkedList<>();
@@ -92,5 +89,16 @@ public class IterativeInterpolationSegmenter extends AbstractOverlaySegmenter
         {
             return curTarget;
         }
+    }
+    
+    private void notifyUpdateTrajectory(Vector2D newVector, Deque<Vector2D> updatedList)
+    {
+        _segmentBuildingListeners.forEach(l -> l.updateTrajectory(newVector, updatedList));
+    }
+
+    @Override
+    public void setSegmentBuildingListeners(List<ISegmentBuildingListener> segmentBuildingListeners)
+    {
+        _segmentBuildingListeners = segmentBuildingListeners;
     }
 }

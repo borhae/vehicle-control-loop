@@ -12,6 +12,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.Trajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.ISegmenterFactory;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterCircleIntersection;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.Segmenter;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.BasicVelocityAssigner;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.IVelocityAssignerFactory;
 import de.joachim.haensel.vehiclecontrol.Navigator;
@@ -48,7 +49,7 @@ public class NavigationController implements IUpperLayerControl
         Navigator navigator = new Navigator(_roadMap);
         navigator.addSegmentBuildingListeners(_segmentBuildingListeners);
         List<Line2D> routeBasis = navigator.getRoute(currentPosition, targetPosition);
-        ISegmenterFactory segmenterFactory = segmentSize -> new InterpolationSegmenterCircleIntersection(segmentSize);
+        ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
         IVelocityAssignerFactory velocityAssignerFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, maxVelocity);
         ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , _segmentSize);
         trajectorizer.addSegmentBuildingListeners(_segmentBuildingListeners);
