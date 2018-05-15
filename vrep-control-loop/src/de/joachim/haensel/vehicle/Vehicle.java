@@ -9,15 +9,16 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.OrientedPosition;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
+import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.CarControlInterface;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;
 
-public class Vehicle 
+public class Vehicle implements IVehicle 
 {
-    private static final int CONTROL_LOOP_EXECUTION_DENSITY = 100; //milliseconds
+    private static final int CONTROL_LOOP_EXECUTION_FREQUENCY = 100; //milliseconds
 
     private IUpperLayerControl _upperControlLayer;
     private ILowerLayerControl _lowerControlLayer;
@@ -29,8 +30,11 @@ public class Vehicle
     private VehicleHandles _vehicleHandles;
     private CarControlInterface _controller;
 
+    private VRepObjectCreation _vrepCreator;
+
     public Vehicle(VRepObjectCreation creator, VRepRemoteAPI vrep, int clientID, VehicleHandles vehicleHandles, CarControlInterface controller, RoadMap roadMap, IUpperLayerFactory upperLayerFactory, ILowerLayerFactory lowerLayerFactory)
     {
+        _vrepCreator = creator;
         _vehicleHandles = vehicleHandles;
         _controller = controller;
         _upperControlLayer = upperLayerFactory.create();
@@ -77,7 +81,7 @@ public class Vehicle
 
     public void start()
     {
-        _timer.scheduleAtFixedRate(_controlEventGenerator, 0, CONTROL_LOOP_EXECUTION_DENSITY);
+        _timer.scheduleAtFixedRate(_controlEventGenerator, 0, CONTROL_LOOP_EXECUTION_FREQUENCY);
     }
     
     public void driveTo(float x, float y, RoadMap roadMap)
@@ -115,5 +119,18 @@ public class Vehicle
     public double getBetweenFrontRearWheelsLength()
     {
         return _actuatingSensing.getVehicleLength();
+    }
+
+    @Override
+    public void removeFromSimulation()
+    {
+        try
+        {
+            _vrepCreator.delete(_vehicleHandles.getAllHandles());
+        }
+        catch (VRepException exc)
+        {
+            exc.printStackTrace();
+        }
     }
 }

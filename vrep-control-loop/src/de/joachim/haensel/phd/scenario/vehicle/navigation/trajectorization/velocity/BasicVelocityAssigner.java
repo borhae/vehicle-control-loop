@@ -73,27 +73,26 @@ public class BasicVelocityAssigner implements IVelocityAssigner
         computeCurvatures(original);
         notifyListeners(trajectories);
 
-//      initial idea but the idea of overlapping segments doesn't really work out in conjunction with the curvature
-//      curvatureLimitedPass(original);
-//      curvatureLimitedPass(overlay);
         computeCurvatures(overlay);
         notifyListeners(trajectories);
         
-        //remove the first element from the overlays to bring the indexing into order. 
-        //first half segmentn in overlay is not needed anyway
-        trajectories.remove(0);
+        if(!overlay.isEmpty())
+        {
+            //first half segment in overlay is not needed 
+            trajectories.remove(0);
+        }
         curvatureLimitedPass(trajectories);
         
-        lowPassFilter(trajectories);
-        notifyListeners(trajectories);
+//        lowPassFilter(trajectories);
+//        notifyListeners(trajectories);
         
         identifyRegions(trajectories);
         fillInitialPadding(trajectories);
         capAccelerationDeceleration(trajectories);
         notifyListeners(trajectories);
         
-        lowPassFilter(trajectories);
-        notifyListeners(trajectories);
+//        lowPassFilter(trajectories);
+//        notifyListeners(trajectories);
     }
 
     private void lowPassFilter(List<Trajectory> trajectories)
@@ -132,6 +131,7 @@ public class BasicVelocityAssigner implements IVelocityAssigner
         double threshold = 0.1;
         double curProfileChange = Double.MAX_VALUE;
         int iterationCnt = 1;
+        notifyListeners(trajectories);
         while(curProfileChange > threshold)
         {
             System.out.println("iteration: " + iterationCnt + " --------------------------------------------- ");
@@ -143,7 +143,8 @@ public class BasicVelocityAssigner implements IVelocityAssigner
                 double v_i_sq = curTrajectory.getVelocity() * curTrajectory.getVelocity();
                 double v_i_p1_sq = nextTrajectory.getVelocity() * nextTrajectory.getVelocity();
                 double delta = 0.0;
-                if(curTrajectory.getRiseFall() == VelocityEdgeType.RAISE)
+//                if(curTrajectory.getRiseFall() == VelocityEdgeType.RAISE)
+                if(curTrajectory.getVelocity() < nextTrajectory.getVelocity())
                 {
                     double acc = (v_i_p1_sq - v_i_sq) / (2 * s_i);
                     if(acc >= _accelerationMaxLongitudinal)
@@ -153,7 +154,8 @@ public class BasicVelocityAssigner implements IVelocityAssigner
                         nextTrajectory.setVelocity(newVelocity);
                     }
                 } 
-                else if(curTrajectory.getRiseFall() == VelocityEdgeType.FALL)
+//                else if(curTrajectory.getRiseFall() == VelocityEdgeType.FALL)
+                else if(curTrajectory.getVelocity() > nextTrajectory.getVelocity())
                 {
                     double dec = (v_i_sq - v_i_p1_sq) / (2 * s_i);
                     if(dec >= _decelerationMaxLongitudinal)

@@ -1,5 +1,8 @@
 package de.joachim.haensel.phd.scenario.vehicle.test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -10,11 +13,17 @@ import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.sumo2vrep.VRepMap;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
-import de.joachim.haensel.vehicle.PurePursuitController;
+import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
+import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
+import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
+import de.joachim.haensel.phd.scenario.vehicle.VRepLoadModelVehicleFactory;
+import de.joachim.haensel.phd.scenario.vehicle.VRepPartwiseVehicleFactory;
+import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
 import de.joachim.haensel.vehicle.ILowerLayerControl;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.vehicle.NavigationController;
+import de.joachim.haensel.vehicle.PurePursuitController;
 import de.joachim.haensel.vehicle.PurePursuitParameters;
 import de.joachim.haensel.vehicle.Vehicle;
 import de.joachim.haensel.vehicle.VehicleCreator;
@@ -28,13 +37,16 @@ public class VehicleCreationTest implements TestConstants
     private static VRepRemoteAPI _vrep;
     private static int _clientID;
     private static VRepObjectCreation _objectCreator;
-
+    private static List<IVehicle> _vehicles;
+    
     @BeforeClass
     public static void setupVrep() throws VRepException
     {
         _vrep = VRepRemoteAPI.INSTANCE;
         _clientID = _vrep.simxStart("127.0.0.1", 19999, true, true, 5000, 5);
         _objectCreator = new VRepObjectCreation(_vrep, _clientID);
+        _vehicles = new ArrayList<IVehicle>();
+
     }
 
     @AfterClass
@@ -46,20 +58,45 @@ public class VehicleCreationTest implements TestConstants
     @After
     public void cleanUpObjects() throws VRepException
     {
-        _objectCreator.deleteAll();
+        _vehicles.forEach(vehicle -> vehicle.removeFromSimulation());
     }
     
     @Test
-    public void testCreateAndDestroyVehicle() throws VRepException
+    public void testCreateAndDestroyVehiclePartwise() throws VRepException
     {
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
-        
-        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0);};
-        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
-
-        float height = vehicleCreator.getVehicleHeight();
-        vehicleCreator.createAt(-3f, 0, height + 0.1f, null, upperFact, lowerFact);
+        IVehicleFactory factory = new VRepPartwiseVehicleFactory(_vrep, _clientID, _objectCreator, 1.0f);
+        IVehicleConfiguration vehicleConf = createConfiguration();
+        factory.configure(vehicleConf);
+        IVehicle vehicle = factory.createVehicleInstance();
+        _vehicles.add(vehicle);
         System.out.println("wait here");
+    }
+
+    @Test
+    public void testCreateAndDestroyVehicleLoadModel() throws VRepException
+    {
+        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, 1.0f);
+        IVehicleConfiguration vehicleConf = createConfiguration();
+        factory.configure(vehicleConf);
+        IVehicle vehicle = factory.createVehicleInstance();
+        _vehicles.add(vehicle);
+        System.out.println("wait here");
+    }
+    
+    private IVehicleConfiguration createConfiguration()
+    {
+        IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
+        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0);};
+        ILowerLayerFactory lowerFact = () -> {
+            PurePursuitController ctrl = new PurePursuitController();
+            ctrl.setParameters(new PurePursuitParameters(2.0));
+            return ctrl;
+        };
+        vehicleConf.upperCtrlFactory(upperFact);
+        vehicleConf.lowerCtrlFactory(lowerFact);
+        vehicleConf.setPosition(0.0, 0.0, 3.0);
+//        vehicleConf.setRoadMap()
+        return vehicleConf;
     }
     
     @Test

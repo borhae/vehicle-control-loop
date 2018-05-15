@@ -111,8 +111,8 @@ public class VehicleCreator
             int steeringFrontLeft = createSteering(_objectCreator, "steeringFrontLeft", - STEERING_LENGTH/2.0f, 0.0f, 0.0f);
             int steeringFrontRight = createSteering(_objectCreator, "steeringFrontRight", - STEERING_LENGTH/2.0f, 0.0f, 0.0f);
             
-            createConnector(_objectCreator, damperFrontLeft, steeringFrontLeft, "connectorDflSfl", 0.0f, 0f, -DAMPER_LENGTH/2.0f, STEERING_DIAMETER * 2.0f, STEERING_DIAMETER * 1.7f);
-            createConnector(_objectCreator, damperFrontRight, steeringFrontRight, "connectorDfrSfr", 0.0f, 0.0f, -DAMPER_LENGTH/2.0f, STEERING_DIAMETER * 2.0f, STEERING_DIAMETER * 1.7f);
+            int connectorDflSfl = createConnector(_objectCreator, damperFrontLeft, steeringFrontLeft, "connectorDflSfl", 0.0f, 0f, -DAMPER_LENGTH/2.0f, STEERING_DIAMETER * 2.0f, STEERING_DIAMETER * 1.7f);
+            int connectorDfrSfr = createConnector(_objectCreator, damperFrontRight, steeringFrontRight, "connectorDfrSfr", 0.0f, 0.0f, -DAMPER_LENGTH/2.0f, STEERING_DIAMETER * 2.0f, STEERING_DIAMETER * 1.7f);
             
             int motorFrontLeft = createMotor(_objectCreator, "motorFrontLeft", 0.0f, 0.0f, 0.0f);
             int motorFrontRight = createMotor(_objectCreator, "motorFrontRight", 0.0f, 0.0f, 0.0f);
@@ -125,8 +125,8 @@ public class VehicleCreator
             int axisRearLeft = createAxis(_objectCreator, "axisRearLeft", 0.0f, 0.0f, 0.0f);
             int axisRearRight = createAxis(_objectCreator, "axisRearRight", 0.0f, 0.0f, 0.0f);
             
-            createConnector(_objectCreator, damperRearLeft, axisRearLeft, "connectorDrlArl", 0.0f, 0.0f, - STEERING_LENGTH/2.0f, STEERING_DIAMETER * 1.8f, STEERING_DIAMETER * 1.8f);
-            createConnector(_objectCreator, damperRearRight, axisRearRight, "connectorDrrArr", 0.0f, 0.0f, - STEERING_LENGTH/2.0f, STEERING_DIAMETER * 1.8f, STEERING_DIAMETER * 1.8f);
+            int connectorDrlArl = createConnector(_objectCreator, damperRearLeft, axisRearLeft, "connectorDrlArl", 0.0f, 0.0f, - STEERING_LENGTH/2.0f, STEERING_DIAMETER * 1.8f, STEERING_DIAMETER * 1.8f);
+            int connectorDrrArr = createConnector(_objectCreator, damperRearRight, axisRearRight, "connectorDrrArr", 0.0f, 0.0f, - STEERING_LENGTH/2.0f, STEERING_DIAMETER * 1.8f, STEERING_DIAMETER * 1.8f);
             
             int frontLeftWheel = createWheel(_objectCreator, "frontLeftWheel", motorFrontLeft, WHEEL_DIAMETER, WHEEL_WIDTH);
             int frontRightWheel = createWheel(_objectCreator, "frontRightWheel", motorFrontRight, WHEEL_DIAMETER, WHEEL_WIDTH);
@@ -136,7 +136,14 @@ public class VehicleCreator
             CarControlInterface car = new CarControlInterface(_objectCreator, PHYSICAL_CAR_BODY_NAME, _vrep, _clientID, physicalBodyHandle);
             
             vehicleHandles.setPhysicalBody(physicalBodyHandle).setRearLeftWheel(rearLeftWheel).setRearRightWheel(rearRightWheel).setFrontLeftWheel(frontLeftWheel).setFrontRightWheel(frontRightWheel);
+            vehicleHandles.setDamperRearLeft(damperRearLeft).setDamperRearRight(damperRearRight).setDamperFrontLeft(damperFrontLeft).setDamperFrontRight(damperFrontRight);
+            vehicleHandles.setConnectorDflSfl(connectorDflSfl).setConnectorDfrSfr(connectorDfrSfr).setConnectorDrlArl(connectorDrlArl).setConnectorDrrArr(connectorDrrArr);
+            vehicleHandles.setSteeringFrontLeft(steeringFrontLeft).setSteeringFrontRight(steeringFrontRight);
+            vehicleHandles.setConnectorSflMfl(connectorSflMfl).setConnectorSfrMfr(connectorSfrMfr);
+            vehicleHandles.setAxisRearLeft(axisRearLeft).setAxisRearRight(axisRearRight).setMotorFrontLeft(motorFrontLeft).setMotorFrontRight(motorFrontRight);
+            vehicleHandles.setFrontLeftWheelDummy(frontLeftWheelDummy).setFrontRightWheelDummy(frontRightWheelDummy);
             vehicleHandles.setRearWheelVisualizationDummy(rearWheelDummy);
+            
             car.initialize();
             return new Vehicle(_objectCreator, _vrep, _clientID, vehicleHandles, car, roadMap, uppperLayerFactory, lowerLayerFactory);
         }

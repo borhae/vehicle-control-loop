@@ -52,7 +52,7 @@ public class SpeedProfileTest
         List<Line2D> lineRoute = navigator.getRoute(startPosition, destinationPosition);
         
         double maxVelocity = 30.0;
-        double segmentSize = 2.0;
+        double segmentSize = 5.0;
         double maxLongDec = 8.0;
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
@@ -95,7 +95,7 @@ public class SpeedProfileTest
         List<Line2D> lineRoute = navigator.getRoute(startPosition, destinationPosition);
         
         double maxVelocity = 30.0;
-        double segmentSize = 2.0;
+        double segmentSize = 5.0;
         double maxLongDec = 8.0;
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
@@ -140,7 +140,7 @@ public class SpeedProfileTest
         List<Line2D> lineRoute = navigator.getRoute(startPosition, destinationPosition);
         
         double maxVelocity = 30.0;
-        double segmentSize = 2.0;
+        double segmentSize = 5.0;
         double maxLongDec = 8.0;
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
@@ -195,6 +195,74 @@ public class SpeedProfileTest
         }
     }
 
+
+    @Test
+    public void testRealWorldSpeedprofileSmallMaxLateralAcceleration()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
+        TMatrix scaleOffsetMatrix = centerMap(roadMap);
+
+        Navigator navigator = new Navigator(roadMap);
+        Position2D startPosition = new Position2D(5747.01f, 2979.22f).transform(scaleOffsetMatrix);
+        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).transform(scaleOffsetMatrix);
+        List<Line2D> lineRoute = navigator.getRoute(startPosition, destinationPosition);
+        
+        double maxVelocity = 30.0;
+        double segmentSize = 5.0;
+        double maxLongDec = 8.0;
+        double maxLongAcc = 2.0;
+        double maxLateralAcc = 0.5;
+
+        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
+        
+        Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.showOnScreen(1);
+
+        IProfileChangeListener listener = profile -> _visualizationIdVelocities = visualize(profile, frame, _visualizationIdVelocities);
+        ICurvatureChangeListener curveListener = profile -> _visualizationIdCurve = visualizeCurvature(profile, frame, _visualizationIdCurve);
+        trajectorizer.getVelocityAssigner().addProfileChangeListener(listener);
+        trajectorizer.getVelocityAssigner().addCurvatureChangeListener(curveListener);
+        frame.setVisible(true);
+        frame.updateVisuals();
+        
+        SegmentBuffer route = new SegmentBuffer();
+        route.fillBuffer(trajectorizer.createTrajectory(lineRoute));
+        List<Trajectory> trajectories = route.getSegments(route.getSize());
+        
+        double expectedMaxLateralAcceleration = maxLateralAcc;
+        for(int idx = 0; idx < trajectories.size() - 2; idx++)
+        {
+            Trajectory t_0 = trajectories.get(idx);
+            Trajectory t_1 = trajectories.get(idx + 1);
+            
+            double v_0 = t_0.getVelocity();
+            double v_1 = t_1.getVelocity();
+            
+            double meanVelocity = (v_0 + v_1) / 2.0;
+            
+            double vSqr = meanVelocity * meanVelocity;
+            
+            Vector2D mP_0 = t_0.getVector().getMiddlePerpendicular();
+            Vector2D mP_1 = t_1.getVector().getMiddlePerpendicular();
+            Double radius = Vector2D.scalarIntersect(mP_0, mP_1);
+            double actualLateralVelocity = 0.0;
+            if(radius == 0.0)
+            {
+                assertThat("radius is zero, infinite acceleration (index: " + idx + ").", false);
+            }
+            if(!Double.isNaN(radius))
+            {
+                actualLateralVelocity = vSqr / radius;
+                assertThat("lateral acceleration should stay in range (sqr velocity: " + vSqr + ", radius: " + radius +", at index: " + idx + ").", actualLateralVelocity, lessThanOrEqualTo(expectedMaxLateralAcceleration));
+                
+            }
+            else
+            {
+                // infinite radius means zero lateral acceleration, we are fine here
+            }
+        }
+    }
+    
     @Test
     public void testRealWorldSpeedprofileMaxLongitudalAcceleration()
     {
@@ -207,7 +275,7 @@ public class SpeedProfileTest
         List<Line2D> lineRoute = navigator.getRoute(startPosition, destinationPosition);
         
         double maxVelocity = 30.0;
-        double segmentSize = 2.0;
+        double segmentSize = 5.0;
         double maxLongDec = 8.0;
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
@@ -261,7 +329,7 @@ public class SpeedProfileTest
         List<Line2D> lineRoute = navigator.getRoute(startPosition, destinationPosition);
         
         double maxVelocity = 30.0; // 30 m/s == 108 km/h
-        double segmentSize = 2.0; // 2m
+        double segmentSize = 5.0; // 2m
         double maxLongDec = 8.0; // 8 m^2/s
         double maxLongAcc = 2.0; // 2 m^2/s
         double maxLateralAcc = 3.0; // 3 m^2/s
@@ -315,7 +383,7 @@ public class SpeedProfileTest
         List<Line2D> lineRoute = navigator.getRoute(startPosition, destinationPosition);
         
         double maxVelocity = 30.0;
-        double segmentSize = 2.0;
+        double segmentSize = 5.0;
         double maxLongDec = 8.0;
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
@@ -369,7 +437,7 @@ public class SpeedProfileTest
         List<Line2D> lineRoute = navigator.getRoute(startPosition, destinationPosition);
         
         double maxVelocity = 30.0;
-        double segmentSize = 2.0;
+        double segmentSize = 5.0;
         double maxLongDec = 8.0;
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
@@ -428,7 +496,7 @@ public class SpeedProfileTest
         List<Line2D> lineRoute = navigator.getRoute(startPosition, destinationPosition);
         
         double maxVelocity = 30.0;
-        double segmentSize = 2.0;
+        double segmentSize = 5.0;
         double maxLongDec = 8.0;
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
@@ -459,8 +527,7 @@ public class SpeedProfileTest
         }
     }
 
-    private ITrajectorizer createTrajectorizer(double maxVelocity, double segmentSize, double maxLongDec,
-            double maxLongAcc, double maxLateralAcc)
+    private ITrajectorizer createTrajectorizer(double maxVelocity, double segmentSize, double maxLongDec, double maxLongAcc, double maxLateralAcc)
     {
         ISegmenterFactory segmenterFactory = segmentSizeParam -> new Segmenter(segmentSizeParam, new InterpolationSegmenterCircleIntersection());
         IVelocityAssignerFactory velocityAssignerFactory = segmentSizeParam -> new BasicVelocityAssigner(segmentSizeParam, maxVelocity, maxLateralAcc , maxLongAcc , maxLongDec);

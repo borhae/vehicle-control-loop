@@ -494,7 +494,7 @@ public class LayerInteractionTest implements TestConstants
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX2(), lastLine.getY2());
         
-        IUpperLayerFactory uperFact = () -> {return new NavigationController(4.0 * scaleFactor);};
+        IUpperLayerFactory uperFact = () -> {return new NavigationController(5.0 * scaleFactor);};
         PurePursuitController ctrl = new PurePursuitController(); 
         PurePursuitParameters parameters = new PurePursuitParameters(10.0 * scaleFactor);
         parameters.setSpeed(2.5);
@@ -644,7 +644,7 @@ public class LayerInteractionTest implements TestConstants
         
         double correctionAngle = Vector2D.computeAngle(carOrientation, firstSegOrientation);
         
-        vehicle.setOrientation(0.0f, 0.0f, (float)correctionAngle);
+        vehicle.setOrientation(0.0f, 0.0f, (float)(correctionAngle * Math.PI));
     }
     
     @Test

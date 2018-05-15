@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import coppelia.FloatWA;
 import coppelia.IntWA;
@@ -318,5 +320,30 @@ public class VRepObjectCreation
         stringParameters[0] = name;
         
         _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "createMesh", callParamsI, callParamsF, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+    }
+
+    public void delete(List<Integer> handles) throws VRepException
+    {
+        List<VRepException> exceptions = new ArrayList<>();
+        Consumer<? super Integer> removeObject = handle -> {
+            try
+            {
+                _vrep.simxRemoveObject(_clientID, handle, remoteApi.simx_opmode_blocking);
+            }
+            catch (VRepException exc)
+            {
+                exceptions.add(exc);
+            }
+        };
+        if(exceptions.isEmpty())
+        {
+            handles.forEach(removeObject);
+        }
+        else
+        {
+            StringBuilder exceptionString = new StringBuilder();
+            exceptions.forEach(excpetion -> exceptionString.append(excpetion.getMessage()));
+            throw new VRepException(exceptionString.toString());
+        }
     }
 }

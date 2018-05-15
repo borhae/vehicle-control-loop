@@ -130,7 +130,6 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
         return 0.0;
     }
 
-
     @Override
     public void drive(float targetWheelRotation, float targetSteeringAngle)
     {

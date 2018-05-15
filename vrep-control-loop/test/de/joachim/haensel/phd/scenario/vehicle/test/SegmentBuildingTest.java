@@ -54,8 +54,8 @@ public class SegmentBuildingTest implements TestConstants
         result.stream().forEach(v -> checkValid(v));
 
         Vector2DVisualizer frame = new Vector2DVisualizer();
-        frame.addVectorSet(result, Color.BLACK);
-        frame.addVectorSet(comparisonRoute, Color.BLUE);
+        frame.addVectorSet(result, Color.BLACK, 1.0, 0.5);
+        frame.addVectorSet(comparisonRoute, Color.BLUE, 1.0, 0.5);
         frame.setVisible(true);
         frame.updateVisuals();
 
@@ -83,9 +83,9 @@ public class SegmentBuildingTest implements TestConstants
         quantizedRoute.stream().forEach(v -> checkValid(v));
 
         Vector2DVisualizer frame = new Vector2DVisualizer();
-        frame.addVectorSet(quantizedRoute, Color.BLACK);
-        frame.addVectorSet(comparisonRoute, Color.BLUE);
-        frame.addVectorSet(overlayRoute, Color.ORANGE);
+        frame.addVectorSet(quantizedRoute, Color.BLACK, 3.0, 0.05);
+        frame.addVectorSet(comparisonRoute, Color.BLUE, 3.0, 0.05);
+        frame.addVectorSet(overlayRoute, Color.ORANGE, 3.0, 0.05);
         frame.setVisible(true);
         frame.updateVisuals();
     }
@@ -109,9 +109,9 @@ public class SegmentBuildingTest implements TestConstants
         quantizedRoute.stream().forEach(v -> checkValid(v));
 
         Vector2DVisualizer frame = new Vector2DVisualizer();
-        frame.addVectorSet(quantizedRoute, Color.BLACK);
-        frame.addVectorSet(comparisonRoute, Color.BLUE);
-        frame.addVectorSet(overlayRoute, Color.ORANGE);
+        frame.addVectorSet(quantizedRoute, Color.BLACK, 3.0, 0.05);
+        frame.addVectorSet(comparisonRoute, Color.BLUE, 3.0, 0.05);
+        frame.addVectorSet(overlayRoute, Color.ORANGE, 3.0, 0.05);
         frame.setVisible(true);
         frame.updateVisuals();
     }
@@ -136,9 +136,9 @@ public class SegmentBuildingTest implements TestConstants
         quantizedRoute.stream().forEach(v -> checkValid(v));
 
         Vector2DVisualizer frame = new Vector2DVisualizer();
-        frame.addVectorSet(quantizedRoute, Color.BLACK);
-        frame.addVectorSet(comparisonRoute, Color.BLUE);
-        frame.addVectorSet(overlayRoute, Color.ORANGE);
+        frame.addVectorSet(quantizedRoute, Color.BLACK, 3.4, 0.05);
+        frame.addVectorSet(comparisonRoute, Color.BLUE, 3.2, 0.05);
+        frame.addVectorSet(overlayRoute, Color.ORANGE, 3.0, 0.05);
         frame.setVisible(true);
         frame.updateVisuals();
     }
@@ -173,7 +173,6 @@ public class SegmentBuildingTest implements TestConstants
         frame.setVisible(true);
         frame.updateVisuals();
     }
-    
     
     @Test
     public void test1SyntheticVectorsSquareOverlayedTrajectoriesAlignOriginal()
@@ -307,9 +306,9 @@ public class SegmentBuildingTest implements TestConstants
         
 
         Vector2DVisualizer frame = new Vector2DVisualizer();
-        frame.addVectorSet(patchedRoute, Color.BLACK, new BasicStroke(6.0f));
-        frame.addVectorSet(quantizedRoute, Color.BLUE, new BasicStroke(4.0f));
-        frame.addVectorSet(overlayRoute, Color.ORANGE, new BasicStroke(2.0f));
+        frame.addVectorSet(patchedRoute, Color.BLACK, 5.0, 0.05);
+        frame.addVectorSet(quantizedRoute, Color.BLUE, 4.0, 0.05);
+        frame.addVectorSet(overlayRoute, Color.ORANGE, 3.0, 0.05);
         frame.setVisible(true);
         frame.updateVisuals();
 
@@ -363,9 +362,9 @@ public class SegmentBuildingTest implements TestConstants
         
 
         Vector2DVisualizer frame = new Vector2DVisualizer();
-        frame.addVectorSet(patchedRoute, Color.BLACK, new BasicStroke(6.0f));
-        frame.addVectorSet(quantizedRoute, Color.BLUE, new BasicStroke(4.0f));
-        frame.addVectorSet(overlayRoute, Color.ORANGE, new BasicStroke(2.0f));
+        frame.addVectorSet(patchedRoute, Color.BLACK, 5.0, 0.05);
+        frame.addVectorSet(quantizedRoute, Color.BLUE, 4.0, 0.05);
+        frame.addVectorSet(overlayRoute, Color.ORANGE, 3.0, 0.05);
         frame.setVisible(true);
         frame.updateVisuals();
 
@@ -482,6 +481,43 @@ public class SegmentBuildingTest implements TestConstants
         frame.addVectorSet(patchedRoute, Color.BLACK, new BasicStroke(6.0f));
         frame.addVectorSet(quantizedRoute, Color.BLUE, new BasicStroke(4.0f));
         frame.addVectorSet(overlay, Color.ORANGE, new BasicStroke(2.0f));
+        frame.setVisible(true);
+        frame.updateVisuals();
+        
+        System.out.println("done");
+        
+    }
+    
+    @Test
+    public void testRealWorldSegmentsNoOverlay()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+        Navigator navigator = new Navigator(roadMap);
+        Position2D startPosition = new Position2D(5747.01f, 2979.22f);
+        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
+        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
+        List<Line2D> downscaledRoute = transform(route, 2.5f, -2000.0f, -2700.0f);
+
+        LinkedList<Vector2D> originalDownsacledVectorRoute = new LinkedList<>();
+        downscaledRoute.stream().forEach(l -> originalDownsacledVectorRoute.add(new Vector2D(l)));
+        
+        Segmenter trajectorizer = new Segmenter(2, new InterpolationSegmenterBinarySearch()); 
+        LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(originalDownsacledVectorRoute);
+        Deque<Vector2D> patchedRouteCopy = new LinkedList<>();
+        patchedRoute.stream().forEachOrdered(v -> patchedRouteCopy.add(new Vector2D(v)));
+        
+        Deque<Vector2D> comparisonRoute = new LinkedList<>();
+        patchedRoute.stream().forEach(v -> comparisonRoute.add(new Vector2D(v)));
+        
+        
+        
+        Deque<Vector2D> quantizedRoute = new LinkedList<>();
+        double stepSize = 2.0;
+        trajectorizer.quantize(patchedRoute, quantizedRoute, stepSize);
+        
+        Vector2DVisualizer frame = new Vector2DVisualizer();
+//        frame.addVectorSet(comparisonRoute, Color.BLACK, 4, 0.05);
+        frame.addVectorSet(quantizedRoute, Color.BLUE, 3, 0.05);
         frame.setVisible(true);
         frame.updateVisuals();
         

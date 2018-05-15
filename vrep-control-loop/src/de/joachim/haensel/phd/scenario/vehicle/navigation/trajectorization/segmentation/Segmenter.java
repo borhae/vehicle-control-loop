@@ -95,4 +95,9 @@ public class Segmenter implements ISegmenter
     {
         return _algorithm;
     }
+
+    public void quantize(LinkedList<Vector2D> srcRoute, Deque<Vector2D> quantizedRoute, double stepSize)
+    {
+        _algorithm.quantize(srcRoute, quantizedRoute, stepSize);
+    }
 }
