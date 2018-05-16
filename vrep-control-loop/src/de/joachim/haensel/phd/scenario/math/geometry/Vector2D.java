@@ -303,7 +303,7 @@ public class Vector2D
     }
     
     /**
-     * Create a copy shifted perpendicularly. (negative means right, positive means left)
+     * Create a copy shifted perpendicularly. (negative means left, positive means right)
      * @param shift
      * @return
      */
@@ -451,6 +451,15 @@ public class Vector2D
         double newBX = _bX + _dX * 0.5;
         double newBY = _bY + _dY * 0.5;
         result.resetBase(newBX, newBY);
+        return result;
+    }
+
+    public Position2D getPerpendicularIntersection(Position2D p)
+    {
+        double lambdaX = _normX * (p.getX() - _bX);
+        double lambdaY = _normY * (p.getY() - _bY);
+        double lambda = lambdaX + lambdaY;
+        Position2D result = new Position2D(((_normX * lambda) + _bX), ((_normY * lambda) + _bY));
         return result;
     }
     

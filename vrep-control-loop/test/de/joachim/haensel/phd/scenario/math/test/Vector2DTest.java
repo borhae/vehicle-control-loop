@@ -144,9 +144,19 @@ public class Vector2DTest
     @Test
     public void testShiftVector()
     {
-        Vector2D expected = new Vector2D(1.0, 0.0, 0.0, 1.0);
+        Vector2D expected = new Vector2D(-1.0, 0.0, 0.0, 1.0);
         Vector2D v = new Vector2D(0.0, 0.0, 0.0, 1.0);
         Vector2D actual = v.shift(-1.0);
+        
+        assertEquals(expected, actual);
+    }
+    
+    @Test
+    public void testShiftVector2()
+    {
+        Vector2D expected = new Vector2D(1.5, 0.0, 0.0, 1.0);
+        Vector2D v = new Vector2D(0.0, 0.0, 0.0, 1.0);
+        Vector2D actual = v.shift(1.5);
         
         assertEquals(expected, actual);
     }
@@ -210,5 +220,29 @@ public class Vector2DTest
         
         assertEquals(expected, actual);
     }
+    
+     @Test
+     public void testVectorPerpendicularToPoint()
+     {
+         Vector2D v = new Vector2D(0.0, 0.0, 1.0, 0.0);
+         Position2D p = new Position2D(0.5, 0.5);
+         
+         Position2D actual = v.getPerpendicularIntersection(p);
+         Position2D expected = new Position2D(0.5, 0.0);
+         
+         assertEquals(expected, actual);
+     }
+     
+     @Test
+     public void testVectorPerpendicularToPoint2()
+     {
+         Vector2D v = new Vector2D(0.0, 0.0, 3.0, 4.0);
+         Position2D p = new Position2D(-4.0, 3.0);
+         
+         Position2D actual = v.getPerpendicularIntersection(p);
+         Position2D expected = new Position2D(0.0, 0.0);
+         
+         assertEquals(expected, actual);
+     }
 }
 

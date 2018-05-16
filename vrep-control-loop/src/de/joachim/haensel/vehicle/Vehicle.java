@@ -10,6 +10,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.OrientedPosition;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
+import de.joachim.haensel.phd.scenario.vehicle.IVehicleHandles;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.CarControlInterface;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
@@ -27,12 +28,12 @@ public class Vehicle implements IVehicle
     private RoadMap _roadMap;
     private IActuatingSensing _actuatingSensing;
 
-    private VehicleHandles _vehicleHandles;
+    private IVehicleHandles _vehicleHandles;
     private CarControlInterface _controller;
 
     private VRepObjectCreation _vrepCreator;
 
-    public Vehicle(VRepObjectCreation creator, VRepRemoteAPI vrep, int clientID, VehicleHandles vehicleHandles, CarControlInterface controller, RoadMap roadMap, IUpperLayerFactory upperLayerFactory, ILowerLayerFactory lowerLayerFactory)
+    public Vehicle(VRepObjectCreation creator, VRepRemoteAPI vrep, int clientID, IVehicleHandles vehicleHandles, CarControlInterface controller, RoadMap roadMap, IUpperLayerFactory upperLayerFactory, ILowerLayerFactory lowerLayerFactory)
     {
         _vrepCreator = creator;
         _vehicleHandles = vehicleHandles;
@@ -64,7 +65,7 @@ public class Vehicle implements IVehicle
         return _controller;
     }
 
-    public VehicleHandles getVehicleHandles()
+    public IVehicleHandles getVehicleHandles()
     {
         return _vehicleHandles;
     }

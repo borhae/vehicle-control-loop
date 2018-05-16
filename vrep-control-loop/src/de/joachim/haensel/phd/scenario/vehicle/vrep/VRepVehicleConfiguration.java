@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.vehicle.vrep;
 
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
@@ -12,6 +13,8 @@ public class VRepVehicleConfiguration implements IVehicleConfiguration
     private double _posX;
     private double _posY;
     private double _posZ;
+    private Vector2D _orientation;
+    private RoadMap _roadMap;
 
     @Override
     public IVehicleConfiguration upperCtrlFactory(IUpperLayerFactory upperFact)
@@ -33,7 +36,20 @@ public class VRepVehicleConfiguration implements IVehicleConfiguration
         _posX = x;
         _posY = y;
         _posZ = z;
-        return null;
+        return this;
+    }
+    
+    @Override
+    public void setOrientation(Vector2D orientation)
+    {
+        _orientation = orientation;
+    }
+
+    @Override
+    public IVehicleConfiguration setRoadMap(RoadMap roadMap)
+    {
+        _roadMap = roadMap;
+        return this;
     }
 
     @Override
@@ -72,4 +88,9 @@ public class VRepVehicleConfiguration implements IVehicleConfiguration
         return _upperFact;
     }
 
+    @Override
+    public Vector2D getOrientation()
+    {
+        return _orientation;
+    }
 }

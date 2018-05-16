@@ -21,6 +21,7 @@ import javax.xml.bind.Unmarshaller;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import sumobindings.EdgeType;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;
@@ -213,6 +214,63 @@ public class RoadMap
         }
         return curClosest;
     }
+
+    public Line2D getClosestLineFor(Position2D position)
+    {
+        LaneType closestLane = getClosestLaneFor(position);
+        
+        String[] coordinateList = closestLane.getShape().split(" ");
+        List<Line2D> lines = createLines(coordinateList);
+        double locallyMinimalDistance = Double.MAX_VALUE;
+        Line2D locallyClosestLine = lines.get(0);
+        for (Line2D curLine : lines)
+        {
+            double curDistance = curLine.distance(position);
+            if(curDistance < locallyMinimalDistance)
+            {
+                locallyMinimalDistance = curDistance;
+                locallyClosestLine = curLine;
+            }
+        }
+        return locallyClosestLine;
+    }
+
+    
+    public Position2D getClosestPointOnMap(Position2D position)
+    {
+        Collection<LaneType> lanes = _nameToLaneMap.values();
+        if(lanes.isEmpty())
+        {
+            return new Position2D(0.0, 0.0);
+        }
+        Line2D closestLine = null;
+
+        double minimalDistance = Double.MAX_VALUE;
+        for (LaneType curLane : lanes)
+        {
+            String[] coordinateList = curLane.getShape().split(" ");
+            List<Line2D> lines = createLines(coordinateList);
+            double locallyMinimalDistance = Double.MAX_VALUE;
+            Line2D locallyClosestLine = lines.get(0);
+            for (Line2D curLine : lines)
+            {
+                double curDistance = curLine.distance(position);
+                if(curDistance < locallyMinimalDistance)
+                {
+                    locallyMinimalDistance = curDistance;
+                    locallyClosestLine = curLine;
+                }
+            }
+            
+            if(locallyMinimalDistance < minimalDistance)
+            {
+                minimalDistance = locallyMinimalDistance;
+                closestLine = locallyClosestLine;
+            }
+        }
+        Vector2D closestLineAsVector = new Vector2D(closestLine);
+        return closestLineAsVector.getPerpendicularIntersection(position);
+    }
     
     public JunctionType getClosestJunctionFor(Position2D currentPosition)
     {
@@ -371,13 +429,14 @@ public class RoadMap
         return transformedAsString.collect(Collectors.joining(" "));
     }
 
-    public void center(double centerX, double centerY)
+    public TMatrix center(double centerX, double centerY)
     {
         XYMinMax dimensions = computeMapDimensions();
         double offX = centerX - dimensions.minX() - dimensions.distX()/2.0;
         double offY = centerY - dimensions.minY() - dimensions.distY()/2.0;
         TMatrix m = new TMatrix(1.0, offX, offY);
         transform(m);
+        return m;
     }
 
     public XYMinMax computeMapDimensions()

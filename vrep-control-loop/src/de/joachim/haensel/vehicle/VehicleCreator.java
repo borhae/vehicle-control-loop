@@ -4,6 +4,8 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
+import de.joachim.haensel.phd.scenario.vehicle.IVehicleHandles;
+import de.joachim.haensel.phd.scenario.vehicle.VehicleHandles;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.CarControlInterface;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import de.joachim.haensel.vrepshapecreation.dummy.DummyParameters;
@@ -93,7 +95,7 @@ public class VehicleCreator
     {
         try
         {
-            VehicleHandles vehicleHandles = new VehicleHandles();
+            IVehicleHandles vehicleHandles = new VehicleHandles();
 
             float baseLength = (float) (VWPoloDimensions.getWheelbase() + 100.0)/1000;
             baseLength *= _scaleFactor;

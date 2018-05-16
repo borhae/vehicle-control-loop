@@ -13,6 +13,7 @@ import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.phd.scenario.vehicle.IVehicleHandles;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.CarControlInterface;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingObject;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
@@ -21,7 +22,7 @@ import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
 {
-    private VehicleHandles _vehicleHandles;
+    private IVehicleHandles _vehicleHandles;
     private Position2D _curPosition;
     private Position2D _rearWheelCenterPosition;
     private Position2D _frontWheelCenterPosition;
@@ -32,7 +33,7 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     private int _clientID;
     private Map<String, DrawingObject> _drawingObjectsStore;
     
-    public VehicleActuatorsSensors(VehicleHandles vehicleHandles, CarControlInterface controller, VRepRemoteAPI vrep, int clientID)
+    public VehicleActuatorsSensors(IVehicleHandles vehicleHandles, CarControlInterface controller, VRepRemoteAPI vrep, int clientID)
     {
         _vehicleHandles = vehicleHandles;
         _controlInterface = controller;
