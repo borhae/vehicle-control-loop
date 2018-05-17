@@ -40,7 +40,7 @@ public class VRepLoadModelVehicleFactory implements IVehicleFactory
         try
         {
             IntW baseHandle = new IntW(0);
-            _vrep.simxLoadModel(_clientID, Paths.get("./res/simcarmodel/vehicle.ttm").toAbsolutePath().toString(), 0, baseHandle, remoteApi.simx_opmode_blocking);
+            _vrep.simxLoadModel(_clientID, Paths.get("./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm").toAbsolutePath().toString(), 0, baseHandle, remoteApi.simx_opmode_blocking);
             VehicleWithCameraHandles handles = new VehicleWithCameraHandles();
             
             handles.setAxisRearLeft(getHandle("axisRearLeft"));
@@ -77,6 +77,8 @@ public class VRepLoadModelVehicleFactory implements IVehicleFactory
             
             handles.setCamera(getHandle("autoFittingCamera"));
             
+            handles.setCtrlScript(_objectCreator.getScriptAssociatedWithObject(handles.getPhysicalBody()));
+            
             CarControlInterface car = new CarControlInterface(_objectCreator, PHYSICAL_CAR_BODY_NAME, _vrep, _clientID, handles.getPhysicalBody());
             car.initialize();
             
@@ -88,8 +90,10 @@ public class VRepLoadModelVehicleFactory implements IVehicleFactory
             {
                 Vector2D orientation = vehicle.getOrientation();
                 double correctionAngle = Vector2D.computeAngle(orientation, orientationToAlignTo);
-                vehicle.setOrientation((float)correctionAngle, (float)0.0, (float)0.0);
+                vehicle.setOrientation((float)0.0, (float)0.0, (float)correctionAngle);
             }
+            
+            _objectCreator.addToDeletionList(handles.getAllObjectHandles());
             return vehicle;
         }
         catch (VRepException exc)

@@ -17,6 +17,7 @@ import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Point3D;
+import de.joachim.haensel.streamextensions.IndexAdder;
 import de.joachim.haensel.vrepshapecreation.dummy.DummyParameters;
 import de.joachim.haensel.vrepshapecreation.joints.JointParameters;
 import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
@@ -322,7 +323,7 @@ public class VRepObjectCreation
         _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "createMesh", callParamsI, callParamsF, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
     }
 
-    public void delete(List<Integer> handles) throws VRepException
+    public void deleteObjects(List<Integer> handles) throws VRepException
     {
         List<VRepException> exceptions = new ArrayList<>();
         Consumer<? super Integer> removeObject = handle -> {
@@ -345,5 +346,54 @@ public class VRepObjectCreation
             exceptions.forEach(excpetion -> exceptionString.append(excpetion.getMessage()));
             throw new VRepException(exceptionString.toString());
         }
+    }
+    
+    public void deleteScripts(List<Integer> handles) throws VRepException
+    {
+        List<VRepException> exceptions = new ArrayList<>();
+        Consumer<? super Integer> removeObject = handle -> {
+            try
+            {
+                IntWA callParamsI = new IntWA(1);
+                callParamsI.getArray()[0] = handle;
+                _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "simxRemoveScript", callParamsI, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+            }
+            catch (VRepException exc)
+            {
+
+                exceptions.add(exc);
+            }
+        };
+        if(exceptions.isEmpty())
+        {
+            handles.forEach(removeObject);
+        }
+        else
+        {
+            StringBuilder exceptionString = new StringBuilder();
+            exceptions.forEach(excpetion -> exceptionString.append(excpetion.getMessage()));
+            throw new VRepException(exceptionString.toString());
+        }
+    }
+
+    public void addToDeletionList(List<Integer> handlesToDelete) throws VRepException
+    {
+        IntWA callParamsI = new IntWA(handlesToDelete.size());
+        int[] paramArray = callParamsI.getArray();
+        Consumer<? super IndexAdder<Integer>> addToArray = cur -> 
+        {
+            paramArray[cur.idx()] = cur.v();
+        };
+        handlesToDelete.stream().map(IndexAdder.indexed()).forEachOrdered(addToArray);
+        _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "addToDeletionList", callParamsI, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+    }
+
+    public int getScriptAssociatedWithObject(int objectHandle) throws VRepException
+    {
+        IntWA callParamsI = new IntWA(1);
+        callParamsI.getArray()[0] = objectHandle;
+        IntWA callParamsO = new IntWA(1);
+        _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "simxGetScriptAssociatedWithObject", callParamsI, null, null, null, callParamsO, null, null, null, remoteApi.simx_opmode_blocking);
+        return callParamsO.getArray()[0];
     }
 }

@@ -29,6 +29,7 @@ public class VehicleHandles implements IVehicleHandles
     private int _axisRearRight;
     private int _motorFrontLeft;
     private int _motorFrontRight;
+    private int _ctrlScript;
 
     /* (non-Javadoc)
      * @see de.joachim.haensel.vehicle.IVehicleHandles#getPhysicalBody()
@@ -279,6 +280,12 @@ public class VehicleHandles implements IVehicleHandles
         return this;
     }
 
+    public IVehicleHandles setCtrlScript(int ctrlScript)
+    {
+        _ctrlScript = ctrlScript;
+        return this;
+    }
+    
     /* (non-Javadoc)
      * @see de.joachim.haensel.vehicle.IVehicleHandles#getRearLeftWheel()
      */
@@ -328,7 +335,7 @@ public class VehicleHandles implements IVehicleHandles
      * @see de.joachim.haensel.vehicle.IVehicleHandles#getAllHandles()
      */
     @Override
-    public List<Integer> getAllHandles()
+    public List<Integer> getAllObjectHandles()
     {
         List<Integer> result = new ArrayList<>();
         result.add(_physicalBody);
@@ -368,6 +375,15 @@ public class VehicleHandles implements IVehicleHandles
         result.add(_frontLeftWheelDummy);
         result.add(_frontRightWheelDummy);
         result.add(_rearWheelDummy);
+        return result;
+    }
+
+    @Override
+    public List<Integer> getAllScriptHandles()
+    {
+        List<Integer> result = new ArrayList<>();
+        //scripts
+        result.add(_ctrlScript);
         return result;
     }
 }

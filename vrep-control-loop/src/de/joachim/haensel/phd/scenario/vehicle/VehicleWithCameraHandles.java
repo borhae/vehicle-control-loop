@@ -12,9 +12,9 @@ public class VehicleWithCameraHandles extends VehicleHandles
     }
 
     @Override
-    public List<Integer> getAllHandles()
+    public List<Integer> getAllObjectHandles()
     {
-        List<Integer> handles = super.getAllHandles();
+        List<Integer> handles = super.getAllObjectHandles();
         handles.add(_cameraHandle);
         return handles;
     }

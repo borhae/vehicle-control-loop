@@ -1,11 +1,5 @@
 package de.joachim.haensel.phd.scenario.vehicle.test;
 
-import java.awt.Color;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -18,27 +12,20 @@ import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.debug.Speedometer;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
-import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.sumo2vrep.VRepMap;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.VRepLoadModelVehicleFactory;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.vehicle.NavigationController;
 import de.joachim.haensel.vehicle.PurePursuitController;
 import de.joachim.haensel.vehicle.PurePursuitParameters;
-import de.joachim.haensel.vehicle.Vehicle;
-import de.joachim.haensel.vehicle.VehicleActuatorsSensors;
-import de.joachim.haensel.vehicle.VehicleCreator;
-import de.joachim.haensel.vehiclecontrol.Navigator;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class DriveRoutesTest

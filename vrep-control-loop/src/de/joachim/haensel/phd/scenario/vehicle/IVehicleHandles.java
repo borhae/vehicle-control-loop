@@ -4,67 +4,70 @@ import java.util.List;
 
 public interface IVehicleHandles
 {
+    public IVehicleHandles setPhysicalBody(int physicalBodyHandle);
 
-    int getPhysicalBody();
+    public IVehicleHandles setRearLeftWheel(int rearLeftWheel);
 
-    IVehicleHandles setPhysicalBody(int physicalBodyHandle);
+    public IVehicleHandles setRearRightWheel(int rearRightWheel);
 
-    IVehicleHandles setRearLeftWheel(int rearLeftWheel);
+    public IVehicleHandles setFrontLeftWheel(int frontLeftWheel);
 
-    IVehicleHandles setRearRightWheel(int rearRightWheel);
+    public IVehicleHandles setFrontRightWheel(int frontRightWheel);
 
-    IVehicleHandles setFrontLeftWheel(int frontLeftWheel);
+    public IVehicleHandles setRearWheelVisualizationDummy(int rearWheelDummy);
 
-    IVehicleHandles setFrontRightWheel(int frontRightWheel);
+    public IVehicleHandles setDamperRearLeft(int damperRearLeft);
 
-    IVehicleHandles setRearWheelVisualizationDummy(int rearWheelDummy);
+    public IVehicleHandles setDamperRearRight(int damperRearRight);
 
-    IVehicleHandles setDamperRearLeft(int damperRearLeft);
+    public IVehicleHandles setDamperFrontLeft(int damperFrontLeft);
 
-    IVehicleHandles setDamperRearRight(int damperRearRight);
+    public IVehicleHandles setDamperFrontRight(int damperFrontRight);
 
-    IVehicleHandles setDamperFrontLeft(int damperFrontLeft);
+    public IVehicleHandles setSteeringFrontLeft(int steeringFrontLeft);
 
-    IVehicleHandles setDamperFrontRight(int damperFrontRight);
+    public IVehicleHandles setSteeringFrontRight(int steeringFrontRight);
 
-    IVehicleHandles setSteeringFrontLeft(int steeringFrontLeft);
+    public IVehicleHandles setConnectorDflSfl(int connectorDflSfl);
 
-    IVehicleHandles setSteeringFrontRight(int steeringFrontRight);
+    public IVehicleHandles setConnectorDfrSfr(int connectorDfrSfr);
 
-    IVehicleHandles setConnectorDflSfl(int connectorDflSfl);
+    public IVehicleHandles setConnectorDrlArl(int connectorDrlArl);
 
-    IVehicleHandles setConnectorDfrSfr(int connectorDfrSfr);
+    public IVehicleHandles setConnectorDrrArr(int connectorDrrArr);
 
-    IVehicleHandles setConnectorDrlArl(int connectorDrlArl);
+    public IVehicleHandles setConnectorSflMfl(int connectorSflMfl);
 
-    IVehicleHandles setConnectorDrrArr(int connectorDrrArr);
+    public IVehicleHandles setConnectorSfrMfr(int connectorSfrMfr);
 
-    IVehicleHandles setConnectorSflMfl(int connectorSflMfl);
+    public IVehicleHandles setFrontLeftWheelDummy(int frontLeftWheelDummy);
 
-    IVehicleHandles setConnectorSfrMfr(int connectorSfrMfr);
+    public IVehicleHandles setFrontRightWheelDummy(int frontRightWheelDummy);
 
-    IVehicleHandles setFrontLeftWheelDummy(int frontLeftWheelDummy);
+    public IVehicleHandles setAxisRearLeft(int axisRearLeft);
 
-    IVehicleHandles setFrontRightWheelDummy(int frontRightWheelDummy);
+    public IVehicleHandles setAxisRearRight(int axisRearRight);
 
-    IVehicleHandles setAxisRearLeft(int axisRearLeft);
+    public IVehicleHandles setMotorFrontLeft(int motorFrontLeft);
 
-    IVehicleHandles setAxisRearRight(int axisRearRight);
+    public IVehicleHandles setMotorFrontRight(int motorFrontRight);
+    
+    public IVehicleHandles setCtrlScript(int scriptAssociatedWithObject);
 
-    IVehicleHandles setMotorFrontLeft(int motorFrontLeft);
 
-    IVehicleHandles setMotorFrontRight(int motorFrontRight);
+    public int getPhysicalBody();
 
-    int getRearLeftWheel();
+    public int getRearLeftWheel();
 
-    int getRearRightWheel();
+    public int getRearRightWheel();
 
-    int getFrontLeftWheel();
+    public int getFrontLeftWheel();
 
-    int getFrontRightWheel();
+    public int getFrontRightWheel();
 
-    int getRearWheelDummy();
+    public int getRearWheelDummy();
 
-    List<Integer> getAllHandles();
+    public List<Integer> getAllObjectHandles();
 
+    public List<Integer> getAllScriptHandles();
 }

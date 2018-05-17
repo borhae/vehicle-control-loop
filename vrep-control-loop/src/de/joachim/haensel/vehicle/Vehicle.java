@@ -127,7 +127,8 @@ public class Vehicle implements IVehicle
     {
         try
         {
-            _vrepCreator.delete(_vehicleHandles.getAllHandles());
+            _vrepCreator.deleteScripts(_vehicleHandles.getAllScriptHandles());
+            _vrepCreator.deleteObjects(_vehicleHandles.getAllObjectHandles());
         }
         catch (VRepException exc)
         {

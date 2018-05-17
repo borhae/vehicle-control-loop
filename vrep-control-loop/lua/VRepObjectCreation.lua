@@ -7,6 +7,22 @@ deleteCreated = function(inInts, inFloats, inStrings, inBuffer)
 	return {}, {}, {}, "" 
 end
 
+addToDeletionList = function(inInts, inFloats, inStrings, inBuffer)
+  for _, curHandle in ipairs(inInts) do
+    table.insert(createdObjects, curHandle)
+  end
+  return {}, {}, {}, "" 
+end
+
+simxGetScriptAssociatedWithObject = function(inInts, inFloats, inStrings, inBuffer)
+  return {sim.getScriptAssociatedWithObject(inInts[1])}, {}, {}, "" 
+end
+
+simxRemoveScript = function(inInts, inFloats, inStrings, inBuffer)
+  sim.removeScript(inInts[1])
+  return {}, {}, {}, "" 
+end
+
 createEdge = function(inInts, inFloats, inStrings, inBuffer)
 --      simAddStatusbarMessage("Creating edge at: "..table_to_string(inFloats))
       local x1 = inFloats[1]
