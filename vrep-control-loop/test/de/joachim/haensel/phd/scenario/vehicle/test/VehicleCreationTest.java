@@ -95,7 +95,6 @@ public class VehicleCreationTest implements TestConstants
         vehicleConf.upperCtrlFactory(upperFact);
         vehicleConf.lowerCtrlFactory(lowerFact);
         vehicleConf.setPosition(0.0, 0.0, 3.0);
-//        vehicleConf.setRoadMap()
         return vehicleConf;
     }
     

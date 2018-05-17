@@ -58,10 +58,10 @@ public class VRepLoadModelVehicleFactory implements IVehicleFactory
             handles.setDamperRearLeft(getHandle("damperRearLeft"));
             handles.setDamperRearRight(getHandle("damperRearRight"));
             
-            handles.setFrontLeftWheel(getHandle("wheelRespondableFrontLeft"));
-            handles.setFrontRightWheel(getHandle("wheelRespondableFrontRight"));
-            handles.setRearLeftWheel(getHandle("wheelRespondableRearLeft"));
-            handles.setRearRightWheel(getHandle("wheelRespondableRearRight"));
+            handles.setFrontLeftWheel(getHandle("frontLeftWheel"));
+            handles.setFrontRightWheel(getHandle("frontRightWheel"));
+            handles.setRearLeftWheel(getHandle("rearLeftWheel"));
+            handles.setRearRightWheel(getHandle("rearRightWheel"));
             
             handles.setMotorFrontLeft(getHandle("motorFrontLeft"));
             handles.setMotorFrontRight(getHandle("motorFrontRight"));
@@ -81,12 +81,15 @@ public class VRepLoadModelVehicleFactory implements IVehicleFactory
             car.initialize();
             
             Vehicle vehicle = new Vehicle(_objectCreator, _vrep, _clientID, handles, car, _vehicleConf.getMap(), _vehicleConf.getUpperCtrlFactory(), _vehicleConf.getLowerCtrlFactory());
-            vehicle.setPosition((float)_vehicleConf.getXPos(), (float)_vehicleConf.getYPos(), (float)_vehicleConf.getZPos());
 
+            vehicle.setPosition((float)_vehicleConf.getXPos(), (float)_vehicleConf.getYPos(), (float)_vehicleConf.getZPos());
             Vector2D orientationToAlignTo = _vehicleConf.getOrientation();
-            Vector2D orientation = vehicle.getOrientation();
-            double correctionAngle = Vector2D.computeAngle(orientation, orientationToAlignTo);
-            vehicle.setOrientation((float)0.0, (float)correctionAngle, (float)0.0);
+            if(orientationToAlignTo != null)
+            {
+                Vector2D orientation = vehicle.getOrientation();
+                double correctionAngle = Vector2D.computeAngle(orientation, orientationToAlignTo);
+                vehicle.setOrientation((float)correctionAngle, (float)0.0, (float)0.0);
+            }
             return vehicle;
         }
         catch (VRepException exc)
