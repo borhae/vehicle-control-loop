@@ -189,12 +189,67 @@ public class Vector2DTest
     }
     
     @Test
-    public void testVectorIntersect()
+    public void testVectorIntersect1()
     {
         Vector2D v1 = new Vector2D(new Position2D(-1.0, -1.0), new Position2D(1.0, 1.0));
         Vector2D v2 = new Vector2D(new Position2D(-1.0, 1.0), new Position2D(1.0, -1.0));
-        Position2D actual = Vector2D.intersect(v1, v2);
+        Position2D actual = Vector2D.rangedIntersect(v1, v2);
         Position2D expected = new Position2D(0.0, 0.0);
+        
+        assertEquals(expected, actual);
+    }
+    
+    @Test
+    public void testVectorIntersect2()
+    {
+        Vector2D v1 = new Vector2D(new Position2D(-1.0, -1.0), new Position2D(1.0, 1.0));
+        Vector2D v2 = new Vector2D(new Position2D(-1.0, 1.0), new Position2D(1.0, -1.0));
+        Position2D actual = Vector2D.rangedIntersect(v1, v2);
+        Position2D expected = new Position2D(0.0, 0.0);
+        
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testVectorIntersect3()
+    {
+        Vector2D v1 = new Vector2D(new Position2D(-2.0, -3.0), new Position2D(4, 5));
+        Vector2D v2 = new Vector2D(new Position2D(-3.0, 4.0), new Position2D(5.0, -2.0));
+        Position2D actual = Vector2D.rangedIntersect(v1, v2);
+        Position2D expected = new Position2D(1.0, 1.0);
+        
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testVectorIntersect4()
+    {
+        Vector2D v1 = new Vector2D(new Position2D(-3.0, 4.0), new Position2D(5.0, -2.0));
+        Vector2D v2 = new Vector2D(new Position2D(-2.0, -3.0), new Position2D(4, 5));
+        Position2D actual = Vector2D.rangedIntersect(v1, v2);
+        Position2D expected = new Position2D(1.0, 1.0);
+        
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testVectorIntersectNonIntersectingVectors()
+    {
+        Vector2D v1 = new Vector2D(-2.0, -3.0, 1.5, 2.0);
+        Vector2D v2 = new Vector2D(new Position2D(-3.0, 4.0), new Position2D(5.0, -2.0));
+        Position2D actual = Vector2D.rangedIntersect(v1, v2);
+        Position2D expected = null;
+        
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testVectorIntersectSingleUnranged1()
+    {
+        Vector2D v1 = new Vector2D(-2.0, -3.0, 1.5, 2.0);
+        Vector2D v2 = new Vector2D(new Position2D(-3.0, 4.0), new Position2D(5.0, -2.0));
+        Position2D actual = Vector2D.unrangedOnFirstIntersect(v1, v2);
+        Position2D expected = new Position2D(1.0, 1.0);
         
         assertEquals(expected, actual);
     }
@@ -227,7 +282,7 @@ public class Vector2DTest
          Vector2D v = new Vector2D(0.0, 0.0, 1.0, 0.0);
          Position2D p = new Position2D(0.5, 0.5);
          
-         Position2D actual = v.getPerpendicularIntersection(p);
+         Position2D actual = Vector2D.getUnrangedPerpendicularIntersection(v, p);
          Position2D expected = new Position2D(0.5, 0.0);
          
          assertEquals(expected, actual);
@@ -239,7 +294,7 @@ public class Vector2DTest
          Vector2D v = new Vector2D(0.0, 0.0, 3.0, 4.0);
          Position2D p = new Position2D(-4.0, 3.0);
          
-         Position2D actual = v.getPerpendicularIntersection(p);
+         Position2D actual = Vector2D.getUnrangedPerpendicularIntersection(v, p);
          Position2D expected = new Position2D(0.0, 0.0);
          
          assertEquals(expected, actual);

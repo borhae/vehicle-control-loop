@@ -136,21 +136,63 @@ public class Vector2D
     }
 
     /**
-     * Perpendicular (smallest) distance of point to vector
-     * @param point to be considered
-     * @return The length of perpendicular between given point and this vector
+     * Perpendicular distance or closest point distance
+     * @param p
+     * @return
      */
-    public double distance(Position2D point)
+    public double unboundedDistance(Position2D p)
     {
-        double pX = point.getX();
-        double pY = point.getY();
-        double a = computeLength(_bX -pX, _bY - pY);
-        double b = computeLength(_bX + _dX - pX, _bY + _dY - pY);
-        double s = (a + b + _length)/2.0f;
-        double h = _length/2.0f*Math.sqrt(s*(s-a)*(s-b)*(s-_length));
-        return h;
-    }
+        double x1 = _bX;
+        double y1 = _bY;
+        double x2 = _bX + _dX;
+        double y2 = _bY + _dY;
+        double xP = p.getX();
+        double yP = p.getY();
+        
+        
+        double a = xP - x1;
+        double b = yP - y1;
+        double c = _dX;
+        double d = _dY;
 
+        double dot = a * c + b * d;
+        double squaredLength = c * c + d * d;
+        
+        double param;
+        if (squaredLength != 0) 
+        {
+            param = dot / squaredLength;
+        }
+        else
+        {
+            // zero length vector
+            return Position2D.distance(p, getBase());
+        }
+
+        double xOnVector;
+        double yOnVector;
+
+        if (param < 0) 
+        {
+          xOnVector = x1;
+          yOnVector = y1;
+        }
+        else if (param > 1) 
+        {
+          xOnVector = x2;
+          yOnVector = y2;
+        }
+        else 
+        {
+          xOnVector = x1 + param * c;
+          yOnVector = y1 + param * d;
+        }
+
+        double dx = xP - xOnVector;
+        double dy = yP - yOnVector;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+    
     public static double computeAngle(Vector2D a, Vector2D b)
     {
         double dotProduct = Vector2D.dotProduct(a, b);
@@ -382,10 +424,10 @@ public class Vector2D
         // t = (a.base - b.base) x a.dir / b.dir x a.dir
         // u = (a.base - b.base) x b.dir / b.dir x a.dir
         Position2D basDiff = Position2D.minus(a.getBase(), b.getBase());
-        double crossDir = Position2D.crossProduct2D(b.getDir(), a.getDir());
+        double crossDir = Position2D.crossProduct(b.getDir(), a.getDir());
         
-        double tNumerator = Position2D.crossProduct2D(basDiff, a.getDir());
-        double uNumerator = Position2D.crossProduct2D(basDiff, b.getDir());
+        double tNumerator = Position2D.crossProduct(basDiff, a.getDir());
+        double uNumerator = Position2D.crossProduct(basDiff, b.getDir());
         
         if(crossDir != 0.0)
         {
@@ -399,37 +441,105 @@ public class Vector2D
         return Double.NaN;
     }
 
-    public static Position2D intersect(Vector2D a, Vector2D b)
+    public static Position2D rangedIntersect(Vector2D a, Vector2D b)
     {
-        // t = (a.base - b.base) x a.dir / b.dir x a.dir
-        // u = (a.base - b.base) x b.dir / b.dir x a.dir
-        Position2D basDiff = Position2D.minus(a.getBase(), b.getBase());
-        double crossDir = Position2D.crossProduct2D(b.getDir(), a.getDir());
-        
-        double tNumerator = Position2D.crossProduct2D(basDiff, a.getDir());
-        double uNumerator = Position2D.crossProduct2D(basDiff, b.getDir());
-        
-        if(crossDir != 0.0)
+        Position2D p = a.getBase();
+        Position2D r = a.getDir();
+        Position2D q = b.getBase();
+        Position2D s = b.getDir();
+        // t = (q - p) x s / (r x s) -> t is on a
+        // u = (q - p) x r / (r x s) == (p - q) x r / (s x r)-> u is on b
+        // t = qp x s / rs
+        // u = qp x r / rs
+        Position2D qp = Position2D.minus(q, p);
+        double rs = Position2D.crossProduct(r, s);
+        double tNominator = Position2D.crossProduct(qp, s);
+        double uNominator = Position2D.crossProduct(qp, r);
+        if(rs == 0)
         {
-            double t = tNumerator / crossDir;
-            double u = uNumerator / crossDir;
-            if(((0 <= t) && (t <= 1)) && ((0 <= u) && (u <= 1)))
+            //lines are parallel
+            if(uNominator == 0)
             {
-                return Position2D.plus(b.getBase(), Position2D.multiply(t, b.getDir()));
+                //lines are collinear, let's not deal yet with it
+                //TODO fix this!!!
+                return null;
+            }
+            else
+            {
+                //No intersection
+                return null;
             }
         }
-        return null;
+        else
+        {
+            double t = tNominator / rs;
+            double u = uNominator / rs;
+            if(((0 <= t) && (t <= 1)) && ((0 <= u) && (u <= 1))) 
+            {
+                return Position2D.plus(p, Position2D.multiply(t, r));
+            }
+            else
+            {
+                //intersection outside of vectors length
+                return null; 
+            }
+        }
     }
     
+    public static Position2D unrangedOnFirstIntersect(Vector2D a, Vector2D b)
+    {
+        Position2D p = a.getBase();
+        Position2D r = a.getDir();
+        Position2D q = b.getBase();
+        Position2D s = b.getDir();
+        // t = (q - p) x s / (r x s) -> t is on a
+        // u = (q - p) x r / (r x s) == (p - q) x r / (s x r)-> u is on b
+        // t = qp x s / rs
+        // u = qp x r / rs
+        Position2D qp = Position2D.minus(q, p);
+        double rs = Position2D.crossProduct(r, s);
+        double tNominator = Position2D.crossProduct(qp, s);
+        double uNominator = Position2D.crossProduct(qp, r);
+        if(rs == 0)
+        {
+            //lines are parallel
+            if(uNominator == 0)
+            {
+                //lines are collinear, let's not deal yet with it
+                //TODO fix this!!!
+                return null;
+            }
+            else
+            {
+                //No intersection
+                return null;
+            }
+        }
+        else
+        {
+            double t = tNominator / rs;
+            double u = uNominator / rs;
+            if(((0 <= u) && (u <= 1))) 
+            {
+                return Position2D.plus(q, Position2D.multiply(u, s));
+            }
+            else
+            {
+                //intersection outside of vectors length
+                return null; 
+            }
+        }
+    }
+
     public static Position2D unrangedIntersect(Vector2D a, Vector2D b)
     {
         // t = (a.base - b.base) x a.dir / b.dir x a.dir
         // u = (a.base - b.base) x b.dir / b.dir x a.dir
         Position2D basDiff = Position2D.minus(a.getBase(), b.getBase());
-        double crossDir = Position2D.crossProduct2D(b.getDir(), a.getDir());
+        double crossDir = Position2D.crossProduct(b.getDir(), a.getDir());
         
-        double tNumerator = Position2D.crossProduct2D(basDiff, a.getDir());
-        double uNumerator = Position2D.crossProduct2D(basDiff, b.getDir());
+        double tNumerator = Position2D.crossProduct(basDiff, a.getDir());
+        double uNumerator = Position2D.crossProduct(basDiff, b.getDir());
 
         //if crossDir is 0.0 we have parallel lines...
         if(crossDir != 0.0)
@@ -454,13 +564,17 @@ public class Vector2D
         return result;
     }
 
-    public Position2D getPerpendicularIntersection(Position2D p)
+    public static Position2D getUnrangedPerpendicularIntersection(Vector2D v, Position2D p)
     {
-        double lambdaX = _normX * (p.getX() - _bX);
-        double lambdaY = _normY * (p.getY() - _bY);
-        double lambda = lambdaX + lambdaY;
-        Position2D result = new Position2D(((_normX * lambda) + _bX), ((_normY * lambda) + _bY));
-        return result;
+        Vector2D vP = new Vector2D(p.getX(), p.getY(), -v.getdY(), v.getdX());
+        return unrangedIntersect(v, vP);
+    }
+    
+    public static Position2D getPerpendicularIntersection(Vector2D v, Position2D p)
+    {
+        Vector2D vP = new Vector2D(p.getX(), p.getY(), -v.getdY(), v.getdX());
+        
+        return unrangedOnFirstIntersect(vP, v);
     }
     
     public Vector2D scale(double s)

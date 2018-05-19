@@ -205,7 +205,7 @@ public class Position2D
         return new Position2D(a._x + b._x, a._y + b._y);
     }
 
-    public static double crossProduct2D(Position2D a, Position2D b)
+    public static double crossProduct(Position2D a, Position2D b)
     {
         return a._x * b._y - a._y * b._x;
     }

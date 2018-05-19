@@ -49,4 +49,9 @@ public class Node
     {
         return _baseJunction.getId();
     }
+
+    public Collection<Edge> getIncomingEdges()
+    {
+        return _incomming.values();
+    }
 }

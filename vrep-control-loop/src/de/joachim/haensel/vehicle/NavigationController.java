@@ -53,7 +53,8 @@ public class NavigationController implements IUpperLayerControl
         IVelocityAssignerFactory velocityAssignerFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, maxVelocity);
         ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , _segmentSize);
         trajectorizer.addSegmentBuildingListeners(_segmentBuildingListeners);
-        _segmentBuffer.fillBuffer(trajectorizer.createTrajectory(routeBasis));
+        List<Trajectory> allSegments = trajectorizer.createTrajectory(routeBasis);
+        _segmentBuffer.fillBuffer(allSegments);
     }
 
     @Override

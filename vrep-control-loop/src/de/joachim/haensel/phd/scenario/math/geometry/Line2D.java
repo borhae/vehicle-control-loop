@@ -43,13 +43,7 @@ public class Line2D
 
     public double distance(Position2D position)
     {
-        double pX = position.getX();
-        double pY = position.getY();
-        double a = length(pX, pY, _x1, _y1);
-        double b = length(_x2, _y2, pX, pY);
-        double s = (a + b + _c)/2.0f;
-        double h = _c/2.0f*Math.sqrt(s*(s-a)*(s-b)*(s-_c));
-        return h;
+        return new Vector2D(this).unboundedDistance(position);
     }
     
     public double length()
@@ -127,5 +121,15 @@ public class Line2D
     public static LinkedList<Vector2D> lineListToVectorList(List<Line2D> route)
     {
         return route.stream().map(line -> new Vector2D(line)).collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    public Position2D getP1()
+    {
+        return new Position2D(_x1, _y1);
+    }
+
+    public Position2D getP2()
+    {
+        return new Position2D(_x2, _y2);
     }
 }

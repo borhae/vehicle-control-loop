@@ -73,7 +73,7 @@ public class VRepVehicleConfiguration implements IVehicleConfiguration
     @Override
     public RoadMap getMap()
     {
-        return null;
+        return _roadMap;
     }
 
     @Override

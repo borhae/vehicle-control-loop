@@ -250,26 +250,36 @@ public class RoadMap
         {
             String[] coordinateList = curLane.getShape().split(" ");
             List<Line2D> lines = createLines(coordinateList);
-            double locallyMinimalDistance = Double.MAX_VALUE;
-            Line2D locallyClosestLine = lines.get(0);
             for (Line2D curLine : lines)
             {
-                double curDistance = curLine.distance(position);
-                if(curDistance < locallyMinimalDistance)
+                Vector2D v = new Vector2D(curLine);
+
+                double curDistance = v.unboundedDistance(position);
+                if(curDistance < minimalDistance)
                 {
-                    locallyMinimalDistance = curDistance;
-                    locallyClosestLine = curLine;
+                    minimalDistance = curDistance;
+                    closestLine = curLine;
                 }
-            }
-            
-            if(locallyMinimalDistance < minimalDistance)
-            {
-                minimalDistance = locallyMinimalDistance;
-                closestLine = locallyClosestLine;
             }
         }
         Vector2D closestLineAsVector = new Vector2D(closestLine);
-        return closestLineAsVector.getPerpendicularIntersection(position);
+        Position2D intersectionPoint = Vector2D.getPerpendicularIntersection(closestLineAsVector, position);
+        if(intersectionPoint == null)
+        {
+            Position2D p1 = closestLine.getP1();
+            double distP1 = position.distance(p1);
+            Position2D p2 = closestLine.getP2();
+            double distP2 = position.distance(p2);
+            if(distP1 < distP2)
+            {
+                intersectionPoint = p1;
+            }
+            else
+            {
+                intersectionPoint = p2;
+            }
+        }
+        return intersectionPoint;
     }
     
     public JunctionType getClosestJunctionFor(Position2D currentPosition)
@@ -345,10 +355,10 @@ public class RoadMap
         for(int idx = 0; idx < edges.size(); idx++)
         {
             EdgeType curEdge = edges.get(idx);
-            transformEdge(curEdge, transformationMatrix);     
+            transformEdge(curEdge, transformationMatrix);
         }
     }
-    
+
     private void transformJunction(JunctionType junction, TMatrix transformationMatrix)
     {
         //ignore z-part since we only deal with 2d maps yet

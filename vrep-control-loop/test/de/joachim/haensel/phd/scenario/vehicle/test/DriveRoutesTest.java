@@ -88,7 +88,6 @@ public class DriveRoutesTest
         
         Position2D startPosition = new Position2D(5747.01f, 2979.22f).transform(scaleOffsetMatrix);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).transform(scaleOffsetMatrix);
-        roadMap.getClosestPointOnMap(startPosition);
 
         IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, 1.0f);
         IVehicleConfiguration vehicleConf = createConfiguration(roadMap, startPosition, destinationPosition);
@@ -113,7 +112,7 @@ public class DriveRoutesTest
         {
             exc.printStackTrace();
         }
-        DebugParams debParam = new DebugParams();
+        DebugParams debParam = new DebugParams(); 
         debParam.setSimulationDebugMarkerHeight(scaleFactor);
         Speedometer speedometer = Speedometer.createWindow();
         debParam.setSpeedometer(speedometer);
