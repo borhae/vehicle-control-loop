@@ -71,7 +71,10 @@ public class Navigator
         }
 
         List<Line2D> beginningSections = computeSectionsBetweenPosAndNode(path.get(0), _currentPosition);
-        result.addAll(0, beginningSections);
+        if(beginningSections != null)
+        {
+            result.addAll(0, beginningSections);
+        }
         return result;
     }
 
@@ -115,8 +118,15 @@ public class Navigator
                 }
             }
         }
-        List<Line2D> lanesBetweenCurrentPositionAndFirstJunction = closestResolvedLane.subList(closestSectionIdx, closestResolvedLane.size());
-        return lanesBetweenCurrentPositionAndFirstJunction;
+        if(closestResolvedLane == null)
+        {
+            return null;
+        }
+        else
+        {
+            List<Line2D> lanesBetweenCurrentPositionAndFirstJunction = closestResolvedLane.subList(closestSectionIdx, closestResolvedLane.size());
+            return lanesBetweenCurrentPositionAndFirstJunction;
+        }
     }
 
     private EdgeType getEdgeBetween(Node cur, Node next)

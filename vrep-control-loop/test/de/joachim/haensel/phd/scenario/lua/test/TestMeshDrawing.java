@@ -53,7 +53,7 @@ public class TestMeshDrawing
         indices.add(0);
         indices.add(1);
         
-        _objectCreator.createMesh(vertices, indices, "MyMesh");
+        _objectCreator.createMesh(vertices, indices, "MyMesh", false);
         System.out.println("can you see me in vrep?");
     }
 
@@ -76,7 +76,7 @@ public class TestMeshDrawing
         indices.add(3);
         indices.add(2);
         
-        _objectCreator.createMesh(vertices, indices, "MyMesh");
+        _objectCreator.createMesh(vertices, indices, "MyMesh", false);
         System.out.println("can you see me in vrep?");
     }
 }

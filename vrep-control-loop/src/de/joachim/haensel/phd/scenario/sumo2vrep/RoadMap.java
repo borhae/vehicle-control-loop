@@ -238,7 +238,11 @@ public class RoadMap
     
     public Position2D getClosestPointOnMap(Position2D position)
     {
-        Collection<LaneType> lanes = _nameToLaneMap.values();
+        JunctionType closestJunction = getClosestJunctionFor(position);
+        Node node = _navigableNetwork.get(closestJunction);
+        Collection<Edge> incomingEdges = node.getIncomingEdges();
+        List<LaneType> lanes = new ArrayList<>();
+        incomingEdges.forEach(edge -> lanes.addAll(edge.getSumoEdge().getLane()));
         if(lanes.isEmpty())
         {
             return new Position2D(0.0, 0.0);
@@ -281,7 +285,7 @@ public class RoadMap
         }
         return intersectionPoint;
     }
-    
+
     public JunctionType getClosestJunctionFor(Position2D currentPosition)
     {
         Collection<JunctionType> junctions = _nameToJunctionMap.values();

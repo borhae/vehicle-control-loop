@@ -48,16 +48,21 @@ public class NavigationTest implements TestConstants
     }
     
     @Test
-    public void testNavigationOn3JunctionMap()
+    public void testNavigationOn3JunctionMap() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/testing3Junctions2Edges2Lanes.net.xml");
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0, 0.0);
-        Navigator navigator = new Navigator(roadMap);
-        Position2D startPosition = new Position2D(11.4f, 101.4f);
-        Position2D destinationPosition = new Position2D(101.81f, 9.23f);
-        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
+        
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createSimplesShapeBasedMap(roadMap);
+
+        Position2D startPosition = new Position2D(11.4f, 101.4f);
+        Position2D destinationPosition = new Position2D(101.81f, 9.23f);
+        drawPosition(startPosition, Color.BLACK, _objectCreator, "startPosition");
+        drawPosition(destinationPosition, Color.GREEN, _objectCreator, "destinationPosition");
+
+        Navigator navigator = new Navigator(roadMap);
+        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         drawRoute(route, _objectCreator);
     }
 
@@ -86,18 +91,19 @@ public class NavigationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMeshBasedMap(roadMap);
-
-        Navigator navigator = new Navigator(roadMap);
+        
         Position2D startPosition = new Position2D(5747.01f, 2979.22f);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
+        drawPosition(startPosition, Color.ORANGE, _objectCreator, "start");
+        drawPosition(destinationPosition, Color.BLUE, _objectCreator, "goal");
+
         Position2D closestToStartOnMap = roadMap.getClosestPointOnMap(startPosition);
         Position2D closestToDestinationOnMap = roadMap.getClosestPointOnMap(destinationPosition);
         
-        drawPosition(startPosition, Color.ORANGE, _objectCreator, "start");
-        drawPosition(destinationPosition, Color.BLUE, _objectCreator, "goal");
         drawPosition(closestToStartOnMap, Color.ORANGE, _objectCreator, "startOnMap");
         drawPosition(closestToDestinationOnMap, Color.BLUE, _objectCreator, "goalOnMap");
         
+        Navigator navigator = new Navigator(roadMap);
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         drawRoute(route, _objectCreator);
         System.out.println("done");
@@ -135,7 +141,7 @@ public class NavigationTest implements TestConstants
         
         Navigator navigator = new Navigator(roadMap);
         Position2D startPosition = new Position2D(29.38,91.10);
-        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f);
+        Position2D destinationPosition = new Position2D(40.0, -80);
         drawPosition(startPosition, Color.ORANGE, _objectCreator, "start");
         drawPosition(destinationPosition, Color.BLUE, _objectCreator, "goal");
         Position2D closestToStartOnMap = roadMap.getClosestPointOnMap(startPosition);

@@ -15,7 +15,7 @@ public class VehicleWithCameraHandles extends VehicleHandles
     public List<Integer> getAllObjectHandles()
     {
         List<Integer> handles = super.getAllObjectHandles();
-        handles.add(_cameraHandle);
+//        handles.add(_cameraHandle);
         return handles;
     }
 }

@@ -53,6 +53,7 @@ public class Vehicle implements IVehicle
     public void activateDebugging(DebugParams params)
     {
         _lowerControlLayer.activateDebugging((IVrepDrawing)_actuatingSensing, params);
+        _upperControlLayer.activateDebugging(params);
     }
     
     public void deacvtivateDebugging()

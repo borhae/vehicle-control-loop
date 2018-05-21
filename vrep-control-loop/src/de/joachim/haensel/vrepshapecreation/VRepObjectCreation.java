@@ -295,11 +295,39 @@ public class VRepObjectCreation
         _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "textureOnRectangle", callParamsI, null, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
     }
 
-    public void createMesh(List<Point3D> vertices, List<Integer> indices, String name) throws VRepException
+    public void createMeshInSimulation(List<Point3D> vertices, List<Integer> indices, String name, boolean inSimulation) throws VRepException
     {
         IntWA callParamsI = new IntWA(indices.size());
         int[] intParameters = callParamsI.getArray();
+        intParameters[0] = inSimulation ? 0 : 1;
+        for(int idx = 0; idx < intParameters.length; idx++)
+        {
+            intParameters[idx] = indices.get(idx);
+        }
         
+        FloatWA callParamsF = new FloatWA(vertices.size() * 3);
+        float[] floatParameters = callParamsF.getArray();
+        
+        for (int idx = 0; idx < vertices.size(); idx++)
+        {
+            int arrayIndex = idx * 3;
+            double[] verticeArray = vertices.get(idx).getArray();
+            floatParameters[arrayIndex] = (float)verticeArray[0];
+            floatParameters[arrayIndex + 1] = (float)verticeArray[1];
+            floatParameters[arrayIndex + 2] = (float)verticeArray[2];
+        }
+        StringWA callParamsS = new StringWA(1);
+        String[] stringParameters = callParamsS.getArray();
+        stringParameters[0] = name;
+        
+        _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "createMeshInSimulation", callParamsI, callParamsF, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+    }
+
+    public void createMesh(List<Point3D> vertices, List<Integer> indices, String name, boolean inSimulation) throws VRepException
+    {
+        IntWA callParamsI = new IntWA(indices.size());
+        int[] intParameters = callParamsI.getArray();
+        intParameters[0] = inSimulation ? 0 : 1;
         for(int idx = 0; idx < intParameters.length; idx++)
         {
             intParameters[idx] = indices.get(idx);
@@ -385,7 +413,7 @@ public class VRepObjectCreation
             paramArray[cur.idx()] = cur.v();
         };
         handlesToDelete.stream().map(IndexAdder.indexed()).forEachOrdered(addToArray);
-        _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "addToDeletionList", callParamsI, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+        _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "addAllToDeletionList", callParamsI, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
     }
 
     public int getScriptAssociatedWithObject(int objectHandle) throws VRepException

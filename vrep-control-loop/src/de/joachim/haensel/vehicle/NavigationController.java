@@ -3,6 +3,7 @@ package de.joachim.haensel.vehicle;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
@@ -24,6 +25,7 @@ public class NavigationController implements IUpperLayerControl
     private SegmentBuffer _segmentBuffer;
     private double _segmentSize;
     private List<ISegmentBuildingListener> _segmentBuildingListeners;
+    private DebugParams _debuggingParameters;
     
     public NavigationController(double segmentSize)
     {
@@ -49,12 +51,14 @@ public class NavigationController implements IUpperLayerControl
         Navigator navigator = new Navigator(_roadMap);
         navigator.addSegmentBuildingListeners(_segmentBuildingListeners);
         List<Line2D> routeBasis = navigator.getRoute(currentPosition, targetPosition);
+        _debuggingParameters.notifyNavigationListenersRouteChanged(routeBasis);
         ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
         IVelocityAssignerFactory velocityAssignerFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, maxVelocity);
         ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , _segmentSize);
         trajectorizer.addSegmentBuildingListeners(_segmentBuildingListeners);
         List<Trajectory> allSegments = trajectorizer.createTrajectory(routeBasis);
         _segmentBuffer.fillBuffer(allSegments);
+        _debuggingParameters.notifyNavigationListenersSegmentsChanged(allSegments);
     }
 
     @Override
@@ -76,5 +80,11 @@ public class NavigationController implements IUpperLayerControl
     public void addSegmentBuilderListener(ISegmentBuildingListener listener)
     {
         _segmentBuildingListeners.add(listener);
+    }
+
+    @Override
+    public void activateDebugging(DebugParams debuggingParameters)
+    {
+        _debuggingParameters = debuggingParameters;
     }
 }

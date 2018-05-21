@@ -117,7 +117,7 @@ public class VRepMap
 //        IWholeLaneCreator laneCreator = (curLane, curEdge, fromJunction, toJunction) -> createVRepMeshLane(vertices, indices, curLane, curEdge, fromJunction, toJunction);
 //        visitMapStitchingAdjacentElements(roadMap, junctionCreator, laneCreator);
         visitMap(roadMap, junctionCreator, laneCreator);
-        _vrepObjectCreator.createMesh(vertices, indices, "Map");
+        _vrepObjectCreator.createMesh(vertices, indices, "Map", false);
     }
     
     private void createVRepMeshLane(List<Point3D> vertices, List<Integer> indices, LaneType curLane, EdgeType curEdge, JunctionType fromJunction, JunctionType toJunction)

@@ -1,17 +1,29 @@
 createdObjects = {}
 
 deleteCreated = function(inInts, inFloats, inStrings, inBuffer)
-	while(next(createdObjects) ~= nil) do
-		sim.removeObject(table.remove(createdObjects))
+ sim.addStatusbarMessage("createdObjects is this:"..table_to_string(createdObjects))
+  
+	while(next(createdObjects)) do
+	  local handleToRemove = table.remove(createdObjects)
+	  sim.addStatusbarMessage("about to delete object with handle:"..handleToRemove)
+	  local name = sim.getObjectName(handleToRemove)
+	  sim.addStatusbarMessage("with name: "..name)
+		sim.removeObject(handleToRemove)
 	end
 	return {}, {}, {}, "" 
 end
 
-addToDeletionList = function(inInts, inFloats, inStrings, inBuffer)
+addAllToDeletionList = function(inInts, inFloats, inStrings, inBuffer)
   for _, curHandle in ipairs(inInts) do
-    table.insert(createdObjects, curHandle)
+    addToDeletionList(curHandle, "addAllToDeletionList")
   end
   return {}, {}, {}, "" 
+end
+
+addToDeletionList = function(objectHandle, callerName)
+    local name = sim.getObjectName(objectHandle)
+    sim.addStatusbarMessage(callerName.."wants to add handle to deletion list: "..objectHandle..", with name: "..name)
+  table.insert(createdObjects, objectHandle)
 end
 
 simxGetScriptAssociatedWithObject = function(inInts, inFloats, inStrings, inBuffer)
@@ -71,7 +83,7 @@ createEdge = function(inInts, inFloats, inStrings, inBuffer)
       sim.setObjectName(objectHandle, inStrings[1])
       sim.addStatusbarMessage(inStrings[1].."; "..x1.."; "..y1.."; "..x2.."; "..y2.."; "..dx.."; "..dy.."; "..atanBase.."; "..angle.."; "..length)
 
-      table.insert(createdObjects, objectHandle) -- for later removal
+      addToDeletionList(objectHandle, "createEdge") -- for later removal
       return {}, {}, {}, "" 
 end
 
@@ -130,13 +142,12 @@ createLine = function(inInts, inFloats, inStrings, inBuffer)
       sim.setObjectName(objectHandle, inStrings[1])
       sim.addStatusbarMessage(inStrings[1].."; "..x1.."; "..y1.."; "..x2.."; "..y2.."; "..dx.."; "..dy.."; "..atanBase.."; "..angle.."; "..length)
 
-      table.insert(createdObjects, objectHandle) -- for later removal
+      addToDeletionList(objectHandle, "createLine") -- for later removal
       return {}, {}, {}, "" 
 end
 
-
 createJunction = function(inInts, inFloats, inStrings, inBuffer)
-      coordinates = inFloats
+      local coordinates = inFloats
       local width = inFloats[4] * 4
       local height = inFloats[5]
       -- SHAPE
@@ -152,13 +163,13 @@ createJunction = function(inInts, inFloats, inStrings, inBuffer)
       local SHAPE_STAT = 16 -- bit 4 shape is static
       local CYL_OE = 32 -- bit 5 cylinder has open ends
       local testObjSize = {width, width, height}
-      objectHandle = sim.createPureShape(CYLINDER, EDGE_VIS + SHAPE_RESP + SHAPE_STAT, testObjSize, 0, nil)
+      local objectHandle = sim.createPureShape(CYLINDER, EDGE_VIS + SHAPE_RESP + SHAPE_STAT, testObjSize, 0, nil)
       sim.setObjectName(objectHandle, inStrings[1])
 
       sim.addStatusbarMessage("Creating junction at: "..table_to_string(coordinates))
       local posResult = sim.setObjectPosition(objectHandle, sim_handle_parent, {coordinates[1], coordinates[2], height/2})
 
-      table.insert(createdObjects, objectHandle) -- for later removal
+      addToDeletionList(objectHandle, "createJunction") -- for later removal
       return {}, {}, {}, "" 
 end
 
@@ -176,7 +187,7 @@ createCenter = function(inInts, inFloats, inStrings, inBuffer)
       local SHAPE_STAT = 16 -- bit 4 shape is static
       local CYL_OE = 32 -- bit 5 cylinder has open ends
       local testObjSize = {0.1, 0.1, 0.05}
-      objectHandle = sim.createPureShape(CYLINDER, EDGE_VIS + SHAPE_RESP + SHAPE_STAT, testObjSize, 0, nil)
+      local objectHandle = sim.createPureShape(CYLINDER, EDGE_VIS + SHAPE_RESP + SHAPE_STAT, testObjSize, 0, nil)
       sim.setShapeColor(objectHandle, null, sim_colorcomponent_ambient_diffuse, {200, 0, 0})
       sim.addStatusbarMessage("Creating center marker at coordinates (0, 0, 0): "..table_to_string({0, 0, 0}))
       
@@ -185,7 +196,7 @@ createCenter = function(inInts, inFloats, inStrings, inBuffer)
       sim.addStatusbarMessage("objectHandle:"..type(objectHandle)..", relativeToObjHandle:"..type(relativeToObjHandle)..", coordinates:"..type(coordinates))
       local posResult = sim.setObjectPosition(objectHandle, relativeToObjHandle, coordinates)
 
-      table.insert(createdObjects, objectHandle) -- for later removal
+      addToDeletionList(objectHandle, "createCenter") -- for later removal
       return {}, {}, {}, "" 
 end
 
@@ -240,7 +251,7 @@ createPrimitive = function(inInts, inFloats, inStrings, inBuffer)
       simSetObjectOrientation(objectHandle, -1, angle)
 --    NAMING
       simSetObjectName(objectHandle, name)
-      table.insert(createdObjects, objectHandle) -- for later removal
+      addToDeletionList(objectHandle, "createPrimitive") -- for later removal
       
       return {objectHandle}, {}, {}, "" 
 end
@@ -293,7 +304,7 @@ createJoint = function(inInts, inFloats, inStrings, inBuffer)
 --    NAMING
       simSetObjectName(objectHandle, name)
       
-      table.insert(createdObjects, objectHandle) -- for later removal
+      addToDeletionList(objectHandle, "createJoint") -- for later removal
       
       return {objectHandle}, {}, {}, "" 
 end
@@ -333,7 +344,7 @@ createDummy = function(inInts, inFloats, inStrings, inBuffer)
 
       simSetObjectName(objectHandle, name)
       simAddStatusbarMessage("name added, now returning")
-      table.insert(createdObjects, objectHandle) -- for later removal
+      addToDeletionList(objectHandle, "createDummy") -- for later removal
       
       return {objectHandle}, {}, {}, "" 
 end
@@ -397,7 +408,7 @@ textureOnRectangle = function(inInts, inFloats, inStrings, inBuffer)
 	
 	local textureShapeHandle = sim.createTexture(textureFileName, 2, {1, 1}, nil, nil, 0, nil)
 	if (textureShapeHandle ~= -1) then
-		textureId = sim.getShapeTextureId(textureShapeHandle)
+		local textureId = sim.getShapeTextureId(textureShapeHandle)
 		if (textureId ~= -1) then
 			if (handle ~= -1) then
 			    -- I have no idea why the 400, 400 scaling delivers the required result 
@@ -405,22 +416,26 @@ textureOnRectangle = function(inInts, inFloats, inStrings, inBuffer)
 			end
 		end
 	end
-	table.insert(createdObjects, textureShapeHandle) -- for later removal
+	addToDeletionList(textureShapeHandle, "textureOnRectangle")
 	return {}, {}, {}, "" 
 end
 
 createMesh = function(inInts, inFloats, inStrings, inBuffer)
-	
-	meshHandle = sim.createMeshShape(2, 20*math.pi/180, inFloats, inInts)
+	local indices = inInts
+	local meshHandle = sim.createMeshShape(2, 20*math.pi/180, inFloats, inInts)
 	sim.setObjectName(meshHandle, inStrings[1])
-	
-	table.insert(createdObjects, meshHandle) -- for later removal
+  addToDeletionList(meshHandle, "createMeshHandle")
 	return {}, {}, {}, "" 
 end
 
--- Added for debugging
--- Convert a lua table into a lua syntactically correct string
-table_to_string = function(tbl)
+createMeshInSimulation = function(inInts, inFloats, inStrings, inBuffer)
+  local indices = inInts
+  local meshHandle = sim.createMeshShape(2, 20*math.pi/180, inFloats, inInts)
+  sim.setObjectName(meshHandle, inStrings[1])
+  return {}, {}, {}, "" 
+end
+
+table_to_string = function(tbl) -- Added for debugging, Convert a lua table into a lua syntactically correct string
     local result = "{"
     for k, v in pairs(tbl) do
         -- Check the key type (ignore any numerical keys - assume its an array)

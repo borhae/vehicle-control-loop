@@ -97,6 +97,11 @@ public class TestVehicleSteering
                 public void buildSegmentBuffer(Position2D position2d, RoadMap roadMap)
                 {
                 }
+
+                @Override
+                public void activateDebugging(DebugParams params)
+                {
+                }
             };
         };
         TestJustSteeringController llControl = new TestJustSteeringController();
@@ -169,6 +174,11 @@ public class TestVehicleSteering
 
                 @Override
                 public void buildSegmentBuffer(Position2D position2d, RoadMap roadMap)
+                {
+                }
+
+                @Override
+                public void activateDebugging(DebugParams params)
                 {
                 }
             };
