@@ -27,6 +27,11 @@ public class Point3D
         this(pos2d.getX(), pos2d.getY());
     }
 
+    public Point3D(Position2D pos2D, double z)
+    {
+        this(pos2D.getX(), pos2D.getY(), z);
+    }
+
     public double[] getArray()
     {
         return _content;

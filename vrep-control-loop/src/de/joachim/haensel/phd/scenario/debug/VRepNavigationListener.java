@@ -55,11 +55,11 @@ public class VRepNavigationListener implements INavigationListener
         {
             Vector2D left = arrowShaft.shift(vectorThickness/2);
             Vector2D right = arrowShaft.shift(-vectorThickness/2);
-            vertices.add(new Point3D(left.getBase())); //0
-            vertices.add(new Point3D(left.getTip())); //1
-            vertices.add(new Point3D(v.getTip())); //2
-            vertices.add(new Point3D(right.getTip())); // 3
-            vertices.add(new Point3D(right.getBase())); // 4
+            vertices.add(new Point3D(left.getBase(), 1.0)); //0
+            vertices.add(new Point3D(left.getTip(), 1.0)); //1
+            vertices.add(new Point3D(v.getTip(), 1.0)); //2
+            vertices.add(new Point3D(right.getTip(), 1.0)); // 3
+            vertices.add(new Point3D(right.getBase(), 1.0)); // 4
             
             indices.add(lastIndex + 0);
             indices.add(lastIndex + 1);
