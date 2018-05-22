@@ -11,7 +11,6 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory.VelocityEdgeType;
-import de.joachim.haensel.streamextensions.IndexAdder;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryType;
 
 
@@ -22,8 +21,6 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryType;
  */
 public class BasicVelocityAssigner implements IVelocityAssigner
 {
-    private static final double ALPHA_SMOOTHING = 1.0;
-
     public interface ICurvatureChangeListener
     {
         public void notifyChange(Deque<Vector2D> curvatures);
@@ -93,36 +90,6 @@ public class BasicVelocityAssigner implements IVelocityAssigner
         
 //        lowPassFilter(trajectories);
 //        notifyListeners(trajectories);
-    }
-
-    private void lowPassFilter(List<Trajectory> trajectories)
-    {
-        //v_i
-        double[] velocities_i = new double[trajectories.size()];
-        trajectories.stream().map(IndexAdder.indexed()).forEachOrdered(e -> velocities_i[e.idx()] = e.v().getVelocity());
-
-        //v_i-1
-        double[] velocities_im1 = new double[trajectories.size() + 1];
-        trajectories.stream().map(IndexAdder.indexed()).forEachOrdered(e -> velocities_im1[e.idx() + 1] = e.v().getVelocity());
-        velocities_im1[0] = velocities_i[0]; // add first as estimate for nonexisting previous
-        
-        for(int idx = 0; idx < velocities_i.length; idx++)
-        {
-            velocities_im1[idx] = velocities_im1[idx] + 0.2 * (velocities_i[idx] - velocities_im1[idx]);
-        }
-        System.out.println("check");       
-//        for(int idx = 1; idx < trajectories.size(); idx++)
-//        {
-//            Trajectory last = trajectories.get(idx - 1);
-//            Trajectory current = trajectories.get(idx);
-//            double distance = last.getVector().getBase().distance(current.getVector().getBase());
-//            
-////            double newValue = last.getVelocity() + distance * ALPHA_SMOOTHING * (current.getVelocity() - last.getVelocity());
-//            double v_i = last.getVelocity();
-//            double v_ip1 = current.getVelocity();
-//            v_i = v_i + (v_ip1 - v_i);
-//            last.setVelocity(v_i);
-//        }
     }
 
     private void capAccelerationDeceleration(List<Trajectory> trajectories)

@@ -44,6 +44,7 @@ public class Segmenter implements ISegmenter
                 addCnt++;
                 Trajectory t = new Trajectory(v);
                 t.setIsOriginal();
+                t.setIdx(addCnt);
                 result.add(t);
             }
         }

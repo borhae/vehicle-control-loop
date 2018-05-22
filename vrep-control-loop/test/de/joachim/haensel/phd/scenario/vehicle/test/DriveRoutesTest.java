@@ -146,10 +146,10 @@ public class DriveRoutesTest
     private IVehicleConfiguration createConfiguration(RoadMap roadMap, Position2D startPosition, Position2D destinationPosition)
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
-        IUpperLayerFactory upperFact = () -> {return new NavigationController(5.0);};
+        IUpperLayerFactory upperFact = () -> {return new NavigationController(5.0, 60.0);};
         ILowerLayerFactory lowerFact = () -> {
             PurePursuitController ctrl = new PurePursuitController();
-            PurePursuitParameters parameters = new PurePursuitParameters(10.0);
+            PurePursuitParameters parameters = new PurePursuitParameters(10.0, 0.25);
             parameters.setSpeed(2.5);
             ctrl.setParameters(parameters);
             return ctrl;

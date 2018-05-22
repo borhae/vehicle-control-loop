@@ -333,14 +333,14 @@ public class VRepMap
         shapeParameters.setMass(10);
         shapeParameters.setName(_elementNameCreator.createPlaneID());
         shapeParameters.setOrientation(0.0f, 0.0f, 0.0f);
-        shapeParameters.setRespondableMask(ShapeParameters.GLOBAL_ONLY_RESPONDABLE_MASK);
+        shapeParameters.setRespondableMask(ShapeParameters.GLOBAL_AND_LOCAL_RESPONDABLE_MASK);
         float sizeX = minMax.distX();
         float sizeY = minMax.distY();
-        float sizeZ = 0.0f;
+        float sizeZ = 0.2f;
         shapeParameters.setSize(sizeX, sizeY, sizeZ);
         float posX =  (float) (minMax.minX() + minMax.distX()/2.0);
         float posY = (float) (minMax.minY() + minMax.distY()/2.0);
-        shapeParameters.setPosition(posX, posY, 0.0f);
+        shapeParameters.setPosition(posX, posY, -0.3f);
         shapeParameters.setType(EVRepShapes.CUBOID);
         shapeParameters.setVisibility(isVisible);
         int rectangleHandle = _vrepObjectCreator.createPrimitive(shapeParameters);

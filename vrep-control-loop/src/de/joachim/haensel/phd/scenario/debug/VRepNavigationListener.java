@@ -48,7 +48,7 @@ public class VRepNavigationListener implements INavigationListener
     {
         double vectorThickness = 1;
         int lastIndex = vertices.size();
-        Vector2D v = segment.getVector();
+        Vector2D v = new Vector2D(segment.getVector());
         double shaftLength = Math.max(v.length() - 2 * vectorThickness, 0.0);
         Vector2D arrowShaft = v.cutLengthFrom(shaftLength);
         if(shaftLength > 0.0)

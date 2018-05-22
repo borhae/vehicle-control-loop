@@ -22,7 +22,6 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     private static final String CURRENT_SEGMENT_DEBUG_KEY = "curSeg";
     private static final int MIN_SEGMENT_BUFFER_SIZE = 5;
     private static final int SEGMENT_BUFFER_SIZE = 10;
-    private static final float SPEED_TO_WHEEL_ROTATION_FACTOR = - 0.25f;
     private Position2D _expectedTarget;
     private IActuatingSensing _actuatorsSensors;
     private DefaultReactiveControllerStateMachine _stateMachine;
@@ -35,6 +34,8 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     private boolean _debugging;
     private boolean _debuggingCircleAttached;
     private DebugParams _debugParams;
+    //-0.25
+    private double _speedToWheelRotationFactor;
 
     public class DefaultReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
@@ -119,6 +120,7 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
         _segmentProvider = trajectoryProvider;
         _currentSegment = null;
         _lookahead = _parameters.getLookahead();
+        _speedToWheelRotationFactor = _parameters.getSpeedToWheelRotationFactor();
     }
 
     @Override
@@ -173,6 +175,8 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
             if(_debugging)
             {
                 _debugParams.getSpeedometer().updateSpeed(targetWheelRotation);
+                _debugParams.getSpeedometer().updateCurrentSegment(_currentSegment);
+                _debugParams.getSpeedometer().repaint();
             }
             _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
         }
@@ -274,7 +278,7 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     protected float computeTargetWheelRotationSpeed()
     {
         double speed = _currentSegment.getVelocity();
-        return (float) speed * SPEED_TO_WHEEL_ROTATION_FACTOR;
+        return (float) (speed * _speedToWheelRotationFactor);
     }
 
     @Override

@@ -86,10 +86,10 @@ public class VehicleCreationTest implements TestConstants
     private IVehicleConfiguration createConfiguration()
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
-        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0);};
+        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0, 30.0);};
         ILowerLayerFactory lowerFact = () -> {
             PurePursuitController ctrl = new PurePursuitController();
-            ctrl.setParameters(new PurePursuitParameters(2.0));
+            ctrl.setParameters(new PurePursuitParameters(2.0, -0.25));
             return ctrl;
         };
         vehicleConf.upperCtrlFactory(upperFact);
@@ -104,8 +104,8 @@ public class VehicleCreationTest implements TestConstants
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         float height = vehicleCreator.getVehicleHeight();
         
-        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0);};
-        ILowerLayerFactory lowerFact = () -> {ILowerLayerControl<PurePursuitParameters> ctrl = new PurePursuitController(); ctrl.setParameters(new PurePursuitParameters(5.0)); return ctrl;};
+        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0, 30.0);};
+        ILowerLayerFactory lowerFact = () -> {ILowerLayerControl<PurePursuitParameters> ctrl = new PurePursuitController(); ctrl.setParameters(new PurePursuitParameters(5.0, -0.25)); return ctrl;};
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, null, upperFact, lowerFact);
         vehicle.setOrientation(1.0f, 1.0f, 1.0f);
@@ -118,13 +118,13 @@ public class VehicleCreationTest implements TestConstants
         float scaleFactor = 0.1f;
         double lookahead = 5.0 * scaleFactor;
         ILowerLayerControl<PurePursuitParameters> ctrl = new PurePursuitController(); 
-        ctrl.setParameters(new PurePursuitParameters(lookahead));
+        ctrl.setParameters(new PurePursuitParameters(lookahead, -0.25));
         
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, scaleFactor);
         float height = vehicleCreator.getVehicleHeight();
         
         
-        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0 * scaleFactor);};
+        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0 * scaleFactor, 30.0);};
         ILowerLayerFactory lowerFact = () -> {return ctrl;};
 
         vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + scaleFactor, null, upperFact, lowerFact);
@@ -142,7 +142,7 @@ public class VehicleCreationTest implements TestConstants
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         float height = vehicleCreator.getVehicleHeight();
         
-        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0);};
+        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0, 30.0);};
         ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap, upperFact, lowerFact);

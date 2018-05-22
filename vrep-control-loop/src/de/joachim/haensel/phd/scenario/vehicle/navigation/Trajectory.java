@@ -1,7 +1,6 @@
 package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory.VelocityEdgeType;
 
 public class Trajectory
 {
@@ -16,6 +15,7 @@ public class Trajectory
     private VelocityEdgeType _velocityEdgeType;
     private double _radius;
     private double _kappa;
+    private int _index;
 
     public Trajectory(Vector2D vector)
     {
@@ -98,5 +98,15 @@ public class Trajectory
     public double getKappa()
     {
         return _kappa;
+    }
+
+    public void setIdx(int index)
+    {
+        _index = index;
+    }
+
+    public int getIdx()
+    {
+        return _index;
     }
 }

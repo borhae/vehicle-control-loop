@@ -633,7 +633,7 @@ public class SegmentBuildingTest implements TestConstants
         visualizer.setVisible(true);
         System.out.println("stop");
 
-        NavigationController nav = new NavigationController(2.0 * scaleFactor);
+        NavigationController nav = new NavigationController(2.0 * scaleFactor, 30.0);
         nav.addSegmentBuilderListener(new SegmentBuildingAdapter(visualizer));
         nav.initController(new Positioner(startingPoint), roadMap);
         nav.buildSegmentBuffer(destinationPosition, roadMap);

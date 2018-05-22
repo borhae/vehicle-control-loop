@@ -26,11 +26,13 @@ public class NavigationController implements IUpperLayerControl
     private double _segmentSize;
     private List<ISegmentBuildingListener> _segmentBuildingListeners;
     private DebugParams _debuggingParameters;
+    private double _maxSpeed;
     
-    public NavigationController(double segmentSize)
+    public NavigationController(double segmentSize, double maxSpeed)
     {
         _segmentSize = segmentSize;
         _segmentBuildingListeners = new ArrayList<ISegmentBuildingListener>();
+        _maxSpeed = maxSpeed;
     }
 
     @Override
@@ -38,14 +40,12 @@ public class NavigationController implements IUpperLayerControl
     {
         _sensorsActuators = sensorsActuators;
         _roadMap = roadMap;
-        
         _segmentBuffer = new SegmentBuffer();
     }
 
     @Override
     public void buildSegmentBuffer(Position2D targetPosition, RoadMap roadMap)
     {
-        double maxVelocity = 30.0;
         _roadMap = roadMap;
         Position2D currentPosition = _sensorsActuators.getNonDynamicPosition();
         Navigator navigator = new Navigator(_roadMap);
@@ -53,7 +53,7 @@ public class NavigationController implements IUpperLayerControl
         List<Line2D> routeBasis = navigator.getRoute(currentPosition, targetPosition);
         _debuggingParameters.notifyNavigationListenersRouteChanged(routeBasis);
         ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
-        IVelocityAssignerFactory velocityAssignerFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, maxVelocity);
+        IVelocityAssignerFactory velocityAssignerFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, _maxSpeed, 6.0, 16.0, 16.0);
         ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , _segmentSize);
         trajectorizer.addSegmentBuildingListeners(_segmentBuildingListeners);
         List<Trajectory> allSegments = trajectorizer.createTrajectory(routeBasis);

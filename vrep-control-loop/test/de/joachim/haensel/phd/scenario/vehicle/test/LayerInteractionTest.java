@@ -88,7 +88,7 @@ public class LayerInteractionTest implements TestConstants
     public void testNavigationController()
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/testing3Junctions2Edges2Lanes.net.xml");
-        NavigationController controller = new NavigationController(2.0);
+        NavigationController controller = new NavigationController(2.0, 30.0);
         Position2D destinationPosition = new Position2D(101.81f, 9.23f);
         IActuatingSensing sensorsActuators = new IActuatingSensing() {
             @Override
@@ -169,9 +169,9 @@ public class LayerInteractionTest implements TestConstants
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
-        IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0);};
+        IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0, 30.0);};
         PurePursuitController ctrl = new PurePursuitController(); 
-        ctrl.setParameters(new PurePursuitParameters(5.0 * DOWN_SCALE_FACTOR));
+        ctrl.setParameters(new PurePursuitParameters(5.0 * DOWN_SCALE_FACTOR, -0.25));
         ILowerLayerFactory lowerFact = () -> {return ctrl;};
         
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
@@ -242,9 +242,9 @@ public class LayerInteractionTest implements TestConstants
 
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
-        IUpperLayerFactory uperFact = () -> {return new NavigationController(segmentSize);};
+        IUpperLayerFactory uperFact = () -> {return new NavigationController(segmentSize, 30.0);};
         PurePursuitController ctrl = new PurePursuitController();
-        PurePursuitParameters reactiveControllerParameters = new PurePursuitParameters(lookahead);
+        PurePursuitParameters reactiveControllerParameters = new PurePursuitParameters(lookahead, -0.25);
         reactiveControllerParameters.setSpeed(lookahead);
         ctrl.setParameters(reactiveControllerParameters);
         ILowerLayerFactory lowerFact = () -> {return ctrl;};
@@ -313,13 +313,13 @@ public class LayerInteractionTest implements TestConstants
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
-        IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0);};
+        IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0, 30.0);};
         ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
         
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
         
         Vector2D carOrientation = vehicle.getOrientation();
-        NavigationController fakeNav = new NavigationController(2.0);
+        NavigationController fakeNav = new NavigationController(2.0, 30.0);
         fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
         
@@ -399,16 +399,16 @@ public class LayerInteractionTest implements TestConstants
         Position2D target = new Position2D(lastLine.getX2(), lastLine.getY2());
         
         
-        IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0 * scaleFactor);};
+        IUpperLayerFactory uperFact = () -> {return new NavigationController(2.0 * scaleFactor, 30.0);};
         PurePursuitController ctrl = new PurePursuitController(); 
-        ctrl.setParameters(new PurePursuitParameters(5.0 * scaleFactor));
+        ctrl.setParameters(new PurePursuitParameters(5.0 * scaleFactor, -0.25));
         ILowerLayerFactory lowerFact = () -> {return ctrl;};
         
         float vehicleZPos = 0.25f;
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), vehicleZPos, roadMap, uperFact , lowerFact);
         
         Vector2D carOrientation = vehicle.getOrientation();
-        NavigationController fakeNav = new NavigationController(2.0 *  scaleFactor);
+        NavigationController fakeNav = new NavigationController(2.0 *  scaleFactor, 30.0);
         fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
 
@@ -494,9 +494,9 @@ public class LayerInteractionTest implements TestConstants
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX2(), lastLine.getY2());
         
-        IUpperLayerFactory uperFact = () -> {return new NavigationController(5.0 * scaleFactor);};
+        IUpperLayerFactory uperFact = () -> {return new NavigationController(5.0 * scaleFactor, 30.0);};
         PurePursuitController ctrl = new PurePursuitController(); 
-        PurePursuitParameters parameters = new PurePursuitParameters(10.0 * scaleFactor);
+        PurePursuitParameters parameters = new PurePursuitParameters(10.0 * scaleFactor, -0.25);
         parameters.setSpeed(2.5);
         ctrl.setParameters(parameters);
         ILowerLayerFactory lowerFact = () -> {return ctrl;};
@@ -574,9 +574,9 @@ public class LayerInteractionTest implements TestConstants
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX2(), lastLine.getY2());
         
-        IUpperLayerFactory uperFact = () -> {return new NavigationController(4.0 * scaleFactor);};
+        IUpperLayerFactory uperFact = () -> {return new NavigationController(4.0 * scaleFactor, 30.0);};
         PurePursuitController ctrl = new PurePursuitController(); 
-        PurePursuitParameters parameters = new PurePursuitParameters(10.0 * scaleFactor);
+        PurePursuitParameters parameters = new PurePursuitParameters(10.0 * scaleFactor, -0.25);
         parameters.setSpeed(1.5);
         ctrl.setParameters(parameters);
         ILowerLayerFactory lowerFact = () -> {return ctrl;};
@@ -624,12 +624,11 @@ public class LayerInteractionTest implements TestConstants
         }
     }
 
-    //TOOD find out about cases were we have an exact 180 degree error
-    private void correctVehicleOrientation(double scaleFactor, RoadMap roadMap, Position2D destinationPosition,
-            Vehicle vehicle) throws VRepException
+    //TODO find out about cases were we have an exact 180 degree error
+    private void correctVehicleOrientation(double scaleFactor, RoadMap roadMap, Position2D destinationPosition, Vehicle vehicle) throws VRepException
     {
         Vector2D carOrientation = vehicle.getOrientation();
-        NavigationController fakeNav = new NavigationController(2.0 *  scaleFactor);
+        NavigationController fakeNav = new NavigationController(2.0 *  scaleFactor, 30.0);
         fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
 

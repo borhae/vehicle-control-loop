@@ -132,4 +132,10 @@ public class Line2D
     {
         return new Position2D(_x2, _y2);
     }
+
+    public void setP1(Position2D position)
+    {
+        _x1 = position.getX();
+        _y1 = position.getY();
+    }
 }

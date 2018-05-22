@@ -4,10 +4,12 @@ public class PurePursuitParameters
 {
     private double _lookahead;
     private double _v;
+    private double _speedToWheelRotationFactor;
 
-    public PurePursuitParameters(double lookahead)
+    public PurePursuitParameters(double lookahead, double speedToWheelRotationFactor)
     {
         _lookahead = lookahead;
+        _speedToWheelRotationFactor = speedToWheelRotationFactor;
     }
     
     public double getLookahead()
@@ -23,5 +25,10 @@ public class PurePursuitParameters
     public double getV()
     {
         return _v;
+    }
+
+    public double getSpeedToWheelRotationFactor()
+    {
+        return _speedToWheelRotationFactor;
     }
 }

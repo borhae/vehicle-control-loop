@@ -125,6 +125,8 @@ public class Navigator
         else
         {
             List<Line2D> lanesBetweenCurrentPositionAndFirstJunction = closestResolvedLane.subList(closestSectionIdx, closestResolvedLane.size());
+            Line2D firstLane = lanesBetweenCurrentPositionAndFirstJunction.get(0);
+            firstLane.setP1(position);
             return lanesBetweenCurrentPositionAndFirstJunction;
         }
     }
