@@ -46,6 +46,12 @@ public interface IActuatingSensing
      * @return 
      */
     public double getVehicleLength();
+    
+    /**
+     * Returns the vehicles measured velocity in simulation (in objects x, y and z direction)
+     * @return
+     */
+    public double[] getVehicleVelocity();
 
     /**
      * Will set the wheels rotation and steering angle of the car 
@@ -53,5 +59,4 @@ public interface IActuatingSensing
      * @param targetSteeringAngle
      */
     public void drive(float targetWheelRotation, float targetSteeringAngle);
-
 }

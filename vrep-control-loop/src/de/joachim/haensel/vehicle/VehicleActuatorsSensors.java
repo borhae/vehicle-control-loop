@@ -32,6 +32,7 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     private VRepRemoteAPI _vrep;
     private int _clientID;
     private Map<String, DrawingObject> _drawingObjectsStore;
+    private double[] _vechicleVelocity;
     
     public VehicleActuatorsSensors(IVehicleHandles vehicleHandles, CarControlInterface controller, VRepRemoteAPI vrep, int clientID)
     {
@@ -45,6 +46,7 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
         _vrep = vrep;
         _clientID = clientID;
         _drawingObjectsStore = new HashMap<String, DrawingObject>();
+        _vechicleVelocity = new double[3];
     }
 
     @Override
@@ -69,13 +71,16 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     {
         try
         {
-            FloatWA returnValF = new FloatWA(4);
+            FloatWA returnValF = new FloatWA(9);
             _vrep.simxCallScriptFunction(_clientID, _vehicleScriptParentName, remoteApi.sim_scripttype_childscript, "sense", 
                     null, null, null, null, null, returnValF, null, null, remoteApi.simx_opmode_blocking);
             float[] vals = returnValF.getArray();
             _curPosition.setXY(vals[0], vals[1]);
             _frontWheelCenterPosition.setXY(vals[2], vals[3]);
             _rearWheelCenterPosition.setXY(vals[4], vals[5]);
+            _vechicleVelocity[0] = vals[6];
+            _vechicleVelocity[1] = vals[7];
+            _vechicleVelocity[2] = vals[8];
         }
         catch (VRepException exc)
         {
@@ -326,5 +331,11 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
             exc.printStackTrace();
         }
         return new Position2D(0.0, 0.0);
+    }
+
+    @Override
+    public double[] getVehicleVelocity()
+    {
+        return _vechicleVelocity;
     }
 }

@@ -17,14 +17,14 @@ public class VRepVehicleConfiguration implements IVehicleConfiguration
     private RoadMap _roadMap;
 
     @Override
-    public IVehicleConfiguration upperCtrlFactory(IUpperLayerFactory upperFact)
+    public IVehicleConfiguration setUpperCtrlFactory(IUpperLayerFactory upperFact)
     {
         _upperFact = upperFact;
         return this;
     }
 
     @Override
-    public IVehicleConfiguration lowerCtrlFactory(ILowerLayerFactory lowerFact)
+    public IVehicleConfiguration setLowerCtrlFactory(ILowerLayerFactory lowerFact)
     {
         _lowerFact = lowerFact;
         return this;

@@ -347,7 +347,6 @@ public class VRepObjectCreation
         StringWA callParamsS = new StringWA(1);
         String[] stringParameters = callParamsS.getArray();
         stringParameters[0] = name;
-        
         _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "createMesh", callParamsI, callParamsF, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
     }
 

@@ -156,6 +156,16 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
         ensureBufferSize();
         chooseCurrentSegment(_actuatorsSensors.getRearWheelCenterPosition());
 
+        float targetWheelRotation = 0.0f;
+        float targetSteeringAngle = 0.0f;
+        if(_debugging)
+        {
+            if(!_debuggingCircleAttached)
+            {
+                _vrepDrawing.attachDebugCircle(_lookahead);
+                _debuggingCircleAttached = true;
+            }
+        }
         if(_currentSegment != null)
         {
             if(_debugging)
@@ -170,16 +180,17 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
                 _vrepDrawing.updateLine(CURRENT_SEGMENT_DEBUG_KEY, curSegVector, debugMarkerHeight, Color.RED);
             }
             
-            float targetWheelRotation = computeTargetWheelRotationSpeed();
-            float targetSteeringAngle = computeTargetSteeringAngle();
-            if(_debugging)
-            {
-                _debugParams.getSpeedometer().updateSpeed(targetWheelRotation);
-                _debugParams.getSpeedometer().updateCurrentSegment(_currentSegment);
-                _debugParams.getSpeedometer().repaint();
-            }
-            _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
+            targetWheelRotation = computeTargetWheelRotationSpeed();
+            targetSteeringAngle = computeTargetSteeringAngle();
         }
+        if(_debugging)
+        {
+            _debugParams.getSpeedometer().updateWheelRotationSpeed(targetWheelRotation);
+            _debugParams.getSpeedometer().updateCurrentSegment(_currentSegment);
+            _debugParams.getSpeedometer().updateActualVelocity(_actuatorsSensors.getVehicleVelocity());
+            _debugParams.getSpeedometer().repaint();
+        }
+        _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
     }
 
     private void chooseCurrentSegment(Position2D currentPosition)

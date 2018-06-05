@@ -20,7 +20,7 @@ import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.vehicle.PurePursuitController;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
-import de.joachim.haensel.vehicle.NavigationController;
+import de.joachim.haensel.vehicle.DefaultNavigationController;
 import de.joachim.haensel.vehicle.Vehicle;
 import de.joachim.haensel.vehicle.VehicleCreator;
 import de.joachim.haensel.vehiclecontrol.Navigator;
@@ -93,7 +93,7 @@ public class SubScenarioCreationTest implements TestConstants
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
-        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0, 30.0);};
+        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
         ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
 
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, upperFact, lowerFact);
@@ -112,7 +112,7 @@ public class SubScenarioCreationTest implements TestConstants
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
         float height = vehicleCreator.getVehicleHeight();
 
-        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0, 30.0);};
+        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
         ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap, upperFact, lowerFact);
@@ -130,7 +130,7 @@ public class SubScenarioCreationTest implements TestConstants
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
         float height = vehicleCreator.getVehicleHeight();
         
-        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0, 30.0);};
+        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
         ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap, upperFact, lowerFact);

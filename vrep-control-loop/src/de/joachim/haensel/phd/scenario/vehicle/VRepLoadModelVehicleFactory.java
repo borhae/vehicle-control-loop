@@ -18,14 +18,12 @@ public class VRepLoadModelVehicleFactory implements IVehicleFactory
     private VRepRemoteAPI _vrep;
     private int _clientID;
     private VRepObjectCreation _objectCreator;
-    private float _scale;
 
-    public VRepLoadModelVehicleFactory(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator, float scale)
+    public VRepLoadModelVehicleFactory(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator, double scale)
     {
         _vrep = vrep;
         _clientID = clientID;
         _objectCreator = objectCreator;
-        _scale = scale;
     }
 
     @Override

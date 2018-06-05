@@ -340,7 +340,7 @@ public class VRepMap
         shapeParameters.setSize(sizeX, sizeY, sizeZ);
         float posX =  (float) (minMax.minX() + minMax.distX()/2.0);
         float posY = (float) (minMax.minY() + minMax.distY()/2.0);
-        shapeParameters.setPosition(posX, posY, -0.3f);
+        shapeParameters.setPosition(posX, posY, 0.0f);
         shapeParameters.setType(EVRepShapes.CUBOID);
         shapeParameters.setVisibility(isVisible);
         int rectangleHandle = _vrepObjectCreator.createPrimitive(shapeParameters);

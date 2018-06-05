@@ -68,4 +68,10 @@ public class Positioner implements IActuatingSensing
     public void computeAndLockSensorData()
     {
     }
+
+    @Override
+    public double[] getVehicleVelocity()
+    {
+        return null;
+    }
 }

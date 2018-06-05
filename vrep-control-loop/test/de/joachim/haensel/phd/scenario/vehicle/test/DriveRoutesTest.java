@@ -25,7 +25,7 @@ import de.joachim.haensel.phd.scenario.vehicle.VRepLoadModelVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
-import de.joachim.haensel.vehicle.NavigationController;
+import de.joachim.haensel.vehicle.DefaultNavigationController;
 import de.joachim.haensel.vehicle.PurePursuitController;
 import de.joachim.haensel.vehicle.PurePursuitParameters;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
@@ -79,7 +79,75 @@ public class DriveRoutesTest
     public void testRouteFollowRealMapMesh() throws VRepException
     {
         double scaleFactor = 1.0;
-        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+        TMatrix scaleOffsetMatrix = roadMap.center(0.0, 0.0);
+        
+        float streetWidth = (float)1.5;
+        float streetHeight = (float)0.4;
+        VRepMap mapCreator = new VRepMap(streetWidth, streetHeight, _vrep, _clientID, _objectCreator);
+        mapCreator.createMeshBasedMap(roadMap);
+        mapCreator.createMapSizedRectangle(roadMap, false);
+        
+        Position2D startPosition = new Position2D(5747.01f, 2979.22f).transform(scaleOffsetMatrix);
+        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).transform(scaleOffsetMatrix);
+
+        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, 1.0f);
+        IVehicleConfiguration vehicleConf = createConfiguration(roadMap, startPosition, destinationPosition);
+        factory.configure(vehicleConf);
+        IVehicle vehicle = factory.createVehicleInstance();
+
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException exc)
+        {
+            exc.printStackTrace();
+        }
+        
+        _vrep.simxStartSimulation(_clientID, remoteApi.simx_opmode_blocking);
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException exc)
+        {
+            exc.printStackTrace();
+        }
+        DebugParams debParam = new DebugParams(); 
+        debParam.setSimulationDebugMarkerHeight(scaleFactor);
+        INavigationListener navigationListener = new VRepNavigationListener(_objectCreator);
+        navigationListener.activateSegmentDebugging();
+//        navigationListener.activateRouteDebugging();
+        debParam.addNavigationListener(navigationListener);
+        Speedometer speedometer = Speedometer.createWindow();
+        debParam.setSpeedometer(speedometer);
+        vehicle.activateDebugging(debParam);
+
+        vehicle.start();
+        Position2D target = roadMap.getClosestPointOnMap(destinationPosition);
+        
+        vehicle.driveTo((float)target.getX(), (float)target.getY(), roadMap);
+        
+        System.out.println("wait here");
+        vehicle.stop();
+        vehicle.deacvtivateDebugging();
+        _vrep.simxStopSimulation(_clientID, remoteApi.simx_opmode_blocking);
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException exc)
+        {
+            exc.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testSpeedSuddenStopOnRealMap() throws VRepException
+    {
+        double scaleFactor = 1.0;
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
         TMatrix scaleOffsetMatrix = roadMap.center(0.0, 0.0);
         
         float streetWidth = (float)1.5;
@@ -146,7 +214,7 @@ public class DriveRoutesTest
     private IVehicleConfiguration createConfiguration(RoadMap roadMap, Position2D startPosition, Position2D destinationPosition)
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
-        IUpperLayerFactory upperFact = () -> {return new NavigationController(5.0, 60.0);};
+        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(5.0, 60.0);};
         ILowerLayerFactory lowerFact = () -> {
             PurePursuitController ctrl = new PurePursuitController();
             PurePursuitParameters parameters = new PurePursuitParameters(10.0, 0.25);
@@ -154,8 +222,8 @@ public class DriveRoutesTest
             ctrl.setParameters(parameters);
             return ctrl;
         };
-        vehicleConf.upperCtrlFactory(upperFact);
-        vehicleConf.lowerCtrlFactory(lowerFact);
+        vehicleConf.setUpperCtrlFactory(upperFact);
+        vehicleConf.setLowerCtrlFactory(lowerFact);
         
         Position2D startingPoint = roadMap.getClosestPointOnMap(startPosition);
         vehicleConf.setPosition(startingPoint.getX(), startingPoint.getY(), 3.0);

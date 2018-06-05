@@ -22,7 +22,7 @@ import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
 import de.joachim.haensel.vehicle.ILowerLayerControl;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
-import de.joachim.haensel.vehicle.NavigationController;
+import de.joachim.haensel.vehicle.DefaultNavigationController;
 import de.joachim.haensel.vehicle.PurePursuitController;
 import de.joachim.haensel.vehicle.PurePursuitParameters;
 import de.joachim.haensel.vehicle.Vehicle;
@@ -86,14 +86,14 @@ public class VehicleCreationTest implements TestConstants
     private IVehicleConfiguration createConfiguration()
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
-        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0, 30.0);};
+        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
         ILowerLayerFactory lowerFact = () -> {
             PurePursuitController ctrl = new PurePursuitController();
             ctrl.setParameters(new PurePursuitParameters(2.0, -0.25));
             return ctrl;
         };
-        vehicleConf.upperCtrlFactory(upperFact);
-        vehicleConf.lowerCtrlFactory(lowerFact);
+        vehicleConf.setUpperCtrlFactory(upperFact);
+        vehicleConf.setLowerCtrlFactory(lowerFact);
         vehicleConf.setPosition(0.0, 0.0, 3.0);
         return vehicleConf;
     }
@@ -104,7 +104,7 @@ public class VehicleCreationTest implements TestConstants
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         float height = vehicleCreator.getVehicleHeight();
         
-        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0, 30.0);};
+        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
         ILowerLayerFactory lowerFact = () -> {ILowerLayerControl<PurePursuitParameters> ctrl = new PurePursuitController(); ctrl.setParameters(new PurePursuitParameters(5.0, -0.25)); return ctrl;};
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, null, upperFact, lowerFact);
@@ -124,7 +124,7 @@ public class VehicleCreationTest implements TestConstants
         float height = vehicleCreator.getVehicleHeight();
         
         
-        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0 * scaleFactor, 30.0);};
+        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0 * scaleFactor, 30.0);};
         ILowerLayerFactory lowerFact = () -> {return ctrl;};
 
         vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + scaleFactor, null, upperFact, lowerFact);
@@ -142,7 +142,7 @@ public class VehicleCreationTest implements TestConstants
         VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         float height = vehicleCreator.getVehicleHeight();
         
-        IUpperLayerFactory upperFact = () -> {return new NavigationController(2.0, 30.0);};
+        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
         ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap, upperFact, lowerFact);

@@ -18,7 +18,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.veloc
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.IVelocityAssignerFactory;
 import de.joachim.haensel.vehiclecontrol.Navigator;
 
-public class NavigationController implements IUpperLayerControl
+public class DefaultNavigationController implements IUpperLayerControl
 {
     private RoadMap _roadMap;
     private IActuatingSensing _sensorsActuators;
@@ -28,7 +28,7 @@ public class NavigationController implements IUpperLayerControl
     private DebugParams _debuggingParameters;
     private double _maxSpeed;
     
-    public NavigationController(double segmentSize, double maxSpeed)
+    public DefaultNavigationController(double segmentSize, double maxSpeed)
     {
         _segmentSize = segmentSize;
         _segmentBuildingListeners = new ArrayList<ISegmentBuildingListener>();

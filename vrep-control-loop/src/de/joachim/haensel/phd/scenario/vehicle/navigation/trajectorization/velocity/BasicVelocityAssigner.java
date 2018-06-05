@@ -36,7 +36,7 @@ public class BasicVelocityAssigner implements IVelocityAssigner
     // maximum lateral acceleration
     private double _accelerationMaxLateral = 3.0;
     // maximum longitudinal acceleration -> throttle
-    private double _accelerationMaxLongitudinal = 2.0;
+    private double _accelerationMaxLongitudinal = 8.0;
     // maximum longitudinal deceleration -> brake
     private double _decelerationMaxLongitudinal = 8.0;
     // maximum longitudinal velocity

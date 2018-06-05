@@ -23,12 +23,13 @@ controlLoop = function()
       local rRWP = sim.getObjectPosition(rearRightWheel, -1)
   
       local posi = sim.getObjectPosition(physicalBody, -1)
+      local v, av = sim.getObjectVelocity(physicalBody) 
   
       local rWCP = {(rLWP[1] + rRWP[1])/2, (rLWP[2] + rRWP[2])/2}
       local fWCP = {(fLWP[1] + fRWP[1])/2, (fLWP[2] + fRWP[2])/2}
       local carPos = {posi[1], posi[2]}
-      -- car center position, front wheel position, rear wheel position (2D)
-      positions = {carPos[1], carPos[2], fWCP[1], fWCP[2], rWCP[1], rWCP[2]}
+      -- car center position, front wheel center position, rear wheel center position (2D), velocity (3D)
+      positions = {carPos[1], carPos[2], fWCP[1], fWCP[2], rWCP[1], rWCP[2], v[1], v[2], v[3]}
   
       -- Since this script is threaded, don't waste time here:
       simSwitchThread() -- Resume the script at next simulation loop start
@@ -116,9 +117,9 @@ end
 sense = function(inInts, inFloats, inStrings, inBuffer)
   -- positions computed in main loop, provided for external usage
   if (positions == nil) then
-    positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
   end 
-  return {}, {positions[1], positions[2], positions[3], positions[4], positions[5], positions[6]}, {}, "" 
+  return {}, {positions[1], positions[2], positions[3], positions[4], positions[5], positions[6], positions[7], positions[8], positions[9]}, {}, "" 
 end
 
 debugCircle = function(inInts, inFloats, inStrings, inBuffer)

@@ -7,9 +7,9 @@ import de.joachim.haensel.vehicle.IUpperLayerFactory;
 
 public interface IVehicleConfiguration
 {
-    public IVehicleConfiguration upperCtrlFactory(IUpperLayerFactory upperFact);
+    public IVehicleConfiguration setUpperCtrlFactory(IUpperLayerFactory upperFact);
 
-    public IVehicleConfiguration lowerCtrlFactory(ILowerLayerFactory lowerFact);
+    public IVehicleConfiguration setLowerCtrlFactory(ILowerLayerFactory lowerFact);
 
     public IVehicleConfiguration setPosition(double x, double y, double z);
     

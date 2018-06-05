@@ -31,7 +31,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segme
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.Segmenter;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.bezier.SegmenterBezier;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.bezier.Spline2D;
-import de.joachim.haensel.vehicle.NavigationController;
+import de.joachim.haensel.vehicle.DefaultNavigationController;
 import de.joachim.haensel.vehiclecontrol.Navigator;
 
 public class SegmentBuildingTest implements TestConstants
@@ -633,7 +633,7 @@ public class SegmentBuildingTest implements TestConstants
         visualizer.setVisible(true);
         System.out.println("stop");
 
-        NavigationController nav = new NavigationController(2.0 * scaleFactor, 30.0);
+        DefaultNavigationController nav = new DefaultNavigationController(2.0 * scaleFactor, 30.0);
         nav.addSegmentBuilderListener(new SegmentBuildingAdapter(visualizer));
         nav.initController(new Positioner(startingPoint), roadMap);
         nav.buildSegmentBuffer(destinationPosition, roadMap);

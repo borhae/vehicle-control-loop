@@ -12,6 +12,12 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.streamextensions.IndexAdder;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
+
+/**
+ * Will show the navigation result in the simulation
+ * @author dummy
+ *
+ */
 public class VRepNavigationListener implements INavigationListener
 {
     private VRepObjectCreation _objectCreator;
