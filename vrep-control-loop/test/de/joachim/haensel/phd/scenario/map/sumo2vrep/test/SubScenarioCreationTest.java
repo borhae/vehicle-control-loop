@@ -17,12 +17,12 @@ import de.joachim.haensel.phd.scenario.sumo2vrep.OrientedPosition;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.sumo2vrep.VRepMap;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
+import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
+import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleCreator;
 import de.joachim.haensel.vehicle.PurePursuitController;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.vehicle.DefaultNavigationController;
-import de.joachim.haensel.vehicle.Vehicle;
-import de.joachim.haensel.vehicle.VehicleCreator;
 import de.joachim.haensel.vehiclecontrol.Navigator;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import sumobindings.JunctionType;
@@ -86,7 +86,7 @@ public class SubScenarioCreationTest implements TestConstants
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createSimplesShapeBasedMap(roadMap);
         
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
+        VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
         Line2D firstLine = route.get(0);
         Position2D startingPoint = new Position2D(firstLine.getX1(), firstLine.getY1());
 
@@ -109,7 +109,7 @@ public class SubScenarioCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0, 0.0);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createSimplesShapeBasedMap(roadMap);
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
+        VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
         float height = vehicleCreator.getVehicleHeight();
 
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
@@ -127,7 +127,7 @@ public class SubScenarioCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0, 0.0);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createSimplesShapeBasedMap(roadMap);
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
+        VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
         float height = vehicleCreator.getVehicleHeight();
         
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};

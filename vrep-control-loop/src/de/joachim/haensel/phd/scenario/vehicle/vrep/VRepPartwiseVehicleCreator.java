@@ -1,12 +1,15 @@
-package de.joachim.haensel.vehicle;
+package de.joachim.haensel.phd.scenario.vehicle.vrep;
 
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorData;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleHandles;
+import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
 import de.joachim.haensel.phd.scenario.vehicle.VehicleHandles;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.CarControlInterface;
+import de.joachim.haensel.vehicle.ILowerLayerFactory;
+import de.joachim.haensel.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import de.joachim.haensel.vrepshapecreation.dummy.DummyParameters;
 import de.joachim.haensel.vrepshapecreation.joints.EVRepJointModes;
@@ -16,7 +19,9 @@ import de.joachim.haensel.vrepshapecreation.shapes.EVRepShapes;
 import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
 import de.joachim.haensel.vwpoloproperties.VWPoloDimensions;
 
-public class VehicleCreator
+
+//TODO at some point move this to VRepPartwiseVehicleFactory
+public class VRepPartwiseVehicleCreator
 {
 
     public static final String PHYSICAL_CAR_BODY_NAME = "physicalCarBody";
@@ -53,7 +58,7 @@ public class VehicleCreator
     private VRepObjectCreation _objectCreator;
     private float _scaleFactor;
     
-    public VehicleCreator(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator, float scaleFactor)
+    public VRepPartwiseVehicleCreator(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator, float scaleFactor)
     {
         _scaleFactor = scaleFactor;
         _vrep = vrep;
@@ -135,7 +140,6 @@ public class VehicleCreator
             int rearLeftWheel = createWheel(_objectCreator, "rearLeftWheel", axisRearLeft, WHEEL_DIAMETER, WHEEL_WIDTH);
             int rearRightWheel = createWheel(_objectCreator, "rearRightWheel", axisRearRight, WHEEL_DIAMETER, WHEEL_WIDTH);
 
-            CarControlInterface car = new CarControlInterface(_objectCreator, PHYSICAL_CAR_BODY_NAME, _vrep, _clientID, physicalBodyHandle);
             
             vehicleHandles.setPhysicalBody(physicalBodyHandle).setRearLeftWheel(rearLeftWheel).setRearRightWheel(rearRightWheel).setFrontLeftWheel(frontLeftWheel).setFrontRightWheel(frontRightWheel);
             vehicleHandles.setDamperRearLeft(damperRearLeft).setDamperRearRight(damperRearRight).setDamperFrontLeft(damperFrontLeft).setDamperFrontRight(damperFrontRight);
@@ -146,8 +150,8 @@ public class VehicleCreator
             vehicleHandles.setFrontLeftWheelDummy(frontLeftWheelDummy).setFrontRightWheelDummy(frontRightWheelDummy);
             vehicleHandles.setRearWheelVisualizationDummy(rearWheelDummy);
             
-            car.initialize();
-            return new Vehicle(_objectCreator, _vrep, _clientID, vehicleHandles, car, roadMap, uppperLayerFactory, lowerLayerFactory);
+            VRepSimulatorData simulatorData = new VRepSimulatorData(_objectCreator, _vrep, _clientID, PHYSICAL_CAR_BODY_NAME);
+            return new Vehicle(simulatorData, vehicleHandles, roadMap, uppperLayerFactory, lowerLayerFactory);
         }
         catch (VRepException e)
         {

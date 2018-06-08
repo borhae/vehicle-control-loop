@@ -21,7 +21,7 @@ import de.joachim.haensel.phd.scenario.sumo2vrep.VRepMap;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
-import de.joachim.haensel.phd.scenario.vehicle.VRepLoadModelVehicleFactory;
+import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;

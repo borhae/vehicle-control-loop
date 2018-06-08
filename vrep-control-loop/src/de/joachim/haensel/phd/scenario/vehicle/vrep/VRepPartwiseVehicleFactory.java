@@ -1,8 +1,10 @@
-package de.joachim.haensel.phd.scenario.vehicle;
+package de.joachim.haensel.phd.scenario.vehicle.vrep;
 
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
-import de.joachim.haensel.vehicle.Vehicle;
-import de.joachim.haensel.vehicle.VehicleCreator;
+import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
+import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
+import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
+import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class VRepPartwiseVehicleFactory implements IVehicleFactory
@@ -30,7 +32,7 @@ public class VRepPartwiseVehicleFactory implements IVehicleFactory
     @Override
     public IVehicle createVehicleInstance()
     {
-        VehicleCreator creator = new VehicleCreator(_vrepApi, _vrepClientID, _vrepObjectCreator, _scaleFactor);
+        VRepPartwiseVehicleCreator creator = new VRepPartwiseVehicleCreator(_vrepApi, _vrepClientID, _vrepObjectCreator, _scaleFactor);
         float x = (float) _configuration.getXPos();
         float y = (float) _configuration.getYPos();
         float z = (float) _configuration.getZPos();

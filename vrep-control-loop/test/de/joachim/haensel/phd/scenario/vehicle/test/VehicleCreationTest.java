@@ -16,17 +16,17 @@ import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
-import de.joachim.haensel.phd.scenario.vehicle.VRepLoadModelVehicleFactory;
-import de.joachim.haensel.phd.scenario.vehicle.VRepPartwiseVehicleFactory;
+import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
+import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
+import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleCreator;
+import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleFactory;
 import de.joachim.haensel.vehicle.ILowerLayerControl;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.vehicle.DefaultNavigationController;
 import de.joachim.haensel.vehicle.PurePursuitController;
 import de.joachim.haensel.vehicle.PurePursuitParameters;
-import de.joachim.haensel.vehicle.Vehicle;
-import de.joachim.haensel.vehicle.VehicleCreator;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;
@@ -101,7 +101,7 @@ public class VehicleCreationTest implements TestConstants
     @Test
     public void testCreatePositionAndOrientateVehicle() throws VRepException
     {
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
+        VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         float height = vehicleCreator.getVehicleHeight();
         
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
@@ -120,7 +120,7 @@ public class VehicleCreationTest implements TestConstants
         ILowerLayerControl<PurePursuitParameters> ctrl = new PurePursuitController(); 
         ctrl.setParameters(new PurePursuitParameters(lookahead, -0.25));
         
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, scaleFactor);
+        VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, scaleFactor);
         float height = vehicleCreator.getVehicleHeight();
         
         
@@ -139,7 +139,7 @@ public class VehicleCreationTest implements TestConstants
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         
         mapCreator.createSimplesShapeBasedMap(roadMap);
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
+        VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         float height = vehicleCreator.getVehicleHeight();
         
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};

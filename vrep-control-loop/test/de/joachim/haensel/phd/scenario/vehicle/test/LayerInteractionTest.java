@@ -22,20 +22,21 @@ import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
+import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorData;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.sumo2vrep.VRepMap;
 import de.joachim.haensel.phd.scenario.sumo2vrep.XYMinMax;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
+import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleCreator;
+import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleActuatorsSensors;
 import de.joachim.haensel.vehicle.IActuatingSensing;
 import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.vehicle.DefaultNavigationController;
 import de.joachim.haensel.vehicle.PurePursuitController;
 import de.joachim.haensel.vehicle.PurePursuitParameters;
-import de.joachim.haensel.vehicle.Vehicle;
-import de.joachim.haensel.vehicle.VehicleActuatorsSensors;
-import de.joachim.haensel.vehicle.VehicleCreator;
 import de.joachim.haensel.vehiclecontrol.Navigator;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
@@ -150,6 +151,11 @@ public class LayerInteractionTest implements TestConstants
             {
                 return null;
             }
+
+            @Override
+            public void initialize()
+            {
+            }
         };
         controller.initController(sensorsActuators, roadMap);
         controller.buildSegmentBuffer(destinationPosition, roadMap);
@@ -168,7 +174,7 @@ public class LayerInteractionTest implements TestConstants
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createSimplesShapeBasedMap(roadMap);
         
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
+        VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
         Line2D firstLine = route.get(0);
         Position2D startingPoint = new Position2D(firstLine.getX1(), firstLine.getY1());
 
@@ -242,7 +248,7 @@ public class LayerInteractionTest implements TestConstants
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMapSizedRectangle(roadMap, true);
         
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, scale);
+        VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, scale);
         Line2D firstLine = route.get(0);
         Position2D startingPoint = new Position2D(firstLine.getX1(), firstLine.getY1());
 
@@ -312,7 +318,7 @@ public class LayerInteractionTest implements TestConstants
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createSimplesShapeBasedMap(roadMap);
         
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
+        VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
         Line2D firstLine = route.get(0);
         Position2D startingPoint = new Position2D(firstLine.getX1(), firstLine.getY1());
 
@@ -324,18 +330,7 @@ public class LayerInteractionTest implements TestConstants
         
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
         
-        Vector2D carOrientation = vehicle.getOrientation();
-        DefaultNavigationController fakeNav = new DefaultNavigationController(2.0, 30.0);
-        fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
-        fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
-        
-        Trajectory firstSeg = fakeNav.segmentsPeek();
-        Vector2D firstSegOrientation = firstSeg.getVector();
-        
-        double correctionAngle = Vector2D.computeAngle(carOrientation, firstSegOrientation) + Math.PI;
-        
-        vehicle.setOrientation(0.0f, 0.0f, (float)correctionAngle);
-
+        correctVehicleOrientation(1.0, roadMap, destinationPosition, vehicle);
         try
         {
             Thread.sleep(2000);
@@ -397,7 +392,7 @@ public class LayerInteractionTest implements TestConstants
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMapSizedRectangleWithMapTexture(roadMap);
         
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, (float)scaleFactor);
+        VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, (float)scaleFactor);
         Line2D firstLine = route.get(0);
         Position2D startingPoint = new Position2D(firstLine.getX1(), firstLine.getY1());
 
@@ -413,25 +408,8 @@ public class LayerInteractionTest implements TestConstants
         float vehicleZPos = 0.25f;
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), vehicleZPos, roadMap, uperFact , lowerFact);
         
-        Vector2D carOrientation = vehicle.getOrientation();
-        DefaultNavigationController fakeNav = new DefaultNavigationController(2.0 *  scaleFactor, 30.0);
-        fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
-        fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
-
-        Deque<Vector2D> input = fakeNav.getNewSegments(fakeNav.getSegmentBufferSize()).stream().map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
-        Vector2DVisualizer visualizer = new Vector2DVisualizer();
-        visualizer.addVectorSet(input, Color.BLUE);
-        visualizer.updateVisuals();
-        visualizer.setVisible(true);
-        System.out.println("stop");
+        correctVehicleOrientation(scaleFactor, roadMap, destinationPosition, vehicle);
         
-        Trajectory firstSeg = fakeNav.segmentsPeek();
-        Vector2D firstSegOrientation = firstSeg.getVector();
-        
-        double correctionAngle = Vector2D.computeAngle(carOrientation, firstSegOrientation) + Math.PI;
-        
-        vehicle.setOrientation(0.0f, 0.0f, (float)correctionAngle);
-
         try
         {
             Thread.sleep(2000);
@@ -493,7 +471,7 @@ public class LayerInteractionTest implements TestConstants
         mapCreator.createMeshBasedMap(roadMap);
         mapCreator.createMapSizedRectangle(roadMap, false);
         
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, (float)scaleFactor);
+        VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, (float)scaleFactor);
         Line2D firstLine = route.get(0);
         Position2D startingPoint = new Position2D(firstLine.getX1(), firstLine.getY1());
 
@@ -573,7 +551,7 @@ public class LayerInteractionTest implements TestConstants
         mapCreator.createMeshBasedMap(roadMap);
         mapCreator.createMapSizedRectangle(roadMap, false);
         
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, (float)scaleFactor);
+        VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, (float)scaleFactor);
         Line2D firstLine = route.get(0);
         Position2D startingPoint = new Position2D(firstLine.getX1(), firstLine.getY1());
 
@@ -635,7 +613,8 @@ public class LayerInteractionTest implements TestConstants
     {
         Vector2D carOrientation = vehicle.getOrientation();
         DefaultNavigationController fakeNav = new DefaultNavigationController(2.0 *  scaleFactor, 30.0);
-        fakeNav.initController(new VehicleActuatorsSensors(vehicle.getVehicleHandles(), vehicle.getController(), _vrep, _clientID), roadMap);
+        VRepSimulatorData simData = new VRepSimulatorData(null, _vrep, _clientID, null);
+        fakeNav.initController(new VRepVehicleActuatorsSensors(vehicle.getVehicleHandles(), simData), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
 
         Deque<Vector2D> input = fakeNav.getNewSegments(fakeNav.getSegmentBufferSize()).stream().map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));

@@ -74,4 +74,9 @@ public class Positioner implements IActuatingSensing
     {
         return null;
     }
+
+    @Override
+    public void initialize()
+    {
+    }
 }

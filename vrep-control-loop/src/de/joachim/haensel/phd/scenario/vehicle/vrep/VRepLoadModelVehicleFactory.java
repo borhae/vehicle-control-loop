@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.vehicle;
+package de.joachim.haensel.phd.scenario.vehicle.vrep;
 
 import java.nio.file.Paths;
 
@@ -7,8 +7,12 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.CarControlInterface;
-import de.joachim.haensel.vehicle.Vehicle;
+import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorData;
+import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
+import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
+import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
+import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
+import de.joachim.haensel.phd.scenario.vehicle.VehicleWithCameraHandles;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class VRepLoadModelVehicleFactory implements IVehicleFactory
@@ -77,10 +81,9 @@ public class VRepLoadModelVehicleFactory implements IVehicleFactory
             
             handles.setCtrlScript(_objectCreator.getScriptAssociatedWithObject(handles.getPhysicalBody()));
             
-            CarControlInterface car = new CarControlInterface(_objectCreator, PHYSICAL_CAR_BODY_NAME, _vrep, _clientID, handles.getPhysicalBody());
-            car.initialize();
             
-            Vehicle vehicle = new Vehicle(_objectCreator, _vrep, _clientID, handles, car, _vehicleConf.getMap(), _vehicleConf.getUpperCtrlFactory(), _vehicleConf.getLowerCtrlFactory());
+            VRepSimulatorData simulatorData = new VRepSimulatorData(_objectCreator, _vrep, _clientID, PHYSICAL_CAR_BODY_NAME);
+            Vehicle vehicle = new Vehicle(simulatorData, handles, _vehicleConf.getMap(), _vehicleConf.getUpperCtrlFactory(), _vehicleConf.getLowerCtrlFactory());
 
             vehicle.setPosition((float)_vehicleConf.getXPos(), (float)_vehicleConf.getYPos(), (float)_vehicleConf.getZPos());
             Vector2D orientationToAlignTo = _vehicleConf.getOrientation();

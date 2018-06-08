@@ -15,7 +15,9 @@ import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
+import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleCreator;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import de.joachim.haensel.vehicle.IActuatingSensing;
@@ -24,8 +26,6 @@ import de.joachim.haensel.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vehicle.IUpperLayerControl;
 import de.joachim.haensel.vehicle.ITrajectoryProvider;
 import de.joachim.haensel.vehicle.IUpperLayerFactory;
-import de.joachim.haensel.vehicle.Vehicle;
-import de.joachim.haensel.vehicle.VehicleCreator;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class TestVehicleSteering
@@ -76,7 +76,7 @@ public class TestVehicleSteering
     @Test
     public void testSteerLeftRight() throws VRepException
     {
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
+        VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
 
         IUpperLayerFactory uperFact = () ->
         {
@@ -155,7 +155,7 @@ public class TestVehicleSteering
     @Test
     public void testDriveLeft() throws VRepException
     {
-        VehicleCreator vehicleCreator = new VehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
+        VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
 
         IUpperLayerFactory uperFact = () ->
         {

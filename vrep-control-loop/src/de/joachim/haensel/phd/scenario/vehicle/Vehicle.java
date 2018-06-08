@@ -1,19 +1,22 @@
-package de.joachim.haensel.vehicle;
+package de.joachim.haensel.phd.scenario.vehicle;
 
 import java.util.Timer;
 
 import de.hpi.giese.coppeliawrapper.VRepException;
-import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.phd.scenario.simulator.ISimulatorData;
 import de.joachim.haensel.phd.scenario.sumo2vrep.OrientedPosition;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
-import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
-import de.joachim.haensel.phd.scenario.vehicle.IVehicleHandles;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.CarControlInterface;
+import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleActuatorsSensors;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
-import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
+import de.joachim.haensel.vehicle.IActuatingSensing;
+import de.joachim.haensel.vehicle.ILowerLayerControl;
+import de.joachim.haensel.vehicle.ILowerLayerFactory;
+import de.joachim.haensel.vehicle.IUpperLayerControl;
+import de.joachim.haensel.vehicle.IUpperLayerFactory;
+import de.joachim.haensel.vehicle.LowLevelEventGenerator;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;
 
@@ -29,17 +32,16 @@ public class Vehicle implements IVehicle
     private IActuatingSensing _actuatingSensing;
 
     private IVehicleHandles _vehicleHandles;
-    private CarControlInterface _controller;
 
-    private VRepObjectCreation _vrepCreator;
+    private ISimulatorData _simulatorData;
 
-    public Vehicle(VRepObjectCreation creator, VRepRemoteAPI vrep, int clientID, IVehicleHandles vehicleHandles, CarControlInterface controller, RoadMap roadMap, IUpperLayerFactory upperLayerFactory, ILowerLayerFactory lowerLayerFactory)
+    public Vehicle(ISimulatorData simulatorData, IVehicleHandles vehicleHandles, RoadMap roadMap, IUpperLayerFactory upperLayerFactory, ILowerLayerFactory lowerLayerFactory)
     {
-        _vrepCreator = creator;
+        _simulatorData = simulatorData;
         _vehicleHandles = vehicleHandles;
-        _controller = controller;
         _upperControlLayer = upperLayerFactory.create();
-        _actuatingSensing = new VehicleActuatorsSensors(vehicleHandles, controller, vrep, clientID);
+        _actuatingSensing = new VRepVehicleActuatorsSensors(vehicleHandles, simulatorData);
+        _actuatingSensing.initialize();
         _upperControlLayer.initController(_actuatingSensing, roadMap);
         _lowerControlLayer = lowerLayerFactory.create();
         _lowerControlLayer.initController(_actuatingSensing, _upperControlLayer);
@@ -59,11 +61,6 @@ public class Vehicle implements IVehicle
     public void deacvtivateDebugging()
     {
         _lowerControlLayer.deactivateDebugging();
-    }
-
-    public CarControlInterface getController()
-    {
-        return _controller;
     }
 
     public IVehicleHandles getVehicleHandles()
@@ -126,14 +123,6 @@ public class Vehicle implements IVehicle
     @Override
     public void removeFromSimulation()
     {
-        try
-        {
-            _vrepCreator.deleteScripts(_vehicleHandles.getAllScriptHandles());
-            _vrepCreator.deleteObjects(_vehicleHandles.getAllObjectHandles());
-        }
-        catch (VRepException exc)
-        {
-            exc.printStackTrace();
-        }
+        _simulatorData.removeItemsFromSimulation(_vehicleHandles);
     }
 }

@@ -59,4 +59,9 @@ public interface IActuatingSensing
      * @param targetSteeringAngle
      */
     public void drive(float targetWheelRotation, float targetSteeringAngle);
+
+    /**
+     * Initialize the connection to the real world - simulator
+     */
+    public void initialize();
 }

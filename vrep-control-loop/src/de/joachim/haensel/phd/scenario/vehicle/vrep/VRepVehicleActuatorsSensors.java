@@ -1,4 +1,4 @@
-package de.joachim.haensel.vehicle;
+package de.joachim.haensel.phd.scenario.vehicle.vrep;
 
 import static org.junit.Assert.fail;
 
@@ -13,40 +13,44 @@ import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.phd.scenario.simulator.ISimulatorData;
+import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorData;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleHandles;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.CarControlInterface;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingObject;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
+import de.joachim.haensel.vehicle.IActuatingSensing;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
-public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
+public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
 {
     private IVehicleHandles _vehicleHandles;
     private Position2D _curPosition;
     private Position2D _rearWheelCenterPosition;
     private Position2D _frontWheelCenterPosition;
     private double _vehicleLength;
-    private CarControlInterface _controlInterface;
     private String _vehicleScriptParentName;
     private VRepRemoteAPI _vrep;
     private int _clientID;
     private Map<String, DrawingObject> _drawingObjectsStore;
     private double[] _vechicleVelocity;
+    private VRepObjectCreation _vRepObjectCreator;
     
-    public VehicleActuatorsSensors(IVehicleHandles vehicleHandles, CarControlInterface controller, VRepRemoteAPI vrep, int clientID)
+    public VRepVehicleActuatorsSensors(IVehicleHandles vehicleHandles, ISimulatorData simulatorData)
     {
         _vehicleHandles = vehicleHandles;
-        _controlInterface = controller;
-        _vehicleScriptParentName = controller.getVehicleScriptParentName();
         _curPosition = new Position2D(0, 0);
         _rearWheelCenterPosition = new Position2D(0, 0);
         _frontWheelCenterPosition = new Position2D(0.0, 0.0);
         _vehicleLength = -1.0;
-        _vrep = vrep;
-        _clientID = clientID;
         _drawingObjectsStore = new HashMap<String, DrawingObject>();
         _vechicleVelocity = new double[3];
+
+        VRepSimulatorData vrepData = (VRepSimulatorData)simulatorData;
+        _vehicleScriptParentName = vrepData.getVehicleScriptParentName();
+        _vrep = vrepData.getVRepRemoteAPI();
+        _clientID = vrepData.getClientID();
+        _vRepObjectCreator = vrepData.getVRepObjectCreator();
     }
 
     @Override
@@ -141,7 +145,10 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     {
         try
         {
-            _controlInterface.drive(targetWheelRotation, targetSteeringAngle);
+            FloatWA inFloats = new FloatWA(2);
+            inFloats.getArray()[0] = (float)(double) targetSteeringAngle;
+            inFloats.getArray()[1] = (float)(double) targetWheelRotation;
+            _vrep.simxCallScriptFunction(_clientID, _vehicleScriptParentName, remoteApi.sim_scripttype_childscript, "control", null, inFloats, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
         }
         catch (VRepException exc)
         {
@@ -185,7 +192,7 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     @Override
     public void attachDebugCircle(double lookahead)
     {
-        String parentObj = VehicleCreator.PHYSICAL_CAR_BODY_NAME;
+        String parentObj = VRepPartwiseVehicleCreator.PHYSICAL_CAR_BODY_NAME;
         Color lineColor = Color.ORANGE;
         FloatWA floatParamsIn = new FloatWA(4);
         float[] floatsIn = floatParamsIn.getArray();
@@ -337,5 +344,18 @@ public class VehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
     public double[] getVehicleVelocity()
     {
         return _vechicleVelocity;
+    }
+
+    @Override
+    public void initialize()
+    {
+        try
+        {
+            _vRepObjectCreator.attachControlScript(_vehicleHandles.getPhysicalBody());
+        }
+        catch (VRepException exc)
+        {
+            exc.printStackTrace();
+        }
     }
 }
