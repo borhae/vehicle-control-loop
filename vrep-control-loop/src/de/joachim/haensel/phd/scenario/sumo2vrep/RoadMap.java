@@ -324,7 +324,7 @@ public class RoadMap
         return minDist;
     }
 
-    private List<Line2D> createLines(String[] shapeCoordinates)
+    public static List<Line2D> createLines(String[] shapeCoordinates)
     {
         List<Line2D> result = new ArrayList<>();
         for(int idx = 0; idx < shapeCoordinates.length - 1; idx+=2)

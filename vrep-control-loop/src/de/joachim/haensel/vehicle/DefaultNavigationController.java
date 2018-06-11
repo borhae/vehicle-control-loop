@@ -33,6 +33,7 @@ public class DefaultNavigationController implements IUpperLayerControl
         _segmentSize = segmentSize;
         _segmentBuildingListeners = new ArrayList<ISegmentBuildingListener>();
         _maxSpeed = maxSpeed;
+        _debuggingParameters = new DebugParams();
     }
 
     @Override
