@@ -33,6 +33,7 @@ public class Vector2DVisualizerTest
         input.add(new Vector2D(0, 0, 10, 10));
         ContentElement visualizee = new ContentElement(input, Color.BLUE, new BasicStroke(1.0f));
         visualizer.addContentElement(visualizee);
+        visualizer.setVisible(true);
         visualizer.updateVisuals();
         visualizer.setVisible(true);
         System.out.println("one");
@@ -42,5 +43,21 @@ public class Vector2DVisualizerTest
         visualizee.addVector(new Vector2D(10, 30, 20, 40));
         visualizer.updateVisuals();
         System.out.println("three");
+    }
+    
+    @Test
+    public void testVisualize4VectorsCentered()
+    {
+        Vector2DVisualizer visualizer = new Vector2DVisualizer();
+        Deque<Vector2D> input = new LinkedList<>();
+        input.add(new Vector2D(0, 0, 10, 10));
+        ContentElement visualizee = new ContentElement(input, Color.BLUE, new BasicStroke(1.0f));
+        visualizer.addContentElement(visualizee);
+        visualizee.addVector(new Vector2D(10, 10, 0, 20));
+        visualizee.addVector(new Vector2D(10, 30, 20, 40));
+        visualizer.updateVisuals();
+        visualizer.centerContent();
+        visualizer.setVisible(true);
+        System.out.println("wait");
     }
 }

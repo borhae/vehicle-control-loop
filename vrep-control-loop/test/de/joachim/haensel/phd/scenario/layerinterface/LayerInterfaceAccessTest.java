@@ -3,7 +3,6 @@ package de.joachim.haensel.phd.scenario.layerinterface;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -71,8 +70,10 @@ public class LayerInterfaceAccessTest
         Deque<Deque<Vector2D>> slidingWindowsVectors = transformToVectorDeque(slidingWindows);
         Vector2DVisualizer visualizer = new Vector2DVisualizer();
         Deque<Vector2D> firstWindow = slidingWindowsVectors.getFirst();
-        visualizer.addVectorSet(firstWindow, Color.BLACK, 0.1, 0.1);
+        visualizer.addVectorSet(firstWindow, Color.BLACK, 4.0, 0.02);
         visualizer.setVisible(true);
+        visualizer.centerContent();
+        visualizer.updateVisuals();
         System.out.println("wait");
     }
 

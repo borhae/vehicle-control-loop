@@ -12,6 +12,8 @@ import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -50,7 +52,7 @@ public class Vector2DVisualizer extends JFrame
 
     private static final Dimension FRAME_SIZE = new Dimension(2560, 1440);
 
-    public class Vector2DVisualizerPanel extends JPanel implements MouseWheelListener, MouseListener, MouseMotionListener
+    public class Vector2DVisualizerPanel extends JPanel implements MouseWheelListener, MouseListener, MouseMotionListener, KeyListener
     {
 
         private static final double ARROW_SIZE = 5.0;
@@ -76,6 +78,8 @@ public class Vector2DVisualizer extends JFrame
             addMouseWheelListener(this);
             addMouseMotionListener(this);
             addMouseListener(this);
+            addKeyListener(this);
+            setFocusable(true); //otherwise we get no typing
         }
 
         public Map<Integer, ContentElement> accessContentMap()
@@ -222,20 +226,38 @@ public class Vector2DVisualizer extends JFrame
             result[3] = (int)(v[3] + yOffset);
             return result;
         }
+        
+        
 
         @Override
         public void mouseWheelMoved(MouseWheelEvent e)
         {
             _zoomer = true;
-
+            double zoomDelta = 0.0;
+            if(_zoomFactor <= 10)
+            {
+                zoomDelta = 1.1; //this was the default
+            }
+            else if(_zoomFactor <= 50)
+            {
+                zoomDelta = 1.01;
+            }
+            else if(_zoomFactor <= 200)
+            {
+                zoomDelta = 1.005;
+            }
+            else 
+            {
+                zoomDelta = 1.001;
+            }
             if (e.getWheelRotation() < 0)
             {
-                _zoomFactor *= 1.1;
+                _zoomFactor *= zoomDelta;
                 repaint();
             }
             else if (e.getWheelRotation() > 0)
             {
-                _zoomFactor /= 1.1;
+                _zoomFactor /= zoomDelta;
                 repaint();
             }
         }
@@ -312,6 +334,69 @@ public class Vector2DVisualizer extends JFrame
             ContentElement contentElement = accessContentMap().get(id);
             contentElement.reset(vectors);
         }
+
+        public void center()
+        {
+            double minX = Double.POSITIVE_INFINITY;
+            double maxX = Double.NEGATIVE_INFINITY;
+            double minY = Double.POSITIVE_INFINITY;
+            double maxY = Double.NEGATIVE_INFINITY;
+            Collection<ContentElement> contentElements = _contentMap.values();
+            for (ContentElement curElem : contentElements)
+            {
+                double[][] content = curElem.getContent();
+                for(int idx = 0; idx < content.length; idx++)
+                {
+                    double xB = content[idx][0];
+                    double yB = content[idx][1];
+                    double xT = content[idx][2];
+                    double yT = content[idx][3];
+
+                    minX = Math.min(Math.min(minX, xB), xT);
+                    maxX = Math.max(Math.max(maxX, xB), xT);
+                    
+                    minY = Math.min(Math.min(minY, yB), yT);
+                    maxY = Math.max(Math.max(maxY, yB), yT);
+                }
+            }
+            double rangeX = maxX - minX;
+            double frameWidth = (double)getWidth();
+            double zoomX = frameWidth/rangeX;
+
+            double rangeY = maxY - minY;
+            double frameHeight = (double)getHeight();
+            double zoomY = frameHeight/rangeY;
+            
+            _zoomFactor = Math.min(zoomX, zoomY);
+            double centerX = (frameWidth - maxX * _zoomFactor) / 2.0;
+            double centerY = (frameHeight - maxY * _zoomFactor) / 2.0;
+            _xOffset = - minX * _zoomFactor + centerX;
+            _yOffset = - minY * _zoomFactor + centerY;
+
+            _prevZoomFactor = _zoomFactor;
+        }
+
+        @Override
+        public void keyTyped(KeyEvent e)
+        {
+            System.out.println("key typed: " + e.getKeyChar());
+            char keyWhenReleased = e.getKeyChar();
+            if(keyWhenReleased == 'c')
+            {
+                center();
+                repaint();
+            }
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e)
+        {
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e)
+        {
+        }
     }
 
     private Vector2DVisualizerPanel _panel;
@@ -333,7 +418,7 @@ public class Vector2DVisualizer extends JFrame
         this.add(_panel);
         _panel.setVisible(true);
 
-        _infoLabel = new JLabel("Roll to zoom. Click and drag to move.", JLabel.CENTER);
+        _infoLabel = new JLabel("Roll to zoom. Click and drag to move. Press c to center", JLabel.CENTER);
         _infoLabel.setFont(new Font(_infoLabel.getFont().getFontName(), Font.PLAIN, 26));
         _infoLabel.setBounds(50, height - 180, width - 100, 80);
         this.add(_infoLabel);
@@ -386,6 +471,12 @@ public class Vector2DVisualizer extends JFrame
     
     public void updateVisuals()
     {
+        this.repaint();
+    }
+
+    public void centerContent()
+    {
+        _panel.center();
         this.repaint();
     }
 }
