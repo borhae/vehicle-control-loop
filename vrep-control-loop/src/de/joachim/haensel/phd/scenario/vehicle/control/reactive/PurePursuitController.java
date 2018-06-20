@@ -1,4 +1,4 @@
-package de.joachim.haensel.vehicle;
+package de.joachim.haensel.phd.scenario.vehicle.control.reactive;
 
 import java.awt.Color;
 import java.util.LinkedList;
@@ -8,8 +8,11 @@ import java.util.function.Consumer;
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerMsg;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerStates;
+import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
+import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
+import de.joachim.haensel.phd.scenario.vehicle.ITrajectoryProvider;
+import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
+import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
@@ -297,5 +300,17 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     {
         States currentState = _stateMachine.getCurrentState();
         return "state:" + currentState + ", target:" + _expectedTarget;
+    }
+
+    @Override
+    public void addTrajectoryRequestListener(ITrajectoryRequestListener requestListener)
+    {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void addTrajectoryReportListener(ITrajectoryReportListener reportListener)
+    {
+        // TODO Auto-generated method stub
     }
 }

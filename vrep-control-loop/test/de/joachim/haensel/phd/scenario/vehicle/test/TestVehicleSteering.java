@@ -15,17 +15,19 @@ import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
+import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
+import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
+import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
+import de.joachim.haensel.phd.scenario.vehicle.ITrajectoryProvider;
+import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
+import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
+import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
+import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleCreator;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
-import de.joachim.haensel.vehicle.IActuatingSensing;
-import de.joachim.haensel.vehicle.ILowerLayerControl;
-import de.joachim.haensel.vehicle.ILowerLayerFactory;
-import de.joachim.haensel.vehicle.IUpperLayerControl;
-import de.joachim.haensel.vehicle.ITrajectoryProvider;
-import de.joachim.haensel.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class TestVehicleSteering
@@ -315,6 +317,16 @@ public class TestVehicleSteering
         public void stop()
         {
         }
+
+        @Override
+        public void addTrajectoryRequestListener(ITrajectoryRequestListener requestListener)
+        {
+        }
+
+        @Override
+        public void addTrajectoryReportListener(ITrajectoryReportListener reportListener)
+        {
+        }
     }
     
     public class TestJustSteeringController implements ILowerLayerControl<Object>
@@ -362,6 +374,16 @@ public class TestVehicleSteering
 
         @Override
         public void stop()
+        {
+        }
+
+        @Override
+        public void addTrajectoryRequestListener(ITrajectoryRequestListener requestListener)
+        {
+        }
+
+        @Override
+        public void addTrajectoryReportListener(ITrajectoryReportListener reportListener)
         {
         }
     }

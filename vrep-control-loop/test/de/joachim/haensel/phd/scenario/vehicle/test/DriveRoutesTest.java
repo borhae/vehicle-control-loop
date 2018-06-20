@@ -18,16 +18,16 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.sumo2vrep.VRepMap;
+import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
+import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
-import de.joachim.haensel.vehicle.ILowerLayerFactory;
-import de.joachim.haensel.vehicle.IUpperLayerFactory;
-import de.joachim.haensel.vehicle.DefaultNavigationController;
-import de.joachim.haensel.vehicle.PurePursuitController;
-import de.joachim.haensel.vehicle.PurePursuitParameters;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class DriveRoutesTest

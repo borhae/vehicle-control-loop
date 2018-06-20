@@ -1,4 +1,4 @@
-package de.joachim.haensel.vehicle;
+package de.joachim.haensel.phd.scenario.vehicle;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;

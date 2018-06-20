@@ -27,17 +27,17 @@ import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.sumo2vrep.VRepMap;
 import de.joachim.haensel.phd.scenario.sumo2vrep.XYMinMax;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
+import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
+import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
+import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleCreator;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleActuatorsSensors;
-import de.joachim.haensel.vehicle.IActuatingSensing;
-import de.joachim.haensel.vehicle.ILowerLayerFactory;
-import de.joachim.haensel.vehicle.IUpperLayerFactory;
-import de.joachim.haensel.vehicle.DefaultNavigationController;
-import de.joachim.haensel.vehicle.PurePursuitController;
-import de.joachim.haensel.vehicle.PurePursuitParameters;
-import de.joachim.haensel.vehiclecontrol.Navigator;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class LayerInteractionTest implements TestConstants

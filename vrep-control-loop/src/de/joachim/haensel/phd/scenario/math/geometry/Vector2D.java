@@ -409,12 +409,12 @@ public class Vector2D
     //TODO unfinished!! Low Priority
     public Position2D intersectPolygon(Position2D[] polygon)
     {
-        for(int idx = 0; idx < polygon.length - 1; idx++)
-        {
-            Vector2D curSide = new Vector2D(polygon[idx], polygon[idx + 1]);
-//            Position2D intersection = Vector2D.intersect(this, curSide);
-            double t = scalarIntersect(this, curSide);
-        }
+//        for(int idx = 0; idx < polygon.length - 1; idx++)
+//        {
+//            Vector2D curSide = new Vector2D(polygon[idx], polygon[idx + 1]);
+////            Position2D intersection = Vector2D.intersect(this, curSide);
+//            double t = scalarIntersect(this, curSide);
+//        }
         
         return null;
     }

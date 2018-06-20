@@ -23,6 +23,7 @@ import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualiz
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.sumo2vrep.XYMinMax;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.SegmentBuffer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.Trajectorizer;
@@ -33,7 +34,6 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.veloc
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.BasicVelocityAssigner.ICurvatureChangeListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.BasicVelocityAssigner.IProfileChangeListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.IVelocityAssignerFactory;
-import de.joachim.haensel.vehiclecontrol.Navigator;
 
 public class SpeedProfileTest
 {

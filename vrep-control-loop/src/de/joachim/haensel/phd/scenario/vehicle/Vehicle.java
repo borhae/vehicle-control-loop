@@ -11,12 +11,6 @@ import de.joachim.haensel.phd.scenario.sumo2vrep.OrientedPosition;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleActuatorsSensors;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
-import de.joachim.haensel.vehicle.IActuatingSensing;
-import de.joachim.haensel.vehicle.ILowerLayerControl;
-import de.joachim.haensel.vehicle.ILowerLayerFactory;
-import de.joachim.haensel.vehicle.IUpperLayerControl;
-import de.joachim.haensel.vehicle.IUpperLayerFactory;
-import de.joachim.haensel.vehicle.LowLevelEventGenerator;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;
 

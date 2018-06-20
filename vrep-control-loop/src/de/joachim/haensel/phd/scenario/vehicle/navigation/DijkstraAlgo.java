@@ -1,4 +1,4 @@
-package de.joachim.haensel.vehiclecontrol.navigation;
+package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
 import java.util.ArrayList;
 import java.util.Collection;

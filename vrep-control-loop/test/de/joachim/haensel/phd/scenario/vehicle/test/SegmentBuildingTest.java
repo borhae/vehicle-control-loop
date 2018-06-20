@@ -24,6 +24,8 @@ import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualiz
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.sumo2vrep.XYMinMax;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterBinarySearch;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterCircleIntersection;
@@ -31,8 +33,6 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segme
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.Segmenter;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.bezier.SegmenterBezier;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.bezier.Spline2D;
-import de.joachim.haensel.vehicle.DefaultNavigationController;
-import de.joachim.haensel.vehiclecontrol.Navigator;
 
 public class SegmentBuildingTest implements TestConstants
 {

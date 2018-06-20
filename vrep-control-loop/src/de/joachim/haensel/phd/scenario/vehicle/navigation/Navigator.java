@@ -1,4 +1,4 @@
-package de.joachim.haensel.vehiclecontrol;
+package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,9 +9,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.Edge;
 import de.joachim.haensel.phd.scenario.sumo2vrep.Node;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
-import de.joachim.haensel.vehicle.ISegmentBuildingListener;
-import de.joachim.haensel.vehiclecontrol.navigation.DijkstraAlgo;
-import de.joachim.haensel.vehiclecontrol.navigation.IShortestPathAlgorithm;
+import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
 import sumobindings.EdgeType;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;

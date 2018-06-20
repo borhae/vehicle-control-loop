@@ -9,7 +9,7 @@ import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.vehicle.ISegmentBuildingListener;
+import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
 
 public class SegmentBuildingAdapter implements ISegmentBuildingListener
 {

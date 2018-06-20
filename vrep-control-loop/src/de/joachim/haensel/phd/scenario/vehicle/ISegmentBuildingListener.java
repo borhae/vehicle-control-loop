@@ -1,4 +1,4 @@
-package de.joachim.haensel.vehicle;
+package de.joachim.haensel.phd.scenario.vehicle;
 
 import java.util.Deque;
 import java.util.LinkedList;

@@ -1,4 +1,4 @@
-package de.joachim.haensel.vehicle;
+package de.joachim.haensel.phd.scenario.vehicle;
 
 public interface IUpperLayerFactory
 {

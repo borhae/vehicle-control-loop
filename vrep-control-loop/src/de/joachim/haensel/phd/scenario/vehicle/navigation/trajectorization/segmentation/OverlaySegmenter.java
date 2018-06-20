@@ -8,8 +8,8 @@ import java.util.List;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
-import de.joachim.haensel.vehicle.ISegmentBuildingListener;
 
 public class OverlaySegmenter implements ISegmenter
 {

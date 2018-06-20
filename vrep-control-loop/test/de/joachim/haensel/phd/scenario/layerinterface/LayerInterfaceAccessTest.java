@@ -19,9 +19,12 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.navigation.test.Positioner;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
+import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
+import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
+import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
+import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
-import de.joachim.haensel.vehicle.DefaultNavigationController;
-import de.joachim.haensel.vehicle.IUpperLayerControl;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class LayerInterfaceAccessTest
@@ -75,6 +78,28 @@ public class LayerInterfaceAccessTest
         visualizer.centerContent();
         visualizer.updateVisuals();
         System.out.println("wait");
+    }
+    
+    @Test
+    public void tesSingleRouteLowerLayerTap()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
+        roadMap.center(0.0, 0.0);
+        Position2D startPosition = RandomMapPositionCreator.createRandomPositonOnStree(roadMap);
+        Position2D destinationPosition = RandomMapPositionCreator.createRandomPositonOnStree(roadMap);
+        
+        IUpperLayerControl upperCtrl = new DefaultNavigationController(1.0, 50);
+        Positioner upperLayerSensors = new Positioner(startPosition);
+        upperCtrl.initController(upperLayerSensors, roadMap);
+        
+        upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
+        
+        ILowerLayerControl<Object> lowerCtrl = new MockLowerLayerControl();
+        
+        ITrajectoryRequestListener requestListener = new MockTrajectoryRequestListener();
+        ITrajectoryReportListener reportListener = new MockTrajectoryReportListener();
+        lowerCtrl.addTrajectoryRequestListener(requestListener);
+        lowerCtrl.addTrajectoryReportListener(reportListener);
     }
 
     private Deque<Deque<Vector2D>> transformToVectorDeque(List<List<Trajectory>> slidingWindows)

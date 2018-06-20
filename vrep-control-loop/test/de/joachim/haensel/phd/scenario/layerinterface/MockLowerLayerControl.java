@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.scripts.test;
+package de.joachim.haensel.phd.scenario.layerinterface;
 
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
@@ -9,65 +9,69 @@ import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRe
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 
-public class MonitoringController implements ILowerLayerControl<Object>
+public class MockLowerLayerControl implements ILowerLayerControl<Object>
 {
-    private IActuatingSensing _actuatorsSensors;
-    private ITrajectoryProvider _trajectoryProvider;
-    private IVrepDrawing _simulatorOutput;
-    private DebugParams _debugParams;
 
     @Override
     public void controlEvent()
     {
-        _actuatorsSensors.computeAndLockSensorData();
-        
-        _debugParams.getSpeedometer().updateWheelRotationSpeed(0.0f);
-        _debugParams.getSpeedometer().updateCurrentSegment(null);
-        _debugParams.getSpeedometer().updateActualVelocity(_actuatorsSensors.getVehicleVelocity());
-        _debugParams.getSpeedometer().repaint();
+        // TODO Auto-generated method stub
+
     }
 
     @Override
     public void driveTo(Position2D position)
     {
+        // TODO Auto-generated method stub
+
     }
 
     @Override
     public void initController(IActuatingSensing actuatorsSensors, ITrajectoryProvider trajectoryProvider)
     {
-        _actuatorsSensors = actuatorsSensors;
-        _trajectoryProvider = trajectoryProvider;
+        // TODO Auto-generated method stub
+
     }
 
     @Override
-    public void activateDebugging(IVrepDrawing simulatorOutput, DebugParams params)
+    public void activateDebugging(IVrepDrawing actuatingSensing, DebugParams params)
     {
-        _simulatorOutput = simulatorOutput;
-        _debugParams = params;
+        // TODO Auto-generated method stub
+
     }
 
     @Override
     public void deactivateDebugging()
     {
+        // TODO Auto-generated method stub
+
     }
 
     @Override
     public void setParameters(Object parameters)
     {
+        // TODO Auto-generated method stub
+
     }
 
     @Override
     public void stop()
     {
+        // TODO Auto-generated method stub
+
     }
 
     @Override
     public void addTrajectoryRequestListener(ITrajectoryRequestListener requestListener)
     {
+        // TODO Auto-generated method stub
+        
     }
 
     @Override
     public void addTrajectoryReportListener(ITrajectoryReportListener reportListener)
     {
+        // TODO Auto-generated method stub
+        
     }
 }
