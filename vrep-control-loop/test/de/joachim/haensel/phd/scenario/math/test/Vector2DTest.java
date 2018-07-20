@@ -299,5 +299,41 @@ public class Vector2DTest
          
          assertEquals(expected, actual);
      }
+     
+     @Test
+     public void computeSplitAngel1()
+     {
+         Vector2D v1 = new Vector2D(0.0, 0.0, 1.0, 0.0);
+         Vector2D v2 = new Vector2D(0.0, 0.0, 0.0, -1.0);
+         
+         double actual = Vector2D.computeSplitAngle(v1, v2);
+         double expected = Math.PI / 2.0;
+         
+         assertEquals(expected, actual, Double.MIN_VALUE);
+     }
+     
+     @Test
+     public void computeSplitAngel2()
+     {
+         Vector2D v1 = new Vector2D(0.0, 0.0, 1.0, 0.0);
+         Vector2D v2 = new Vector2D(0.0, 0.0, 0.0, 1.0);
+         
+         double actual = Vector2D.computeSplitAngle(v1, v2);
+         double expected = -(Math.PI / 2.0);
+         
+         assertEquals(expected, actual, Double.MIN_VALUE);
+     }
+     
+     @Test
+     public void computeSplitAngel3()
+     {
+         Vector2D v1 = new Vector2D(0.0, 0.0, 1.0, 0.0);
+         Vector2D v2 = new Vector2D(0.0, 0.0, -1.0, -1.0);
+         
+         double actual = Vector2D.computeSplitAngle(v1, v2);
+         double expected = Math.PI * (3.0/4.0);
+         
+         assertEquals(expected, actual, Double.MIN_VALUE);
+     }
 }
 

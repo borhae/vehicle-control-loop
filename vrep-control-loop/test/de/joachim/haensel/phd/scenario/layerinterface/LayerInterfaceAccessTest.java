@@ -7,13 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.hpi.giese.coppeliawrapper.VRepException;
-import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.navigation.test.Positioner;
@@ -25,34 +20,9 @@ import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRe
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
-import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class LayerInterfaceAccessTest
 {
-    private static VRepRemoteAPI _vrep;
-    private static int _clientID;
-    private static VRepObjectCreation _objectCreator;
-
-    @BeforeClass
-    public static void setupVrep() throws VRepException
-    {
-        _vrep = VRepRemoteAPI.INSTANCE;
-        _clientID = _vrep.simxStart("127.0.0.1", 19999, true, true, 5000, 5);
-        _objectCreator = new VRepObjectCreation(_vrep, _clientID);
-    }
-    
-    @AfterClass
-    public static void tearDownVrep() 
-    {
-        _vrep.simxFinish(_clientID);
-    }
-    
-    @After
-    public void cleanUpObjects() throws VRepException
-    {
-        _objectCreator.deleteAll();
-    }
-
     @Test
     public void testSingleRoute()
     {

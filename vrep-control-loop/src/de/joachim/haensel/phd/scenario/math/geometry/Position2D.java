@@ -80,6 +80,10 @@ public class Position2D
     @Override
     public boolean equals(Object other)
     {
+        if(other == null)
+        {
+            return false;
+        }
         if(other instanceof Position2D)
         {
             return equals((Position2D)other, Math.ulp(0.0));

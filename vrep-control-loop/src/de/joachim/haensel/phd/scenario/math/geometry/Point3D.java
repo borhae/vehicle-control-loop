@@ -2,14 +2,15 @@ package de.joachim.haensel.phd.scenario.math.geometry;
 
 public class Point3D
 {
-    private double[] _content;
+    private double _x;
+    private double _y;
+    private double _z;
 
     public Point3D(double x, double y, double z)
     {
-        _content = new double[3];
-        _content[0] = x;
-        _content[1] = y;
-        _content[2] = z;
+        _x = x;
+        _y = y;
+        _z = z;
     }
 
     /**
@@ -34,6 +35,37 @@ public class Point3D
 
     public double[] getArray()
     {
-        return _content;
+        return new double[]{_x, _y, _z};
+    }
+
+    public static Point3D crossProduct(Point3D a, Point3D b)
+    {
+        double x = a._y * b._z - a._z * b._y;
+        double y = a._z * b._x - a._x * b._z;
+        double z = a._x * b._y - a._y * b._x;
+        return new Point3D(x, y, z);
+    }
+
+    @Override
+    public boolean equals(Object other)
+    {
+        if(!(other instanceof Point3D))
+        {
+            return false;
+        }
+        Point3D otherPoint3d = (Point3D)other;
+        
+        return ((_x == otherPoint3d._x) && (_y == otherPoint3d._y) && (_z == otherPoint3d._z));
+    }
+
+    @Override
+    public String toString()
+    {
+        return "(" + _x + ", " + _y + ", " + _z + ")";
+    }
+
+    public double getZ()
+    {
+        return _z;
     }
 }

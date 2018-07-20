@@ -200,6 +200,29 @@ public class Vector2D
         double divsionResult = dotProduct/magnitudeProduct;
         return (double)Math.acos(divsionResult);
     }
+    
+    /**
+     * Takes too input vectors. Computes the single angle between them. If the result is larger PI 
+     * p2 is considered to point to the left side of p1, otherwise to the right.
+     * Get's a positive value for right and a negative for left side results
+     * @param v1 the reference vector
+     * @param v2 the angled vector
+     * @return the positive or negative angle vector (pointing to the right or left -hand side)
+     */
+    public static double computeSplitAngle(Vector2D v1, Vector2D v2)
+    {
+        double result = computeAngle(v1, v2);
+        double side = v1.side(v2);
+        boolean rightOfV1 = side <= 0;
+        if(rightOfV1)
+        {
+            return result;
+        }
+        else
+        {
+            return - result;
+        }
+    }
 
     public static double dotProduct(Vector2D a, Vector2D b)
     {
@@ -263,11 +286,16 @@ public class Vector2D
         updateLength();
     }
 
-    public double side(Vector2D left)
+    /**
+     * Computes on which side the other vector is in relation to this one
+     * @param other the other vector
+     * @return values smaller than 0 indicate on the right side, greater 0 on the left side and 0 means collinear
+     */
+    public double side(Vector2D other)
     {
         Position2D a = getBase();
         Position2D b = getTip();
-        Position2D m = left.getTip(); 
+        Position2D m = other.getTip(); 
         double determinant = (b.getX() - a.getX()) * (m.getY() - a.getY()) - (b.getY() - a.getY()) * (m.getX() - a.getX());
         return Math.signum(determinant);
     }
@@ -372,40 +400,6 @@ public class Vector2D
         return result;
     }
 
-    /** Intersects the two line segments and returns the intersection point in intersection.
-     * 
-     * @param p1 The first point of the first line segment
-     * @param p2 The second point of the first line segment
-     * @param p3 The first point of the second line segment
-     * @param p4 The second point of the second line segment
-     * @param intersection The intersection point. May be null.
-     * @return Whether the two line segments intersect */
-//    public static boolean intersectSegments (Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, Vector2 intersection) 
-//    {
-//        float x1 = p1.x;
-//        float y1 = p1.y;
-//        float x2 = p2.x;
-//        float y2 = p2.y;
-//        float x3 = p3.x;
-//        float y3 = p3.y;
-//        float x4 = p4.x;
-//        float y4 = p4.y;
-//        
-//        float d = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
-//        if (d == 0) return false;
-//        
-//        float yd = y1 - y3;
-//        float xd = x1 - x3;
-//        float ua = ((x4 - x3) * yd - (y4 - y3) * xd) / d;
-//        if (ua < 0 || ua > 1) return false;
-//        
-//        float ub = ((x2 - x1) * yd - (y2 - y1) * xd) / d;
-//        if (ub < 0 || ub > 1) return false;
-//        
-//        if (intersection != null) intersection.set(x1 + (x2 - x1) * ua, y1 + (y2 - y1) * ua);
-//        return true;
-//    }
-
     //TODO unfinished!! Low Priority
     public Position2D intersectPolygon(Position2D[] polygon)
     {
@@ -460,8 +454,7 @@ public class Vector2D
             //lines are parallel
             if(uNominator == 0)
             {
-                //lines are collinear, let's not deal yet with it
-                //TODO fix this!!!
+                //lines are collinear, no intersection
                 return null;
             }
             else
