@@ -1,6 +1,12 @@
 package de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.test;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -9,10 +15,14 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import de.joachim.haensel.phd.scenario.equivalenceclasses.IClassificationResult;
+import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsLineContainerElement;
 import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.LineArcsSegmentation;
 import de.joachim.haensel.phd.scenario.layerinterface.RandomMapPositionCreator;
+import de.joachim.haensel.phd.scenario.math.geometry.Midpoint;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.TangentSegment;
+import de.joachim.haensel.phd.scenario.math.geometry.TangentSpaceMidpointComputer;
+import de.joachim.haensel.phd.scenario.math.geometry.TangentSpaceTransformer;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.navigation.test.Positioner;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
@@ -23,6 +33,94 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 
 public class TestLineArcsSegmentation
 {
+    @Test
+    public void testTangentSpaceCreationFrom2DPointsPaperExample()
+    {
+        List<Position2D> dataPoints = new ArrayList<>();
+        try
+        {
+            //load arcs and segments defined by coordinates from file into list  
+            Path path = new File("./res/equivalencesegmentationtest/sampleArc.txt").toPath();
+            Files.lines(path).forEachOrdered(line -> dataPoints.add(new Position2D(line, " ")));
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
+        List<String> tangentSpaceFileContent = TangentSpaceTransformer.tangentSpaceAsFile(tangentSpace, " ");
+        try
+        {
+            Files.write(new File("./res/equivalencesegmentationtest/sampleArcTangentSpace.txt").toPath(), tangentSpaceFileContent, Charset.defaultCharset(), StandardOpenOption.CREATE_NEW);
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        System.out.println("finshed");
+    }
+
+    @Test
+    public void testTangentSpaceCreationAndMidpointComputationSimpleArcPaperExample()
+    {
+        List<Position2D> dataPoints = new ArrayList<>();
+        try
+        {
+            //load arcs and segments defined by coordinates from file into list  
+            Path path = new File("./res/equivalencesegmentationtest/sampleArc.txt").toPath();
+            Files.lines(path).forEachOrdered(line -> dataPoints.add(new Position2D(line, " ")));
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
+        List<Midpoint> midPoints = TangentSpaceMidpointComputer.compute(tangentSpace);
+        List<String> midPointsAsString = midPoints.stream().map(point -> point.toString(" ")).collect(Collectors.toList());
+        try
+        {
+            Files.write(new File("./res/equivalencesegmentationtest/sampleArcMidpoints.txt").toPath(), midPointsAsString, Charset.defaultCharset(), StandardOpenOption.CREATE_NEW);
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        System.out.println("finshed");
+    }
+
+    @Test
+    public void testTangentSpaceCreationFrom2DPoints()
+    {
+        List<Position2D> dataPoints = new ArrayList<>();
+        try
+        {
+            //load a circle defined by coordinates from file into list  
+            Path path = new File("./res/equivalencesegmentationtest/circle.dat").toPath();
+            Files.lines(path).forEachOrdered(line -> dataPoints.add(new Position2D(line)));
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
+        List<String> tangentSpaceFileContent = TangentSpaceTransformer.tangentSpaceAsFile(tangentSpace, ", ");
+        try
+        {
+            Files.write(new File("./res/equivalencesegmentationtest/circleTangentSpace.dat").toPath(), tangentSpaceFileContent, Charset.defaultCharset(), StandardOpenOption.CREATE_NEW);
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        System.out.println("finshed");
+    }
+    
     @Test
     public void testSimplePointBase()
     {
@@ -51,7 +149,7 @@ public class TestLineArcsSegmentation
         dataPoints.addLast(new Vector2D(592.0, 119.0, 0.0, 0.0));
 
         LineArcsSegmentation segmenter = new LineArcsSegmentation();
-        IClassificationResult segments = segmenter.createSegments(dataPoints);
+        List<IArcsLineContainerElement> segments = segmenter.createSegments(dataPoints);
         //TODO finish this test
     }
     
@@ -82,7 +180,7 @@ public class TestLineArcsSegmentation
         System.out.println("wait");
 
         LineArcsSegmentation segmenter = new LineArcsSegmentation();
-        IClassificationResult result = segmenter.createSegments(slidingWindowsVectors.getFirst());
+        List<IArcsLineContainerElement> segments = segmenter.createSegments(slidingWindowsVectors.getFirst());
     }
     
     private Deque<Deque<Vector2D>> transformToVectorDeque(List<List<Trajectory>> slidingWindows)

@@ -1,6 +1,4 @@
-package de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm;
-
-import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+package de.joachim.haensel.phd.scenario.math.geometry;
 
 public class TangentSegment
 {

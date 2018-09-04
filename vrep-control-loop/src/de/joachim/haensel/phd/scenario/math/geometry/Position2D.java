@@ -1,7 +1,5 @@
 package de.joachim.haensel.phd.scenario.math.geometry;
 
-import java.awt.Graphics2D;
-
 import coppelia.FloatWA;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 
@@ -19,9 +17,11 @@ public class Position2D
     public Position2D(String coordinatesAsString)
     {
         String[] coordinates = coordinatesAsString.split(",");
-        _x  = Float.valueOf(coordinates[0]);
-        _y  = Float.valueOf(coordinates[1]);
+        _x  = Double.valueOf(coordinates[0]);
+        _y  = Double.valueOf(coordinates[1]);
     }
+    
+    
 
     public Position2D(FloatWA pos3d)
     {
@@ -29,6 +29,13 @@ public class Position2D
         _y = pos3d.getArray()[1];
     }
     
+    public Position2D(String coordinatesAsString, String seperator)
+    {
+        String[] coordinates = coordinatesAsString.split(seperator);
+        _x  = Double.valueOf(coordinates[0]);
+        _y  = Double.valueOf(coordinates[1]);
+    }
+
     public double getX()
     {
         return _x;
@@ -138,6 +145,11 @@ public class Position2D
     public String toString()
     {
         return "p:(" + _x  + ", " + _y + ")";
+    }
+    
+    public String toString(String seperator)
+    {
+        return _x + seperator + _y ;
     }
     
     public static Position2D[] valueOf(String[] coordinates)

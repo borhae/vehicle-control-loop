@@ -9,8 +9,8 @@ import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 import org.junit.Test;
 
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.TangentSegment;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.TangentSegment;
 import de.joachim.haensel.phd.scenario.math.geometry.TangentSpaceTransformer;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
