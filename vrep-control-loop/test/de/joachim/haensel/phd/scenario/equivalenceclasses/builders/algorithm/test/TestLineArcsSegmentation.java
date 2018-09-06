@@ -120,7 +120,38 @@ public class TestLineArcsSegmentation
         }
         System.out.println("finshed");
     }
-    
+
+    @Test
+    public void testSegmentationFromSimpleArcPaperExample()
+    {
+        List<Position2D> dataPoints = new ArrayList<>();
+        try
+        {
+            //load a circle defined by coordinates from file into list  
+            Path path = new File("./res/equivalencesegmentationtest/sampleArc.txt").toPath();
+            Files.lines(path).forEachOrdered(line -> dataPoints.add(new Position2D(line)));
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        LineArcsSegmentation segmenter = new LineArcsSegmentation();
+        List<IArcsLineContainerElement> segments = segmenter.createSegments(dataPoints);
+        List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
+        List<String> tangentSpaceFileContent = TangentSpaceTransformer.tangentSpaceAsFile(tangentSpace, ", ");
+        try
+        {
+            Files.write(new File("./res/equivalencesegmentationtest/sampleArcMidpoints.txt").toPath(), tangentSpaceFileContent, Charset.defaultCharset(), StandardOpenOption.CREATE_NEW);
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        System.out.println("finshed");
+    }
+
     @Test
     public void testSimplePointBase()
     {

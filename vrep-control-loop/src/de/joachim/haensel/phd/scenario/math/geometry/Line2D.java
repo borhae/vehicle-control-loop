@@ -34,6 +34,11 @@ public class Line2D
         _c = Position2D.distance(_x1, _y1, _x2, _y2);
     }
 
+    public Line2D(Position2D p1, Position2D p2)
+    {
+        this(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+    }
+
     public double length(double x1, double y1, double x2, double y2)
     {
         double dx = x2 - x1;
@@ -137,5 +142,21 @@ public class Line2D
     {
         _x1 = position.getX();
         _y1 = position.getY();
+    }
+
+    /**
+     * Computes on which side the other vector is in relation to this one
+     * Left and right means tha you're looking from a into the direction of b  
+     * and then this result will tell you whether you'll find m to your right or left side
+
+     * @param a first point of line
+     * @param b second point of line
+     * @param m point where we want to know where it is with respect to the line
+     * @return side decoded as: -1 to the right, 0 collinear, 1 to the left
+     */
+    public static double side(Position2D a, Position2D b, Position2D m)
+    {
+        double determinant = (b.getX() - a.getX()) * (m.getY() - a.getY()) - (b.getY() - a.getY()) * (m.getX() - a.getX());
+        return Math.signum(determinant);
     }
 }

@@ -4,11 +4,13 @@ public class TangentSegment
 {
     private Position2D _tn1;
     private Position2D _tn2;
+    private Position2D _associatedPointFromPolygon;
 
-    public TangentSegment(Position2D tn1, Position2D tn2)
+    public TangentSegment(Position2D tn1, Position2D tn2, Position2D associatedPointFromPolygon)
     {
         _tn1 = tn1;
         _tn2 = tn2;
+        _associatedPointFromPolygon = associatedPointFromPolygon;
     }
 
     public Position2D getTn2()
@@ -19,6 +21,11 @@ public class TangentSegment
     public Position2D getTn1()
     {
         return _tn1;
+    }
+    
+    public Position2D getAssociatedPointFromPolygon()
+    {
+        return _associatedPointFromPolygon;
     }
 
     @Override
@@ -58,6 +65,6 @@ public class TangentSegment
     @Override
     public String toString()
     {
-        return "<" + _tn1 + ", " + _tn2 + ">";
+        return "<tn1:" + _tn1 + ", tn2:" + _tn2 + ", p:"+ _associatedPointFromPolygon +">";
     }
 }

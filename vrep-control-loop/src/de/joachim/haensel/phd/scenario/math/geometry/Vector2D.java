@@ -296,8 +296,7 @@ public class Vector2D
         Position2D a = getBase();
         Position2D b = getTip();
         Position2D m = other.getTip(); 
-        double determinant = (b.getX() - a.getX()) * (m.getY() - a.getY()) - (b.getY() - a.getY()) * (m.getX() - a.getX());
-        return Math.signum(determinant);
+        return Line2D.side(a, b, m);
     }
 
     public double getLength()

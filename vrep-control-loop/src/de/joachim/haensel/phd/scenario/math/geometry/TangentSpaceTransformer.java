@@ -15,7 +15,7 @@ public class TangentSpaceTransformer
     public static List<TangentSegment> transform(Deque<Vector2D> dataPoints)
     {
         List<TangentSegment> result = new ArrayList<>();
-        result.add(new TangentSegment(null, new Position2D(0.0, 0.0)));
+        result.add(new TangentSegment(null, new Position2D(0.0, 0.0), dataPoints.getFirst().getBase()));
         for(int idx = 0; idx < dataPoints.size() - 1; idx++)
         {
             Vector2D p1 = dataPoints.pop();
@@ -28,12 +28,11 @@ public class TangentSpaceTransformer
             double tn2_x = tn1.getX();
             double tn2_y = tn1_y + Vector2D.computeSplitAngle(p1, p2);
             Position2D tn2 = new Position2D(tn2_x, tn2_y);
-            result.add(new TangentSegment(tn1, tn2));
+            result.add(new TangentSegment(tn1, tn2, p2.getBase()));
         }
         return result;
     }
 
-    //TODO maybe write a test case with data from their paper
     /**
      * Compute tangent space representation of a list of input-datapoints (see "An Algorithm to Decompose noisy digital contours", by Phuc Ngo, Hayat Nasser, Isabelle Debled-Rennesson, Bertrand Kerautret)
      * @param dataPoints a polygon defined by a list of points
@@ -42,7 +41,7 @@ public class TangentSpaceTransformer
     public static List<TangentSegment> transform(List<Position2D> dataPoints)
     {
         List<TangentSegment> tangentSpace = new ArrayList<>();
-        tangentSpace.add(new TangentSegment(null, new Position2D(0.0, 0.0)));
+        tangentSpace.add(new TangentSegment(null, new Position2D(0.0, 0.0), dataPoints.get(0)));
         int dataPointsSize = dataPoints.size();
         for(int idx = 0; idx < dataPointsSize - 2; idx++)
         {
@@ -59,15 +58,17 @@ public class TangentSpaceTransformer
             double tn2_x = tn1.getX();
             double tn2_y = tn1_y + Vector2D.computeSplitAngle(v0, v1);
             Position2D tn2 = new Position2D(tn2_x, tn2_y);
-            tangentSpace.add(new TangentSegment(tn1, tn2));
+            tangentSpace.add(new TangentSegment(tn1, tn2, p1));
         }
         int lastIdxDataPoints = dataPointsSize - 1;
         TangentSegment lastAdded = tangentSpace.get(tangentSpace.size() - 1);
         Position2D lastTn2 = lastAdded.getTn2();
         
-        Position2D tn_minus_one1 = new Position2D(lastTn2.getX() + Position2D.distance(dataPoints.get(lastIdxDataPoints - 1), dataPoints.get(lastIdxDataPoints)), lastTn2.getY());
+        Position2D pn_minus1 = dataPoints.get(lastIdxDataPoints - 1);
+        Position2D pn = dataPoints.get(lastIdxDataPoints);
+        Position2D tn_minus_one1 = new Position2D(lastTn2.getX() + Position2D.distance(pn_minus1, pn), lastTn2.getY());
         Position2D tn_minus_one2 = null;
-        TangentSegment tn_minus_one = new TangentSegment(tn_minus_one1, tn_minus_one2);
+        TangentSegment tn_minus_one = new TangentSegment(tn_minus_one1, tn_minus_one2, pn_minus1);
         tangentSpace.add(tn_minus_one);
         return tangentSpace;
     }
