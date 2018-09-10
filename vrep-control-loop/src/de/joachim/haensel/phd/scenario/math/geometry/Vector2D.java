@@ -198,7 +198,8 @@ public class Vector2D
         double dotProduct = Vector2D.dotProduct(a, b);
         double magnitudeProduct = a.getLength() * b.getLength();
         double divsionResult = dotProduct/magnitudeProduct;
-        return (double)Math.acos(divsionResult);
+        double result = Math.acos(divsionResult);
+        return result;
     }
     
     /**

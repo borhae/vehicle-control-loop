@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsLineContainerElement;
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.LineArcsSegmentation;
+import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsSegmentContainerElement;
+import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.ArcSegmentDecomposition;
 import de.joachim.haensel.phd.scenario.layerinterface.RandomMapPositionCreator;
 import de.joachim.haensel.phd.scenario.math.geometry.Midpoint;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
@@ -31,7 +31,7 @@ import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 
-public class TestLineArcsSegmentation
+public class TestArcsSegmentDecomposition
 {
     @Test
     public void testTangentSpaceCreationFrom2DPointsPaperExample()
@@ -136,8 +136,8 @@ public class TestLineArcsSegmentation
             // TODO Auto-generated catch block
             exc.printStackTrace();
         }
-        LineArcsSegmentation segmenter = new LineArcsSegmentation();
-        List<IArcsLineContainerElement> segments = segmenter.createSegments(dataPoints);
+        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        List<IArcsSegmentContainerElement> segments = segmenter.createSegments(dataPoints);
         List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
         List<String> tangentSpaceFileContent = TangentSpaceTransformer.tangentSpaceAsFile(tangentSpace, ", ");
         try
@@ -179,8 +179,8 @@ public class TestLineArcsSegmentation
         dataPoints.addLast(new Vector2D(322.0, 7.0, 0.0, 0.0));
         dataPoints.addLast(new Vector2D(592.0, 119.0, 0.0, 0.0));
 
-        LineArcsSegmentation segmenter = new LineArcsSegmentation();
-        List<IArcsLineContainerElement> segments = segmenter.createSegments(dataPoints);
+        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        List<IArcsSegmentContainerElement> segments = segmenter.createSegments(dataPoints);
         //TODO finish this test
     }
     
@@ -210,8 +210,8 @@ public class TestLineArcsSegmentation
         visualizer.updateVisuals();
         System.out.println("wait");
 
-        LineArcsSegmentation segmenter = new LineArcsSegmentation();
-        List<IArcsLineContainerElement> segments = segmenter.createSegments(slidingWindowsVectors.getFirst());
+        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        List<IArcsSegmentContainerElement> segments = segmenter.createSegments(slidingWindowsVectors.getFirst());
     }
     
     private Deque<Deque<Vector2D>> transformToVectorDeque(List<List<Trajectory>> slidingWindows)

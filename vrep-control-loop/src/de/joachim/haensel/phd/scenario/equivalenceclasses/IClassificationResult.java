@@ -1,8 +1,8 @@
 package de.joachim.haensel.phd.scenario.equivalenceclasses;
 
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsLineContainerElement;
+import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsSegmentContainerElement;
 
 public interface IClassificationResult
 {
-    public void add(IArcsLineContainerElement iArcsLineContainerElement);
+    public void add(IArcsSegmentContainerElement iArcsLineContainerElement);
 }

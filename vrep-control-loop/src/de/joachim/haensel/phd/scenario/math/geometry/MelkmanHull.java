@@ -1,22 +1,110 @@
 package de.joachim.haensel.phd.scenario.math.geometry;
 
+import java.util.ArrayList;
 import java.util.List;
 
-/** Melkman's Algorithm
- *  www.ams.sunysb.edu/~jsbm/courses/345/melkman.pdf
- *  Return a convex hull in ccw order
+/** 
+ * Melkman's Algorithm
+ * An algorithm for convex hull computation
+ * Return a convex hull in ccw order
  */
 public class MelkmanHull
 {
+    // just a normal java LinkedList with an adapted interface to make it match the original algorithm description
+    private MelkmanDeque<Position2D> _hull;
 
-    public void add(Position2D newPoint)
+    /**
+     * Use this for an incremental version of the algorithm
+     */
+    public MelkmanHull()
     {
-        // TODO Auto-generated method stub  
+        _hull = new MelkmanDeque<>();
     }
     
+    public void add(Position2D newPoint)
+    {
+        if(_hull.size() < 2)
+        {// empty, the first two points are just added
+          _hull.push(newPoint);
+        }
+        else if(_hull.size() == 2)
+        {//init, the third point will actually result in a convex hull (by definition but we need to take care about the order)
+            List<Position2D> start = _hull.asList();
+            _hull.clear();
+            Position2D v1 = start.get(0);
+            Position2D v2 = start.get(1);
+            Position2D v3 = newPoint;
+            if(Line2D.side(v1, v2, v3) > 0)
+            {
+                _hull.push(v1);
+                _hull.push(v2);
+            }
+            else
+            {
+                _hull.push(v2);
+                _hull.push(v1);
+            }
+            _hull.push(v3);
+            _hull.insert(v3);
+        }
+        else
+        {//go
+            Position2D v = newPoint;
+            if(!(Line2D.side(v, _hull.get_b(), _hull.get_b_plus1()) < 0) || (Line2D.side(_hull.get_t_minus1(), _hull.get_t(), v) < 0))
+            {//point not on convex hull wait for the next offer
+                return;
+            }
+            while(!(
+                    Line2D.side(_hull.get_t_minus1(), _hull.get_t(), v) > 0
+                    ))
+            {
+                _hull.pop();
+            }
+            _hull.push(v);
+            while(!(
+                    Line2D.side(v, _hull.get_b(), _hull.get_b_plus1()) > 0
+                    ))
+            {
+                _hull.remove();
+            }
+            _hull.insert(v);
+        }
+    }
+    
+    public List<Position2D> getHull()
+    {
+        List<Position2D> result = _hull.asList();
+        if(_hull.size() < 3)
+        {
+            result.add(0, _hull.get_t());
+        }
+        return result;
+    }
+    
+    public void clear()
+    {
+        _hull.clear();
+    }
+    
+    /**
+     * Static version to compute the convex hull. Should resemble the algorithm in the original paper
+     * @param P the input polygon
+     * @return A polygon containing only points that are part of the convex hull. First and last point are the same
+     */
     public static List<Position2D> hull(List<Position2D> P)
     {
-        // A MelkmanDeque is simply a java LinkedList with some renamings so this looks more like the original algorithm
+        if(P.size() < 3)
+        {
+            //less than 3 points will kind of be just the input
+            ArrayList<Position2D> result = new ArrayList<>(P);
+            if(!P.isEmpty())
+            {
+                result.add(P.get(0));
+            }
+            return result;
+        }
+        // A MelkmanDeque is simply a java LinkedList with some renamings so this looks more like
+        // the algorithm in the paper
         MelkmanDeque<Position2D> D = new MelkmanDeque<>();
         Position2D v1 = P.get(0);
         Position2D v2 = P.get(1);
@@ -33,7 +121,7 @@ public class MelkmanHull
         }
         D.push(v3);
         D.insert(v3);
-        for (int idx = 0; idx < P.size(); idx++)
+        for (int idx = 3; idx < P.size(); idx++)
         {
             Position2D v = P.get(idx);
             //there is no until in java so we use a reverse while :)
@@ -61,49 +149,24 @@ public class MelkmanHull
         }
         return D.asList();
     }
-    
-    public List<Position2D> hullInternet(List<Position2D> V)
-    {
-        int n = V.size();
-//        val D = new Array[Vector2f](2 * n + 1)
-//        Deque<Position2D> D = new LinkedList<>(); // should contain 2 * n + 1 entries (why?)
-        
-        int bot = n - 2;
-        int top = bot + 3;
 
-//        
-//        D(bot) = V(2)
-//        D(top) = V(2)
-//
-//        if (left(V(0), V(1), V(2))) {
-//          D(bot+1) = V(0)
-//          D(bot+2) = V(1)
-//        } else {
-//          D(bot+1) = V(1)
-//          D(bot+2) = V(0)
-//        }
-//
-//        var i = 3
-//        while(i < n) {
-//          while (left(D(bot), D(bot+1), V(i)) && left(D(top-1), D(top), V(i))) {
-//            i += 1
-//          }
-//          while (!left(D(top-1), D(top), V(i))) top -= 1
-//          top += 1; D(top) = V(i)
-//          while (!left(D(bot), D(bot+1), V(i))) bot += 1
-//          bot -= 1; D(bot) = V(i)
-//          i += 1
-//        }
-//
-//        val H = new Array[Vector2f](top - bot)
-//        var h = 0
-//        while(h < (top - bot)) {
-//          H(h) = D(bot + h)
-//          h += 1
-//        }
-//        H
-        return null;
+    public int size()
+    {
+        return _hull.size();
     }
-    
-    
+
+    /**
+     * The algorithm always makes it a closed polygon. The first and the last point are the same. 
+     * This method gives the amount of points, not double counting the first and the last element.
+     * @return
+     */
+    public int uniquePointSize()
+    {
+        return _hull.size() - 1;
+    }
+
+    public Position2D get(int index)
+    {
+        return _hull.get(index);
+    }
 }
