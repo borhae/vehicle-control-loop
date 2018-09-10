@@ -335,5 +335,72 @@ public class Vector2DTest
          
          assertEquals(expected, actual, Double.MIN_VALUE);
      }
+     
+     @Test
+     public void testComputeHorizontalThickness1()
+     {
+         Vector2D v = new Vector2D(0.0, 1.0, 4.0, 4.0);
+         Position2D p = new Position2D(2.0, 0.0);
+         double actual = Vector2D.computeHorizontalThickness(v, p);
+         double expected = 3.0;
+         
+         assertEquals(expected, actual, Math.ulp(0.0));
+     }
+     
+     @Test
+     public void testComputeHorizontalThickness2()
+     {
+         Vector2D v = new Vector2D(0.0, 1.0, 4.0, -4.0);
+         Position2D p = new Position2D(2.0, 0.0);
+         double actual = Vector2D.computeHorizontalThickness(v, p);
+         double expected = 1.0;
+         
+         assertEquals(expected, actual, Math.ulp(0.0));
+     }
+     
+     @Test
+     public void testComputeHorizontalThicknessHorizontalLine1()
+     {
+         Vector2D v = new Vector2D(0.0, 1.0, 4.0, 0.0);
+         Position2D p = new Position2D(2.0, 0.0);
+         double actual = Vector2D.computeHorizontalThickness(v, p);
+         double expected = 1.0;
+         
+         assertEquals(expected, actual, Math.ulp(0.0));
+     }
+     
+     @Test
+     public void testComputeHorizontalThicknessHorizontalLine2()
+     {
+         Vector2D v = new Vector2D(0.0, -2.0, 4.0, 0.0);
+         Position2D p = new Position2D(2.0, 0.0);
+         double actual = Vector2D.computeHorizontalThickness(v, p);
+         double expected = 2.0;
+         
+         assertEquals(expected, actual, Math.ulp(0.0));
+     }
+     
+     @Test
+     public void testComputeHorizontalThicknessVerticalLine()
+     {
+         //TODO how does this make sense?
+         Vector2D v = new Vector2D(0.0, 1.0, 0.0, 8.0);
+         Position2D p = new Position2D(2.0, 0.0);
+         double actual = Vector2D.computeHorizontalThickness(v, p);
+         double expected = 2.0;
+         
+         assertEquals(expected, actual, Math.ulp(0.0));
+     }
+
+     @Test
+     public void testComputeVerticalThickness1()
+     {
+         Vector2D v = new Vector2D(1.0, 1.0, 2.0, -2.0);
+         Position2D p = new Position2D(2.0, 0.0);
+         double actual = Vector2D.computeVerticalThickness(v, p);
+         double expected = 0.0;
+         
+         assertEquals(expected, actual, Math.ulp(0.0));
+     }
 }
 

@@ -3,6 +3,8 @@ package de.joachim.haensel.phd.scenario.math.geometry;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.joachim.haensel.phd.scenario.lists.CircularAccessList;
+
 /** 
  * Melkman's Algorithm
  * An algorithm for convex hull computation
@@ -50,7 +52,7 @@ public class MelkmanHull
         else
         {//go
             Position2D v = newPoint;
-            if(!(Line2D.side(v, _hull.get_b(), _hull.get_b_plus1()) < 0) || (Line2D.side(_hull.get_t_minus1(), _hull.get_t(), v) < 0))
+            if(!isOnHull(v))
             {//point not on convex hull wait for the next offer
                 return;
             }
@@ -69,6 +71,11 @@ public class MelkmanHull
             }
             _hull.insert(v);
         }
+    }
+
+    private boolean isOnHull(Position2D v)
+    {
+        return (Line2D.side(v, _hull.get_b(), _hull.get_b_plus1()) < 0) || (Line2D.side(_hull.get_t_minus1(), _hull.get_t(), v) < 0);
     }
     
     public List<Position2D> getHull()
@@ -168,5 +175,11 @@ public class MelkmanHull
     public Position2D get(int index)
     {
         return _hull.get(index);
+    }
+
+    public CircularAccessList getAsCircularAccessList()
+    {
+        CircularAccessList cal = new CircularAccessList(_hull);
+        return cal;
     }
 }

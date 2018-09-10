@@ -583,4 +583,87 @@ public class Vector2D
         _bX = bX;
         _bY = bY;
     }
+
+    public static double computeHorizontalThickness(Vector2D line, Position2D point)
+    {
+        double result = 0.0;
+        if(line.getdY() == 0.0)
+        {
+            // TODO Still no idea why in the original code there is not this simple solution
+            // original:  return std::numeric_limits<double>::max();
+            // The part that I do know is that they usually use infinity to mark invalid values.
+            // TODO In case of erroneous behavior figure out why it might make sense to put this to infinity
+            return Math.abs(line._bY - point.getY());
+        }
+        else
+        {
+            //TODO until I fully understand their code I rather translate these names to make sure the copy does the same
+            // I could replace this with Vector2D.unrangedIntersect(v1, v2). v1 = new Vector2D(point.getX(), point.getY(), 0.0, 1.0) and v2. = line
+            // the distance between the new point and point is the result
+            Position2D a = line.getBase();
+            Position2D b = line.getTip();
+            Position2D c = point;
+            // original code from C++
+            //  k = -(a[0]-b[0])*c[1]-(b[0]*a[1]-a[0]*b[1]);
+            double dotProduct = b.getX() * a.getY() - a.getX() * b.getY();
+            double deltaX = a.getX() - b.getX();
+            double k = -deltaX * c.getY() - dotProduct;
+            result = Math.abs(k / (b.getY() - a.getY()) - c.getX());
+            return result;
+        }
+    }
+
+    public static double computeVerticalThickness(Vector2D line, Position2D point)
+    {
+        double result = 0.0;
+        if(line.getdX() == 0.0)
+        {
+            // TODO No idea why they put that there, need to reevaluate when more focused
+            // original:  return std::numeric_limits<double>::max();
+            // The part that I do know is that they usually use infinity to mark invalid values.
+            // TODO In case of erroneous behavior figure out why it might make sense to put this to infinity
+            return Math.abs(line._bX - point.getX());
+        }
+        else
+        {
+            //TODO until I fully understand their code I rather translate these names to make sure the copy does the same
+            // I could replace this with Vector2D.unrangedIntersect(v1, v2). v1 = new Vector2D(point.getX(), point.getY(), 0.0, 1.0) and v2. = line
+            // the distance between the new point and point is the result
+            Position2D a = line.getBase();
+            Position2D b = line.getTip();
+            Position2D c = point;
+            // original code from C++
+            //  k = -(a[0]-b[0])*c[1]-(b[0]*a[1]-a[0]*b[1]);
+            double k = -(b.getY() - a.getY()) * c.getX() - (b.getX() * a.getY() - a.getX() * b.getY());
+            result = Math.abs(k / (b.getX() - a.getX()) - c.getY());
+            return result;
+        }
+    }
+    
+
+    public static double computeThicknessAntipodalPair(Vector2D line, Position2D point)
+    {
+        double horizontalThickness = Vector2D.computeHorizontalThickness(line, point);
+        double verticalThickness = Vector2D.computeVerticalThickness(line, point);
+        return Math.min(horizontalThickness, verticalThickness);
+    }
+
+    /**
+     * This method is implemented according to the implementation for the arc segment decomposition algorithm.
+     * should kind of do the same as my own algorithm
+     * @param v1
+     * @param v2
+     * @return
+     */
+    public static double computeAngleSpecial(Vector2D v1, Vector2D v2)
+    {
+        Position2D a = v1.getBase();
+        Position2D b = v1.getTip();
+        Position2D c = v2.getBase();
+        Position2D d = v2.getTip();
+        double angle1 = Math.atan2(b.getY() - a.getY(), b.getX() - a.getX()); // or atan2(v1.getdY(), v1.getdX())
+        double angle2 = Math.atan2(d.getY() - c.getY(), d.getX() - c.getX());
+        double r = angle2 - angle1;
+        return r < 0 ? 2 * Math.PI + r : r;
+    }
 }

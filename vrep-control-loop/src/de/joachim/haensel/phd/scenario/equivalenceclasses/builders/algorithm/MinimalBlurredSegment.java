@@ -3,6 +3,7 @@ package de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.joachim.haensel.phd.scenario.lists.CircularAccessList;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.MelkmanHull;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
@@ -43,6 +44,11 @@ public class MinimalBlurredSegment
         _elements.add(newPoint);
         _melkmanHull.add(newPoint);
     }
+    
+    public double getIsothetickThickness()
+    {
+        return computeIsothethicThickness(_melkmanHull);
+    }
 
     public void clear()
     {
@@ -57,9 +63,16 @@ public class MinimalBlurredSegment
 
     public boolean staysMinimalBlurredSegmentWith(Position2D asPosition2D)
     {
-        // TODO Auto-generated method stub. Test whether the addition of the point will violate the thickness property of this blurred segment. Check whether _thickness is still ok with new omega
-        _minimumDistanceHorizantalVertical = computeIsothethicThickness(_melkmanHull);
-        return false;
+        double thickness = computeIsothethicThickness(_melkmanHull);
+        if(thickness < _thickness)
+        {
+            _minimumDistanceHorizantalVertical = thickness;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     /**
@@ -67,14 +80,15 @@ public class MinimalBlurredSegment
      * @param hull
      * @return
      */
-    private double computeIsothethicThickness(MelkmanHull hull)
+    private double computeIsothethicThickness(MelkmanHull basicHull)
     {
-        if(hull.uniquePointSize() <= 2)
+        if(basicHull.uniquePointSize() <= 2)
         {
             return 0.0;
         }
         else
         {
+            CircularAccessList hull = basicHull.getAsCircularAccessList();
             double resultThickness = Double.MAX_VALUE;
             double curThickness = 0;
             int i = 0; 
@@ -85,7 +99,8 @@ public class MinimalBlurredSegment
             Position2D antiPodal2Base = hull.get(j);
             Position2D antiPodal2Tip = hull.get(j + 1);
             Vector2D antiPodal2 = new Vector2D(antiPodal2Base, antiPodal2Tip);
-            while(Vector2D.computeAngle(antiPodal1, antiPodal2) < Math.PI)
+            //I guess here we try to find an antipodal point to the current edge antipodal1
+            while(Vector2D.computeAngleSpecial(antiPodal1, antiPodal2) < Math.PI)
             {
                 j++;
                 antiPodal1 = new Vector2D(hull.get(i), hull.get(i + 1));
@@ -93,7 +108,7 @@ public class MinimalBlurredSegment
                 antiPodal2Tip = hull.get(j + 1);
                 antiPodal2 = new Vector2D(antiPodal2Base, antiPodal2Tip);
             }
-            curThickness = computeThicknessAntipodalPair(antiPodal1, antiPodal2Base);
+            curThickness = Vector2D.computeThicknessAntipodalPair(antiPodal1, antiPodal2Base);
             if(curThickness < resultThickness)
             {
                 resultThickness = curThickness;
@@ -105,20 +120,20 @@ public class MinimalBlurredSegment
                 antiPodal2Base = hull.get(j);
                 antiPodal2Tip = hull.get(j + 1);
                 antiPodal2 = new Vector2D(antiPodal2Base, antiPodal2Tip);
-                if(Vector2D.computeAngle(antiPodal1, antiPodal2) < Math.PI)
+                if(Vector2D.computeAngleSpecial(antiPodal1, antiPodal2) < Math.PI)
                 {
                     j++;
                 }
                 else
                 {
-                    curThickness = computeThicknessAntipodalPair(antiPodal1, antiPodal2Base);
+                    curThickness = Vector2D.computeThicknessAntipodalPair(antiPodal1, antiPodal2Base);
                     if(curThickness < resultThickness)
                     {
                         resultThickness = curThickness;
                     }
-                    if(Vector2D.computeAngle(antiPodal1, antiPodal2) == Math.PI)
+                    if(Vector2D.computeAngleSpecial(antiPodal1, antiPodal2) == Math.PI)
                     {
-                        curThickness = computeThicknessAntipodalPair(antiPodal1, antiPodal2Tip);
+                        curThickness = Vector2D.computeThicknessAntipodalPair(antiPodal1, antiPodal2Tip);
                         if(curThickness < resultThickness)
                         {
                             resultThickness = curThickness;
@@ -128,29 +143,6 @@ public class MinimalBlurredSegment
                 }
             }
             return resultThickness;
-            
-        }
-    }
-
-    private double computeThicknessAntipodalPair(Vector2D line, Position2D point)
-    {
-        double horizontalThickness = computeHorizontalThickness(line, point);
-        return 0;
-    }
-
-    private double computeHorizontalThickness(Vector2D line, Position2D point)
-    {
-        double result = 0.0;
-        if(line.getdX() == 0)
-        {
-            // TODO No idea why they put that there, need to reevaluate when more focused 
-            return Double.MAX_VALUE;
-        }
-        else
-        {
-            //TODO --- continue here
-            double k = Double.MAX_VALUE;
-            return result;
         }
     }
 
@@ -158,5 +150,4 @@ public class MinimalBlurredSegment
     {
         return _elements.size();
     }
-
 }
