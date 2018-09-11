@@ -96,4 +96,9 @@ public class PartialArc
         }
         return _segment;
     }
+
+    public boolean isEmpty()
+    {
+        return _elements.isEmpty();
+    }
 }

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -128,8 +129,8 @@ public class TestArcsSegmentDecomposition
         try
         {
             //load a circle defined by coordinates from file into list  
-            Path path = new File("./res/equivalencesegmentationtest/sampleArc.txt").toPath();
-            Files.lines(path).forEachOrdered(line -> dataPoints.add(new Position2D(line)));
+            Path path = new File("./res/equivalencesegmentationtest/sampleArcAdditionalPoints.txt").toPath();
+            Files.lines(path).forEachOrdered(line -> dataPoints.add(new Position2D(line, " ")));
         }
         catch (IOException exc)
         {
@@ -139,16 +140,12 @@ public class TestArcsSegmentDecomposition
         ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
         List<IArcsSegmentContainerElement> segments = segmenter.createSegments(dataPoints);
         List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
+        List<Midpoint> midPoints = TangentSpaceMidpointComputer.compute(tangentSpace);
+        
+        
         List<String> tangentSpaceFileContent = TangentSpaceTransformer.tangentSpaceAsFile(tangentSpace, ", ");
-        try
-        {
-            Files.write(new File("./res/equivalencesegmentationtest/sampleArcMidpoints.txt").toPath(), tangentSpaceFileContent, Charset.defaultCharset(), StandardOpenOption.CREATE_NEW);
-        }
-        catch (IOException exc)
-        {
-            // TODO Auto-generated catch block
-            exc.printStackTrace();
-        }
+        List<String> midPointsAsString = midPoints.stream().map(point -> point.toString(" ")).collect(Collectors.toList());
+        List<String> elementsAsString = segments.stream().map(element -> element.toString()).collect(Collectors.toList());
         System.out.println("finshed");
     }
 

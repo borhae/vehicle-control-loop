@@ -45,6 +45,15 @@ public class ArcSegmentDecomposition
         return inputFormatIndependentNgoSegmentationAlgorithm(tangentSpace, thickness, alphaMax, nbCirclePoint, isseTol);
     }
 
+    /**
+     * Algorithm seems to work with the additions I made
+     * @param tangentSpace
+     * @param thickness
+     * @param alphaMax
+     * @param nbCirclePoint
+     * @param isseTol
+     * @return
+     */
     private List<IArcsSegmentContainerElement> inputFormatIndependentNgoSegmentationAlgorithm(List<TangentSegment> tangentSpace, double thickness, double alphaMax, double nbCirclePoint, double isseTol)
     {
         List<IArcsSegmentContainerElement> result = new ArrayList<>();
@@ -60,6 +69,32 @@ public class ArcSegmentDecomposition
             Midpoint mp_i_plus1 = midpointSet.get(idx + 1);
             if(isIsolatedPoint(alphaMax, mp_i, mp_i_minus1, mp_i_plus1)) // 7
             {
+                //everything in if is added 
+                if(!pArc.isEmpty())
+                {
+                    if(mbs.size() >= nbCirclePoint) //15
+                    {
+                        //create arc from pArc // 16, 17
+                        pArc.InitArcAndSegment(); // 16, 17
+                        if(pArc.isArcsISSESmallerThanSegments()) //18
+                        {
+                            result.add(pArc.toArc()); //19
+                            mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
+                        }
+                        else
+                        {
+                            result.add(pArc.toSegment()); //21
+                            mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
+                        }
+                    }
+                    else
+                    {
+                        result.add(pArc.toSegment()); //23
+                        mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
+                    }
+                    //maybe we need to take care of current mp_i? In this branch it only had been probed but not added to anything, so it's basically discarded
+                    pArc.clear();
+                }
                 result.add(new Segment(mp_i)); //8
                 mbs.clear(); // 9 
             }
@@ -79,15 +114,18 @@ public class ArcSegmentDecomposition
                         if(pArc.isArcsISSESmallerThanSegments()) //18
                         {
                             result.add(pArc.toArc()); //19
+                            mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
                         }
                         else
                         {
                             result.add(pArc.toSegment()); //21
+                            mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
                         }
                     }
                     else
                     {
                         result.add(pArc.toSegment()); //23
+                        mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
                     }
                     //maybe we need to take care of current mp_i? In this branch it only had been probed but not added to anything, so it's basically discarded
                     pArc.clear();
