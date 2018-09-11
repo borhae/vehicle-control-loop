@@ -6,6 +6,7 @@ import java.util.List;
 import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.Arc;
 import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsSegmentContainerElement;
 import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.Segment;
+import de.joachim.haensel.phd.scenario.math.geometry.Midpoint;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 
 public class PartialArc
@@ -32,9 +33,10 @@ public class PartialArc
         _elements.add(end);
     }
     
-    public void clear()
+    public void clear(Position2D startPoint)
     {
         _elements.clear();
+        _elements.add(startPoint);
         _arc = null;
         _segment = null;
     }
@@ -60,13 +62,13 @@ public class PartialArc
 
     private void buildSegment()
     {
-        _segment = new Segment(_elements);
+        _segment = new Segment(new ArrayList<Position2D>(_elements));
         _segment.create(true);
     }
 
     private void buildArc()
     {
-        _arc = new Arc(_elements);
+        _arc = new Arc(new ArrayList<Position2D>(_elements));
         _arc.create(true);
     }
 

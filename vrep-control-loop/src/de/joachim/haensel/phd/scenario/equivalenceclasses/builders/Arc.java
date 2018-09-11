@@ -144,4 +144,11 @@ public class Arc implements IArcsSegmentContainerElement
     {
         return _center;
     }
+
+    @Override
+    public String toGnuPlotString()
+    {
+        String result = "" + _center.getX() + " " + _center.getY() + " " + _elements.get(0) + " " + _elements.get(_elements.size() - 1);
+        return result;
+    }
 }

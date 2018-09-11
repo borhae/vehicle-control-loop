@@ -143,9 +143,39 @@ public class TestArcsSegmentDecomposition
         List<Midpoint> midPoints = TangentSpaceMidpointComputer.compute(tangentSpace);
         
         
-        List<String> tangentSpaceFileContent = TangentSpaceTransformer.tangentSpaceAsFile(tangentSpace, ", ");
+        List<String> tangentSpaceFileContent = TangentSpaceTransformer.tangentSpaceAsFile(tangentSpace, " ");
         List<String> midPointsAsString = midPoints.stream().map(point -> point.toString(" ")).collect(Collectors.toList());
-        List<String> elementsAsString = segments.stream().map(element -> element.toString()).collect(Collectors.toList());
+        List<String> elementsAsString = segments.stream().map(element -> element.toGnuPlotString()).collect(Collectors.toList());
+        List<String> tangentAndMidpointString = new ArrayList<>();
+        for(int idx = 0; idx < tangentSpaceFileContent.size(); idx++)
+        {
+            String curTang = tangentSpaceFileContent.get(idx);
+            String curMid = "";
+            if(idx < midPointsAsString.size())
+            {
+                curMid = midPointsAsString.get(idx);
+            }
+            tangentAndMidpointString.add(curTang + " " + curMid);
+        }
+        try
+        {
+            Files.write(new File("./res/equivalencesegmentationtest/sampleArcAdditionalPointsTangentsMidpoints.dat").toPath(), tangentAndMidpointString, Charset.defaultCharset(), StandardOpenOption.CREATE_NEW);
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        try
+        {
+            Files.write(new File("./res/equivalencesegmentationtest/sampleArcAdditionalPointsResult.dat").toPath(), elementsAsString, Charset.defaultCharset(), StandardOpenOption.CREATE_NEW);
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+
         System.out.println("finshed");
     }
 

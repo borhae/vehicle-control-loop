@@ -67,4 +67,14 @@ public class Segment implements IArcsSegmentContainerElement
         }
         return _iSSE;
     }
+
+    @Override
+    public String toGnuPlotString()
+    {
+        Position2D first = _segment.getBase();
+        Position2D last = _segment.getTip();
+        return "plot '-' using 1:2 with lines\n"
+                + first.getX() + " " + first.getY() + "\n"
+                + last.getX() + " " + last.getY() + "\n";
+    }
 }
