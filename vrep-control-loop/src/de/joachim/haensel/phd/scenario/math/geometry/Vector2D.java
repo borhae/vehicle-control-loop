@@ -584,16 +584,15 @@ public class Vector2D
         _bY = bY;
     }
 
+//    This is the original computation together with the minimal blurred segment convex hull thickness computation. It doesn't give the expected results.
+//    Either my expectations are wrong or I somehow didn't transfer the algorithm correctly. 
     public static double computeHorizontalThickness(Vector2D line, Position2D point)
     {
         double result = 0.0;
         if(line.getdY() == 0.0)
         {
-            // TODO Still no idea why in the original code there is not this simple solution
-            // original:  return std::numeric_limits<double>::max();
-            // The part that I do know is that they usually use infinity to mark invalid values.
-            // TODO In case of erroneous behavior figure out why it might make sense to put this to infinity
-            return Math.abs(line._bY - point.getY());
+            // if the line is horizontal, there isn't really a horizontal distance between the point and the line
+            return Double.MAX_VALUE;
         }
         else
         {
@@ -613,16 +612,15 @@ public class Vector2D
         }
     }
 
+//  This is the original computation together with the minimal blurred segment convex hull thickness computation. It doesn't give the expected results.
+//  Either my expectations are wrong or I somehow didn't transfer the algorithm correctly. 
     public static double computeVerticalThickness(Vector2D line, Position2D point)
     {
         double result = 0.0;
         if(line.getdX() == 0.0)
         {
-            // TODO No idea why they put that there, need to reevaluate when more focused
-            // original:  return std::numeric_limits<double>::max();
-            // The part that I do know is that they usually use infinity to mark invalid values.
-            // TODO In case of erroneous behavior figure out why it might make sense to put this to infinity
-            return Math.abs(line._bX - point.getX());
+            // if the line is vertical, there isn't really a vertical distance between the point and the line
+            return Double.MAX_VALUE;
         }
         else
         {
@@ -634,13 +632,17 @@ public class Vector2D
             Position2D c = point;
             // original code from C++
             //  k = -(a[0]-b[0])*c[1]-(b[0]*a[1]-a[0]*b[1]);
-            double k = -(b.getY() - a.getY()) * c.getX() - (b.getX() * a.getY() - a.getX() * b.getY());
-            result = Math.abs(k / (b.getX() - a.getX()) - c.getY());
+            double deltaY = b.getY() - a.getY();
+            double dotProduct = b.getX() * a.getY() - a.getX() * b.getY();
+            double k = -deltaY * c.getX() - dotProduct;
+            result = Math.abs(k / (a.getX() - b.getX()) - c.getY());
             return result;
         }
     }
     
 
+//  This is the original computation together with the minimal blurred segment convex hull thickness computation. It doesn't give the expected results.
+//  Either my expectations are wrong or I somehow didn't transfer the algorithm correctly. 
     public static double computeThicknessAntipodalPair(Vector2D line, Position2D point)
     {
         double horizontalThickness = Vector2D.computeHorizontalThickness(line, point);
@@ -648,7 +650,9 @@ public class Vector2D
         return Math.min(horizontalThickness, verticalThickness);
     }
 
+    
     /**
+     * TODO add more info here on how the two angle versions are different (the other one doesn't exceed Math.PI?)
      * This method is implemented according to the implementation for the arc segment decomposition algorithm.
      * should kind of do the same as my own algorithm
      * @param v1

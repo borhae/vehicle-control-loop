@@ -26,6 +26,11 @@ public class MelkmanDeque<T>
         _deque = new LinkedList<>();
     }
 
+    private MelkmanDeque(LinkedList<T> clone)
+    {
+        _deque = clone;
+    }
+
     /**
      * Add element to the end of the deque
      * @param e
@@ -109,5 +114,10 @@ public class MelkmanDeque<T>
     public T get(int index)
     {
         return _deque.get(index);
+    }
+
+    public MelkmanDeque<T> copy()
+    {
+        return new MelkmanDeque<T>((LinkedList<T>)_deque.clone());
     }
 }

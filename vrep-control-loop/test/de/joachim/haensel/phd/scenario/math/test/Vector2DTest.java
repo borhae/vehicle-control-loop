@@ -364,7 +364,7 @@ public class Vector2DTest
          Vector2D v = new Vector2D(0.0, 1.0, 4.0, 0.0);
          Position2D p = new Position2D(2.0, 0.0);
          double actual = Vector2D.computeHorizontalThickness(v, p);
-         double expected = 1.0;
+         double expected = Double.MAX_VALUE;
          
          assertEquals(expected, actual, Math.ulp(0.0));
      }
@@ -375,7 +375,7 @@ public class Vector2DTest
          Vector2D v = new Vector2D(0.0, -2.0, 4.0, 0.0);
          Position2D p = new Position2D(2.0, 0.0);
          double actual = Vector2D.computeHorizontalThickness(v, p);
-         double expected = 2.0;
+         double expected = Double.MAX_VALUE;
          
          assertEquals(expected, actual, Math.ulp(0.0));
      }
@@ -383,11 +383,32 @@ public class Vector2DTest
      @Test
      public void testComputeHorizontalThicknessVerticalLine()
      {
-         //TODO how does this make sense?
          Vector2D v = new Vector2D(0.0, 1.0, 0.0, 8.0);
          Position2D p = new Position2D(2.0, 0.0);
          double actual = Vector2D.computeHorizontalThickness(v, p);
          double expected = 2.0;
+         
+         assertEquals(expected, actual, Math.ulp(0.0));
+     }
+     
+     @Test
+     public void testComputeHorizontalThicknessMinimalBlurredSegmentExampleDirection1()
+     {
+         Vector2D v = new Vector2D(1.0, 1.5, 2.5, 1.0);
+         Position2D p = new Position2D(2.5, 1.0);
+         double actual = Vector2D.computeHorizontalThickness(v, p);
+         double expected = 2.75;
+         
+         assertEquals(expected, actual, Math.ulp(0.0));
+     }
+     
+     @Test
+     public void testComputeVerticalThicknessMinimalBlurredSegmentExampleDirection1()
+     {
+         Vector2D v = new Vector2D(1.0, 1.5, 2.5, 1.0);
+         Position2D p = new Position2D(2.5, 1.0);
+         double actual = Vector2D.computeVerticalThickness(v, p);
+         double expected = 1.1;
          
          assertEquals(expected, actual, Math.ulp(0.0));
      }

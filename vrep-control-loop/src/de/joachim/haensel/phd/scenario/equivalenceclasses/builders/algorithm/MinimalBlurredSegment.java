@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.joachim.haensel.phd.scenario.lists.CircularAccessList;
-import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.MelkmanHull;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
@@ -12,7 +11,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 /**
  * For now this is not really an implementation for a minimal blurred segment
  * Rather it collects points and can decide whether they could make a minimal blurred segment
- * within the limits of a given width. The computation of a, b, omega and ny is not implemented.
+ * within the limits of a given width. The computation of a, b, omega and my is not implemented.
  * @author dummy
  *
  */
@@ -61,9 +60,10 @@ public class MinimalBlurredSegment
         _melkmanHull.clear();
     }
 
-    public boolean staysMinimalBlurredSegmentWith(Position2D asPosition2D)
+    public boolean staysMinimalBlurredSegmentWith(Position2D probePoint)
     {
-        double thickness = computeIsothethicThickness(_melkmanHull);
+        MelkmanHull copyHull = _melkmanHull.addAndCopy(probePoint);
+        double thickness = computeIsothethicThickness(copyHull);
         if(thickness < _thickness)
         {
             _minimumDistanceHorizantalVertical = thickness;
