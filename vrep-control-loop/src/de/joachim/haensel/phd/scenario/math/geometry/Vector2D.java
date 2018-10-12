@@ -199,16 +199,21 @@ public class Vector2D
         {
             return 0.0;
         }
+        else if (Position2D.equals(a.getNorm(), b.getNorm(), Math.ulp(0.0)))
+        {
+            return 0.0;
+        }
         else
         {
             double dotProduct = Vector2D.dotProduct(a, b);
             double magnitudeProduct = a.getLength() * b.getLength();
             double divsionResult = dotProduct/magnitudeProduct;
+            double result = Math.acos(divsionResult);
             if(divsionResult > 1.0)
             {
+                //TODO remove me or throw exception
                System.out.println("problem");
             }
-            double result = Math.acos(divsionResult);
             return result;
         }
     }

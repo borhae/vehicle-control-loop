@@ -2,6 +2,7 @@ package de.joachim.haensel.phd.scenario.math.geometry;
 
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -12,11 +13,13 @@ public class TangentSpaceTransformer
      * @param dataPoints a polygon defined by a queue of vectors
      * @return Tangent Space representation of input 
      */
-    public static List<TangentSegment> transform(Deque<Vector2D> dataPoints)
+    public static List<TangentSegment> transform(Deque<Vector2D> dataPointsIn)
     {
+        Deque<Vector2D> dataPoints = new LinkedList<>();
+        dataPointsIn.stream().forEach(v -> dataPoints.add(v));
         List<TangentSegment> result = new ArrayList<>();
         result.add(new TangentSegment(null, new Position2D(0.0, 0.0), dataPoints.getFirst().getBase()));
-        for(int idx = 0; idx < dataPoints.size() - 1; idx++)
+        while(dataPoints.size() > 1)
         {
             Vector2D p1 = dataPoints.pop();
             Vector2D p2 = dataPoints.peek();

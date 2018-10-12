@@ -573,6 +573,22 @@ public class TestArcsSegmentDecomposition
         }
         System.out.println("finshed writing route");
 
+        
+        List<TangentSegment> tangentSpaceRoute = TangentSpaceTransformer.transform(routeVectors);
+        List<String> tangentSpaceAsString = TangentSpaceTransformer.tangentSpaceAsMatplotFile(tangentSpaceRoute);
+        
+        try
+        {
+            Files.write(new File("./res/equivalencesegmentationtest/sampleWholeRouteTangentSpace.pyplot").toPath(), tangentSpaceAsString, Charset.defaultCharset());
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        System.out.println("finshed writing segmentation");
+        
+        
         ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
         List<IArcsSegmentContainerElement> segments = segmenter.createSegments(routeVectors);
         List<String> elementsAsString = segments.stream().map(element -> element.toPyPlotString()).collect(Collectors.toList());
