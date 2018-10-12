@@ -76,15 +76,6 @@ public class TangentSpaceTransformer
         
         tangentSpace.add(new TangentSegment(tn1, null, p1));
 
-//        TangentSegment lastTangentSegment = tangentSpace.get(tangentSpace.size() - 1);
-//        Position2D lastTn2 = lastTangentSegment.getTn2();
-//        
-//        Position2D pn_minus1 = dataPoints.get(idx - 1);
-//        Position2D pn = dataPoints.get(idx);
-//        Position2D tn_minus_one1 = new Position2D(lastTn2.getX() + Position2D.distance(pn_minus1, pn), lastTn2.getY());
-//        Position2D tn_minus_one2 = null;
-//        TangentSegment tn_minus_one = new TangentSegment(tn_minus_one1, tn_minus_one2, pn_minus1);
-//        tangentSpace.add(tn_minus_one);
         return tangentSpace;
     }
 
