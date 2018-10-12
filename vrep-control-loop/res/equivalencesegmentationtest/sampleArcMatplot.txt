@@ -1,0 +1,14 @@
+point 23 0
+point 70 195
+point 184 343
+point 324 421
+point 497 450
+point 689 400
+point 722 526
+point 801 637
+point 954 719
+point 1126 722
+point 1237 670
+point 1334 573
+point 1036 45
+point 1698 637

@@ -69,6 +69,12 @@ public class Segment implements IArcsSegmentContainerElement
     }
 
     @Override
+    public String toString()
+    {
+        return "segment<" + _segment.toString() + ">";
+    }
+
+    @Override
     public String toGnuPlotString()
     {
         Position2D first = _segment.getBase();
@@ -76,5 +82,13 @@ public class Segment implements IArcsSegmentContainerElement
         return "plot '-' using 1:2 with lines\n"
                 + first.getX() + " " + first.getY() + "\n"
                 + last.getX() + " " + last.getY() + "\n";
+    }
+
+    @Override
+    public String toPyPlotString()
+    {
+        Position2D first = _segment.getBase();
+        Position2D last = _segment.getTip();
+        return "seg " + first.getX() + " " + first.getY() + " " + last.getX() + " " + last.getY();
     }
 }

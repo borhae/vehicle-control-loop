@@ -195,11 +195,22 @@ public class Vector2D
     
     public static double computeAngle(Vector2D a, Vector2D b)
     {
-        double dotProduct = Vector2D.dotProduct(a, b);
-        double magnitudeProduct = a.getLength() * b.getLength();
-        double divsionResult = dotProduct/magnitudeProduct;
-        double result = Math.acos(divsionResult);
-        return result;
+        if(a._dX == b._dX && a._dY == b._dY)
+        {
+            return 0.0;
+        }
+        else
+        {
+            double dotProduct = Vector2D.dotProduct(a, b);
+            double magnitudeProduct = a.getLength() * b.getLength();
+            double divsionResult = dotProduct/magnitudeProduct;
+            if(divsionResult > 1.0)
+            {
+               System.out.println("problem");
+            }
+            double result = Math.acos(divsionResult);
+            return result;
+        }
     }
     
     /**
@@ -669,5 +680,10 @@ public class Vector2D
         double angle2 = Math.atan2(d.getY() - c.getY(), d.getX() - c.getX());
         double r = angle2 - angle1;
         return r < 0 ? 2 * Math.PI + r : r;
+    }
+
+    public static boolean isParallel(Vector2D a, Vector2D b)
+    {
+        return dotProduct(a, b) == 1.0;
     }
 }

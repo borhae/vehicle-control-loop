@@ -10,6 +10,15 @@ public class Position2D
 
     public Position2D(double x, double y)
     {
+        init(x, y);
+    }
+
+    private void init(double x, double y)
+    {
+        if(Double.isNaN(x) || Double.isNaN(y))
+        {
+            throw new RuntimeException("illegal position instantiation!");
+        }
         _x = x;
         _y = y;
     }
@@ -17,23 +26,20 @@ public class Position2D
     public Position2D(String coordinatesAsString)
     {
         String[] coordinates = coordinatesAsString.split(",");
-        _x  = Double.valueOf(coordinates[0]);
-        _y  = Double.valueOf(coordinates[1]);
+        init(Double.valueOf(coordinates[0]), Double.valueOf(coordinates[1]));
     }
     
     
 
     public Position2D(FloatWA pos3d)
     {
-        _x = pos3d.getArray()[0];
-        _y = pos3d.getArray()[1];
+        init(pos3d.getArray()[0], pos3d.getArray()[1]);
     }
     
     public Position2D(String coordinatesAsString, String seperator)
     {
         String[] coordinates = coordinatesAsString.split(seperator);
-        _x  = Double.valueOf(coordinates[0]);
-        _y  = Double.valueOf(coordinates[1]);
+        init(Double.valueOf(coordinates[0]), Double.valueOf(coordinates[1]));
     }
 
     public double getX()
@@ -48,24 +54,30 @@ public class Position2D
     
     public void setX(double x)
     {
+        if(Double.isNaN(x))
+        {
+            throw new RuntimeException("illegal setting of x");
+        }
         _x = x;
     }
 
     public void setY(double y)
     {
+        if(Double.isNaN(y))
+        {
+            throw new RuntimeException("illegal setting of y");
+        }
         _y = y;
     }
     
     public void setXY(float[] xy)
     {
-        _x = xy[0];
-        _y = xy[1];
+        init(xy[0], xy[1]);
     }
     
     public void setXY(double x, double y)
     {
-        _x = x;
-        _y = y;
+        init(x, y);
     }
     
     /**
@@ -152,6 +164,11 @@ public class Position2D
         return _x + seperator + _y ;
     }
     
+    public String toPyPlotString()
+    {
+        return String.format("point %s %s", _x, _y);
+    }
+
     public static Position2D[] valueOf(String[] coordinates)
     {
         Position2D[] result = new Position2D[coordinates.length];

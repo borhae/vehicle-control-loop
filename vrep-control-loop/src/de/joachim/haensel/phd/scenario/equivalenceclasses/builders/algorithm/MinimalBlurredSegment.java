@@ -95,7 +95,9 @@ public class MinimalBlurredSegment
             int j = 1;
             
             //I guess this finds the point on the opposite side of the polygon to edge <hull(i), hull(i+1)>
-            Vector2D antiPodal1 = new Vector2D(hull.get(i), hull.get(i + 1));
+            Position2D antiPodal1Base = hull.get(i);
+            Position2D antiPodal1Tip = hull.get(i + 1);
+            Vector2D antiPodal1 = new Vector2D(antiPodal1Base, antiPodal1Tip);
             Position2D antiPodal2Base = hull.get(j);
             Position2D antiPodal2Tip = hull.get(j + 1);
             Vector2D antiPodal2 = new Vector2D(antiPodal2Base, antiPodal2Tip);

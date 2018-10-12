@@ -46,7 +46,7 @@ public class ArcSegmentDecomposition
     }
 
     /**
-     * Algorithm seems to work with the additions I made
+     * Algorithm seems to work with the additions I made (mainly adding missing points)
      * @param tangentSpace
      * @param thickness
      * @param alphaMax
@@ -99,7 +99,8 @@ public class ArcSegmentDecomposition
                         result.add(pArc.toSegment()); //23
                         mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
                     }
-                    //maybe we need to take care of current mp_i? In this branch it only had been probed but not added to anything, so it's basically discarded
+                    // maybe we need to take care of current mp_i? In this branch it only had been probed but not added to anything, so it's basically discarded
+                    // this way we don't discard it
                     pArc.clear(mp_i.getAssociatedStartPosition());
                 }
                 result.add(new Segment(mp_i)); //8
@@ -139,6 +140,7 @@ public class ArcSegmentDecomposition
                 }
             }
         }
+        //TODO added because otherwise we'll miss the last assembled points
         if(!pArc.isEmpty())
         {
             if(mbs.size() >= nbCirclePoint) //15
@@ -163,6 +165,29 @@ public class ArcSegmentDecomposition
             }
             //maybe we need to take care of current mp_i? In this branch it only had been probed but not added to anything, so it's basically discarded
             pArc.clear(mp_i.getAssociatedStartPosition());
+        }
+        if(!pArc.isEmpty())
+        {
+            if(mbs.size() >= nbCirclePoint) //15
+            {
+                //create arc from pArc // 16, 17
+                pArc.InitArcAndSegment(); // 16, 17
+                if(pArc.isArcsISSESmallerThanSegments()) //18
+                {
+                    result.add(pArc.toArc()); //19
+                    mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
+                }
+                else
+                {
+                    result.add(pArc.toSegment()); //21
+                    mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
+                }
+            }
+            else
+            {
+                result.add(pArc.toSegment()); //23
+                mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
+            }
         }
         return result;
     }

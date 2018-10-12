@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.test;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
@@ -8,10 +9,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collector;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -19,6 +21,7 @@ import org.junit.Test;
 import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsSegmentContainerElement;
 import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.ArcSegmentDecomposition;
 import de.joachim.haensel.phd.scenario.layerinterface.RandomMapPositionCreator;
+import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Midpoint;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.TangentSegment;
@@ -26,7 +29,10 @@ import de.joachim.haensel.phd.scenario.math.geometry.TangentSpaceMidpointCompute
 import de.joachim.haensel.phd.scenario.math.geometry.TangentSpaceTransformer;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.navigation.test.Positioner;
+import de.joachim.haensel.phd.scenario.navigation.visualization.ArcSegmentContentElement;
+import de.joachim.haensel.phd.scenario.navigation.visualization.IContentElement;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
+import de.joachim.haensel.phd.scenario.navigation.visualization.VectorContentElement;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
@@ -50,7 +56,7 @@ public class TestArcsSegmentDecomposition
             exc.printStackTrace();
         }
         List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
-        List<String> tangentSpaceFileContent = TangentSpaceTransformer.tangentSpaceAsFile(tangentSpace, " ");
+        List<String> tangentSpaceFileContent = TangentSpaceTransformer.tangentSpaceAsMatplotFile(tangentSpace);
         try
         {
             Files.write(new File("./res/equivalencesegmentationtest/sampleArcTangentSpace.txt").toPath(), tangentSpaceFileContent, Charset.defaultCharset(), StandardOpenOption.CREATE_NEW);
@@ -80,10 +86,10 @@ public class TestArcsSegmentDecomposition
         }
         List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
         List<Midpoint> midPoints = TangentSpaceMidpointComputer.compute(tangentSpace);
-        List<String> midPointsAsString = midPoints.stream().map(point -> point.toString(" ")).collect(Collectors.toList());
+        List<String> midPointsAsString = midPoints.stream().map(point -> "point " + point.toString(" ")).collect(Collectors.toList());
         try
         {
-            Files.write(new File("./res/equivalencesegmentationtest/sampleArcMidpoints.txt").toPath(), midPointsAsString, Charset.defaultCharset(), StandardOpenOption.CREATE_NEW);
+            Files.write(new File("./res/equivalencesegmentationtest/sampleArcMidpoints.txt").toPath(), midPointsAsString, Charset.defaultCharset());
         }
         catch (IOException exc)
         {
@@ -178,6 +184,103 @@ public class TestArcsSegmentDecomposition
 
         System.out.println("finshed");
     }
+    
+
+    @Test
+    public void segmentationFromSimpleArcPaperExample()
+    {
+        List<Position2D> dataPoints = new ArrayList<>();
+        try
+        {
+            //load a circle defined by coordinates from file into list  
+            Path path = new File("./res/equivalencesegmentationtest/sampleArcAdditionalPoints.txt").toPath();
+            Files.lines(path).forEachOrdered(line -> dataPoints.add(new Position2D(line, " ")));
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        List<IArcsSegmentContainerElement> segments = segmenter.createSegments(dataPoints);
+        List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
+        List<Midpoint> midPoints = TangentSpaceMidpointComputer.compute(tangentSpace);
+        
+        
+        Deque<Vector2D> tangentSpaceVisuals = new LinkedList<>();
+        Position2D tn2_last = new Position2D(0.0, 0.0);
+        double maxX = 0.0;
+        double maxY = 0.0;
+        for (TangentSegment curSeg : tangentSpace)
+        {
+            Position2D tn1 = curSeg.getTn1();
+            Position2D tn2 = curSeg.getTn2();
+            if(tn1 != null)
+            {
+                tangentSpaceVisuals.add(new Vector2D(tn2_last, tn1));
+                if(tn2 != null)
+                {
+                    tangentSpaceVisuals.add(new Vector2D(tn1, tn2));
+                }
+            }
+            tn2_last = tn2;
+        }
+
+        List<String> elementsAsString = segments.stream().map(element -> element.toPyPlotString()).collect(Collectors.toList());
+        
+        try
+        {
+            Files.write(new File("./res/equivalencesegmentationtest/sampleArcAdditionalPointsResult.pyplot").toPath(), elementsAsString, Charset.defaultCharset());
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        System.out.println("finshed");
+    }
+
+    @Test
+    public void visualizeDecompositionFromTwoFollowUpStraightLines()
+    {
+        List<Position2D> dataPoints = new ArrayList<>();
+        dataPoints.add(new Position2D(10.0, 10.0));
+        dataPoints.add(new Position2D(20.0, 10.0));
+        dataPoints.add(new Position2D(30.0, 10.0));
+        dataPoints.add(new Position2D(40.0, 10.0));
+        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        List<IArcsSegmentContainerElement> segments = segmenter.createSegments(dataPoints);
+        List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
+        
+        Deque<Vector2D> tangentSpaceVisuals = new LinkedList<>();
+        Position2D tn2_last = new Position2D(0.0, 0.0);
+        for (TangentSegment curSeg : tangentSpace)
+        {
+            Position2D tn1 = curSeg.getTn1();
+            Position2D tn2 = curSeg.getTn2();
+            if(tn1 != null)
+            {
+                tangentSpaceVisuals.add(new Vector2D(tn2_last, tn1));
+                if(tn2 != null)
+                {
+                    tangentSpaceVisuals.add(new Vector2D(tn1, tn2));
+                }
+            }
+            tn2_last = tn2;
+        }
+
+        Vector2DVisualizer vis = new Vector2DVisualizer();
+        IContentElement visualizee = new ArcSegmentContentElement(segments, Color.BLACK, new BasicStroke(1.0f));
+        vis.addContentElement(visualizee);
+        vis.setVisible(true);
+        vis.centerContent();
+        IContentElement refVisualization = new VectorContentElement(new LinkedList<>(Arrays.asList(new Vector2D[]{new Vector2D(10.0, 12.0, 30.0, 0.0)})), Color.BLUE, new BasicStroke(1.0f));
+        vis.addContentElement(refVisualization);
+        vis.centerContent();
+        vis.updateVisuals();
+        System.out.println("finshed");
+    }
+
 
     @Test
     public void testSimplePointBase()
@@ -227,28 +330,280 @@ public class TestArcsSegmentDecomposition
         
         List<Trajectory> allDataPoints = getDataPoints(upperCtrl);
         
-        List<List<Trajectory>> slidingWindows = createSlidingWindows(allDataPoints, 10);
+        List<List<Trajectory>> slidingWindows = createSlidingWindows(allDataPoints, 100, 5);
         Deque<Deque<Vector2D>> slidingWindowsVectors = transformToVectorDeque(slidingWindows);
+
         Vector2DVisualizer visualizer = new Vector2DVisualizer();
+        
         Deque<Vector2D> firstWindow = slidingWindowsVectors.getFirst();
+        VectorContentElement visualizee = new VectorContentElement(firstWindow, Color.BLACK, new BasicStroke(4.0f), 0.1);
         visualizer.addVectorSet(firstWindow, Color.BLACK, 4.0, 0.02);
+        List<List<Trajectory>> data = new ArrayList<>();
+        data.add(allDataPoints);
+        
+        visualizer.addContentElement(visualizee);
         visualizer.setVisible(true);
+        visualizer.updateVisuals();
+        visualizee.addVector(new Vector2D(10, 30, 20, 40));
         visualizer.centerContent();
         visualizer.updateVisuals();
-        System.out.println("wait");
 
         ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
         List<IArcsSegmentContainerElement> segments = segmenter.createSegments(slidingWindowsVectors.getFirst());
+        ArcSegmentContentElement segmentVisualizee = new ArcSegmentContentElement(segments, Color.BLUE, new BasicStroke(3.0f));
+        visualizer.addContentElement(segmentVisualizee);
+        visualizer.updateVisuals();
+        System.out.println("number of datapoints: " + allDataPoints.size() + System.lineSeparator() + segments);
     }
     
+    @Test
+    public void testDecompositionTrajectoryBigWindow1()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+        TMatrix centerTransformMatrix = roadMap.center(0.0, 0.0);
+
+        //uncentered positions measured by sumo net-edit tool
+        Position2D startPosition = new Position2D(5531.34,5485.96);
+        Position2D destinationPosition = new Position2D(5879.87,4886.08);
+        
+        startPosition.transform(centerTransformMatrix);
+        destinationPosition.transform(centerTransformMatrix);
+        startPosition = roadMap.getClosestPointOnMap(startPosition);
+        destinationPosition = roadMap.getClosestPointOnMap(destinationPosition);
+        
+        IUpperLayerControl upperCtrl = new DefaultNavigationController(1.0, 50);
+        Positioner upperLayerSensors = new Positioner(startPosition);
+        upperCtrl.initController(upperLayerSensors, roadMap);
+        
+        upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
+        
+        List<Trajectory> allDataPoints = getDataPoints(upperCtrl);
+        
+        List<List<Trajectory>> slidingWindows = createSlidingWindows(allDataPoints, 200, 5);
+        Deque<Deque<Vector2D>> slidingWindowsVectors = transformToVectorDeque(slidingWindows);
+
+        Deque<Vector2D> firstWindow = slidingWindowsVectors.getFirst();
+        List<String> routeAsString = firstWindow.stream().map(vec -> vec.getBase().toPyPlotString()).collect(Collectors.toList());
+        
+        try
+        {
+            Files.write(new File("./res/equivalencesegmentationtest/sampleRouteBigFirstWindow.pyplot").toPath(), routeAsString, Charset.defaultCharset());
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        System.out.println("finshed writing route");
+
+        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        List<IArcsSegmentContainerElement> segments = segmenter.createSegments(firstWindow);
+        List<String> elementsAsString = segments.stream().map(element -> element.toPyPlotString()).collect(Collectors.toList());
+        
+        try
+        {
+            Files.write(new File("./res/equivalencesegmentationtest/sampleRouteBigFirstWindowSegmentation.pyplot").toPath(), elementsAsString, Charset.defaultCharset());
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        System.out.println("finshed writing segmentation");
+
+        System.out.println("number of datapoints: " + allDataPoints.size() + System.lineSeparator() + segments);
+    }
+    
+    @Test
+    public void testDecompositionTrajectorySmallWindow1()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+        TMatrix centerTransformMatrix = roadMap.center(0.0, 0.0);
+
+        //uncentered positions measured by sumo net-edit tool
+        Position2D startPosition = new Position2D(5531.34,5485.96);
+        Position2D destinationPosition = new Position2D(5879.87,4886.08);
+        
+        startPosition.transform(centerTransformMatrix);
+        destinationPosition.transform(centerTransformMatrix);
+        startPosition = roadMap.getClosestPointOnMap(startPosition);
+        destinationPosition = roadMap.getClosestPointOnMap(destinationPosition);
+        
+        IUpperLayerControl upperCtrl = new DefaultNavigationController(1.0, 50);
+        Positioner upperLayerSensors = new Positioner(startPosition);
+        upperCtrl.initController(upperLayerSensors, roadMap);
+        
+        upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
+        
+        List<Trajectory> allDataPoints = getDataPoints(upperCtrl);
+        
+        List<List<Trajectory>> slidingWindows = createSlidingWindows(allDataPoints, 50, 5);
+        Deque<Deque<Vector2D>> slidingWindowsVectors = transformToVectorDeque(slidingWindows);
+
+        Deque<Vector2D> firstWindow = slidingWindowsVectors.getFirst();
+        List<String> routeAsString = firstWindow.stream().map(vec -> vec.getBase().toPyPlotString()).collect(Collectors.toList());
+        
+        try
+        {
+            Files.write(new File("./res/equivalencesegmentationtest/sampleRouteSmallFirstWindow.pyplot").toPath(), routeAsString, Charset.defaultCharset());
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        System.out.println("finshed writing route");
+
+        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        List<IArcsSegmentContainerElement> segments = segmenter.createSegments(firstWindow);
+        List<String> elementsAsString = segments.stream().map(element -> element.toPyPlotString()).collect(Collectors.toList());
+        
+        try
+        {
+            Files.write(new File("./res/equivalencesegmentationtest/sampleRouteSmallFirstWindowSegmentation.pyplot").toPath(), elementsAsString, Charset.defaultCharset());
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        System.out.println("finshed writing segmentation");
+
+        System.out.println("number of datapoints: " + allDataPoints.size() + System.lineSeparator() + segments);
+    }
+    
+    @Test
+    public void testDecompositionTrajectoryTinyWindow1()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+        TMatrix centerTransformMatrix = roadMap.center(0.0, 0.0);
+
+        //uncentered positions measured by sumo net-edit tool
+        Position2D startPosition = new Position2D(5531.34,5485.96);
+        Position2D destinationPosition = new Position2D(5879.87,4886.08);
+        
+        startPosition.transform(centerTransformMatrix);
+        destinationPosition.transform(centerTransformMatrix);
+        startPosition = roadMap.getClosestPointOnMap(startPosition);
+        destinationPosition = roadMap.getClosestPointOnMap(destinationPosition);
+        
+        IUpperLayerControl upperCtrl = new DefaultNavigationController(1.0, 50);
+        Positioner upperLayerSensors = new Positioner(startPosition);
+        upperCtrl.initController(upperLayerSensors, roadMap);
+        
+        upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
+        
+        List<Trajectory> allDataPoints = getDataPoints(upperCtrl);
+        
+        List<List<Trajectory>> slidingWindows = createSlidingWindows(allDataPoints, 10, 5);
+        Deque<Deque<Vector2D>> slidingWindowsVectors = transformToVectorDeque(slidingWindows);
+
+        Deque<Vector2D> firstWindow = slidingWindowsVectors.getFirst();
+        List<String> routeAsString = firstWindow.stream().map(vec -> vec.getBase().toPyPlotString()).collect(Collectors.toList());
+        
+        try
+        {
+            Files.write(new File("./res/equivalencesegmentationtest/sampleRouteTinyFirstWindow.pyplot").toPath(), routeAsString, Charset.defaultCharset());
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        System.out.println("finshed writing route");
+
+        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        List<IArcsSegmentContainerElement> segments = segmenter.createSegments(firstWindow);
+        List<String> elementsAsString = segments.stream().map(element -> element.toPyPlotString()).collect(Collectors.toList());
+        
+        try
+        {
+            Files.write(new File("./res/equivalencesegmentationtest/sampleRouteTinyFirstWindowSegmentation.pyplot").toPath(), elementsAsString, Charset.defaultCharset());
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        System.out.println("finshed writing segmentation");
+
+        System.out.println("number of datapoints: " + allDataPoints.size() + System.lineSeparator() + segments);
+    }
+    
+    @Test
+    public void testDecompositionTrajectoryWholeRoute()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+        TMatrix centerTransformMatrix = roadMap.center(0.0, 0.0);
+
+        //uncentered positions measured by sumo net-edit tool
+        Position2D startPosition = new Position2D(5531.34,5485.96);
+        Position2D destinationPosition = new Position2D(5879.87,4886.08);
+        
+        startPosition.transform(centerTransformMatrix);
+        destinationPosition.transform(centerTransformMatrix);
+        startPosition = roadMap.getClosestPointOnMap(startPosition);
+        destinationPosition = roadMap.getClosestPointOnMap(destinationPosition);
+        
+        IUpperLayerControl upperCtrl = new DefaultNavigationController(1.0, 50);
+        Positioner upperLayerSensors = new Positioner(startPosition);
+        upperCtrl.initController(upperLayerSensors, roadMap);
+        
+        upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
+        
+        List<Trajectory> allDataPoints = getDataPoints(upperCtrl);
+        Deque<Vector2D> routeVectors = allDataPoints.stream().map(trajectory -> trajectory.getVector()).collect(Collectors.toCollection(new Supplier<Deque<Vector2D>>() {
+            @Override
+            public Deque<Vector2D> get()
+            {
+                return new LinkedList<>();
+            }
+        }));
+        
+        List<String> routeAsString = routeVectors.stream().map(vec -> vec.getBase().toPyPlotString()).collect(Collectors.toList());
+        
+        try
+        {
+            Files.write(new File("./res/equivalencesegmentationtest/sampleWholeRoute.pyplot").toPath(), routeAsString, Charset.defaultCharset());
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        System.out.println("finshed writing route");
+
+        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        List<IArcsSegmentContainerElement> segments = segmenter.createSegments(routeVectors);
+        List<String> elementsAsString = segments.stream().map(element -> element.toPyPlotString()).collect(Collectors.toList());
+        
+        try
+        {
+            Files.write(new File("./res/equivalencesegmentationtest/sampleWholeRouteSegmentation.pyplot").toPath(), elementsAsString, Charset.defaultCharset());
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+        System.out.println("finshed writing segmentation");
+
+        System.out.println("number of datapoints: " + allDataPoints.size() + System.lineSeparator() + segments);
+    }
+
     private Deque<Deque<Vector2D>> transformToVectorDeque(List<List<Trajectory>> slidingWindows)
     {
         Deque<Deque<Vector2D>> result = new LinkedList<>();
-        slidingWindows.forEach(curWindow -> result.addLast(new LinkedList<>(curWindow.stream().map(t -> t.getVector()).collect(Collectors.toList()))));
+        slidingWindows.forEach(curWindow -> result.addLast(new LinkedList<>(trajectoryToVector2DList(curWindow))));
         return result;
     }
 
-    private List<List<Trajectory>> createSlidingWindows(List<Trajectory> allDataPoints, int windowSize)
+    private List<Vector2D> trajectoryToVector2DList(List<Trajectory> curWindow)
+    {
+        return curWindow.stream().map(t -> t.getVector()).collect(Collectors.toList());
+    }
+
+    private List<List<Trajectory>> createSlidingWindows(List<Trajectory> allDataPoints, int windowSize, int amount)
     {
         List<List<Trajectory>> result = new ArrayList<>();
         for(int cnt = 0; cnt < allDataPoints.size(); cnt++)

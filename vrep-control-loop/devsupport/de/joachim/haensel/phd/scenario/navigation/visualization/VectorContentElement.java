@@ -9,8 +9,9 @@ import java.util.List;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.streamextensions.IndexAdder;
 
-public class ContentElement
+public class VectorContentElement implements IContentElement
 {
+    // There are two dimensions maintained to work more quickly on the array when needed
     // holds information in the following way
     // first dimension is an ordered set of vectors to draw
     // second dimension is [baseX, baseY, tipX, tipY] of each vector
@@ -21,13 +22,13 @@ public class ContentElement
     Stroke _stroke;
     private double _tipSize;
 
-    public ContentElement(Deque<Vector2D> vectors, Color color, Stroke stroke)
+    public VectorContentElement(Deque<Vector2D> vectors, Color color, Stroke stroke)
     {
         init(vectors, color, stroke);
         _tipSize = -1.0;
     }
 
-    public ContentElement(Deque<Vector2D> vectors, Color color, Stroke stroke, double tipSize)
+    public VectorContentElement(Deque<Vector2D> vectors, Color color, Stroke stroke, double tipSize)
     {
         this(vectors, color, stroke);
         _tipSize = tipSize;
@@ -96,5 +97,23 @@ public class ContentElement
     {
         _content = null;
         init(vectors, _color, _stroke);
+    }
+
+    @Override
+    public VisualizerContentType getType()
+    {
+        return VisualizerContentType.VECTOR;
+    }
+
+    @Override
+    public Color getColor()
+    {
+        return _color;
+    }
+
+    @Override
+    public Stroke getStroke()
+    {
+        return _stroke;
     }
 }

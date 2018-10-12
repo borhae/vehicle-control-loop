@@ -15,6 +15,9 @@ public class Arc implements IArcsSegmentContainerElement
     public Arc(List<Position2D> elements)
     {
         _elements = elements;
+        _center = null; // if creation doesn't work, there is no center that makes sense
+        _radius = Double.POSITIVE_INFINITY; // if creation doesn't work the radius is infinitely large
+        _iSSE = Double.POSITIVE_INFINITY; // if creation doesn't work the error is infinite
     }
 
     public void setCenter(Position2D center)
@@ -27,9 +30,15 @@ public class Arc implements IArcsSegmentContainerElement
         _radius = radius;
     }
 
+    @Override
+    public String toString()
+    {
+        return "arc<c_x: " + _center.getX() + ", c_y: " + _center.getY() + ", rad: " + _radius + _elements.get(0) + ", " + _elements.get(_elements.size() - 1) + ">";
+    }
+
     /**
      * Compute the arc from the points that this object was initialized with
-     * @param computeISSE should we compute integrated sum of errors (will be done for arcs anyway, just for symmetry to segment)
+     * @param computeISSE should we compute integrated sum of errors 
      */
     public void create(boolean computeISSE)
     {
@@ -43,20 +52,28 @@ public class Arc implements IArcsSegmentContainerElement
         Position2D first = _elements.get(0);
         Position2D last = _elements.get(_elements.size() - 1);
 
-        double curLowestError = Double.MAX_VALUE;
+        double curLowestError = Double.POSITIVE_INFINITY;
 
         for(int idx = idxBegin; idx < idxEnd; idx++)
         {
             Position2D cur = _elements.get(idx);
             Position2D center = computeCenter(first, cur, last);
-            double averageRadius = (Position2D.distance(center, first) + Position2D.distance(center, cur) + Position2D.distance(center, last))/3.0;
-            double curISE = computeIntegratedSumOfErrorsForArc(center, averageRadius);
-            if(curISE < curLowestError)
+            double averageRadius = 0.0; 
+            if(center == null)
             {
-                curLowestError = curISE;
-                _center = center;
-                _radius = averageRadius;
-                _iSSE = curLowestError;
+                averageRadius = Double.POSITIVE_INFINITY;
+            }
+            else
+            {
+                averageRadius = (Position2D.distance(center, first) + Position2D.distance(center, cur) + Position2D.distance(center, last))/3.0;
+                double curISE = computeIntegratedSumOfErrorsForArc(center, averageRadius);
+                if(curISE < curLowestError)
+                {
+                    curLowestError = curISE;
+                    _center = center;
+                    _radius = averageRadius;
+                    _iSSE = curLowestError;
+                }
             }
         }
     }
@@ -145,10 +162,55 @@ public class Arc implements IArcsSegmentContainerElement
         return _center;
     }
 
+    public Position2D getStart()
+    {
+        return _elements.get(0);
+    }
+
+    public Position2D getEnd()
+    {
+        return _elements.get(_elements.size() - 1);
+    }
+
     @Override
     public String toGnuPlotString()
     {
-        String result = "" + _center.getX() + " " + _center.getY() + " " + _elements.get(0) + " " + _elements.get(_elements.size() - 1);
+        Position2D a = Position2D.minus(_elements.get(0), _center);
+        Position2D b = Position2D.minus(_elements.get(_elements.size() - 1), _center);
+        Position2D c = new Position2D(_radius, 0.0); //0 degree
+        double angle1 = Math.atan2(a.getY() - c.getY(), a.getX() - c.getX());
+        double angle2 = Math.atan2(b.getY() - c.getY(), b.getX() - c.getX());
+        
+        String result = "" + _center.getX() + " " + _center.getY() + " " + _radius + " " + Math.toDegrees(angle1) + " " + Math.toDegrees(angle2);
+        return result;
+    }
+
+    private String prefixed(double val)
+    {
+        String strVal = Double.toString(Math.abs(val));
+        if(val >= 0)
+        {
+            return " + " + strVal;
+        }
+        else
+        {
+            return " - " + strVal;
+        }
+    }
+
+    @Override
+    public String toPyPlotString()
+    {
+        Position2D aNC = _elements.get(0);
+        Position2D bNC = _elements.get(_elements.size() - 1);
+        Position2D a = Position2D.minus(aNC, _center);
+        Position2D b = Position2D.minus(bNC, _center);
+        double angle1 = Math.atan2(a.getY(), a.getX());
+        double angle2 = Math.atan2(b.getY(), b.getX());
+        
+        String result = String.format("arc %f %f %f %f %f %f %f %f %f %f %f", 
+                _center.getX(), _center.getY(), _radius, angle1, angle2, 
+                aNC.getX(), aNC.getY(), bNC.getX(), bNC.getY(), _center.getX(), _center.getY());
         return result;
     }
 }

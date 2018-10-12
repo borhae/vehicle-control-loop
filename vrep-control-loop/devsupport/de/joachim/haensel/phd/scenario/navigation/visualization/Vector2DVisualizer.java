@@ -23,19 +23,30 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsSegmentContainerElement;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
 public class Vector2DVisualizer extends JFrame
 {
+    public class Extrema
+    {
+        double _minX = Double.POSITIVE_INFINITY;
+        double _minY = Double.POSITIVE_INFINITY;
+        double _maxX = Double.NEGATIVE_INFINITY;
+        double _maxY = Double.NEGATIVE_INFINITY;
+    }
+    
     public enum IDCreator
     {
         INSTANCE;
@@ -65,13 +76,17 @@ public class Vector2DVisualizer extends JFrame
         private boolean _released;
         private double _xOffset;
         private double _yOffset;
+        private double _yScale;
+        private double _xScale;
         private double _prevZoomFactor;
-        private Map<Integer, ContentElement> _contentMap;
+        private Map<Integer, IContentElement> _contentMap;
 
         public Vector2DVisualizerPanel()
         {
             _xOffset = 0.0;
             _yOffset = 0.0;
+            _xScale = 1.0;
+            _yScale = 1.0;
             _zoomFactor = 1.0;
             _prevZoomFactor = 1.0;
             _contentMap = new HashMap<>();
@@ -82,7 +97,7 @@ public class Vector2DVisualizer extends JFrame
             setFocusable(true); //otherwise we get no typing
         }
 
-        public Map<Integer, ContentElement> accessContentMap()
+        public Map<Integer, IContentElement> accessContentMap()
         {
             return _contentMap;
         }
@@ -120,29 +135,138 @@ public class Vector2DVisualizer extends JFrame
                 }
             }
             // draw stuff here
-            Collection<ContentElement> contentList = accessContentMap().values();
-            for (ContentElement content : contentList)
+            Collection<IContentElement> contentList = accessContentMap().values();
+            for (IContentElement content : contentList)
             {
-                double[][] transformedContent = transform(content.getContent(), _zoomFactor, _xOffset, _yOffset);
-                g2.setColor(content._color);
-                Stroke strokeConfig = content._stroke == null ? new BasicStroke((float) 2.0) : content._stroke;
-                g2.setStroke(strokeConfig);
-                Arrays.asList(transformedContent).stream().forEach(v -> drawVector(g2, v, content.getTipSize(), compWidth, compHeight));
+                drawContentElement(content, g2, compWidth, compHeight);
             }
         }
 
-        private double[][] transform(double[][] content, double zoom, double xOffset, double yOffset)
+        private void drawContentElement(IContentElement content, Graphics2D g2, int compWidth, int compHeight)
+        {
+            double[][] transformedContent = transform(content.getContent(), _zoomFactor, _xOffset, _yOffset, _xScale, _yScale);
+            g2.setColor(content.getColor());
+            Stroke strokeConfig = content.getStroke() == null ? new BasicStroke((float) 2.0) : content.getStroke();
+            g2.setStroke(strokeConfig);
+            Consumer<? super double[]> drawAction = v -> System.out.println("didn't find a type for this: " + v);
+            if(content.getType() == VisualizerContentType.VECTOR)
+            {
+                VectorContentElement vectorContent = (VectorContentElement) content;
+                drawAction = v -> drawVector(g2, v, vectorContent.getTipSize(), compWidth, compHeight);
+            }
+            else if(content.getType() == VisualizerContentType.ARC_SEGMENT)
+            {
+                drawAction = v -> drawArcSegment(g2, v, compWidth, compHeight);
+            }
+            Arrays.asList(transformedContent).stream().forEach(drawAction);
+        }
+
+        private double[][] transform(double[][] content, double zoom, double xOffset, double yOffset, double xScale, double yScale)
         {
             double[][] transformedContent = new double[content.length][];
             for (int idx = 0; idx < content.length; idx++)
             {
                 transformedContent[idx] = scale(content[idx], zoom);
             }
+            //TODO ignore for now since it doesn't work anyway
+//            for (int idx = 0; idx < content.length; idx++)
+//            {
+//                transformedContent[idx] = scaleXY(transformedContent[idx], xScale, yScale);
+//            }
             for (int idx = 0; idx < content.length; idx++)
             {
                 transformedContent[idx] = translate(transformedContent[idx], xOffset, yOffset);
             }
             return transformedContent;
+        }
+        
+        private String toStringC(double[][] content)
+        {
+            String string = "";
+            for (int idx = 0; idx < content.length; idx++)
+            {
+                double[] curElem = content[idx];
+                string = string + "[";
+                for (int idxInner = 0; idxInner < curElem.length; idxInner++)
+                {
+                    string = string + ", " + curElem[idxInner];
+                }
+                string = string + "]";
+            }
+            return string;
+        }
+
+        private void drawArcSegment(Graphics2D g2, double[] v, int compWidth, int compHeight)
+        {
+            if (v[6] == ArcSegmentContentElement.ARC)
+            {
+                double c_x = v[0];
+                double c_y = v[1];
+                double s_x = v[2];
+                double s_y = v[3];
+                double e_x = v[4];
+                double e_y = v[5];
+                Position2D start = new Position2D(s_x, compHeight - s_y);
+                Position2D end = new Position2D(e_x, compHeight - e_y);
+                Position2D center = new Position2D(c_x, compHeight - c_y);
+                double radius = Position2D.distance(start, center);
+
+//                drawArcAWT(g2, compHeight, c_x, c_y, start, end, center, radius);
+                drawArc(g2, compHeight, c_x, c_y, start, end, center, radius);
+            }
+            else if (v[6] == ArcSegmentContentElement.SEGMENT)
+            {
+                double xB = v[0];
+                double yB = v[1];
+                double xT = v[2];
+                double yT = v[3];
+                g2.drawLine((int) xB, compHeight - (int) yB, (int) xT, compHeight - (int) yT);
+            }
+        }
+
+        private void drawArc(Graphics2D g2, int compHeight, double c_x, double c_y, Position2D start, Position2D end, Position2D center, double radius)
+        {
+            int x = (int)(center.getX() - radius);
+            int y = (int)(center.getY() - radius);
+            int width = (int)(radius * 2);
+            int height = (int)(radius * 2);
+            int startAngle = (int)(180 / Math.PI * Math.atan2(start.getY() - center.getY(), start.getX() - center.getX()));
+            int endAngle = (int)(180 / Math.PI * Math.atan2(end.getY() - center.getY(), end.getX() - center.getX()));
+            g2.drawArc(x, compHeight - y, width, height, startAngle, endAngle);
+        }
+
+        private void drawArcAWT(Graphics2D g2, int compHeight, double c_x, double c_y, Position2D start, Position2D end,
+                Position2D center, double radius)
+        {
+            Position2D a = Position2D.minus(start, center);
+            Position2D b = Position2D.minus(end, center);
+            Position2D c = new Position2D(radius, 0.0); //0 degree
+//                double angle1 = Math.atan2(a.getY() - c.getY(), a.getX() - c.getX());
+//                double angle2 = Math.atan2(b.getY() - c.getY(), b.getX() - c.getX())
+//                double angle1 = Math.atan2(c.getY() - a.getY(), c.getX() - a.getX());
+//                double angle2 = Math.atan2(c.getY() - b.getY(), c.getX() - b.getX());
+            double angle1 = -Vector2D.computeAngle(new Vector2D(center, start), new Vector2D(center, new Position2D(10.0, center.getY())));
+            double angle2 = -Vector2D.computeAngle(new Vector2D(center, end), new Vector2D(center, new Position2D(10.0, center.getY())));
+
+            double angle1Deg = Math.toDegrees(angle1);
+            double angle2Deg = Math.toDegrees(angle2);
+            
+            int x = (int)(c_x - radius);
+            int y = (int)(c_y - radius);
+            int width = (int)radius * 2;
+            int height = (int) radius * 2;
+            int startAngle = (int)Math.toDegrees(angle1);
+            int arcAngle = (int)Math.toDegrees(angle2 - angle1);
+            // draw an arc
+            g2.drawArc(x, compHeight - y - height, width, height, (int)(startAngle + 180), arcAngle);
+            g2.setColor(Color.RED);
+            g2.drawOval((int)start.getX() - 5, (int)(start.getY() - 5), 10, 10);
+            g2.setColor(Color.BLUE);
+            g2.drawOval((int)end.getX() - 5, (int)(end.getY() - 5), 10, 10);
+            g2.setColor(Color.ORANGE);
+            g2.drawOval((int)center.getX() - 5, (int)(center.getY() - 5), 10, 10);
+            g2.drawString("hello", x, compHeight - y);
+            g2.setColor(Color.BLACK);
         }
 
         private void drawVector(Graphics2D g2, double[] v, double tipSize, int compWidth, int compHeight)
@@ -209,26 +333,31 @@ public class Vector2DVisualizer extends JFrame
 
         private double[] scale(double[] v, double zoomFactor)
         {
-            double[] result = new double[4];
+            //TODO some day I'll do this properly
+            double[] result = new double[v.length];
             for (int idx = 0; idx < result.length; idx++)
             {
-                result[idx] = v[idx] * zoomFactor;
+                //6th index carries type information so keep it like it is (I know this is superbad)
+                result[idx] = idx == 6 ? v[idx] : v[idx] * zoomFactor;
             }
             return result;
         }
 
         private double[] translate(double[] v, double xOffset, double yOffset)
         {
-            double[] result = new double[4];
-            result[0] = (int)(v[0] + xOffset);
-            result[1] = (int)(v[1] + yOffset);
-            result[2] = (int)(v[2] + xOffset);
-            result[3] = (int)(v[3] + yOffset);
+            double[] result = new double[v.length];
+            for(int idx = 0; idx < result.length - 1; idx+=2)
+            {
+                result[idx] = idx == 6 ? v[idx] : (int)(v[idx] + xOffset);
+                result[idx + 1] = idx == 6 ? v[idx] : (int)(v[idx + 1] + yOffset);
+            }
+            if(v.length == 7)
+            {
+                result[6] = v[6];
+            }
             return result;
         }
         
-        
-
         @Override
         public void mouseWheelMoved(MouseWheelEvent e)
         {
@@ -311,18 +440,25 @@ public class Vector2DVisualizer extends JFrame
         {
             
             Integer nextID = IDCreator.INSTANCE.getNextID();
-            accessContentMap().put(nextID, new ContentElement(vectors, color, stroke));
+            accessContentMap().put(nextID, new VectorContentElement(vectors, color, stroke));
             return nextID;
         }
 
         public Integer addVectorSet(Deque<Vector2D> vectors, Color color, Stroke stroke, double tipSize)
         {
             Integer nextID = IDCreator.INSTANCE.getNextID();
-            accessContentMap().put(nextID, new ContentElement(vectors, color, stroke, tipSize));
+            accessContentMap().put(nextID, new VectorContentElement(vectors, color, stroke, tipSize));
             return nextID;
         }
 
-        public Integer addContentElement(ContentElement updateableContent)
+        public int addArcsSegments(List<IArcsSegmentContainerElement> segments, Color color, Stroke stroke)
+        {
+            Integer nexID = IDCreator.INSTANCE.getNextID();
+            accessContentMap().put(nexID, new ArcSegmentContentElement(segments, color, stroke));
+            return nexID;
+        }
+
+        public Integer addContentElement(IContentElement updateableContent)
         {
             Integer nextID = IDCreator.INSTANCE.getNextID();
             accessContentMap().put(nextID, updateableContent);
@@ -331,49 +467,105 @@ public class Vector2DVisualizer extends JFrame
 
         public void updateContentElement(Integer id, Deque<Vector2D> vectors)
         {
-            ContentElement contentElement = accessContentMap().get(id);
+            VectorContentElement contentElement = (VectorContentElement)accessContentMap().get(id);
             contentElement.reset(vectors);
         }
 
         public void center()
         {
-            double minX = Double.POSITIVE_INFINITY;
-            double maxX = Double.NEGATIVE_INFINITY;
-            double minY = Double.POSITIVE_INFINITY;
-            double maxY = Double.NEGATIVE_INFINITY;
-            Collection<ContentElement> contentElements = _contentMap.values();
-            for (ContentElement curElem : contentElements)
+            _xScale = 1.0;
+            _yScale = 1.0;
+            Extrema extrema = new Extrema();
+            Collection<IContentElement> contentElements = _contentMap.values();
+            for (IContentElement curElem : contentElements)
             {
-                double[][] content = curElem.getContent();
-                for(int idx = 0; idx < content.length; idx++)
+                switch (curElem.getType())
+                {
+                    case VECTOR:
+                        computeExtremaForVectors(extrema, curElem);
+                        break;
+                    case ARC_SEGMENT:
+                        computeExtremaForArcSegments(extrema, curElem);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            double rangeX = extrema._maxX - extrema._minX;
+            double frameWidth = (double)getWidth();
+            double zoomX = frameWidth/rangeX;
+
+            double rangeY = extrema._maxY - extrema._minY;
+            double frameHeight = (double)getHeight();
+            double zoomY = frameHeight/rangeY;
+            
+            _zoomFactor = Math.min(zoomX, zoomY);
+            double centerX = (frameWidth - extrema._maxX * _zoomFactor) / 2.0;
+            double centerY = (frameHeight - extrema._maxY * _zoomFactor) / 2.0;
+            _xOffset = - extrema._minX * _zoomFactor + centerX;
+            _yOffset = - extrema._minY * _zoomFactor + centerY;
+            
+            _prevZoomFactor = _zoomFactor;
+        }
+
+        private void computeExtremaForArcSegments(Extrema extrema, IContentElement curElem)
+        {
+            double[][] content = curElem.getContent();
+            for(int idx = 0; idx < content.length; idx++)
+            {
+                double[] curArcOrSegment = content[idx];
+                if(curArcOrSegment[6] == ArcSegmentContentElement.ARC)
+                {
+                    //TODO this actually just creates a bounding box for the circle. the arc box will follow and is too much work right now
+                    double c_x = curArcOrSegment[0];
+                    double c_y = curArcOrSegment[1];
+                    double s_x = curArcOrSegment[2];
+                    double s_y = curArcOrSegment[3];
+                    double radius = Position2D.distance(c_x, c_y, s_x, s_y);
+
+                    int x = (int)(c_x - radius);
+                    int y = (int)(c_y - radius);
+                    int width = (int)radius * 2;
+                    int height = (int) radius * 2;
+                    extrema._minX = Math.min(extrema._minX, x);
+                    extrema._maxX = Math.max(extrema._maxX, x + width);
+                    
+                    extrema._minY = Math.min(extrema._minY, y);
+                    extrema._maxY = Math.max(extrema._maxY, y + height);
+                }
+                else if(curArcOrSegment[6] == ArcSegmentContentElement.SEGMENT)
                 {
                     double xB = content[idx][0];
                     double yB = content[idx][1];
                     double xT = content[idx][2];
                     double yT = content[idx][3];
-
-                    minX = Math.min(Math.min(minX, xB), xT);
-                    maxX = Math.max(Math.max(maxX, xB), xT);
                     
-                    minY = Math.min(Math.min(minY, yB), yT);
-                    maxY = Math.max(Math.max(maxY, yB), yT);
+                    extrema._minX = Math.min(Math.min(extrema._minX, xB), xT);
+                    extrema._maxX = Math.max(Math.max(extrema._maxX, xB), xT);
+                    
+                    extrema._minY = Math.min(Math.min(extrema._minY, yB), yT);
+                    extrema._maxY = Math.max(Math.max(extrema._maxY, yB), yT);
                 }
             }
-            double rangeX = maxX - minX;
-            double frameWidth = (double)getWidth();
-            double zoomX = frameWidth/rangeX;
+        }
 
-            double rangeY = maxY - minY;
-            double frameHeight = (double)getHeight();
-            double zoomY = frameHeight/rangeY;
-            
-            _zoomFactor = Math.min(zoomX, zoomY);
-            double centerX = (frameWidth - maxX * _zoomFactor) / 2.0;
-            double centerY = (frameHeight - maxY * _zoomFactor) / 2.0;
-            _xOffset = - minX * _zoomFactor + centerX;
-            _yOffset = - minY * _zoomFactor + centerY;
+        private void computeExtremaForVectors(Extrema extrema, IContentElement curUntypedElem)
+        {
+            VectorContentElement curElem = (VectorContentElement)curUntypedElem;
+            double[][] content = curElem.getContent();
+            for(int idx = 0; idx < content.length; idx++)
+            {
+                double xB = content[idx][0];
+                double yB = content[idx][1];
+                double xT = content[idx][2];
+                double yT = content[idx][3];
 
-            _prevZoomFactor = _zoomFactor;
+                extrema._minX = Math.min(Math.min(extrema._minX, xB), xT);
+                extrema._maxX = Math.max(Math.max(extrema._maxX, xB), xT);
+                
+                extrema._minY = Math.min(Math.min(extrema._minY, yB), yT);
+                extrema._maxY = Math.max(Math.max(extrema._maxY, yB), yT);
+            }
         }
 
         @Override
@@ -396,6 +588,34 @@ public class Vector2DVisualizer extends JFrame
         @Override
         public void keyReleased(KeyEvent e)
         {
+        }
+
+        /**
+         * doesn't work yet. Is supposed to automatically scale so everything is fitted to it's max
+         */
+        public void autoFit()
+        {
+            Extrema extrema = new Extrema();
+            Collection<IContentElement> contentElements = _contentMap.values();
+            for (IContentElement curElem : contentElements)
+            {
+                switch (curElem.getType())
+                {
+                    case VECTOR:
+                        computeExtremaForVectors(extrema, curElem);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            double rangeX = extrema._maxX - extrema._minX;
+            double frameWidth = (double)getWidth();
+
+            double rangeY = extrema._maxY - extrema._minY;
+            double frameHeight = (double)getHeight();
+
+            _xScale = frameWidth/rangeX;
+            _yScale = frameHeight/rangeY;
         }
     }
 
@@ -454,12 +674,18 @@ public class Vector2DVisualizer extends JFrame
         return _panel.addVectorSet(vectors, color, stroke, tipSize);
     }
     
+    public int addArcsSegments(List<IArcsSegmentContainerElement> segments, Color color, double width)
+    {
+        Stroke stroke = new BasicStroke((float)width);
+        return _panel.addArcsSegments(segments, color, stroke);
+    }
+    
     public int addVectorSet(Deque<Vector2D> vectors, Color color, Stroke stroke)
     {
         return _panel.addVectorSet(vectors, color, stroke);
     }
     
-    public int addContentElement(ContentElement updateableContent)
+    public int addContentElement(IContentElement updateableContent)
     {
         return _panel.addContentElement(updateableContent);
     }
@@ -477,6 +703,12 @@ public class Vector2DVisualizer extends JFrame
     public void centerContent()
     {
         _panel.center();
+        this.repaint();
+    }
+
+    public void autoFit()
+    {
+        _panel.autoFit();
         this.repaint();
     }
 }
