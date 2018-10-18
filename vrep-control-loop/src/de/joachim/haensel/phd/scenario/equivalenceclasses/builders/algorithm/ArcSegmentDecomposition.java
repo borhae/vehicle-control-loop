@@ -15,6 +15,11 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
 public class ArcSegmentDecomposition
 {
+    public List<IArcsSegmentContainerElement> createSegments(Deque<Vector2D> dataPoints, double thickness, double alphaMax, double nbCirclePoint, double isseTol)
+    {
+        return ngoSegmentationAlgorithm(dataPoints, thickness, alphaMax , nbCirclePoint , isseTol);
+    }
+
     public List<IArcsSegmentContainerElement> createSegments(Deque<Vector2D> dataPoints)
     {
         double thickness = 0.2;
@@ -58,7 +63,10 @@ public class ArcSegmentDecomposition
     {
         List<IArcsSegmentContainerElement> result = new ArrayList<>();
         List<Midpoint> midpointSet = TangentSpaceMidpointComputer.compute(tangentSpace);
-        
+        if(midpointSet.isEmpty())
+        {
+            return new ArrayList<>();
+        }
         MinimalBlurredSegment mbs = new MinimalBlurredSegment(thickness);
         PartialArc pArc = new PartialArc(isseTol);
 
@@ -140,7 +148,7 @@ public class ArcSegmentDecomposition
                 }
             }
         }
-        //TODO added because otherwise we'll miss the last assembled points
+//        //TODO added because otherwise we'll miss the last assembled points
         if(!pArc.isEmpty())
         {
             if(mbs.size() >= nbCirclePoint) //15
@@ -163,31 +171,8 @@ public class ArcSegmentDecomposition
                 result.add(pArc.toSegment()); //23
                 mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
             }
-            //maybe we need to take care of current mp_i? In this branch it only had been probed but not added to anything, so it's basically discarded
-            pArc.clear(mp_i.getAssociatedStartPosition());
-        }
-        if(!pArc.isEmpty())
-        {
-            if(mbs.size() >= nbCirclePoint) //15
-            {
-                //create arc from pArc // 16, 17
-                pArc.InitArcAndSegment(); // 16, 17
-                if(pArc.isArcsISSESmallerThanSegments()) //18
-                {
-                    result.add(pArc.toArc()); //19
-                    mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
-                }
-                else
-                {
-                    result.add(pArc.toSegment()); //21
-                    mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
-                }
-            }
-            else
-            {
-                result.add(pArc.toSegment()); //23
-                mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
-            }
+//          //maybe we need to take care of current mp_i? In this branch it only had been probed but not added to anything, so it's basically discarded
+//          pArc.clear(mp_i.getAssociatedStartPosition());
         }
         return result;
     }

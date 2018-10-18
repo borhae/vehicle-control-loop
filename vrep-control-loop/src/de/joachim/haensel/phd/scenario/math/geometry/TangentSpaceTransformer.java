@@ -33,6 +33,16 @@ public class TangentSpaceTransformer
             Position2D tn2 = new Position2D(tn2_x, tn2_y);
             result.add(new TangentSegment(tn1, tn2, p2.getBase()));
         }
+        Vector2D lastVect = dataPoints.pop();
+        Position2D p0 = lastVect.getBase();
+        Position2D p1 = lastVect.getTip();
+        TangentSegment lastTangentSegment = result.get(result.size() - 1);
+        
+        double tn1_x = lastTangentSegment.getTn2().getX() + Position2D.distance(p0, p1);
+        double tn1_y = lastTangentSegment.getTn2().getY();
+        Position2D tn1 = new Position2D(tn1_x, tn1_y);
+        
+        result.add(new TangentSegment(tn1, null, p1));
         return result;
     }
 

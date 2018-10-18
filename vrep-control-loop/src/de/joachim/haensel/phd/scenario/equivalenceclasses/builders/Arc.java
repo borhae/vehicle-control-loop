@@ -2,15 +2,52 @@ package de.joachim.haensel.phd.scenario.equivalenceclasses.builders;
 
 import java.util.List;
 
+import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
 public class Arc implements IArcsSegmentContainerElement
 {
+    public enum CenterAt
+    {
+        UNDEFINED("undefined"), LEFT("left"), RIGHT("right"), COLLINEAR("collinear");
+        
+        private String _stringRep;
+        
+        private CenterAt(String desc)
+        {
+            _stringRep = desc;
+        }
+
+        public static CenterAt create(double side)
+        {
+            if(side > 0)
+            {
+                return LEFT;
+            }
+            else if (side < 0)
+            {
+                return RIGHT;
+            }
+            else
+            {
+                //should never happen actually, but who knows...
+                return COLLINEAR;
+            }
+        }
+        
+        @Override
+        public String toString()
+        {
+            return _stringRep;
+        }
+    }
+
     private List<Position2D> _elements;
     private Position2D _center;
     private double _radius;
     private double _iSSE;
+    private CenterAt _centerTo;
 
     public Arc(List<Position2D> elements)
     {
@@ -18,16 +55,7 @@ public class Arc implements IArcsSegmentContainerElement
         _center = null; // if creation doesn't work, there is no center that makes sense
         _radius = Double.POSITIVE_INFINITY; // if creation doesn't work the radius is infinitely large
         _iSSE = Double.POSITIVE_INFINITY; // if creation doesn't work the error is infinite
-    }
-
-    public void setCenter(Position2D center)
-    {
-        _center = center;
-    }
-
-    public void setRadius(double radius)
-    {
-        _radius = radius;
+        _centerTo = CenterAt.UNDEFINED;
     }
 
     @Override
@@ -51,6 +79,7 @@ public class Arc implements IArcsSegmentContainerElement
 
         Position2D first = _elements.get(0);
         Position2D last = _elements.get(_elements.size() - 1);
+        Position2D middleElement = null;
 
         double curLowestError = Double.POSITIVE_INFINITY;
 
@@ -73,8 +102,14 @@ public class Arc implements IArcsSegmentContainerElement
                     _center = center;
                     _radius = averageRadius;
                     _iSSE = curLowestError;
+                    middleElement = cur;
                 }
             }
+        }
+        if(_center != null)
+        {
+            double side = Line2D.side(first, middleElement, _center);
+            _centerTo = CenterAt.create(side);
         }
     }
     
@@ -208,7 +243,7 @@ public class Arc implements IArcsSegmentContainerElement
         double angle1 = Math.atan2(a.getY(), a.getX());
         double angle2 = Math.atan2(b.getY(), b.getX());
         
-        String result = String.format("arc %f %f %f %f %f %f %f %f %f %f %f", 
+        String result = String.format("arc %f %f %f %f %f %f %f %f %f %f %f " + _centerTo.toString(), 
                 _center.getX(), _center.getY(), _radius, angle1, angle2, 
                 aNC.getX(), aNC.getY(), bNC.getX(), bNC.getY(), _center.getX(), _center.getY());
         return result;

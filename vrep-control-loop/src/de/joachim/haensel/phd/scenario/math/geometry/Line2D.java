@@ -146,7 +146,7 @@ public class Line2D
 
     /**
      * Computes on which side the other vector is in relation to this one
-     * Left and right means tha you're looking from a into the direction of b  
+     * Left and right means that you're looking from a into the direction of b  
      * and then this result will tell you whether you'll find m to your right or left side
 
      * @param a first point of line

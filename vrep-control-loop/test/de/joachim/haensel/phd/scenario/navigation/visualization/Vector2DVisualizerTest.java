@@ -89,10 +89,10 @@ public class Vector2DVisualizerTest
     {
         Vector2DVisualizer visualizer = new Vector2DVisualizer();
         List<IArcsSegmentContainerElement> input = new ArrayList<>();
-        List<Position2D> startEnd = Arrays.asList(new Position2D[]{new Position2D(0.0, 0.0), new Position2D(100.0, 0.0)});
-        Arc arc = new Arc(startEnd);
-        arc.setCenter(new Position2D(50.0, 0.0));
-        arc.setRadius(50.0);
+        List<Position2D> elements = Arrays.asList(new Position2D[]{new Position2D(0.0, 0.0), new Position2D(50, 50), new Position2D(100.0, 0.0)});
+        Arc arc = new Arc(elements);
+        arc.create(true);
+        input.add(arc);
         ArcSegmentContentElement visualizee = new ArcSegmentContentElement(input , Color.BLUE, new BasicStroke(1.0f));
         visualizer.addContentElement(visualizee);
 //        visualizer.centerContent();
