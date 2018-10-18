@@ -66,9 +66,12 @@ public class TangentSpaceTransformerTest
         input.add(new Vector2D(-1.0, 1.0, 1.0, -1.0));
         
         List<TangentSegment> expected = new ArrayList<>();
+        double sqrt2 = Math.sqrt(2);
         expected.add(new TangentSegment(null, new Position2D(0.0, 0.0), new Position2D(0.0, 0.0)));
-        expected.add(new TangentSegment(new Position2D(Math.sqrt(2), 0.0), new Position2D(Math.sqrt(2), - Math.PI / 2.0), new Position2D(1.0, 1.0)));
-        expected.add(new TangentSegment(new Position2D(2 * Math.sqrt(2), - Math.PI / 2.0), new Position2D(2 * Math.sqrt(2), - 2 * Math.PI / 2.0), new Position2D(2.0, 0.0)));
+        expected.add(new TangentSegment(new Position2D(1 * sqrt2, 0.0), new Position2D(1 * sqrt2, - Math.PI / 2.0), new Position2D(1.0, 1.0)));
+        expected.add(new TangentSegment(new Position2D(2 * sqrt2, - 1 * Math.PI / 2.0), new Position2D(2 * sqrt2, - 2 * Math.PI / 2.0), new Position2D(0.0, 2.0)));
+        expected.add(new TangentSegment(new Position2D(3 * sqrt2, - 2 * Math.PI / 2.0), new Position2D(3 * sqrt2, - 3 * Math.PI / 2.0), new Position2D(-1.0, 1.0)));
+        expected.add(new TangentSegment(new Position2D(4 * sqrt2, - 3 * Math.PI / 2.0), null, new Position2D(0.0, 0.0)));
         List<TangentSegment> actual = TangentSpaceTransformer.transform(input);
         assertThat(actual, is(expected));
     }
