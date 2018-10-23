@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsSegmentContainerElement;
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.ArcSegmentDecomposition;
+import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.ArcSegmentDecompositionAlgorithmByNgoEtAl;
 import de.joachim.haensel.phd.scenario.layerinterface.RandomMapPositionCreator;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Midpoint;
@@ -145,7 +145,7 @@ public class TestArcsSegmentDecomposition
             // TODO Auto-generated catch block
             exc.printStackTrace();
         }
-        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        ArcSegmentDecompositionAlgorithmByNgoEtAl segmenter = new ArcSegmentDecompositionAlgorithmByNgoEtAl();
         List<IArcsSegmentContainerElement> segments = segmenter.createSegments(dataPoints);
         List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
         List<Midpoint> midPoints = TangentSpaceMidpointComputer.compute(tangentSpace);
@@ -203,7 +203,7 @@ public class TestArcsSegmentDecomposition
             // TODO Auto-generated catch block
             exc.printStackTrace();
         }
-        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        ArcSegmentDecompositionAlgorithmByNgoEtAl segmenter = new ArcSegmentDecompositionAlgorithmByNgoEtAl();
         List<IArcsSegmentContainerElement> segments = segmenter.createSegments(dataPoints);
         List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
         List<Midpoint> midPoints = TangentSpaceMidpointComputer.compute(tangentSpace);
@@ -250,7 +250,7 @@ public class TestArcsSegmentDecomposition
         dataPoints.add(new Position2D(20.0, 10.0));
         dataPoints.add(new Position2D(30.0, 10.0));
         dataPoints.add(new Position2D(40.0, 10.0));
-        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        ArcSegmentDecompositionAlgorithmByNgoEtAl segmenter = new ArcSegmentDecompositionAlgorithmByNgoEtAl();
         List<IArcsSegmentContainerElement> segments = segmenter.createSegments(dataPoints);
         List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
         
@@ -311,7 +311,7 @@ public class TestArcsSegmentDecomposition
         dataPoints.addLast(new Vector2D(322.0, 7.0, 0.0, 0.0));
         dataPoints.addLast(new Vector2D(592.0, 119.0, 0.0, 0.0));
 
-        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        ArcSegmentDecompositionAlgorithmByNgoEtAl segmenter = new ArcSegmentDecompositionAlgorithmByNgoEtAl();
         List<IArcsSegmentContainerElement> segments = segmenter.createSegments(dataPoints);
         //TODO finish this test
     }
@@ -350,7 +350,7 @@ public class TestArcsSegmentDecomposition
         visualizer.centerContent();
         visualizer.updateVisuals();
 
-        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        ArcSegmentDecompositionAlgorithmByNgoEtAl segmenter = new ArcSegmentDecompositionAlgorithmByNgoEtAl();
         List<IArcsSegmentContainerElement> segments = segmenter.createSegments(slidingWindowsVectors.getFirst());
         ArcSegmentContentElement segmentVisualizee = new ArcSegmentContentElement(segments, Color.BLUE, new BasicStroke(3.0f));
         visualizer.addContentElement(segmentVisualizee);
@@ -398,7 +398,7 @@ public class TestArcsSegmentDecomposition
         }
         System.out.println("finshed writing route");
 
-        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        ArcSegmentDecompositionAlgorithmByNgoEtAl segmenter = new ArcSegmentDecompositionAlgorithmByNgoEtAl();
         List<IArcsSegmentContainerElement> segments = segmenter.createSegments(firstWindow);
         List<String> elementsAsString = segments.stream().map(element -> element.toPyPlotString()).collect(Collectors.toList());
         
@@ -456,7 +456,7 @@ public class TestArcsSegmentDecomposition
         }
         System.out.println("finshed writing route");
 
-        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        ArcSegmentDecompositionAlgorithmByNgoEtAl segmenter = new ArcSegmentDecompositionAlgorithmByNgoEtAl();
         List<IArcsSegmentContainerElement> segments = segmenter.createSegments(firstWindow);
         List<String> elementsAsString = segments.stream().map(element -> element.toPyPlotString()).collect(Collectors.toList());
         
@@ -514,7 +514,7 @@ public class TestArcsSegmentDecomposition
         }
         System.out.println("finshed writing route");
 
-        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        ArcSegmentDecompositionAlgorithmByNgoEtAl segmenter = new ArcSegmentDecompositionAlgorithmByNgoEtAl();
         List<IArcsSegmentContainerElement> segments = segmenter.createSegments(firstWindow);
         List<String> elementsAsString = segments.stream().map(element -> element.toPyPlotString()).collect(Collectors.toList());
         
@@ -589,7 +589,7 @@ public class TestArcsSegmentDecomposition
         }
         System.out.println("finshed writing segmentation");
         
-        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
+        ArcSegmentDecompositionAlgorithmByNgoEtAl segmenter = new ArcSegmentDecompositionAlgorithmByNgoEtAl();
         List<IArcsSegmentContainerElement> segments = segmenter.createSegments(routeVectors);
         List<String> elementsAsString = segments.stream().map(element -> element.toPyPlotString()).collect(Collectors.toList());
         
@@ -636,8 +636,9 @@ public class TestArcsSegmentDecomposition
         double alphaMax = Math.PI / 4.0;
         double nbCirclePoint = 3;
         double isseTol = 4.0;
+        double maxRadius = 100000;
         
-        slidingWindows.stream().map(IndexAdder.indexed()).forEach(curWindow -> decomposeWindow(curWindow.v(), curWindow.idx(), thickness, alphaMax, nbCirclePoint, isseTol, "./res/equivalencesegmentationtest/segmentationprogression/sampleWholeRoute", "./res/equivalencesegmentationtest/segmentationprogression/sampleWholeRouteTangentSpace", "./res/equivalencesegmentationtest/segmentationprogression/sampleWholeRouteSegmentation"));
+        slidingWindows.stream().map(IndexAdder.indexed()).forEach(curWindow -> decomposeWindow(curWindow.v(), curWindow.idx(), thickness, alphaMax, nbCirclePoint, isseTol, maxRadius, "./res/equivalencesegmentationtest/segmentationprogression/sampleWholeRoute", "./res/equivalencesegmentationtest/segmentationprogression/sampleWholeRouteTangentSpace", "./res/equivalencesegmentationtest/segmentationprogression/sampleWholeRouteSegmentation"));
     }
     
     @Test
@@ -669,17 +670,18 @@ public class TestArcsSegmentDecomposition
         double alphaMax = Math.PI / 4.0;
         double nbCirclePoint = 3;
         double isseTol = 4.0;
+        double maxRadius = 100000;
         slidingWindows = slidingWindows.subList(0, 4);
         String basePath = "./res/equivalencesegmentationtest/segmentationprogression_short/";
         Consumer<? super IndexAdder<List<Trajectory>>> decompose = 
-                curWindow -> decomposeWindow(curWindow.v(), curWindow.idx(), thickness, alphaMax, nbCirclePoint, isseTol, 
+                curWindow -> decomposeWindow(curWindow.v(), curWindow.idx(), thickness, alphaMax, nbCirclePoint, isseTol, maxRadius,
                         basePath + "sampleWholeRoute", basePath + "sampleWholeRouteTangentSpace", basePath + "sampleWholeRouteSegmentation");
         slidingWindows.stream().map(IndexAdder.indexed()).forEach(decompose);
     }
 
     private List<IArcsSegmentContainerElement> decomposeWindow(List<Trajectory> curWindow, int curIdx, 
             double thickness, double alphaMax, double nbCirclePoint, double isseTol, 
-            String routeFileName, String tangentSpaceFileName, String decompositionFileName)
+            double maxRadius, String routeFileName, String tangentSpaceFileName, String decompositionFileName)
     {
         String counter = String.format("%03d", curIdx);
         Deque<Vector2D> routeVectors = curWindow.stream().map(trajectory -> trajectory.getVector()).collect(Collectors.toCollection(new Supplier<Deque<Vector2D>>() {
@@ -714,8 +716,8 @@ public class TestArcsSegmentDecomposition
             exc.printStackTrace();
         }
         
-        ArcSegmentDecomposition segmenter = new ArcSegmentDecomposition();
-        List<IArcsSegmentContainerElement> segments = segmenter.createSegments(routeVectors, thickness, alphaMax, nbCirclePoint, isseTol);
+        ArcSegmentDecompositionAlgorithmByNgoEtAl segmenter = new ArcSegmentDecompositionAlgorithmByNgoEtAl();
+        List<IArcsSegmentContainerElement> segments = segmenter.createSegments(routeVectors, thickness, alphaMax, nbCirclePoint, isseTol, maxRadius);
         List<String> elementsAsString = segments.stream().map(element -> element.toPyPlotString()).collect(Collectors.toList());
         
         try

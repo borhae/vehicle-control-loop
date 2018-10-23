@@ -33,60 +33,50 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.streamextensions.IndexAdder;
 
 @RunWith(Parameterized.class)
-public class ParameterizedTestsArcsSegmentsDecomposition
+public class Test3NavigationRouteDecomposition
 {
     private double _thickness;
     private double _alphaMax;
     private double _nbCirclePoint;
     private double _isseTol; // if bigger than 1 it favours arcs, smaller than 1 segments
     private double _maxRadius;
+
     private String _suffix;
+    private Position2D _start;
+    private Position2D _end;
     
     @Parameterized.Parameters
     public static Collection<Object[]> parameters()
     {
         return Arrays.asList(new Object[][]
         {
-//            {1.0, Math.PI / 4.0, 3, 4.0, "1_"},
-//            {0.5, Math.PI / 4.0, 3, 4.0, "2_"},
-//            {0.4, Math.PI / 4.0, 3, 4.0, "3_"},
-//            {0.2, Math.PI / 4.0, 3, 4.0, "4_"},
-//            {0.1, Math.PI / 4.0, 3, 4.0, "5_"},
-//            {0.4, Math.PI / 4.0, 3, 2.0, "6_"},
-//            {0.2, Math.PI / 4.0, 3, 2.0, "7_"},
-//            {0.8, Math.PI / 4.0, 3, 2.0, "8_"},
-//            {0.3, Math.PI / 4.0, 3, 2.0, "9_"},
-//            {0.3, Math.PI / 4.0, 3, 1.5, "10_"},
-//            {0.3, Math.PI / 4.0, 3, 0.5, "11_"},
-//            {0.3, Math.PI / 4.0, 3, 0.05, "12_"},
-            {0.3, Math.PI / 4.0, 3, 1.0, "13_"}, // -> best so far: don't prefer arcs over segments or the other way round, small 
-//            {0.2, Math.PI / 4.0, 3, 1.2, "14_"},
-            {0.2, Math.PI, 3, 1.2, "15_"},
-            {0.2, Math.PI / 2.0, 3, 1.2, "16_"},
-            {0.2, Math.PI / 4.0, 3, 1.2, "17_"},
-            {0.2, Math.PI / 8.0, 3, 1.2, "18_"}
+            {0.3, Math.PI / 4.0, 3, 1.0, 100000, new Position2D(5531.34,5485.96), new Position2D(5879.87,4886.08), "13_R1_"},
+            {0.3, Math.PI / 4.0, 3, 1.0, 100000, new Position2D(6045.44, 2991.89), new Position2D(5867.1, 4934.41), "13_R2_"}, 
+            {0.3, Math.PI / 4.0, 3, 1.0, 100000, new Position2D(2834.28, 4714.20), new Position2D(5809.49, 2938.12), "13_R3_"}, 
         });
     }
 
-    public ParameterizedTestsArcsSegmentsDecomposition(double thickness, double alphaMax, double nbCirclePoint, double isseTol, double maxRadius, String suffix)
+    public Test3NavigationRouteDecomposition(double thickness, double alphaMax, double nbCirclePoint, double isseTol, double maxRadius, Position2D start, Position2D end, String suffix)
     {
         _thickness = thickness;
         _alphaMax = alphaMax;
         _nbCirclePoint = nbCirclePoint;
         _isseTol = isseTol;
-        _suffix = suffix;
         _maxRadius = maxRadius;
+        _start = start;
+        _end = end;
+        _suffix = suffix;
     }
     
     @Test
-    public void testMultipleDecompositinosTrajectoryBeginningOfRoute()
+    public void testARoute()
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
         TMatrix centerTransformMatrix = roadMap.center(0.0, 0.0);
 
         //uncentered positions measured by sumo net-edit tool
-        Position2D startPosition = new Position2D(5531.34,5485.96);
-        Position2D destinationPosition = new Position2D(5879.87,4886.08);
+        Position2D startPosition = _start;
+        Position2D destinationPosition = _end;
         
         startPosition.transform(centerTransformMatrix);
         destinationPosition.transform(centerTransformMatrix);
@@ -103,8 +93,28 @@ public class ParameterizedTestsArcsSegmentsDecomposition
         
         int windowSize = 30;
         List<List<Trajectory>> slidingWindows = createSlidingWindows(allDataPoints, windowSize, allDataPoints.size() / windowSize);
-        slidingWindows = slidingWindows.subList(380, 700);
-        String basePath = "./res/equivalencesegmentationtest/segmentationprogression_short/";
+        String basePath = "./res/equivalencesegmentationtest/differentroutessegmentation/";
+        
+        Deque<Vector2D> routeVectors = allDataPoints.stream().map(trajectory -> trajectory.getVector()).collect(Collectors.toCollection(new Supplier<Deque<Vector2D>>() {
+            @Override
+            public Deque<Vector2D> get()
+            {
+                return new LinkedList<>();
+            }
+        }));
+        List<String> routeAsString = routeVectors.stream().map(vec -> vec.getBase().toPyPlotString()).collect(Collectors.toList());
+        
+        try
+        {
+            Files.write(new File(basePath + "sampleWholeRoute" + _suffix + ".pyplot").toPath(), routeAsString, Charset.defaultCharset());
+        }
+        catch (IOException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
+ 
+        
         Consumer<? super IndexAdder<List<Trajectory>>> decompose = 
                 curWindow -> decomposeWindow(curWindow.v(), curWindow.idx(), _thickness, _alphaMax, _nbCirclePoint, _isseTol, _maxRadius,
                         basePath + "sampleWholeRoute" + _suffix, basePath + "sampleWholeRouteTangentSpace" + _suffix, basePath + "sampleWholeRouteSegmentation" + _suffix);

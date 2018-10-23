@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 
 public class TangentSpaceTransformer
 {
+    private static final double MINIMUM_NORMAL_VECTOR_DIFFERENCE = 0.000000000000001;
+
     /**
      * Compute tangent space representation of a list of input-vectors (see "An Algorithm to Decompose noisy digital contours", by Phuc Ngo, Hayat Nasser, Isabelle Debled-Rennesson, Bertrand Kerautret)
      * @param dataPoints a polygon defined by a queue of vectors
@@ -29,7 +31,11 @@ public class TangentSpaceTransformer
             double tn1_y = lastTangentSegment.getTn2().getY();
             Position2D tn1 = new Position2D(tn1_x, tn1_y);
             double tn2_x = tn1.getX();
-            double tn2_y = tn1_y + Vector2D.computeSplitAngle(p1, p2);
+            double tn2_y = tn1_y;
+            if(Position2D.distance(p1.getNorm(), p2.getNorm()) >= MINIMUM_NORMAL_VECTOR_DIFFERENCE)
+            {
+                tn2_y += Vector2D.computeSplitAngle(p1, p2);
+            } // if normal vectors are too similar we just add an angle of zero
             Position2D tn2 = new Position2D(tn2_x, tn2_y);
             result.add(new TangentSegment(tn1, tn2, p2.getBase()));
         }

@@ -233,6 +233,10 @@ public class Arc implements IArcsSegmentContainerElement
         }
     }
 
+    /**
+     * Format:
+     * arc center_x, center_y, radius, angle1, angle2, p_0_x, p_0_y, p_n_x, p_n_y, c_x, _c_y
+     */
     @Override
     public String toPyPlotString()
     {

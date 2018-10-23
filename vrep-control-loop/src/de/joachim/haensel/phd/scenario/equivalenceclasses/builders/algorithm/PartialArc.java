@@ -102,4 +102,9 @@ public class PartialArc
     {
         return _elements.isEmpty();
     }
+
+    public boolean radiusBelow(double maxRadius)
+    {
+        return _arc.getRadius() < maxRadius;
+    }
 }

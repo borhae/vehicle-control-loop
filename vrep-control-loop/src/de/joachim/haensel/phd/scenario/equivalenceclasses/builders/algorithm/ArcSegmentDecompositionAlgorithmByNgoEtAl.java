@@ -13,11 +13,19 @@ import de.joachim.haensel.phd.scenario.math.geometry.TangentSpaceMidpointCompute
 import de.joachim.haensel.phd.scenario.math.geometry.TangentSpaceTransformer;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
-public class ArcSegmentDecomposition
+/**
+ * Adapted version of Ngo et. al algorithm for decomposition of noisy digital contours
+ * "An algorithm to decompose noisy digital contours"
+ * The following changes have been made:
+ * 1.) Adatpted segment vs. arc condition: in addition to the ISSE, the radius of the arc is taken into account. If it exceeds parameter maxRadius the result will be a segment 
+ * @author Joachim Haensel
+ *
+ */
+public class ArcSegmentDecompositionAlgorithmByNgoEtAl
 {
-    public List<IArcsSegmentContainerElement> createSegments(Deque<Vector2D> dataPoints, double thickness, double alphaMax, double nbCirclePoint, double isseTol)
+    public List<IArcsSegmentContainerElement> createSegments(Deque<Vector2D> dataPoints, double thickness, double alphaMax, double nbCirclePoint, double isseTol, double maxRadius)
     {
-        return ngoSegmentationAlgorithm(dataPoints, thickness, alphaMax , nbCirclePoint , isseTol);
+        return ngoSegmentationAlgorithm(dataPoints, thickness, alphaMax , nbCirclePoint , isseTol, maxRadius);
     }
 
     public List<IArcsSegmentContainerElement> createSegments(Deque<Vector2D> dataPoints)
@@ -26,7 +34,8 @@ public class ArcSegmentDecomposition
         double alphaMax = Math.PI / 4.0;
         double nbCirclePoint = 3;
         double isseTol = 4.0;
-        return ngoSegmentationAlgorithm(dataPoints, thickness, alphaMax , nbCirclePoint , isseTol);
+        double maxRadius = 10000;
+        return ngoSegmentationAlgorithm(dataPoints, thickness, alphaMax , nbCirclePoint , isseTol, maxRadius);
     }
     
     public List<IArcsSegmentContainerElement> createSegments(List<Position2D> dataPoints)
@@ -35,19 +44,20 @@ public class ArcSegmentDecomposition
         double alphaMax = Math.PI / 4.0;
         double nbCirclePoint = 3;
         double isseTol = 4.0;
-        return ngoSegmentationAlgorithm(dataPoints, thickness, alphaMax , nbCirclePoint , isseTol);
+        double maxRadius = 10000;
+        return ngoSegmentationAlgorithm(dataPoints, thickness, alphaMax , nbCirclePoint , isseTol, maxRadius);
     }
 
-    private List<IArcsSegmentContainerElement> ngoSegmentationAlgorithm(List<Position2D> dataPoints, double thickness, double alphaMax, double nbCirclePoint, double isseTol)
+    private List<IArcsSegmentContainerElement> ngoSegmentationAlgorithm(List<Position2D> dataPoints, double thickness, double alphaMax, double nbCirclePoint, double isseTol, double maxRadius)
     {
         List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
-        return inputFormatIndependentNgoSegmentationAlgorithm(tangentSpace, thickness, alphaMax, nbCirclePoint, isseTol);
+        return inputFormatIndependentNgoSegmentationAlgorithm(tangentSpace, thickness, alphaMax, nbCirclePoint, isseTol, maxRadius);
     }
 
-    private List<IArcsSegmentContainerElement> ngoSegmentationAlgorithm(Deque<Vector2D> dataPoints, double thickness, double alphaMax, double nbCirclePoint, double isseTol)
+    private List<IArcsSegmentContainerElement> ngoSegmentationAlgorithm(Deque<Vector2D> dataPoints, double thickness, double alphaMax, double nbCirclePoint, double isseTol, double maxRadius)
     {
         List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
-        return inputFormatIndependentNgoSegmentationAlgorithm(tangentSpace, thickness, alphaMax, nbCirclePoint, isseTol);
+        return inputFormatIndependentNgoSegmentationAlgorithm(tangentSpace, thickness, alphaMax, nbCirclePoint, isseTol, maxRadius);
     }
 
     /**
@@ -57,9 +67,10 @@ public class ArcSegmentDecomposition
      * @param alphaMax
      * @param nbCirclePoint
      * @param isseTol
+     * @param maxRadius 
      * @return
      */
-    private List<IArcsSegmentContainerElement> inputFormatIndependentNgoSegmentationAlgorithm(List<TangentSegment> tangentSpace, double thickness, double alphaMax, double nbCirclePoint, double isseTol)
+    private List<IArcsSegmentContainerElement> inputFormatIndependentNgoSegmentationAlgorithm(List<TangentSegment> tangentSpace, double thickness, double alphaMax, double nbCirclePoint, double isseTol, double maxRadius)
     {
         List<IArcsSegmentContainerElement> result = new ArrayList<>();
         List<Midpoint> midpointSet = TangentSpaceMidpointComputer.compute(tangentSpace);
@@ -91,7 +102,7 @@ public class ArcSegmentDecomposition
                     {
                         //create arc from pArc // 16, 17
                         pArc.InitArcAndSegment(); // 16, 17
-                        if(pArc.isArcsISSESmallerThanSegments()) //18
+                        if(pArc.isArcsISSESmallerThanSegments() && pArc.radiusBelow(maxRadius)) //18
                         {
                             result.add(pArc.toArc()); //19
                             mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
@@ -127,7 +138,7 @@ public class ArcSegmentDecomposition
                     {
                         //create arc from pArc // 16, 17
                         pArc.InitArcAndSegment(); // 16, 17
-                        if(pArc.isArcsISSESmallerThanSegments()) //18
+                        if(pArc.isArcsISSESmallerThanSegments() && pArc.radiusBelow(maxRadius)) //18
                         {
                             result.add(pArc.toArc()); //19
                             mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
@@ -155,7 +166,7 @@ public class ArcSegmentDecomposition
             {
                 //create arc from pArc // 16, 17
                 pArc.InitArcAndSegment(); // 16, 17
-                if(pArc.isArcsISSESmallerThanSegments()) //18
+                if(pArc.isArcsISSESmallerThanSegments() && pArc.radiusBelow(maxRadius)) //18
                 {
                     result.add(pArc.toArc()); //19
                     mbs.clear();// TODO added by me. I guess we need to clear since we want to start with a new one?
