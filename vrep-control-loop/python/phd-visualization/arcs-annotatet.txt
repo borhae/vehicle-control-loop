@@ -1,0 +1,419 @@
+['..\\..\\..\\git\\vrep-control-loop\\vrep-control-loop\\res\\equivalencesegmentationtest\\segmentationprogression\\sampleWholeRoute.pyplot', '..\\..\\..\\git\\vrep-control-loop\\vrep-control-loop\\res\\equivalencesegmentationtest\\segmentationprogression\\sampleWholeRouteSegmentation.pyplot']
+True
+theta1: 2.962577, theta2: -2.865947, dir: left, idx: 0 wrong
+theta1: 3.101677, theta2: -2.921306, dir: left, idx: 1 wrong
+theta1: -3.040069, theta2: -2.984901, dir: left, idx: 2 
+theta1: -3.001674, theta2: -3.000321, dir: left, idx: 50 
+theta1: -3.002442, theta2: -2.998497, dir: left, idx: 51 
+theta1: -3.00321, theta2: -2.996672, dir: left, idx: 52
+theta1: -3.003978, theta2: -2.994848, dir: left, idx: 53
+theta1: -3.004747, theta2: -2.993024, dir: left, idx: 54
+theta1: -3.004918, theta2: -2.991796, dir: left, idx: 55
+theta1: -3.005579, theta2: -2.990079, dir: left, idx: 56
+theta1: -3.006239, theta2: -2.988363, dir: left, idx: 57
+theta1: -3.00612, theta2: -2.987425, dir: left, idx: 58 
+theta1: -3.005943, theta2: -2.986546, dir: left, idx: 59 
+theta1: -3.006433, theta2: -2.985, dir: left, idx: 60 
+theta1: -3.006141, theta2: -2.984235, dir: left, idx: 61 
+theta1: -3.00582, theta2: -2.983501, dir: left, idx: 62 
+theta1: -3.005437, theta2: -2.982827, dir: left, idx: 63 
+theta1: -3.004725, theta2: -2.982483, dir: left, idx: 64 
+theta1: -3.003987, theta2: -2.982164, dir: left, idx: 65 
+theta1: -3.00322, theta2: -2.981875, dir: left, idx: 66 
+theta1: -3.001673, theta2: -2.982366, dir: left, idx: 67 
+theta1: -3.000791, theta2: -2.982192, dir: left, idx: 68 
+theta1: -2.999849, theta2: -2.982077, dir: left, idx: 69 
+theta1: -2.998133, theta2: -2.982737, dir: left, idx: 70 
+theta1: -2.996417, theta2: -2.983397, dir: left, idx: 71 
+theta1: -2.995184, theta2: -2.983574, dir: left, idx: 72 
+theta1: -2.993359, theta2: -2.984342, dir: left, idx: 73 
+theta1: -2.991535, theta2: -2.98511, dir: left, idx: 74 
+theta1: -2.989711, theta2: -2.985878, dir: left, idx: 75 
+theta1: -2.987886, theta2: -2.986646, dir: left, idx: 76 
+theta1: 0.154579, theta2: 0.154578, dir: right, idx: 148 
+theta1: 0.15458, theta2: 0.154575, dir: right, idx: 149
+theta1: 0.154582, theta2: 0.154572, dir: right, idx: 150
+theta1: 0.154583, theta2: 0.154569, dir: right, idx: 151
+theta1: 0.154584, theta2: 0.154567, dir: right, idx: 152
+theta1: 0.154584, theta2: 0.154565, dir: right, idx: 153
+theta1: 0.154585, theta2: 0.154562, dir: right, idx: 154
+theta1: 0.154586, theta2: 0.154559, dir: right, idx: 155
+theta1: 0.154586, theta2: 0.154558, dir: right, idx: 156
+theta1: 0.154586, theta2: 0.154557, dir: right, idx: 157
+theta1: 0.154587, theta2: 0.154554, dir: right, idx: 158
+theta1: 0.154586, theta2: 0.154553, dir: right, idx: 159
+theta1: 0.154586, theta2: 0.154552, dir: right, idx: 160
+theta1: 0.154585, theta2: 0.154551, dir: right, idx: 161
+theta1: 0.154584, theta2: 0.15455, dir: right, idx: 162
+theta1: 0.154583, theta2: 0.154549, dir: right, idx: 163
+theta1: 0.154582, theta2: 0.154549, dir: right, idx: 164
+theta1: 0.15458, theta2: 0.15455, dir: right, idx: 165
+theta1: 0.154578, theta2: 0.15455, dir: right, idx: 166
+theta1: 0.154576, theta2: 0.15455, dir: right, idx: 167
+theta1: 0.154574, theta2: 0.15455, dir: right, idx: 168
+theta1: 0.154572, theta2: 0.154551, dir: right, idx: 169
+theta1: 0.15457, theta2: 0.154552, dir: right, idx: 170
+theta1: 0.154567, theta2: 0.154553, dir: right, idx: 171
+theta1: 0.154564, theta2: 0.154554, dir: right, idx: 172
+theta1: 0.154562, theta2: 0.154555, dir: right, idx: 173
+theta1: 0.154559, theta2: 0.154556, dir: right, idx: 174
+theta1: 0.154668, theta2: 0.154293, dir: right, idx: 199
+theta1: 0.154811, theta2: 0.153954, dir: right, idx: 200
+theta1: 0.154954, theta2: 0.153615, dir: right, idx: 201
+theta1: 0.155097, theta2: 0.153276, dir: right, idx: 202
+theta1: 0.155239, theta2: 0.152936, dir: right, idx: 203
+theta1: 0.155266, theta2: 0.152713, dir: right, idx: 204
+theta1: 0.155389, theta2: 0.152394, dir: right, idx: 205
+theta1: 0.155379, theta2: 0.152207, dir: right, idx: 206
+theta1: 0.155485, theta2: 0.151905, dir: right, idx: 207
+theta1: 0.155448, theta2: 0.151746, dir: right, idx: 208
+theta1: 0.155404, theta2: 0.151594, dir: right, idx: 209
+theta1: 0.155482, theta2: 0.151319, dir: right, idx: 210
+theta1: 0.155397, theta2: 0.151208, dir: right, idx: 211
+theta1: 0.155266, theta2: 0.151143, dir: right, idx: 212
+theta1: 0.155131, theta2: 0.151081, dir: right, idx: 213
+theta1: 0.154991, theta2: 0.151025, dir: right, idx: 214
+theta1: 0.154845, theta2: 0.150974, dir: right, idx: 215
+theta1: 0.154692, theta2: 0.150931, dir: right, idx: 216
+theta1: 0.15439, theta2: 0.151037, dir: right, idx: 217
+theta1: 0.15421, theta2: 0.15102, dir: right, idx: 218
+theta1: 0.153891, theta2: 0.151143, dir: right, idx: 219
+theta1: 0.153572, theta2: 0.151265, dir: right, idx: 220
+theta1: 0.153779, theta2: 0.150026, dir: right, idx: 221
+theta1: 0.15573, theta2: 0.145179, dir: right, idx: 222
+theta1: 0.157027, theta2: 0.140987, dir: right, idx: 223
+theta1: 0.158727, theta2: 0.136392, dir: right, idx: 224
+theta1: 0.160427, theta2: 0.131796, dir: right, idx: 225
+theta1: 0.160866, theta2: 0.128614, dir: right, idx: 226
+theta1: 0.162553, theta2: 0.124227, dir: right, idx: 227
+theta1: 0.164241, theta2: 0.11984, dir: right, idx: 228
+theta1: 0.163987, theta2: 0.117394, dir: right, idx: 229
+theta1: 0.16544, theta2: 0.113241, dir: right, idx: 230
+theta1: 0.164829, theta2: 0.111152, dir: right, idx: 231
+theta1: 0.16412, theta2: 0.109161, dir: right, idx: 232
+theta1: 0.16333, theta2: 0.107251, dir: right, idx: 233
+theta1: 0.162475, theta2: 0.105407, dir: right, idx: 234
+theta1: 0.161497, theta2: 0.103685, dir: right, idx: 235
+theta1: 0.159644, theta2: 0.102838, dir: right, idx: 236
+theta1: 0.15772, theta2: 0.102062, dir: right, idx: 237
+theta1: 0.153767, theta2: 0.103315, dir: right, idx: 238
+theta1: 0.151554, theta2: 0.102829, dir: right, idx: 239
+theta1: 0.1474, theta2: 0.104282, dir: right, idx: 240
+theta1: 0.14481, theta2: 0.104173, dir: right, idx: 241
+theta1: 0.140423, theta2: 0.105861, dir: right, idx: 242
+theta1: 0.137331, theta2: 0.106253, dir: right, idx: 243
+theta1: 0.132668, theta2: 0.108217, dir: right, idx: 244
+theta1: 0.128005, theta2: 0.11018, dir: right, idx: 245
+theta1: 0.123342, theta2: 0.112144, dir: right, idx: 246
+theta1: 0.11868, theta2: 0.114107, dir: right, idx: 247
+theta1: 0.117058, theta2: 0.111671, dir: right, idx: 294
+theta1: 0.118797, theta2: 0.107541, dir: right, idx: 295
+theta1: 0.120536, theta2: 0.103411, dir: right, idx: 296
+theta1: 0.122276, theta2: 0.09928, dir: right, idx: 297
+theta1: 0.122812, theta2: 0.096353, dir: right, idx: 298
+theta1: 0.124307, theta2: 0.092467, dir: right, idx: 299
+theta1: 0.125802, theta2: 0.088581, dir: right, idx: 300
+theta1: 0.125658, theta2: 0.086333, dir: right, idx: 301
+theta1: 0.126945, theta2: 0.082654, dir: right, idx: 302
+theta1: 0.126474, theta2: 0.080734, dir: right, idx: 303
+theta1: 0.125906, theta2: 0.078911, dir: right, idx: 304
+theta1: 0.125259, theta2: 0.077166, dir: right, idx: 305
+theta1: 0.125273, theta2: 0.074761, dir: right, idx: 306
+theta1: 0.123783, theta2: 0.07386, dir: right, idx: 307
+theta1: 0.122003, theta2: 0.073248, dir: right, idx: 308
+theta1: 0.120281, theta2: 0.072579, dir: right, idx: 309
+theta1: 0.118483, theta2: 0.071985, dir: right, idx: 310
+theta1: 0.116592, theta2: 0.071485, dir: right, idx: 311
+theta1: 0.112913, theta2: 0.072772, dir: right, idx: 312
+theta1: 0.110699, theta2: 0.072595, dir: right, idx: 313
+theta1: 0.106813, theta2: 0.074089, dir: right, idx: 314
+theta1: 0.102927, theta2: 0.075584, dir: right, idx: 315
+theta1: 0.10004, theta2: 0.07608, dir: right, idx: 316
+theta1: 0.095909, theta2: 0.07782, dir: right, idx: 317
+theta1: 0.091779, theta2: 0.079559, dir: right, idx: 318
+theta1: 0.087649, theta2: 0.081298, dir: right, idx: 319
+theta1: 0.083519, theta2: 0.083037, dir: right, idx: 320
+theta1: 0.083838, theta2: 0.081616, dir: right, idx: 336
+theta1: 0.087296, theta2: 0.073406, dir: right, idx: 337
+theta1: 0.090754, theta2: 0.065193, dir: right, idx: 338
+theta1: 0.094214, theta2: 0.056979, dir: right, idx: 339
+theta1: 0.097675, theta2: 0.048763, dir: right, idx: 340
+theta1: 0.09861, theta2: 0.043073, dir: right, idx: 341
+theta1: 0.101584, theta2: 0.035343, dir: right, idx: 342
+theta1: 0.104558, theta2: 0.027612, dir: right, idx: 343
+theta1: 0.10416, theta2: 0.023254, dir: right, idx: 344
+theta1: 0.106722, theta2: 0.015936, dir: right, idx: 345
+theta1: 0.105687, theta2: 0.012213, dir: right, idx: 346
+theta1: 0.104473, theta2: 0.00867, dir: right, idx: 347
+theta1: 0.103114, theta2: 0.005272, dir: right, idx: 348
+theta1: 0.101635, theta2: 0.001994, dir: right, idx: 349
+theta1: 0.100055, theta2: -0.001185, dir: right, idx: 350
+theta1: 0.09761, theta2: -0.003497, dir: right, idx: 351
+theta1: 0.09095, theta2: -0.001595, dir: right, idx: 352
+theta1: 0.087291, theta2: -0.002692, dir: right, idx: 353
+theta1: 0.083434, theta2: -0.003592, dir: right, idx: 354
+theta1: 0.076115, theta2: -0.00103, dir: right, idx: 355
+theta1: 0.0716, theta2: -0.001272, dir: right, idx: 356
+theta1: 0.06387, theta2: 0.001702, dir: right, idx: 357
+theta1: 0.05848, theta2: 0.002336, dir: right, idx: 358
+theta1: 0.050264, theta2: 0.005797, dir: right, idx: 359
+theta1: 0.042049, theta2: 0.009257, dir: right, idx: 360
+theta1: 0.033836, theta2: 0.012717, dir: right, idx: 361
+theta1: 0.025624, theta2: 0.016175, dir: right, idx: 362
+theta1: 3.12476, theta2: -3.038552, dir: left, idx: 382 wrong
+theta1: 3.082386, theta2: -2.941415, dir: left, idx: 383 wrong
+theta1: 3.037762, theta2: -2.840913, dir: left, idx: 384 wrong
+theta1: 2.99149, theta2: -2.737707, dir: left, idx: 385 wrong
+theta1: 2.975415, theta2: -2.663703, dir: left, idx: 386 wrong
+theta1: 2.934629, theta2: -2.564067, dir: left, idx: 387 wrong
+theta1: 2.894179, theta2: -2.46393, dir: left, idx: 388 wrong
+theta1: 2.896824, theta2: -2.40614, dir: left, idx: 389 wrong
+theta1: 2.863368, theta2: -2.311599, dir: left, idx: 390 wrong
+theta1: 2.851052, theta2: -2.203512, dir: left, idx: 391 wrong
+theta1: 2.791698, theta2: -2.038602, dir: left, idx: 392 wrong
+theta1: 2.789333, theta2: -1.925103, dir: left, idx: 393 wrong
+theta1: 2.73956, theta2: -1.758903, dir: left, idx: 394 wrong
+theta1: 2.753898, theta2: -1.651976, dir: left, idx: 395 wrong
+theta1: 2.717405, theta2: -1.490016, dir: left, idx: 396 wrong
+theta1: 2.760981, theta2: -1.404731, dir: left, idx: 397 wrong
+theta1: 2.79786, theta2: -1.310323, dir: left, idx: 398 wrong
+theta1: 2.861007, theta2: -1.240841, dir: left, idx: 399 wrong
+theta1: 2.923394, theta2: -1.170411, dir: left, idx: 400 wrong
+theta1: 3.011995, theta2: -1.127169, dir: left, idx: 401 wrong
+theta1: 3.101751, theta2: -1.08717, dir: left, idx: 402 wrong
+theta1: -3.042023, theta2: -1.099922, dir: left, idx: 403
+theta1: -2.936482, theta2: -1.082765, dir: left, idx: 404
+theta1: -2.769877, theta2: -1.131325, dir: left, idx: 405
+theta1: -2.657313, theta2: -1.131008, dir: left, idx: 406
+theta1: -2.490563, theta2: -1.190382, dir: left, idx: 407
+theta1: -2.372705, theta2: -1.206548, dir: left, idx: 408
+theta1: -2.267283, theta2: -1.244063, dir: left, idx: 409
+theta1: -2.212867, theta2: -1.233247, dir: left, idx: 410
+theta1: -2.117861, theta2: -1.254644, dir: left, idx: 411
+theta1: -2.054636, theta2: -1.245037, dir: left, idx: 412
+theta1: -1.953536, theta2: -1.274257, dir: left, idx: 413
+theta1: -1.875315, theta2: -1.281717, dir: left, idx: 414
+theta1: -1.786568, theta2: -1.300965, dir: left, idx: 415
+theta1: -1.686607, theta2: -1.332819, dir: left, idx: 416
+theta1: -1.597726, theta2: -1.355099, dir: left, idx: 417
+theta1: -1.57893, theta2: -1.348041, dir: left, idx: 418
+theta1: -1.586123, theta2: -1.327484, dir: left, idx: 419
+theta1: -1.583076, theta2: -1.317162, dir: left, idx: 420
+theta1: -1.579542, theta2: -1.307324, dir: left, idx: 421
+theta1: -1.575611, theta2: -1.297879, dir: left, idx: 422
+theta1: -1.571355, theta2: -1.288759, dir: left, idx: 423
+theta1: -1.566108, theta2: -1.280629, dir: left, idx: 424
+theta1: -1.556922, theta2: -1.27644, dir: left, idx: 425
+theta1: -1.54738, theta2: -1.272608, dir: left, idx: 426
+theta1: -1.527819, theta2: -1.278799, dir: left, idx: 427
+theta1: -1.516847, theta2: -1.276406, dir: left, idx: 428
+theta1: -1.496285, theta2: -1.283608, dir: left, idx: 429
+theta1: -1.483443, theta2: -1.283097, dir: left, idx: 430
+theta1: -1.461724, theta2: -1.291471, dir: left, idx: 431
+theta1: -1.446402, theta2: -1.293458, dir: left, idx: 432
+theta1: -1.423334, theta2: -1.303201, dir: left, idx: 433
+theta1: -1.400288, theta2: -1.312934, dir: left, idx: 434
+theta1: -1.377273, theta2: -1.322649, dir: left, idx: 435
+theta1: -1.354299, theta2: -1.332336, dir: left, idx: 436
+theta1: 1.819302, theta2: 1.763521, dir: right, idx: 440
+theta1: 1.859228, theta2: 1.670667, dir: right, idx: 441
+theta1: 1.901421, theta2: 1.574498, dir: right, idx: 442
+theta1: 1.945385, theta2: 1.475559, dir: right, idx: 443
+theta1: 1.963528, theta2: 1.401498, dir: right, idx: 444
+theta1: 2.018005, theta2: 1.2727, dir: right, idx: 445
+theta1: 2.087258, theta2: 1.115683, dir: right, idx: 446
+theta1: 2.159826, theta2: 0.951091, dir: right, idx: 447
+theta1: 2.173643, theta2: 0.841091, dir: right, idx: 448
+theta1: 2.236115, theta2: 0.678463, dir: right, idx: 449
+theta1: 2.230406, theta2: 0.580323, dir: right, idx: 450
+theta1: 2.278554, theta2: 0.425015, dir: right, idx: 451
+theta1: 2.256115, theta2: 0.337463, dir: right, idx: 452
+theta1: 2.228352, theta2: 0.25298, dir: right, idx: 453
+theta1: 2.196316, theta2: 0.171169, dir: right, idx: 454
+theta1: 2.187747, theta2: 0.065004, dir: right, idx: 455
+theta1: 2.110205, theta2: 0.027674, dir: right, idx: 456
+theta1: 2.030321, theta2: -0.006698, dir: right, idx: 457
+theta1: 1.947928, theta2: -0.037216, dir: right, idx: 458
+theta1: 1.862693, theta2: -0.062865, dir: right, idx: 459
+theta1: 1.708402, theta2: -0.016829, dir: right, idx: 460
+theta1: 1.612707, theta2: -0.02624, dir: right, idx: 461
+theta1: 1.449903, theta2: 0.035023, dir: right, idx: 462
+theta1: 1.288523, theta2: 0.098743, dir: right, idx: 463
+theta1: 1.175434, theta2: 0.118275, dir: right, idx: 464
+theta1: 1.015337, theta2: 0.189047, dir: right, idx: 465
+theta1: 0.86438, theta2: 0.254961, dir: right, idx: 466
+theta1: 0.763946, theta2: 0.284657, dir: right, idx: 467
+theta1: 0.68727, theta2: 0.318059, dir: right, idx: 468
+theta1: 0.611481, theta2: 0.350996, dir: right, idx: 469
+theta1: 0.536896, theta2: 0.383182, dir: right, idx: 470
+theta1: 0.463799, theta2: 0.414365, dir: right, idx: 471
+theta1: -2.719867, theta2: -2.695219, dir: left, idx: 514
+theta1: -2.730433, theta2: -2.670169, dir: left, idx: 515
+theta1: -2.741034, theta2: -2.645068, dir: left, idx: 516
+theta1: -2.751658, theta2: -2.619926, dir: left, idx: 517
+theta1: -2.762296, theta2: -2.594755, dir: left, idx: 518
+theta1: -2.764439, theta2: -2.578066, dir: left, idx: 519
+theta1: -2.773581, theta2: -2.554365, dir: left, idx: 520
+theta1: -2.773001, theta2: -2.540376, dir: left, idx: 521
+theta1: -2.78086, theta2: -2.517938, dir: left, idx: 522
+theta1: -2.778175, theta2: -2.50615, dir: left, idx: 523
+theta1: -2.770543, theta2: -2.510132, dir: left, idx: 524
+theta1: -2.763637, theta2: -2.513389, dir: left, idx: 525
+theta1: -2.750618, theta2: -2.522759, dir: left, idx: 526
+theta1: -2.729722, theta2: -2.540007, dir: left, idx: 527
+theta1: -2.717193, theta2: -2.548889, dir: left, idx: 528
+theta1: -2.705646, theta2: -2.55679, dir: left, idx: 529
+theta1: -2.694697, theta2: -2.564093, dir: left, idx: 530
+theta1: -2.667465, theta2: -2.58768, dir: left, idx: 531
+theta1: -2.65652, theta2: -2.594981, dir: left, idx: 532
+theta1: -2.629007, theta2: -2.61885, dir: left, idx: 533
+theta1: 0.524398, theta2: 0.514572, dir: right, idx: 534
+theta1: 0.552468, theta2: 0.490144, dir: right, idx: 535
+theta1: 0.56611, theta2: 0.480143, dir: right, idx: 536
+theta1: 0.581527, theta2: 0.468366, dir: right, idx: 537
+theta1: 0.59941, theta2: 0.454121, dir: right, idx: 538
+theta1: 0.613774, theta2: 0.443395, dir: right, idx: 539
+theta1: 0.631269, theta2: 0.429537, dir: right, idx: 540
+theta1: 0.629138, theta2: 0.425229, dir: right, idx: 541
+theta1: 0.612323, theta2: 0.431116, dir: right, idx: 542
+theta1: 0.60212, theta2: 0.430395, dir: right, idx: 543
+theta1: 0.584357, theta2: 0.437237, dir: right, idx: 544
+theta1: 0.566597, theta2: 0.444082, dir: right, idx: 545
+theta1: 0.553303, theta2: 0.446466, dir: right, idx: 546
+theta1: 0.53444, theta2: 0.454426, dir: right, idx: 547
+theta1: 0.515591, theta2: 0.462377, dir: right, idx: 548
+theta1: 0.496764, theta2: 0.470315, dir: right, idx: 549
+theta1: -2.664599, theta2: -2.66068, dir: left, idx: 550
+theta1: -2.666935, theta2: -2.655131, dir: left, idx: 551
+theta1: -2.669272, theta2: -2.649582, dir: left, idx: 552
+theta1: -2.67161, theta2: -2.644032, dir: left, idx: 553
+theta1: -2.673947, theta2: -2.638482, dir: left, idx: 554
+theta1: -2.674478, theta2: -2.634738, dir: left, idx: 555
+theta1: -2.676487, theta2: -2.629516, dir: left, idx: 556
+theta1: -2.678495, theta2: -2.624294, dir: left, idx: 557
+theta1: -2.678141, theta2: -2.621435, dir: left, idx: 558
+theta1: -2.677607, theta2: -2.618755, dir: left, idx: 559
+theta1: -2.679099, theta2: -2.614049, dir: left, idx: 560
+theta1: -2.678216, theta2: -2.611719, dir: left, idx: 561
+theta1: -2.677242, theta2: -2.609479, dir: left, idx: 562
+theta1: -2.676194, theta2: -2.607313, dir: left, idx: 563
+theta1: -2.674046, theta2: -2.606248, dir: left, idx: 564
+theta1: -2.671807, theta2: -2.605273, dir: left, idx: 565
+theta1: -2.669478, theta2: -2.604389, dir: left, idx: 566
+theta1: -2.664772, theta2: -2.605881, dir: left, idx: 567
+theta1: -2.662094, theta2: -2.605346, dir: left, idx: 568
+theta1: -2.659236, theta2: -2.60499, dir: left, idx: 569
+theta1: -2.654014, theta2: -2.606998, dir: left, idx: 570
+theta1: -2.648793, theta2: -2.609007, dir: left, idx: 571
+theta1: -2.645051, theta2: -2.609536, dir: left, idx: 572
+theta1: -2.6395, theta2: -2.611873, dir: left, idx: 573
+theta1: -2.63395, theta2: -2.61421, dir: left, idx: 574
+theta1: -2.628401, theta2: -2.616547, dir: left, idx: 575
+theta1: -2.622852, theta2: -2.618884, dir: left, idx: 576
+theta1: -2.621564, theta2: -2.616487, dir: left, idx: 585
+theta1: -2.630302, theta2: -2.595749, dir: left, idx: 586
+theta1: -2.639063, theta2: -2.574978, dir: left, idx: 587
+theta1: -2.64784, theta2: -2.55418, dir: left, idx: 588
+theta1: -2.656628, theta2: -2.533363, dir: left, idx: 589
+theta1: -2.659037, theta2: -2.518917, dir: left, idx: 590
+theta1: -2.666594, theta2: -2.499315, dir: left, idx: 591
+theta1: -2.674146, theta2: -2.479712, dir: left, idx: 592
+theta1: -2.67316, theta2: -2.468641, dir: left, idx: 593
+theta1: -2.679655, theta2: -2.450085, dir: left, idx: 594
+theta1: -2.677046, theta2: -2.440628, dir: left, idx: 595
+theta1: -2.673979, theta2: -2.431627, dir: left, idx: 596
+theta1: -2.670539, theta2: -2.422997, dir: left, idx: 597
+theta1: -2.666793, theta2: -2.414671, dir: left, idx: 598
+theta1: -2.662792, theta2: -2.406601, dir: left, idx: 599
+theta1: -2.656961, theta2: -2.400361, dir: left, idx: 600
+theta1: -2.640081, theta2: -2.405171, dir: left, idx: 601
+theta1: -2.630814, theta2: -2.402371, dir: left, idx: 602
+theta1: -2.62105, theta2: -2.400071, dir: left, idx: 603
+theta1: -2.602492, theta2: -2.406569, dir: left, idx: 604
+theta1: -2.591063, theta2: -2.405943, dir: left, idx: 605
+theta1: -2.57146, theta2: -2.413498, dir: left, idx: 606
+theta1: -2.55782, theta2: -2.415095, dir: left, idx: 607
+theta1: -2.536994, theta2: -2.423886, dir: left, idx: 608
+theta1: -2.516182, theta2: -2.432671, dir: left, idx: 609
+theta1: -2.495393, theta2: -2.441444, dir: left, idx: 610
+theta1: -2.474632, theta2: -2.450197, dir: left, idx: 611
+theta1: 0.704859, theta2: 0.635156, dir: right, idx: 614
+theta1: 0.736687, theta2: 0.560781, dir: right, idx: 615
+theta1: 0.769516, theta2: 0.484906, dir: right, idx: 616
+theta1: 0.803075, theta2: 0.407833, dir: right, idx: 617
+theta1: 0.815299, theta2: 0.351664, dir: right, idx: 618
+theta1: 0.873889, theta2: 0.213904, dir: right, idx: 619
+theta1: 0.940729, theta2: 0.061496, dir: right, idx: 620
+theta1: 1.011592, theta2: -0.099054, dir: right, idx: 621
+theta1: 1.028271, theta2: -0.209456, dir: right, idx: 622
+theta1: 1.090669, theta2: -0.369455, dir: right, idx: 623
+theta1: 1.149933, theta2: -0.52995, dir: right, idx: 624
+theta1: 1.137585, theta2: -0.622122, dir: right, idx: 625
+theta1: 1.118413, theta2: -0.710328, dir: right, idx: 626
+theta1: 1.153579, theta2: -0.855205, dir: right, idx: 627
+theta1: 1.121391, theta2: -0.934461, dir: right, idx: 628
+theta1: 1.085773, theta2: -1.011358, dir: right, idx: 629
+theta1: 1.031278, theta2: -1.069744, dir: right, idx: 630
+theta1: 0.954516, theta2: -1.105514, dir: right, idx: 631
+theta1: 0.875407, theta2: -1.137886, dir: right, idx: 632
+theta1: 0.730625, theta2: -1.102868, dir: right, idx: 633
+theta1: 0.64258, theta2: -1.122268, dir: right, idx: 634
+theta1: 0.550588, theta2: -1.134875, dir: right, idx: 635
+theta1: 0.390117, theta2: -1.075725, dir: right, idx: 636
+theta1: 0.23007, theta2: -1.013375, dir: right, idx: 637
+theta1: 0.119796, theta2: -0.996926, dir: right, idx: 638
+theta1: -0.04093, theta2: -0.925993, dir: right, idx: 639
+theta1: -0.193576, theta2: -0.859021, dir: right, idx: 640
+theta1: -0.284025, theta2: -0.835447, dir: right, idx: 641
+theta1: -0.380861, theta2: -0.792331, dir: right, idx: 642
+theta1: -0.475641, theta2: -0.750413, dir: right, idx: 643
+theta1: -0.567784, theta2: -0.710223, dir: right, idx: 644
+theta1: -0.656822, theta2: -0.672184, dir: right, idx: 645
+theta1: 2.423824, theta2: 2.590034, dir: left, idx: 668
+theta1: 2.364718, theta2: 2.720487, dir: left, idx: 669
+theta1: 2.299058, theta2: 2.860389, dir: left, idx: 670
+theta1: 2.264798, theta2: 2.971747, dir: left, idx: 671
+theta1: 2.201524, theta2: 3.114899, dir: left, idx: 672
+theta1: 2.13714, theta2: -3.021357, dir: left, idx: 673 wrong
+theta1: 2.130207, theta2: -2.929373, dir: left, idx: 674 wrong
+theta1: 2.076791, theta2: -2.788601, dir: left, idx: 675 wrong
+theta1: 2.026981, theta2: -2.649386, dir: left, idx: 676 wrong
+theta1: 2.045796, theta2: -2.57704, dir: left, idx: 677 wrong
+theta1: 1.966982, theta2: -2.372962, dir: left, idx: 678 wrong
+theta1: 1.956039, theta2: -2.226901, dir: left, idx: 679 wrong
+theta1: 1.882694, theta2: -2.004522, dir: left, idx: 680 wrong
+theta1: 1.895369, theta2: -1.853902, dir: left, idx: 681 wrong
+theta1: 1.875077, theta2: -1.656395, dir: left, idx: 682 wrong
+theta1: 1.911165, theta2: -1.502613, dir: left, idx: 683 wrong
+theta1: 1.961576, theta2: -1.352841, dir: left, idx: 684 wrong
+theta1: 2.03285, theta2: -1.217026, dir: left, idx: 685 wrong
+theta1: 2.143451, theta2: -1.117844, dir: left, idx: 686 wrong
+theta1: 2.271468, theta2: -1.037939, dir: left, idx: 687 wrong
+theta1: 2.413198, theta2: -0.977386, dir: left, idx: 688 wrong
+theta1: 2.570604, theta2: -0.940971, dir: left, idx: 689 wrong
+theta1: 2.749364, theta2: -0.93805, dir: left, idx: 690 wrong
+theta1: 2.973175, theta2: -0.99391, dir: left, idx: 691 wrong
+theta1: 3.12216, theta2: -0.989269, dir: left, idx: 692 wrong
+theta1: -2.947983, theta2: -1.062839, dir: left, idx: 693 
+theta1: -2.806891, theta2: -1.077917, dir: left, idx: 694
+theta1: -2.6682, theta2: -1.118531, dir: left, idx: 695
+theta1: -2.59021, theta2: -1.104844, dir: left, idx: 696
+theta1: -2.450736, theta2: -1.154682, dir: left, idx: 697
+theta1: -2.360073, theta2: -1.158028, dir: left, idx: 698
+theta1: -2.213807, theta2: -1.219526, dir: left, idx: 699
+theta1: -2.070863, theta2: -1.280432, dir: left, idx: 700
+theta1: -1.933367, theta2: -1.338754, dir: left, idx: 701
+theta1: -1.802959, theta2: -1.392938, dir: left, idx: 702
+theta1: -1.67952, theta2: -1.443151, dir: left, idx: 703
+theta1: -1.559591, theta2: -1.492862, dir: left, idx: 704
+theta1: -1.535092, theta2: -1.502271, dir: left, idx: 705
+theta1: -1.533649, theta2: -1.501955, dir: left, idx: 706
+theta1: -1.530943, theta2: -1.502902, dir: left, idx: 707
+theta1: -1.529254, theta2: -1.502833, dir: left, idx: 708
+theta1: -1.526396, theta2: -1.503932, dir: left, idx: 709
+theta1: -1.524379, theta2: -1.504191, dir: left, idx: 710
+theta1: -1.521341, theta2: -1.50547, dir: left, idx: 711
+theta1: -1.518303, theta2: -1.506749, dir: left, idx: 712
+theta1: -1.515266, theta2: -1.508028, dir: left, idx: 713
+theta1: -1.512228, theta2: -1.509307, dir: left, idx: 714
+theta1: 1.632722, theta2: 1.628328, dir: right, idx: 734
