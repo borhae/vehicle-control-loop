@@ -14,6 +14,16 @@ public interface IActuatingSensing
      */
     public void computeAndLockSensorData();
     
+    /**
+     * Simulates the blow up of a tire
+     * @param i the tire to blow (1 front left, 2 front right, 3 back right, 4 back left
+     */
+    public void blowTire(int i);
+ 
+    /**
+     * Returns the cars orientation vector
+     * @return
+     */
     public Vector2D getOrientation();
     
     /**

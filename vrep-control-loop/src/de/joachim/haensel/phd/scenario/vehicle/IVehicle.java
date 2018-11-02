@@ -16,4 +16,6 @@ public interface IVehicle
     public void deacvtivateDebugging();
     
     public void removeFromSimulation();
+
+    public void addLowLevelEventGeneratorListener(ILowerLayerControl listener);
 }

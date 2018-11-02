@@ -156,6 +156,11 @@ public class LayerInteractionTest implements TestConstants
             public void initialize()
             {
             }
+
+            @Override
+            public void blowTire(int i)
+            {
+            }
         };
         controller.initController(sensorsActuators, roadMap);
         controller.buildSegmentBuffer(destinationPosition, roadMap);

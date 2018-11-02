@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.vehicle;
 
+import java.util.List;
 import java.util.Timer;
 
 import de.hpi.giese.coppeliawrapper.VRepException;
@@ -9,6 +10,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.simulator.ISimulatorData;
 import de.joachim.haensel.phd.scenario.sumo2vrep.OrientedPosition;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
+import de.joachim.haensel.phd.scenario.vehicle.experiment.test.TireBlowOutEventGenerator;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleActuatorsSensors;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import sumobindings.JunctionType;
@@ -46,6 +48,13 @@ public class Vehicle implements IVehicle
         _roadMap = roadMap;
     }
 
+    @Override
+    public void addLowLevelEventGeneratorListener(ILowerLayerControl listener)
+    {
+        listener.initController(_actuatingSensing, _upperControlLayer);
+        _controlEventGenerator.addEventListener(listener);
+    }
+    
     public void activateDebugging(DebugParams params)
     {
         _lowerControlLayer.activateDebugging((IVrepDrawing)_actuatingSensing, params);
@@ -82,7 +91,8 @@ public class Vehicle implements IVehicle
         _roadMap = roadMap;
         Position2D targetPosition = new Position2D(x, y);
         _upperControlLayer.buildSegmentBuffer(targetPosition, roadMap);
-        _lowerControlLayer.driveTo(targetPosition);
+        List<ILowerLayerControl> listeners = _controlEventGenerator.getListeners();
+        listeners.stream().forEach(l -> l.driveTo(targetPosition));
     }
 
     public void driveToBlocking(float x, float y, RoadMap roadMap)

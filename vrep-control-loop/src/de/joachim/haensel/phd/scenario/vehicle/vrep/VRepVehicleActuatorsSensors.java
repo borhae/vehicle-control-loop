@@ -284,6 +284,26 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
             exc.printStackTrace();
         }
     }
+    
+    @Override
+    public void blowTire(int i)
+    {
+        String parentObj = VRepObjectCreation.VREP_LOADING_SCRIPT_PARENT_OBJECT;
+        FloatWA inFloats = new FloatWA(3);
+        IntWA inInts = new IntWA(1);
+        inInts.getArray()[0] = _vehicleHandles.getFrontLeftWheel();
+        inFloats.getArray()[0] = 0.5f;
+        inFloats.getArray()[1] = 1.0f;
+        inFloats.getArray()[2] = 1.0f;
+        try
+        {
+            _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_customizationscript, "scaleObject", inInts, inFloats, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+        }
+        catch (VRepException exc)
+        {
+            exc.printStackTrace();
+        }
+    }
 
     @Override
     public void setPosition(float posX, float posY, float posZ)

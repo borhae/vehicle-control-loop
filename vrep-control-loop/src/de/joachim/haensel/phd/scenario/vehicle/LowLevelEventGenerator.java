@@ -29,4 +29,9 @@ public class LowLevelEventGenerator extends TimerTask
     {
         _eventListeners.add(lowerLevelController);
     }
+
+    public List<ILowerLayerControl> getListeners()
+    {
+        return _eventListeners;
+    }
 }

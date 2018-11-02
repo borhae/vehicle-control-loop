@@ -79,4 +79,9 @@ public class Positioner implements IActuatingSensing
     public void initialize()
     {
     }
+
+    @Override
+    public void blowTire(int i)
+    {
+    }
 }

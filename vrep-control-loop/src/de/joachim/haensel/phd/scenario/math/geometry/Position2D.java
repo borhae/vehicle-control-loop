@@ -42,6 +42,11 @@ public class Position2D
         init(Double.valueOf(coordinates[0]), Double.valueOf(coordinates[1]));
     }
 
+    public Position2D(Position2D position)
+    {
+        init(position._x, position._y);
+    }
+
     public double getX()
     {
         return _x;

@@ -35,6 +35,11 @@ simxRemoveScript = function(inInts, inFloats, inStrings, inBuffer)
   return {}, {}, {}, "" 
 end
 
+scaleObject = function(inInts, inFloats, inStrings, inBuffer)
+  sim.scaleObject(inInts[1], inFloats[1], inFloats[2], inFloats[3], 0)
+  return {}, {}, {}, "" 
+end
+
 createEdge = function(inInts, inFloats, inStrings, inBuffer)
 --      simAddStatusbarMessage("Creating edge at: "..table_to_string(inFloats))
       local x1 = inFloats[1]
@@ -348,7 +353,6 @@ createDummy = function(inInts, inFloats, inStrings, inBuffer)
       
       return {objectHandle}, {}, {}, "" 
 end
-
 
 setIntParameter = function(inInts, inFloats, inStrings, inBuffer)
   local objectID = inInts[1]
