@@ -105,7 +105,7 @@ public class TestTaskCreator
     {
         TaskCreator taskCreator = new TaskCreator();
         RandomTaskCreatorConfig config = new RandomTaskCreatorConfig(10);
-        config.setXYRange();
+//        config.setXYRange();
         taskCreator.configure(config);
         
         
