@@ -1,6 +1,7 @@
 package de.joachim.haensel.phd.scenario.map.sumo2vrep.test;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -19,10 +20,17 @@ import de.joachim.haensel.phd.scenario.sumo2vrep.VRepMap;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
+import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
+import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
+import de.joachim.haensel.phd.scenario.vehicle.control.BlockingArrivedListener;
+import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
+import de.joachim.haensel.phd.scenario.vehicle.test.VehicleTestConvenienceSetupMethods;
+import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleCreator;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import sumobindings.JunctionType;
@@ -45,26 +53,7 @@ public class SubScenarioCreationTest implements TestConstants
     @AfterClass
     public static void tearDownVrep() throws VRepException 
     {
-        waitForRunningSimulationToStop();
         _vrep.simxFinish(_clientID);
-    }
-
-    private static void waitForRunningSimulationToStop() throws VRepException
-    {
-        IntWA simStatus = new IntWA(1);
-        _vrep.simxCallScriptFunction(_clientID, "ScriptLoader", remoteApi.sim_scripttype_customizationscript, "simulationState", null, null, null, null, simStatus, null, null, null, remoteApi.simx_opmode_blocking);
-        while(simStatus.getArray()[0] != remoteApi.sim_simulation_stopped)
-        {
-            try
-            {
-                Thread.sleep(500);
-            }
-            catch (InterruptedException exc)
-            {
-                exc.printStackTrace();
-            }
-            _vrep.simxCallScriptFunction(_clientID, "ScriptLoader", remoteApi.sim_scripttype_customizationscript, "simulationState", null, null, null, null, simStatus, null, null, null, remoteApi.simx_opmode_blocking);
-        }
     }
 
     @After
@@ -127,35 +116,26 @@ public class SubScenarioCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0, 0.0);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createSimplesShapeBasedMap(roadMap);
-        VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, DOWN_SCALE_FACTOR);
-        float height = vehicleCreator.getVehicleHeight();
-        
-        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
-        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
-
-        Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap, upperFact, lowerFact);
+        VRepLoadModelVehicleFactory vehicleCreator = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", DOWN_SCALE_FACTOR);
 
         JunctionType startingJunction = roadMap.getJunctions().get(3);
         String startingLaneID = startingJunction.getIncLanes().split(" ")[0];
         LaneType lane = roadMap.getLaneForName(startingLaneID);
+        OrientedPosition startPos = roadMap.computeLaneEntryAtJunction(startingJunction, lane);
 
         JunctionType targetJunction = roadMap.getJunctions().get(2);
         OrientedPosition targetPoint = roadMap.computeLaneEntryAtJunction(targetJunction, lane);
         
-        vehicle.putOnJunctionHeadingTo(startingJunction, lane);
+        IVehicleConfiguration vehicleConf = VehicleTestConvenienceSetupMethods.createConfiguration(roadMap, startPos.getPos(), 1.5);
+        vehicleCreator.configure(vehicleConf);
+        IVehicle vehicle = vehicleCreator.createVehicleInstance();
+        
         _vrep.simxStartSimulation(_clientID, remoteApi.simx_opmode_blocking);
         
         vehicle.start();
-        vehicle.driveToBlocking((float)targetPoint.getPos().getX(), (float)targetPoint.getPos().getY(), roadMap);
-        //let him drive for a while (uncontrolled for now)
-        try
-        {
-            Thread.sleep(2000);
-        }
-        catch (InterruptedException exc)
-        {
-            exc.printStackTrace();
-        }
+        BlockingArrivedListener listener = new BlockingArrivedListener(30, TimeUnit.SECONDS);
+        vehicle.driveTo(targetPoint.getPos().getX(), targetPoint.getPos().getY(), roadMap, listener);
+        listener.waitForArrival();
         vehicle.stop();
         _vrep.simxStopSimulation(_clientID, remoteApi.simx_opmode_blocking);
         // need to wait some time before call to simxfinish, otherwise vrep crashes -> weird 

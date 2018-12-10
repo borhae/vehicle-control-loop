@@ -28,8 +28,8 @@ public class LayerInterfaceAccessTest
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
         roadMap.center(0.0, 0.0);
-        Position2D startPosition = RandomMapPositionCreator.createRandomPositonOnStree(roadMap);
-        Position2D destinationPosition = RandomMapPositionCreator.createRandomPositonOnStree(roadMap);
+        Position2D startPosition = RandomMapPositionCreator.createRandomPositonOnStreet(roadMap);
+        Position2D destinationPosition = RandomMapPositionCreator.createRandomPositonOnStreet(roadMap);
         
         IUpperLayerControl upperCtrl = new DefaultNavigationController(1.0, 50);
         Positioner upperLayerSensors = new Positioner(startPosition);
@@ -55,8 +55,8 @@ public class LayerInterfaceAccessTest
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
         roadMap.center(0.0, 0.0);
-        Position2D startPosition = RandomMapPositionCreator.createRandomPositonOnStree(roadMap);
-        Position2D destinationPosition = RandomMapPositionCreator.createRandomPositonOnStree(roadMap);
+        Position2D startPosition = RandomMapPositionCreator.createRandomPositonOnStreet(roadMap);
+        Position2D destinationPosition = RandomMapPositionCreator.createRandomPositonOnStreet(roadMap);
         
         IUpperLayerControl upperCtrl = new DefaultNavigationController(1.0, 50);
         Positioner upperLayerSensors = new Positioner(startPosition);

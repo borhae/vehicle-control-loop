@@ -18,7 +18,7 @@ public class RandomMapPositionCreator
      * @param roadMap the map on which a random point should be picked
      * @return a random position on the map
      */
-    public static Position2D createRandomPositonOnStree(RoadMap roadMap)
+    public static Position2D createRandomPositonOnStreet(RoadMap roadMap)
     {
         List<EdgeType> edges = roadMap.getEdges();
         MersenneTwister randomGen = new MersenneTwister();

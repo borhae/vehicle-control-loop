@@ -1,6 +1,7 @@
 package de.joachim.haensel.phd.scenario.vehicle.control.reactive;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -11,6 +12,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ITrajectoryProvider;
+import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
@@ -39,6 +41,7 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     private DebugParams _debugParams;
     //-0.25
     private double _speedToWheelRotationFactor;
+    private List<IArrivedListener> _arrivedListeners;
 
     public class DefaultReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
@@ -90,6 +93,7 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     public PurePursuitController()
     {
         _debugging = false;
+        _arrivedListeners = new ArrayList<>();
     }
 
     @Override
@@ -151,6 +155,8 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     public void breakAndStopAction()
     {
         _actuatorsSensors.drive(0.0f, 0.0f);
+        Position2D position = _actuatorsSensors.getFrontWheelCenterPosition();
+        _arrivedListeners.forEach(listener -> listener.arrived(position));
     }
     
     private void driveAction()
@@ -312,5 +318,11 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     public void addTrajectoryReportListener(ITrajectoryReportListener reportListener)
     {
         // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void addArrivedListener(IArrivedListener arrivedListener)
+    {
+        _arrivedListeners.add(arrivedListener);
     }
 }

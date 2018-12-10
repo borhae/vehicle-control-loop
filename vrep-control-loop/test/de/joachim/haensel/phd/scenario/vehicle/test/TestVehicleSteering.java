@@ -22,6 +22,7 @@ import de.joachim.haensel.phd.scenario.vehicle.ITrajectoryProvider;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
+import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
@@ -327,6 +328,13 @@ public class TestVehicleSteering
         public void addTrajectoryReportListener(ITrajectoryReportListener reportListener)
         {
         }
+
+        @Override
+        public void addArrivedListener(IArrivedListener arrivedListener)
+        {
+            // TODO Auto-generated method stub
+            
+        }
     }
     
     public class TestJustSteeringController implements ILowerLayerControl<Object>
@@ -385,6 +393,13 @@ public class TestVehicleSteering
         @Override
         public void addTrajectoryReportListener(ITrajectoryReportListener reportListener)
         {
+        }
+
+        @Override
+        public void addArrivedListener(IArrivedListener arrivedListener)
+        {
+            // TODO Auto-generated method stub
+            
         }
     }
 }

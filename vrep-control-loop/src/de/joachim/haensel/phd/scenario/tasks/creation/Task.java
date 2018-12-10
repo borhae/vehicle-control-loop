@@ -1,4 +1,6 @@
-package de.joachim.haensel.phd.scenario.taskcreation;
+package de.joachim.haensel.phd.scenario.tasks.creation;
+
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 
 public class Task
 {
@@ -44,5 +46,15 @@ public class Task
     public String toString()
     {
         return String.format("source: (%f, %f), target: (%f, %f)", _xSource, _ySource, _xTarget, _yTarget);
+    }
+
+    public Position2D getSource()
+    {
+        return new Position2D(_xSource, _ySource);
+    }
+
+    public Position2D getTarget()
+    {
+        return new Position2D(_xTarget, _yTarget);
     }
 }

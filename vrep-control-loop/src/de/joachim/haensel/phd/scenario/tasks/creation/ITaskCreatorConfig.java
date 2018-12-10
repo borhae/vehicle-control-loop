@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.taskcreation;
+package de.joachim.haensel.phd.scenario.tasks.creation;
 
 public interface ITaskCreatorConfig
 {

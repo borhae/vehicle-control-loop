@@ -10,7 +10,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.simulator.ISimulatorData;
 import de.joachim.haensel.phd.scenario.sumo2vrep.OrientedPosition;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
-import de.joachim.haensel.phd.scenario.vehicle.experiment.test.TireBlowOutEventGenerator;
+import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleActuatorsSensors;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import sumobindings.JunctionType;
@@ -30,6 +30,7 @@ public class Vehicle implements IVehicle
     private IVehicleHandles _vehicleHandles;
 
     private ISimulatorData _simulatorData;
+
 
     public Vehicle(ISimulatorData simulatorData, IVehicleHandles vehicleHandles, RoadMap roadMap, IUpperLayerFactory upperLayerFactory, ILowerLayerFactory lowerLayerFactory)
     {
@@ -76,17 +77,18 @@ public class Vehicle implements IVehicle
         _actuatingSensing.setOrientation(angleAlpha, angleBeta, angleGamma);
     }
 
-    public void setPosition(float posX, float posY, float posZ) throws VRepException
+    @Override
+    public void setPosition(double posX, double posY, double posZ) throws VRepException
     {
-        _actuatingSensing.setPosition(posX, posY, posZ);
+        _actuatingSensing.setPosition((float)posX, (float)posY, (float)posZ);
     }
-
+    
     public void start()
     {
         _timer.scheduleAtFixedRate(_controlEventGenerator, 0, CONTROL_LOOP_EXECUTION_FREQUENCY);
     }
     
-    public void driveTo(float x, float y, RoadMap roadMap)
+    public void driveTo(double x, double y, RoadMap roadMap)
     {
         _roadMap = roadMap;
         Position2D targetPosition = new Position2D(x, y);
@@ -95,10 +97,11 @@ public class Vehicle implements IVehicle
         listeners.stream().forEach(l -> l.driveTo(targetPosition));
     }
 
-    public void driveToBlocking(float x, float y, RoadMap roadMap)
+    @Override
+    public void driveTo(double x, double y, RoadMap map, IArrivedListener arrivedListener)
     {
-        //TODO nothings blocking here yet. Take care if the rest is done
-        driveTo(x, y, roadMap);
+        _lowerControlLayer.addArrivedListener(arrivedListener);
+        driveTo(x, y, map);
     }
 
     public void stop()

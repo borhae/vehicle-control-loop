@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.taskcreation;
+package de.joachim.haensel.phd.scenario.tasks.creation;
 
 import java.util.ArrayList;
 import java.util.List;
