@@ -4,5 +4,5 @@ public interface ITaskCreatorConfig
 {
     public int getNumOfTasks();
 
-    public void setRandomSourceAndTarget();
+    public Task getNext();
 }

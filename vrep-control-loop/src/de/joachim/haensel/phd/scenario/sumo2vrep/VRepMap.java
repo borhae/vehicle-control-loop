@@ -19,6 +19,7 @@ import coppelia.StringWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.math.XYMinMax;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Point3D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;

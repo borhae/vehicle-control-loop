@@ -79,7 +79,7 @@ public class ScriptFunctionsTest
     @Test
     public void testDriveForward() throws VRepException
     {
-        IVehicleFactory vehicleFactory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, 1.0); 
+        IVehicleFactory vehicleFactory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", 1.0); 
         VRepVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
         vehicleConf.setLowerCtrlFactory(new ILowerLayerFactory() {
             @Override

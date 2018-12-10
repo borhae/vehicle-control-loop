@@ -19,6 +19,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import de.joachim.haensel.phd.scenario.math.TMatrix;
+import de.joachim.haensel.phd.scenario.math.XYMinMax;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;

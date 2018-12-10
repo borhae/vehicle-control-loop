@@ -30,6 +30,12 @@ public class VehicleHandles implements IVehicleHandles
     private int _motorFrontLeft;
     private int _motorFrontRight;
     private int _ctrlScript;
+    private List<Integer> _additionalObjectHandles;
+    
+    public VehicleHandles()
+    {
+        _additionalObjectHandles = new ArrayList<>();
+    }
 
     /* (non-Javadoc)
      * @see de.joachim.haensel.vehicle.IVehicleHandles#getPhysicalBody()
@@ -375,9 +381,11 @@ public class VehicleHandles implements IVehicleHandles
         result.add(_frontLeftWheelDummy);
         result.add(_frontRightWheelDummy);
         result.add(_rearWheelDummy);
+        
+        result.addAll(_additionalObjectHandles);
         return result;
-    }
-
+    } 
+    
     @Override
     public List<Integer> getAllScriptHandles()
     {
@@ -385,5 +393,11 @@ public class VehicleHandles implements IVehicleHandles
         //scripts
         result.add(_ctrlScript);
         return result;
+    }
+
+    @Override
+    public void setAdditionalObjectHandles(List<Integer> handlesToBeRemoved)
+    {
+        _additionalObjectHandles.addAll(handlesToBeRemoved);
     }
 }

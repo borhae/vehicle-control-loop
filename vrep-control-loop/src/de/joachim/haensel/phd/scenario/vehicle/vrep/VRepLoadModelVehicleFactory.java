@@ -1,6 +1,8 @@
 package de.joachim.haensel.phd.scenario.vehicle.vrep;
 
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import coppelia.IntW;
 import coppelia.remoteApi;
@@ -22,12 +24,14 @@ public class VRepLoadModelVehicleFactory implements IVehicleFactory
     private VRepRemoteAPI _vrep;
     private int _clientID;
     private VRepObjectCreation _objectCreator;
+    private String _vrepModelPath;
 
-    public VRepLoadModelVehicleFactory(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator, double scale)
+    public VRepLoadModelVehicleFactory(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator, String vrepModelFilePath, double scale)
     {
         _vrep = vrep;
         _clientID = clientID;
         _objectCreator = objectCreator;
+        _vrepModelPath = vrepModelFilePath;
     }
 
     @Override
@@ -42,7 +46,7 @@ public class VRepLoadModelVehicleFactory implements IVehicleFactory
         try
         {
             IntW baseHandle = new IntW(0);
-            _vrep.simxLoadModel(_clientID, Paths.get("./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm").toAbsolutePath().toString(), 0, baseHandle, remoteApi.simx_opmode_blocking);
+            _vrep.simxLoadModel(_clientID, Paths.get(_vrepModelPath).toAbsolutePath().toString(), 0, baseHandle, remoteApi.simx_opmode_blocking);
             VehicleWithCameraHandles handles = new VehicleWithCameraHandles();
             
             handles.setAxisRearLeft(getHandle("axisRearLeft"));
@@ -80,7 +84,10 @@ public class VRepLoadModelVehicleFactory implements IVehicleFactory
             handles.setCamera(getHandle("autoFittingCamera"));
             
             handles.setCtrlScript(_objectCreator.getScriptAssociatedWithObject(handles.getPhysicalBody()));
+            handles.setAdditionalObjectHandles(_objectCreator.getHandlesForNames(_vehicleConf.getAutoBodyNames()));
             
+            List<Integer> handlesToBeRemoved = new ArrayList<>();
+            handles.setAdditionalObjectHandles(handlesToBeRemoved );
             
             VRepSimulatorData simulatorData = new VRepSimulatorData(_objectCreator, _vrep, _clientID, PHYSICAL_CAR_BODY_NAME);
             Vehicle vehicle = new Vehicle(simulatorData, handles, _vehicleConf.getMap(), _vehicleConf.getUpperCtrlFactory(), _vehicleConf.getLowerCtrlFactory());

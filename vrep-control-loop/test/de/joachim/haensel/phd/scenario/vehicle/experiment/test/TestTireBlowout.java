@@ -92,7 +92,7 @@ public class TestTireBlowout implements TestConstants
         Position2D startPosition = new Position2D(5842.68,3007.94).transform(scaleOffsetMatrix);
         Position2D destinationPosition = new Position2D(5527.21,3391.06).transform(scaleOffsetMatrix);
 
-        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, 1.0f);
+        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", 1.0f);
         IVehicleConfiguration vehicleConf = createConfiguration(roadMap, startPosition, destinationPosition);
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();

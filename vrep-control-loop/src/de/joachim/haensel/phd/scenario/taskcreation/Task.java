@@ -2,38 +2,47 @@ package de.joachim.haensel.phd.scenario.taskcreation;
 
 public class Task
 {
-    private double _x;
+    private double _xSource;
+    private double _ySource;
+    private double _xTarget;
+    private double _yTarget;
     
-    public Task(ITaskCreatorConfig config)
+    public Task()
     {
-        //TODO uncomment and handle error
-//        if(config.isRandomSoureAndTarget())
-//        {
-//            
-//        }
     }
 
-    public double getX()
+    public Task(double xS, double yS, double xT, double yT)
     {
-        return _x;
-    }
-
-    public void setX(double x)
-    {
-        _x = x;
+        _xSource = xS;
+        _ySource = yS;
+        _xTarget = xT;
+        _yTarget = yT;
     }
 
     @Override
     public boolean equals(Object obj)
     {
-        //TODO work on the fields, once we have them
         if(obj instanceof Task)
         {
-            return true;
+            Task task = (Task)obj;
+            if((task._xSource == _xSource) && (task._xTarget == _xTarget) && (task._ySource == _ySource) && (task._yTarget == _yTarget))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         else
         {
             return false;
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("source: (%f, %f), target: (%f, %f)", _xSource, _ySource, _xTarget, _yTarget);
     }
 }

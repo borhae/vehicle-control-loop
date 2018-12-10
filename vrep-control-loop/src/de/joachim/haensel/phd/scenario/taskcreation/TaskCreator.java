@@ -20,7 +20,7 @@ public class TaskCreator
     {
         for(int cnt = 0; cnt < _numOfTasks; cnt++)
         {
-            _tasks.add(new Task(_config));
+            _tasks.add(_config.getNext());
         }
         return _tasks;
     }

@@ -54,7 +54,8 @@ public interface IVehicleHandles
     
     public IVehicleHandles setCtrlScript(int scriptAssociatedWithObject);
 
-
+    public void setAdditionalObjectHandles(List<Integer> handlesToBeRemoved);
+    
     public int getPhysicalBody();
 
     public int getRearLeftWheel();
