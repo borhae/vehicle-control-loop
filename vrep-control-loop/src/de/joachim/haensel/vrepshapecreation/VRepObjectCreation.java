@@ -376,7 +376,34 @@ public class VRepObjectCreation
             throw new VRepException(exceptionString.toString());
         }
     }
-    
+
+    public void deleteAutomaticObjects(List<Integer> handles) throws VRepException
+    {
+        List<VRepException> exceptions = new ArrayList<>();
+        Consumer<? super Integer> removeObject = handle -> {
+            try
+            {
+                IntWA callParamsI = new IntWA(1);
+                callParamsI.getArray()[0] = handle;
+                _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "removeObject", callParamsI, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+            }
+            catch (VRepException exc)
+            {
+                exceptions.add(exc);
+            }
+        };
+        if(exceptions.isEmpty())
+        {
+            handles.forEach(removeObject);
+        }
+        else
+        {
+            StringBuilder exceptionString = new StringBuilder();
+            exceptions.forEach(excpetion -> exceptionString.append(excpetion.getMessage()));
+            throw new VRepException(exceptionString.toString());
+        }
+    }
+
     public void deleteScripts(List<Integer> handles) throws VRepException
     {
         List<VRepException> exceptions = new ArrayList<>();

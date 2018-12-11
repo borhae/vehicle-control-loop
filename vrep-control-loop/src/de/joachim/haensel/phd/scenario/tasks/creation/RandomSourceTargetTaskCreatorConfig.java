@@ -34,7 +34,8 @@ public class RandomSourceTargetTaskCreatorConfig implements ITaskCreatorConfig
             double yS = _randomGen.nextDouble() * _range.distY() + _range.minY();
             double xT = _randomGen.nextDouble() * _range.distX() + _range.minX();
             double yT = _randomGen.nextDouble() * _range.distY() + _range.minY();
-            return new Task(xS, yS, xT, yT);
+            int timeoutSec = ITaskCreatorConfig.estimateTimeout(xS, yS, xT, yT);
+            return new Task(xS, yS, xT, yT, timeoutSec);
         }
     }
 

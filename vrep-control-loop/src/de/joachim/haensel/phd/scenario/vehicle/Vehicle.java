@@ -31,6 +31,8 @@ public class Vehicle implements IVehicle
 
     private ISimulatorData _simulatorData;
 
+    private boolean _stopped;
+
 
     public Vehicle(ISimulatorData simulatorData, IVehicleHandles vehicleHandles, RoadMap roadMap, IUpperLayerFactory upperLayerFactory, ILowerLayerFactory lowerLayerFactory)
     {
@@ -47,6 +49,7 @@ public class Vehicle implements IVehicle
         _controlEventGenerator.addEventListener(_lowerControlLayer);
         _timer = new Timer();
         _roadMap = roadMap;
+        _stopped = true;
     }
 
     @Override
@@ -80,12 +83,17 @@ public class Vehicle implements IVehicle
     @Override
     public void setPosition(double posX, double posY, double posZ) throws VRepException
     {
+        
         _actuatingSensing.setPosition((float)posX, (float)posY, (float)posZ);
     }
     
     public void start()
     {
-        _timer.scheduleAtFixedRate(_controlEventGenerator, 0, CONTROL_LOOP_EXECUTION_FREQUENCY);
+        if(_stopped)
+        {
+            _timer.scheduleAtFixedRate(_controlEventGenerator, 0, CONTROL_LOOP_EXECUTION_FREQUENCY);
+            _stopped = false;
+        }
     }
     
     public void driveTo(double x, double y, RoadMap roadMap)
@@ -106,8 +114,11 @@ public class Vehicle implements IVehicle
 
     public void stop()
     {
-        _timer.cancel();
-        _lowerControlLayer.stop();
+        if(!_stopped)
+        {
+            _timer.cancel();
+            _lowerControlLayer.stop();
+        }
     }
 
     public void putOnJunctionHeadingTo(JunctionType junction, LaneType laneToHeadFor) throws VRepException

@@ -26,6 +26,26 @@ addToDeletionList = function(objectHandle, callerName)
   table.insert(createdObjects, objectHandle)
 end
 
+removeObject = function(inInts, inFloats, inStrings, inBuffer)
+    local handleToRemove = inInts[1]
+    table.removeelem(createdObjects, handleToRemove)
+    sim.addStatusbarMessage("about to delete object with handle:"..handleToRemove)
+    local name = sim.getObjectName(handleToRemove)
+    sim.addStatusbarMessage("with name: "..name)
+    sim.removeObject(handleToRemove)
+    return {}, {}, {}, "" 
+end
+
+function table.removeelem(inTable, elem)
+    local idx
+    for k,v in pairs(inTable) do
+      if v == elem then 
+         idx = k 
+      end
+    end
+    table.remove(inTable, idx)
+end
+
 simxGetScriptAssociatedWithObject = function(inInts, inFloats, inStrings, inBuffer)
   return {sim.getScriptAssociatedWithObject(inInts[1])}, {}, {}, "" 
 end
@@ -260,6 +280,7 @@ createPrimitive = function(inInts, inFloats, inStrings, inBuffer)
       
       return {objectHandle}, {}, {}, "" 
 end
+
 
 createJoint = function(inInts, inFloats, inStrings, inBuffer)
       local position = {inFloats[1], inFloats[2], inFloats[3]}

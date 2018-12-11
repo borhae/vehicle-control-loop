@@ -8,10 +8,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import coppelia.IntWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.SimulationSetupConvenienceMethods;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.OrientedPosition;
@@ -24,12 +24,9 @@ import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
 import de.joachim.haensel.phd.scenario.vehicle.control.BlockingArrivedListener;
-import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
-import de.joachim.haensel.phd.scenario.vehicle.test.VehicleTestConvenienceSetupMethods;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleCreator;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
@@ -126,7 +123,7 @@ public class SubScenarioCreationTest implements TestConstants
         JunctionType targetJunction = roadMap.getJunctions().get(2);
         OrientedPosition targetPoint = roadMap.computeLaneEntryAtJunction(targetJunction, lane);
         
-        IVehicleConfiguration vehicleConf = VehicleTestConvenienceSetupMethods.createConfiguration(roadMap, startPos.getPos(), 1.5);
+        IVehicleConfiguration vehicleConf = SimulationSetupConvenienceMethods.createVehicleConfiguration(roadMap, startPos.getPos(), 1.5);
         vehicleCreator.configure(vehicleConf);
         IVehicle vehicle = vehicleCreator.createVehicleInstance();
         

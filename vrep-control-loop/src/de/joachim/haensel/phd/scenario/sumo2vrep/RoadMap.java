@@ -97,7 +97,7 @@ public class RoadMap
         
         Node navigableFromJunction = _navigableNetwork.get(fromJunction);
         Node navigableToJunction = _navigableNetwork.get(toJunction);
-        
+
         navigableFromJunction.addOutgoing(navigableEdge, navigableToJunction);
         navigableToJunction.addIncomming(navigableEdge, navigableFromJunction);
     }
@@ -214,6 +214,39 @@ public class RoadMap
             }
         }
         return curClosest;
+    }
+    
+    public EdgeType getClosestEdgeFor(Position2D position)
+    {
+        double smallestDist = Double.MAX_VALUE;
+        double curDist = Double.MAX_VALUE;
+        EdgeType curClosest = null;
+        Collection<EdgeType> edges = _nameToEdgeMap.values();
+        for (EdgeType curEdge : edges)
+        {
+            curDist = computeSmallestEdgeToPointDistance(position, curEdge);
+            if(curDist < smallestDist)
+            {
+                smallestDist = curDist;
+                curClosest = curEdge;
+            }
+        }
+        return curClosest;
+    }
+
+    private double computeSmallestEdgeToPointDistance(Position2D position, EdgeType edge)
+    {
+        List<LaneType> lanes = edge.getLane();
+        double minDist = Double.POSITIVE_INFINITY;
+        for (LaneType curLane : lanes)
+        {
+            double curDist = computeSmallestLaneToPointDistance(position, curLane);
+            if(curDist < minDist)
+            {
+                minDist = curDist;
+            }
+        }
+        return minDist;
     }
 
     public Line2D getClosestLineFor(Position2D position)
@@ -351,6 +384,10 @@ public class RoadMap
         transform(_transformationMatrix);
     }
 
+    /**
+     * Transform this maps' base data according to matrix (scale and offset supported)
+     * @param transformationMatrix
+     */
     public void transform(TMatrix transformationMatrix)
     {
         List<JunctionType> junctions = getJunctions();

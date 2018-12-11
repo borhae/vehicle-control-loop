@@ -1,124 +1,126 @@
 package de.joachim.haensel.phd.scenario.tasks.execution;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.SimulationSetupConvenienceMethods;
+import de.joachim.haensel.phd.scenario.debug.DebugParams;
+import de.joachim.haensel.phd.scenario.debug.INavigationListener;
+import de.joachim.haensel.phd.scenario.debug.Speedometer;
+import de.joachim.haensel.phd.scenario.debug.VRepNavigationListener;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
-import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
-import de.joachim.haensel.phd.scenario.sumo2vrep.VRepMap;
 import de.joachim.haensel.phd.scenario.tasks.creation.Task;
-import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
-import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.control.BlockingArrivedListener;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
-import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
+import de.joachim.haensel.vrepshapecreation.shapes.EVRepShapes;
+import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
 
 public class TaskExecutor
 {
     private VRepRemoteAPI _vrep;
     private int _clientID;
     private VRepObjectCreation _objectCreator;
-    private String _mapFileName;
+    private RoadMap _map;
 
-    public void setMapFileName(String mapFileName)
+    public TaskExecutor(int clientID, VRepRemoteAPI vrep, VRepObjectCreation objectCreator)
     {
-        _mapFileName = mapFileName;
+        _vrep = vrep;
+        _clientID = clientID;
+        _objectCreator = objectCreator;
+    }
+
+    public void setMap(RoadMap map)
+    {
+        _map = map;
     }
 
     public void execute(List<Task> tasks) throws VRepException
     {
-        RoadMap map = createMap();
-        IVehicle vehicle = createVehicle(map, tasks.get(0).getSource());
-        try
-        {
-            Thread.sleep(1000);
-        }
-        catch (InterruptedException exc)
-        {
-            exc.printStackTrace();
-        }
+        IVehicle vehicle = createVehicle(_map, tasks.get(0).getSource());
         _vrep.simxStartSimulation(_clientID, remoteApi.simx_opmode_blocking);
-        try
-        {
-            Thread.sleep(1000);
-        }
-        catch (InterruptedException exc)
-        {
-            exc.printStackTrace();
-        }
+        waitForSimulation(1000);
         vehicle.start();
 
         for (Task curTask : tasks)
         {
-            driveSourceToTarget(curTask.getSource(), curTask.getTarget(), map, vehicle);
+            driveSourceToTarget(curTask.getSource(), curTask.getTarget(), _map, vehicle, curTask.getTimeout());
         }
-        
         vehicle.stop();
+        waitForSimulation(1000);
         _vrep.simxStopSimulation(_clientID, remoteApi.simx_opmode_blocking);
+        waitForSimulation(1000);
     }
 
-    private RoadMap createMap() throws VRepException
+    private void driveSourceToTarget(Position2D source, Position2D target, RoadMap map, IVehicle vehicle, int timoutInSeconds) throws VRepException
     {
-        RoadMap roadMap = new RoadMap(_mapFileName);
+        _vrep.simxStopSimulation(_clientID, remoteApi.simx_opmode_blocking);
         
-        float streetWidth = (float)1.5;
-        float streetHeight = (float)0.4;
-        VRepMap mapCreator = new VRepMap(streetWidth, streetHeight, _vrep, _clientID, _objectCreator);
-        mapCreator.createMeshBasedMap(roadMap);
-        mapCreator.createMapSizedRectangle(roadMap, false);
+        waitForSimulation(500);
         
-        return roadMap;
-    }
-
-    private void driveSourceToTarget(Position2D source, Position2D target, RoadMap map, IVehicle vehicle) throws VRepException
-    {
+        int targetMarkID = createTargetLandmark(target);
         vehicle.setPosition(source.getX(), source.getY(), 2.0);
-        BlockingArrivedListener listener = new BlockingArrivedListener(15, TimeUnit.MINUTES);
+        waitForSimulation(500);
+        _vrep.simxStartSimulation(_clientID, remoteApi.simx_opmode_blocking);
+        waitForSimulation(1000);
+        BlockingArrivedListener listener = new BlockingArrivedListener(timoutInSeconds, TimeUnit.SECONDS);
+        
+        DebugParams debParam = new DebugParams(); 
+        debParam.setSimulationDebugMarkerHeight(2.0);
+        INavigationListener navigationListener = new VRepNavigationListener(_objectCreator);
+        navigationListener.activateSegmentDebugging();
+        debParam.addNavigationListener(navigationListener);
+        Speedometer speedometer = Speedometer.createWindow();
+        debParam.setSpeedometer(speedometer);
+        vehicle.activateDebugging(debParam);
+        
         vehicle.driveTo(target.getX(), target.getY(), map, listener);
         listener.waitForArrival();
+       _objectCreator.deleteAutomaticObjects(Arrays.asList((new Integer[]{targetMarkID})));
+    }
+
+    private int createTargetLandmark(Position2D target) throws VRepException
+    {
+        ShapeParameters targetShapeParams = new ShapeParameters();
+        targetShapeParams.setIsDynamic(false);
+        targetShapeParams.setIsRespondable(false);
+        targetShapeParams.setMass(1.0f);
+        targetShapeParams.setName("target");
+        targetShapeParams.setOrientation(0.0f, 0.0f, 0.0f);
+        targetShapeParams.setPosition((float)target.getX(), (float)target.getY(), 1.0f);
+        targetShapeParams.setSize(3.0f, 3.0f, 3.0f);
+        targetShapeParams.setType(EVRepShapes.CUBOID);
+        targetShapeParams.setVisibility(true);
+        return _objectCreator.createPrimitive(targetShapeParams);
     }
     
     private IVehicle createVehicle(RoadMap map, Position2D vehiclePosition)
     {
-        // IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", 1.0f);
-        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/carvisuals.ttm", 1.0f);
-        IVehicleConfiguration vehicleConf = createConfiguration(map, vehiclePosition);
+        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", 1.0f);
+//        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/carvisuals.ttm", 1.0f);
+        IVehicleConfiguration vehicleConf = SimulationSetupConvenienceMethods.createVehicleConfiguration(map, vehiclePosition, 1.5);
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();
         return vehicle;
     }
-    
-    private IVehicleConfiguration createConfiguration(RoadMap map, Position2D vehiclePosition)
-    {
-        IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
-        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(5.0, 60.0);};
-        ILowerLayerFactory lowerFact = () -> {
-            PurePursuitController ctrl = new PurePursuitController();
-            PurePursuitParameters parameters = new PurePursuitParameters(10.0, 0.25);
-            parameters.setSpeed(2.5);
-            ctrl.setParameters(parameters);
-            return ctrl;
-        };
-        vehicleConf.setUpperCtrlFactory(upperFact);
-        vehicleConf.setLowerCtrlFactory(lowerFact);
-        
-        Position2D startingPoint = map.getClosestPointOnMap(vehiclePosition);
-        vehicleConf.setPosition(startingPoint.getX(), startingPoint.getY(), 3.0);
 
-        Vector2D firstRoadSection = new Vector2D(map.getClosestLineFor(vehiclePosition));
-        vehicleConf.setOrientation(firstRoadSection);
-        vehicleConf.setRoadMap(map);
-        return vehicleConf;
+    private void waitForSimulation(int sleepTime)
+    {
+        try
+        {
+            Thread.sleep(sleepTime);
+        }
+        catch (InterruptedException exc)
+        {
+            exc.printStackTrace();
+        }
     }
 }

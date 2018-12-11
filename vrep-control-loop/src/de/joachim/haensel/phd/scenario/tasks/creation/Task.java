@@ -8,17 +8,29 @@ public class Task
     private double _ySource;
     private double _xTarget;
     private double _yTarget;
+    private int _timeoutSec;
     
     public Task()
     {
     }
 
-    public Task(double xS, double yS, double xT, double yT)
+    public Task(double xS, double yS, double xT, double yT, int timeoutSec)
     {
         _xSource = xS;
         _ySource = yS;
         _xTarget = xT;
         _yTarget = yT;
+        _timeoutSec = timeoutSec;
+    }
+
+    public Task(Position2D source, Position2D target, int timeoutSec)
+    {
+        this(source.getX(), source.getY(), target.getX(), target.getY(), timeoutSec);
+    }
+
+    public int getTimeout()
+    {
+        return _timeoutSec;
     }
 
     @Override

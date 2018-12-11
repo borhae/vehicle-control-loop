@@ -40,7 +40,7 @@ public class TestTaskCreator
         taskCreator.configure(config);
         
         List<Task> expected = new ArrayList<>();
-        Task task = new Task(0.0, 0.0, 5.0, 0.0);
+        Task task = new Task(0.0, 0.0, 5.0, 0.0, 0);
         expected.add(task);
         
         List<Task> actual = taskCreator.createTasks();

@@ -144,6 +144,12 @@ public class Line2D
         _y1 = position.getY();
     }
 
+    public void setP2(Position2D position)
+    {
+        _x2 = position.getX();
+        _y2 = position.getY();
+    }
+
     /**
      * Computes on which side the other vector is in relation to this one
      * Left and right means that you're looking from a into the direction of b  

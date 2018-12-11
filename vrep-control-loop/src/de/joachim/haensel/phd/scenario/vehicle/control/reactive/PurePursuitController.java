@@ -71,7 +71,9 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
             _actuatorsSensors.computeAndLockSensorData(); 
             Position2D curPos = _actuatorsSensors.getPosition();
             double distance = Position2D.distance(curPos, _expectedTarget);
-            return distance < 2.0;
+            boolean arrived = distance < 2.0;
+            System.out.printf("distance %.2f \n", distance);
+            return arrived;
         }
 
         public void driveTo(Position2D target)
@@ -154,6 +156,7 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
 
     public void breakAndStopAction()
     {
+        System.out.println("pure pursuit arrived");
         _actuatorsSensors.drive(0.0f, 0.0f);
         Position2D position = _actuatorsSensors.getFrontWheelCenterPosition();
         _arrivedListeners.forEach(listener -> listener.arrived(position));
