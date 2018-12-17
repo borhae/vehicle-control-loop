@@ -24,6 +24,7 @@ import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitContr
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
+import de.joachim.haensel.phd.scenario.vrep.modelvisuals.MercedesVisualsNames;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleCreator;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleFactory;
@@ -46,7 +47,6 @@ public class VehicleCreationTest implements TestConstants
         _clientID = _vrep.simxStart("127.0.0.1", 19999, true, true, 5000, 5);
         _objectCreator = new VRepObjectCreation(_vrep, _clientID);
         _vehicles = new ArrayList<IVehicle>();
-
     }
 
     @AfterClass
@@ -58,7 +58,7 @@ public class VehicleCreationTest implements TestConstants
     @After
     public void cleanUpObjects() throws VRepException
     {
-        _vehicles.forEach(vehicle -> vehicle.removeFromSimulation());
+        _objectCreator.deleteAll();
     }
     
     @Test
@@ -68,18 +68,34 @@ public class VehicleCreationTest implements TestConstants
         IVehicleConfiguration vehicleConf = createConfiguration();
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();
-        _vehicles.add(vehicle);
         System.out.println("wait here");
     }
 
     @Test
     public void testCreateAndDestroyVehicleLoadModel() throws VRepException
     {
-        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, 1.0f);
+        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", 1.0f);
         IVehicleConfiguration vehicleConf = createConfiguration();
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();
-        _vehicles.add(vehicle);
+        System.out.println("wait here");
+    }
+
+    @Test
+    public void testCreateAndDestroyVehicleLoadModelWithAutoBody() throws VRepException
+    {
+        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/carvisuals.ttm", 1.0f);
+        IVehicleConfiguration vehicleConf = createConfiguration();
+        List<String> autoBodyNames = new ArrayList<>();
+        autoBodyNames.add(MercedesVisualsNames.AUTO_BODY_NAME);
+        autoBodyNames.add(MercedesVisualsNames.REAR_LEFT_VISUAL);
+        autoBodyNames.add(MercedesVisualsNames.REAR_RIGHT_VISUAL);
+        autoBodyNames.add(MercedesVisualsNames.FRONT_LEFT_VISUAL);
+        autoBodyNames.add(MercedesVisualsNames.FRONT_RIGHT_VISUAL);
+        
+        vehicleConf.setAutoBodyNames(autoBodyNames );
+        factory.configure(vehicleConf);
+        IVehicle vehicle = factory.createVehicleInstance();
         System.out.println("wait here");
     }
     
@@ -143,7 +159,11 @@ public class VehicleCreationTest implements TestConstants
         float height = vehicleCreator.getVehicleHeight();
         
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
-        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
+        ILowerLayerFactory lowerFact = () -> {
+            PurePursuitController controller = new PurePursuitController();
+            controller.setParameters(new PurePursuitParameters(10.0, 1.0));
+            return controller;
+        };
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap, upperFact, lowerFact);
         NetType network = roadMap.getNetwork();

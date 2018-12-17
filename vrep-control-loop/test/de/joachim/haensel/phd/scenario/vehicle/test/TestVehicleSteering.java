@@ -22,6 +22,7 @@ import de.joachim.haensel.phd.scenario.vehicle.ITrajectoryProvider;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
+import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
@@ -104,6 +105,11 @@ public class TestVehicleSteering
                 public void activateDebugging(DebugParams params)
                 {
                 }
+
+                @Override
+                public void deactivateDebugging()
+                {
+                }
             };
         };
         TestJustSteeringController llControl = new TestJustSteeringController();
@@ -181,6 +187,11 @@ public class TestVehicleSteering
 
                 @Override
                 public void activateDebugging(DebugParams params)
+                {
+                }
+
+                @Override
+                public void deactivateDebugging()
                 {
                 }
             };
@@ -327,6 +338,27 @@ public class TestVehicleSteering
         public void addTrajectoryReportListener(ITrajectoryReportListener reportListener)
         {
         }
+
+        @Override
+        public void addArrivedListener(IArrivedListener arrivedListener)
+        {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        public void clearSegmentBuffer()
+        {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        public void clearArrivedListeners()
+        {
+            // TODO Auto-generated method stub
+            
+        }
     }
     
     public class TestJustSteeringController implements ILowerLayerControl<Object>
@@ -385,6 +417,27 @@ public class TestVehicleSteering
         @Override
         public void addTrajectoryReportListener(ITrajectoryReportListener reportListener)
         {
+        }
+
+        @Override
+        public void addArrivedListener(IArrivedListener arrivedListener)
+        {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        public void clearSegmentBuffer()
+        {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        public void clearArrivedListeners()
+        {
+            // TODO Auto-generated method stub
+            
         }
     }
 }

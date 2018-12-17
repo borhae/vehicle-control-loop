@@ -144,6 +144,12 @@ public class Line2D
         _y1 = position.getY();
     }
 
+    public void setP2(Position2D position)
+    {
+        _x2 = position.getX();
+        _y2 = position.getY();
+    }
+
     /**
      * Computes on which side the other vector is in relation to this one
      * Left and right means that you're looking from a into the direction of b  
@@ -158,5 +164,76 @@ public class Line2D
     {
         double determinant = (b.getX() - a.getX()) * (m.getY() - a.getY()) - (b.getY() - a.getY()) * (m.getX() - a.getX());
         return Math.signum(determinant);
+    }
+
+//    /**
+//     * Is pos on this line, between p1 and p2? 
+//     * TODO maybe dispose
+//     * @param pos 
+//     * @return
+//     */
+//    public boolean containsDisposeThiseMethod(Position2D pos, double epsilon)
+//    {
+//        double ax = _x1;
+//        double bx = _x2;
+//        double cx = pos.getX();
+//
+//        double ay = _y1;
+//        double by = _y2;
+//        double cy = pos.getY();
+//        
+//        double crossProduct = (cy - ay) * (bx - ax) - (cx - ax) * (by - ay);
+//        if (Math.abs(crossProduct) > epsilon)
+//        {
+//            return false;
+//        }
+//        else
+//        {
+//            double dotProduct = (cx - ax) * (bx - ax) + (cy - ay) * (by - ay);
+//            if(dotProduct < epsilon)
+//            {
+//                return false;
+//            }
+//            else
+//            {
+//                double squaredLengthBA = (bx - ax) * (bx - ax) + (by - ay) * (by - ay);
+//                if(dotProduct > squaredLengthBA)
+//                {
+//                    return false;
+//                }
+//                else
+//                {
+//                    return true;
+//                }
+//            }
+//        }
+//    }
+
+    /**
+     * rather use this
+     * @param pos
+     * @param epsilon
+     * @return
+     */
+    public boolean contains(Position2D pos, double epsilon)
+    {
+        Vector2D v = new Vector2D(this);
+        Position2D perpendicularIntersection = Vector2D.getPerpendicularIntersection(v, pos);
+        if(perpendicularIntersection == null)
+        {
+            return false;
+        }
+        else
+        {
+            double distance = perpendicularIntersection.distance(pos);
+            if(distance > epsilon)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
     }
 }

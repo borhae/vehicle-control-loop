@@ -19,6 +19,7 @@ import coppelia.StringWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.math.XYMinMax;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Point3D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
@@ -334,8 +335,8 @@ public class VRepMap
         shapeParameters.setName(_elementNameCreator.createPlaneID());
         shapeParameters.setOrientation(0.0f, 0.0f, 0.0f);
         shapeParameters.setRespondableMask(ShapeParameters.GLOBAL_AND_LOCAL_RESPONDABLE_MASK);
-        float sizeX = minMax.distX();
-        float sizeY = minMax.distY();
+        float sizeX = (float) minMax.distX();
+        float sizeY = (float) minMax.distY();
         float sizeZ = 0.2f;
         shapeParameters.setSize(sizeX, sizeY, sizeZ);
         float posX =  (float) (minMax.minX() + minMax.distX()/2.0);

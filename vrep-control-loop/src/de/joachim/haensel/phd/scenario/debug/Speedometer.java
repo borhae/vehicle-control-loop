@@ -52,8 +52,23 @@ public class Speedometer extends JPanel
     {
         if(currentSegment != null)
         {
-            _segmentLabel.setText("idx: + " + currentSegment.getIdx() + ", vector: " + currentSegment.getVector().toString());
+            
+            _segmentLabel.setText("Current segment index: + " + currentSegment.getIdx() + System.lineSeparator() +  "Vector: " + formatVector(currentSegment.getVector()) + System.lineSeparator() + "Set Velocity: " + formatVelocity(currentSegment.getVelocity()));
         }
+        else
+        {
+            _segmentLabel.setText("Current segmen is null");
+        }
+    }
+
+    private String formatVelocity(double velocity)
+    {
+        return String.format("%.2f", velocity);
+    }
+
+    private String formatVector(Vector2D vector)
+    {
+        return String.format("[(%.2f, %.2f) -> (%.2f, %.2f)], <->: %.2f ", vector.getbX(), vector.getbY(), vector.getdX(), vector.getdY(), vector.getLength());
     }
 
     public void updateActualVelocity(double[] vehicleVelocity)

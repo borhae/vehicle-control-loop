@@ -86,6 +86,8 @@ public class BasicVelocityAssigner implements IVelocityAssigner
         identifyRegions(trajectories);
         fillInitialPadding(trajectories);
         capAccelerationDeceleration(trajectories);
+        // TODO give the car a little bump for the last segment so it can reach it's target
+        trajectories.get(trajectories.size() - 1).setVelocity(2);
         notifyListeners(trajectories);
         
 //        lowPassFilter(trajectories);

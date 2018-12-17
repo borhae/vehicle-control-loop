@@ -5,6 +5,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ITrajectoryProvider;
+import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
@@ -99,6 +100,26 @@ public class TireBlowOutEventGenerator implements ILowerLayerControl
 
     @Override
     public void addTrajectoryReportListener(ITrajectoryReportListener reportListener)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void addArrivedListener(IArrivedListener arrivedListener)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void clearSegmentBuffer()
+    {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void clearArrivedListeners()
     {
         // TODO Auto-generated method stub
         

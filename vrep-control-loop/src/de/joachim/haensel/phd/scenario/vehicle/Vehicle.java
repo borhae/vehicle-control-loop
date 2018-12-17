@@ -10,7 +10,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.simulator.ISimulatorData;
 import de.joachim.haensel.phd.scenario.sumo2vrep.OrientedPosition;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
-import de.joachim.haensel.phd.scenario.vehicle.experiment.test.TireBlowOutEventGenerator;
+import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleActuatorsSensors;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import sumobindings.JunctionType;
@@ -31,6 +31,9 @@ public class Vehicle implements IVehicle
 
     private ISimulatorData _simulatorData;
 
+    private boolean _stopped;
+
+
     public Vehicle(ISimulatorData simulatorData, IVehicleHandles vehicleHandles, RoadMap roadMap, IUpperLayerFactory upperLayerFactory, ILowerLayerFactory lowerLayerFactory)
     {
         _simulatorData = simulatorData;
@@ -46,6 +49,7 @@ public class Vehicle implements IVehicle
         _controlEventGenerator.addEventListener(_lowerControlLayer);
         _timer = new Timer();
         _roadMap = roadMap;
+        _stopped = true;
     }
 
     @Override
@@ -64,6 +68,7 @@ public class Vehicle implements IVehicle
     public void deacvtivateDebugging()
     {
         _lowerControlLayer.deactivateDebugging();
+        _upperControlLayer.deactivateDebugging();
     }
 
     public IVehicleHandles getVehicleHandles()
@@ -76,35 +81,55 @@ public class Vehicle implements IVehicle
         _actuatingSensing.setOrientation(angleAlpha, angleBeta, angleGamma);
     }
 
-    public void setPosition(float posX, float posY, float posZ) throws VRepException
+    @Override
+    public void setPosition(double posX, double posY, double posZ) throws VRepException
     {
-        _actuatingSensing.setPosition(posX, posY, posZ);
-    }
-
-    public void start()
-    {
-        _timer.scheduleAtFixedRate(_controlEventGenerator, 0, CONTROL_LOOP_EXECUTION_FREQUENCY);
+        _actuatingSensing.setPosition((float)posX, (float)posY, (float)posZ);
     }
     
-    public void driveTo(float x, float y, RoadMap roadMap)
+    public void start()
     {
+        if(_stopped)
+        {
+            _timer.scheduleAtFixedRate(_controlEventGenerator, 0, CONTROL_LOOP_EXECUTION_FREQUENCY);
+            _stopped = false;
+        }
+    }
+    
+    public void driveTo(double x, double y, RoadMap roadMap)
+    {
+        _lowerControlLayer.stop();
+        try
+        {
+            Thread.sleep(500); // give the lower layer time to actually stop
+        }
+        catch (InterruptedException exc)
+        {
+            exc.printStackTrace();
+        } 
         _roadMap = roadMap;
         Position2D targetPosition = new Position2D(x, y);
         _upperControlLayer.buildSegmentBuffer(targetPosition, roadMap);
+        _lowerControlLayer.clearSegmentBuffer();
         List<ILowerLayerControl> listeners = _controlEventGenerator.getListeners();
         listeners.stream().forEach(l -> l.driveTo(targetPosition));
     }
 
-    public void driveToBlocking(float x, float y, RoadMap roadMap)
+    @Override
+    public void driveTo(double x, double y, RoadMap map, IArrivedListener arrivedListener)
     {
-        //TODO nothings blocking here yet. Take care if the rest is done
-        driveTo(x, y, roadMap);
+        _lowerControlLayer.clearArrivedListeners();
+        _lowerControlLayer.addArrivedListener(arrivedListener);
+        driveTo(x, y, map);
     }
 
     public void stop()
     {
-        _timer.cancel();
-        _lowerControlLayer.stop();
+        if(!_stopped)
+        {
+            _timer.cancel();
+            _lowerControlLayer.stop();
+        }
     }
 
     public void putOnJunctionHeadingTo(JunctionType junction, LaneType laneToHeadFor) throws VRepException

@@ -42,7 +42,7 @@ public class VRepSimulatorData implements ISimulatorData
         try
         {
             _objectCreator.deleteScripts(vehicleHandles.getAllScriptHandles());
-            _objectCreator.deleteObjects(vehicleHandles.getAllObjectHandles());
+            _objectCreator.deleteAutomaticObjects(vehicleHandles.getAllObjectHandles());
         }
         catch (VRepException exc)
         {

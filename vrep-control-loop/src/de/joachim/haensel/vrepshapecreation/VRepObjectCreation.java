@@ -8,8 +8,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import coppelia.FloatWA;
+import coppelia.IntW;
 import coppelia.IntWA;
 import coppelia.StringWA;
 import coppelia.remoteApi;
@@ -350,6 +352,11 @@ public class VRepObjectCreation
         _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "createMesh", callParamsI, callParamsF, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
     }
 
+    /**
+     * Delete objects in simulation which should not be stored for automatic deletion. This method does not care about the deletion list.
+     * @param handles Handles to identify the objects for deletion
+     * @throws VRepException
+     */
     public void deleteObjects(List<Integer> handles) throws VRepException
     {
         List<VRepException> exceptions = new ArrayList<>();
@@ -374,7 +381,39 @@ public class VRepObjectCreation
             throw new VRepException(exceptionString.toString());
         }
     }
-    
+
+    /**
+     * Deletes objects in simulation which are stored for automatic deletion. Objects are deleted and the entry in the simulators deletion list is removed (see lua-script)
+     * @param handles Handles to identify the objects for deletion
+     * @throws VRepException
+     */
+    public void deleteAutomaticObjects(List<Integer> handles) throws VRepException
+    {
+        List<VRepException> exceptions = new ArrayList<>();
+        Consumer<? super Integer> removeObject = handle -> {
+            try
+            {
+                IntWA callParamsI = new IntWA(1);
+                callParamsI.getArray()[0] = handle;
+                _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "removeObject", callParamsI, null, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+            }
+            catch (VRepException exc)
+            {
+                exceptions.add(exc);
+            }
+        };
+        if(exceptions.isEmpty())
+        {
+            handles.forEach(removeObject);
+        }
+        else
+        {
+            StringBuilder exceptionString = new StringBuilder();
+            exceptions.forEach(excpetion -> exceptionString.append(excpetion.getMessage()));
+            throw new VRepException(exceptionString.toString());
+        }
+    }
+
     public void deleteScripts(List<Integer> handles) throws VRepException
     {
         List<VRepException> exceptions = new ArrayList<>();
@@ -422,5 +461,44 @@ public class VRepObjectCreation
         IntWA callParamsO = new IntWA(1);
         _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "simxGetScriptAssociatedWithObject", callParamsI, null, null, null, callParamsO, null, null, null, remoteApi.simx_opmode_blocking);
         return callParamsO.getArray()[0];
+    }
+
+    public List<Integer> getHandlesForNames(List<String> names) throws VRepException
+    {
+        List<Exception> exceptions = new ArrayList<>();
+        if(names == null)
+        {
+            return new ArrayList<>();
+        }
+        List<Integer> result = names.stream().map(name -> {
+            try
+            {
+                return getHandleForName(name);
+            }
+            catch (VRepException exc)
+            {
+                exceptions.add(exc);
+                return 0;
+            }
+        }).collect(Collectors.toList());
+        
+        if(exceptions.isEmpty())
+        {
+            return result;
+        }
+        else
+        {
+            //TODO this doesn't make sense yet
+            throw new VRepException(exceptions.toString());
+        }
+    }
+
+    public int getHandleForName(String name) throws VRepException
+    {
+        StringWA callParamsI = new StringWA(1);
+        callParamsI.getArray()[0] = name;
+        IntW callParamsO = new IntW(0);
+        _vrep.simxGetObjectHandle(_clientID, name, callParamsO, remoteApi.simx_opmode_blocking);
+        return callParamsO.getValue();
     }
 }

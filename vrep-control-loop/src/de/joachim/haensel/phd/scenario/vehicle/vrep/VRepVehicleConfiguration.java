@@ -1,5 +1,7 @@
 package de.joachim.haensel.phd.scenario.vehicle.vrep;
 
+import java.util.List;
+
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
@@ -15,6 +17,7 @@ public class VRepVehicleConfiguration implements IVehicleConfiguration
     private double _posZ;
     private Vector2D _orientation;
     private RoadMap _roadMap;
+    private List<String> _autoBodyNames;
 
     @Override
     public IVehicleConfiguration setUpperCtrlFactory(IUpperLayerFactory upperFact)
@@ -50,6 +53,12 @@ public class VRepVehicleConfiguration implements IVehicleConfiguration
     {
         _roadMap = roadMap;
         return this;
+    }
+    
+    @Override
+    public void setAutoBodyNames(List<String> autoBodyNames)
+    {
+        _autoBodyNames = autoBodyNames;
     }
 
     @Override
@@ -92,5 +101,11 @@ public class VRepVehicleConfiguration implements IVehicleConfiguration
     public Vector2D getOrientation()
     {
         return _orientation;
+    }
+
+    @Override
+    public List<String> getAutoBodyNames()
+    {
+        return _autoBodyNames;
     }
 }

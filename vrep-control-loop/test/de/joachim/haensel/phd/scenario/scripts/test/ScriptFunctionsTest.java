@@ -18,13 +18,10 @@ import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
-import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
-import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
-import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleCreator;
+import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import de.joachim.haensel.vrepshapecreation.shapes.EVRepShapes;
 import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
@@ -79,7 +76,7 @@ public class ScriptFunctionsTest
     @Test
     public void testDriveForward() throws VRepException
     {
-        IVehicleFactory vehicleFactory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, 1.0); 
+        IVehicleFactory vehicleFactory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", 1.0); 
         VRepVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
         vehicleConf.setLowerCtrlFactory(new ILowerLayerFactory() {
             @Override

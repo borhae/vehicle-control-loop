@@ -2,6 +2,7 @@ package de.joachim.haensel.phd.scenario.vehicle;
 
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
@@ -10,6 +11,8 @@ public interface ILowerLayerControl<P>
 {
     public void controlEvent();
     public void driveTo(Position2D position);
+    public void clearSegmentBuffer();
+    public void clearArrivedListeners();
     public void initController(IActuatingSensing actuatorsSensors, ITrajectoryProvider trajectoryProvider);
     public void activateDebugging(IVrepDrawing actuatingSensing, DebugParams params);
     public void deactivateDebugging();
@@ -29,4 +32,10 @@ public interface ILowerLayerControl<P>
      * @param requestListener
      */
     public void addTrajectoryReportListener(ITrajectoryReportListener reportListener);
+
+    /**
+     * Listeners added will receive a notification if the vehicle arrived at the destination position
+     * @param arrivedListener
+     */
+    public void addArrivedListener(IArrivedListener arrivedListener);
 }

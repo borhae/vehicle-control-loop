@@ -87,4 +87,10 @@ public class DefaultNavigationController implements IUpperLayerControl
     {
         _debuggingParameters = debuggingParameters;
     }
+
+    @Override
+    public void deactivateDebugging()
+    {
+        // TODO Auto-generated method stub
+    }
 }

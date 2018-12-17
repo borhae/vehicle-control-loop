@@ -24,6 +24,27 @@ public class VRepNavigationListener implements INavigationListener
     private boolean _routeDebugging;
     private boolean _segmentDebugging;
 
+    public enum IDCreator
+    {
+        INSTANCE;
+        
+        private Integer _counter = Integer.valueOf(0);
+        
+        public synchronized Integer getNextID()
+        {
+            Integer next = Integer.valueOf(_counter.intValue() + 1);
+            _counter = next;
+            return _counter;
+        }
+
+        public synchronized String getNextStringID()
+        {
+            Integer next = Integer.valueOf(_counter.intValue() + 1);
+            _counter = next;
+            return _counter.toString();
+        }
+    }
+
     public VRepNavigationListener(VRepObjectCreation objectCreator)
     {
         _objectCreator = objectCreator;
@@ -41,7 +62,7 @@ public class VRepNavigationListener implements INavigationListener
             segments.forEach(segment -> addSegmentToMesh(segment, vertices, indices));
             try
             {
-                _objectCreator.createMeshInSimulation(vertices, indices, "segments", true);
+                _objectCreator.createMeshInSimulation(vertices, indices, "segments" + IDCreator.INSTANCE.getNextStringID(), true);
             }
             catch (VRepException exc)
             {

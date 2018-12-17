@@ -2,6 +2,7 @@ package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
@@ -18,7 +19,8 @@ public class Navigator
 {
     private RoadMap _roadMap;
     private List<ISegmentBuildingListener> _segmentBuildingListeners;
-    private Position2D _currentPosition;
+    private Position2D _sourcePosition;
+    private Position2D _targetPosition;
 
     public Navigator(RoadMap roadMap)
     {
@@ -28,19 +30,23 @@ public class Navigator
     
     public List<Line2D> getRoute(Position2D currentPosition, Position2D targetPosition)
     {
-        _currentPosition = currentPosition;
-        JunctionType startJunction = _roadMap.getClosestJunctionFor(currentPosition);
-        JunctionType targetJunction = _roadMap.getClosestJunctionFor(targetPosition);
-        return getRoute(startJunction, targetJunction);
+        _sourcePosition = currentPosition;
+        _targetPosition = targetPosition;
+        EdgeType startEdge = _roadMap.getClosestEdgeFor(currentPosition);
+        EdgeType targetEdge = _roadMap.getClosestEdgeFor(targetPosition);
+        JunctionType startJunction = _roadMap.getJunctionForName(startEdge.getTo());
+        JunctionType targetJunction = _roadMap.getJunctionForName(targetEdge.getFrom());
+        List<Line2D> route = getRoute(startJunction, targetJunction, startEdge, targetEdge);
+        return route;
     }
 
-    public List<Line2D> getRoute(JunctionType startJunction, JunctionType targetJunction)
+    public List<Line2D> getRoute(JunctionType startJunction, JunctionType targetJunction, EdgeType startEdge, EdgeType targetEdge)
     {
         IShortestPathAlgorithm shortestPathSolver = new DijkstraAlgo(_roadMap);
         shortestPathSolver.setSource(startJunction);
         shortestPathSolver.setTarget(targetJunction);
         List<Node> path = shortestPathSolver.getPath();
-        List<Line2D> result = createLinesFromPath(path);
+        List<Line2D> result = createLinesFromPath(path, startEdge, targetEdge);
         notifyListeners(result);
         return result;
     }
@@ -50,7 +56,7 @@ public class Navigator
         _segmentBuildingListeners.forEach(listener -> listener.notifyNewRoute(result));
     }
 
-    private List<Line2D> createLinesFromPath(List<Node> path)
+    private List<Line2D> createLinesFromPath(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
     {
         List<Line2D> result = new ArrayList<>();
         List<EdgeType> edges = new ArrayList<>();
@@ -61,23 +67,73 @@ public class Navigator
             EdgeType sumoEdge = getEdgeBetween(cur, next);
             edges.add(sumoEdge);
         }
+        edges.add(0, startEdge);
+        edges.add(targetEdge);
         for (EdgeType curEdge : edges)
         {
             List<LaneType> lanes = curEdge.getLane();
             String shape = lanes.get(0).getShape();
             result.addAll(Line2D.createLines(shape));
         }
-
-        List<Line2D> beginningSections = computeSectionsBetweenPosAndNode(path.get(0), _currentPosition);
-        if(beginningSections != null)
+        // epsilon has high tolerance since the start and endpoints might not exactly be on the street.
+        boolean resultContainsSourcePosition = false;
+        for(int idx = 0; idx < result.size(); idx++)
         {
-            result.addAll(0, beginningSections);
+            if(result.get(idx).contains(_sourcePosition, 0.5))
+            {
+                resultContainsSourcePosition = true;
+                break;
+            }
         }
+        if(resultContainsSourcePosition)
+        {
+            for(Line2D curLine = result.get(0); !curLine.contains(_sourcePosition, 0.5); curLine = result.get(0))
+            {
+                result.remove(0);
+                if(result.isEmpty())
+                {
+                    break;
+                }
+            }
+        }
+        boolean resultContainsTargetPosition = false;
+        for(int idx = 0; idx < result.size(); idx++)
+        {
+            if(result.get(idx).contains(_targetPosition, 0.5))
+            {
+                resultContainsTargetPosition = true;
+                break;
+            }
+        }
+        if(resultContainsTargetPosition)
+        {
+            for(Line2D curLine = result.get(result.size() - 1); !curLine.contains(_targetPosition, 0.5); curLine = result.get(result.size() - 1))
+            {
+                result.remove(result.size() - 1);
+                if(result.isEmpty())
+                {
+                    break;
+                }
+            }
+        }
+        result.get(0).setP1(_sourcePosition);
+        result.get(result.size() - 1).setP2(_targetPosition);
+//        List<Line2D> beginningSections = computeSectionsBetweenPosAndNode(path.get(0), _sourcePosition, true);
+//        if(beginningSections != null)
+//        {
+//            result.addAll(0, beginningSections);
+//        }
+//        List<Line2D> endingSections = computeSectionsBetweenPosAndNode(path.get(path.size() - 1), _targetPosition, false);
+//        Collections.reverse(endingSections);
+//        if((endingSections != null) && !endingSections.isEmpty())
+//        {
+//            result.addAll(result.size(), endingSections);
+//        }
         return result;
     }
 
     /** 
-     * Looks up the incoming lane from given target node that is closest to the given source position.
+     * Looks up the incoming (or outgoing) lane from given target node that is closest to the given source position.
      * It then returns the parts of the sections of the lane that are between the position
      * and the node
      * Assumption: later elements in line shape are closer to node
@@ -85,15 +141,23 @@ public class Navigator
      * @param position source position
      * @return
      */
-    private List<Line2D> computeSectionsBetweenPosAndNode(Node node, Position2D position)
+    private List<Line2D> computeSectionsBetweenPosAndNode(Node node, Position2D position, boolean computeForIncomming)
     {
-        Collection<Edge> incommingEdges = node.getIncomingEdges();
+        Collection<Edge> edgesFromNode;
+        if(computeForIncomming)
+        {
+            edgesFromNode = node.getIncomingEdges();
+        }
+        else
+        {
+            edgesFromNode = node.getOutgoingEdges();
+        }
         List<Line2D> closestResolvedLane = null;
         int closestSectionIdx = -1;
         
         double closestDistance = Double.MAX_VALUE;
         
-        for(Edge curEdge : incommingEdges)
+        for(Edge curEdge : edgesFromNode)
         {
             List<LaneType> lanes = curEdge.getSumoEdge().getLane();
             for (LaneType curLane : lanes)
@@ -122,10 +186,27 @@ public class Navigator
         }
         else
         {
-            List<Line2D> lanesBetweenCurrentPositionAndFirstJunction = closestResolvedLane.subList(closestSectionIdx, closestResolvedLane.size());
-            Line2D firstLane = lanesBetweenCurrentPositionAndFirstJunction.get(0);
-            firstLane.setP1(position);
-            return lanesBetweenCurrentPositionAndFirstJunction;
+            if(closestResolvedLane.size() == 1)
+            {
+                Line2D onlyLine = closestResolvedLane.get(0);
+                if(node.distance(onlyLine.getP1()) <= node.distance(onlyLine.getP2()))
+                {
+                    onlyLine.setP2(position);
+                }
+                else
+                {
+                    onlyLine.setP1(position);
+                }
+                return closestResolvedLane;
+            }
+            else
+            {
+                // TODO check out which direction is shorter! this way we wouldn't need the assumption
+                List<Line2D> lanesBetweenCurrentPositionAndFirstJunction = closestResolvedLane.subList(closestSectionIdx, closestResolvedLane.size());
+                Line2D firstLane = lanesBetweenCurrentPositionAndFirstJunction.get(0);
+                firstLane.setP1(position);
+                return lanesBetweenCurrentPositionAndFirstJunction;
+            }
         }
     }
 
