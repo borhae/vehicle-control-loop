@@ -1,6 +1,5 @@
 package de.joachim.haensel.phd.scenario.tasks.execution;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -45,15 +44,25 @@ public class TaskExecutor
 
     public void execute(List<Task> tasks) throws VRepException
     {
-        IVehicle vehicle = createVehicle(_map, tasks.get(0).getSource());
+        IVehicle vehicle = createVehicle(_map, tasks.get(0).getSource(), tasks.get(0).getTarget());
         _vrep.simxStartSimulation(_clientID, remoteApi.simx_opmode_blocking);
         waitForSimulation(1000);
         vehicle.start();
+        
+        DebugParams debParam = new DebugParams(); 
+        debParam.setSimulationDebugMarkerHeight(2.0);
+        Speedometer speedometer = Speedometer.createWindow();
+        debParam.setSpeedometer(speedometer);
+        INavigationListener navigationListener = new VRepNavigationListener(_objectCreator);
+        navigationListener.activateSegmentDebugging();
+        debParam.addNavigationListener(navigationListener);
+        vehicle.activateDebugging(debParam);
 
         for (Task curTask : tasks)
         {
             driveSourceToTarget(curTask.getSource(), curTask.getTarget(), _map, vehicle, curTask.getTimeout());
         }
+        vehicle.deacvtivateDebugging();
         vehicle.stop();
         waitForSimulation(1000);
         _vrep.simxStopSimulation(_clientID, remoteApi.simx_opmode_blocking);
@@ -62,29 +71,9 @@ public class TaskExecutor
 
     private void driveSourceToTarget(Position2D source, Position2D target, RoadMap map, IVehicle vehicle, int timoutInSeconds) throws VRepException
     {
-        _vrep.simxStopSimulation(_clientID, remoteApi.simx_opmode_blocking);
-        
-        waitForSimulation(500);
-        
-        int targetMarkID = createTargetLandmark(target);
-        vehicle.setPosition(source.getX(), source.getY(), 2.0);
-        waitForSimulation(500);
-        _vrep.simxStartSimulation(_clientID, remoteApi.simx_opmode_blocking);
-        waitForSimulation(1000);
         BlockingArrivedListener listener = new BlockingArrivedListener(timoutInSeconds, TimeUnit.SECONDS);
-        
-        DebugParams debParam = new DebugParams(); 
-        debParam.setSimulationDebugMarkerHeight(2.0);
-        INavigationListener navigationListener = new VRepNavigationListener(_objectCreator);
-        navigationListener.activateSegmentDebugging();
-        debParam.addNavigationListener(navigationListener);
-        Speedometer speedometer = Speedometer.createWindow();
-        debParam.setSpeedometer(speedometer);
-        vehicle.activateDebugging(debParam);
-        
         vehicle.driveTo(target.getX(), target.getY(), map, listener);
         listener.waitForArrival();
-       _objectCreator.deleteAutomaticObjects(Arrays.asList((new Integer[]{targetMarkID})));
     }
 
     private int createTargetLandmark(Position2D target) throws VRepException
@@ -102,11 +91,11 @@ public class TaskExecutor
         return _objectCreator.createPrimitive(targetShapeParams);
     }
     
-    private IVehicle createVehicle(RoadMap map, Position2D vehiclePosition)
+    private IVehicle createVehicle(RoadMap map, Position2D vehiclePosition, Position2D targetPosition)
     {
-        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", 1.0f);
-//        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/carvisuals.ttm", 1.0f);
-        IVehicleConfiguration vehicleConf = SimulationSetupConvenienceMethods.createVehicleConfiguration(map, vehiclePosition, 1.5);
+//        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", 1.0f);
+        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/carvisuals.ttm", 1.0f);
+        IVehicleConfiguration vehicleConf = SimulationSetupConvenienceMethods.createMercedesLikeConfiguration(map, vehiclePosition, targetPosition, 1.5);
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();
         return vehicle;

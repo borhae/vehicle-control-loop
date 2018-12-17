@@ -76,4 +76,18 @@ public class MonitoringController implements ILowerLayerControl<Object>
     public void addArrivedListener(IArrivedListener arrivedListener)
     {
     }
+
+    @Override
+    public void clearSegmentBuffer()
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void clearArrivedListeners()
+    {
+        // TODO Auto-generated method stub
+        
+    }
 }

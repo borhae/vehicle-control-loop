@@ -111,4 +111,17 @@ public class TireBlowOutEventGenerator implements ILowerLayerControl
         // TODO Auto-generated method stub
         
     }
+
+    @Override
+    public void clearSegmentBuffer()
+    {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void clearArrivedListeners()
+    {
+        // TODO Auto-generated method stub
+        
+    }
 }

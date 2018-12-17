@@ -11,4 +11,6 @@ public interface IUpperLayerControl extends ITrajectoryProvider, IDrivingState
     public void initController(IActuatingSensing sensorsActuators, RoadMap roadMap);
 
     public void activateDebugging(DebugParams params);
+
+    public void deactivateDebugging();
 }

@@ -352,6 +352,11 @@ public class VRepObjectCreation
         _vrep.simxCallScriptFunction(_clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, 6, "createMesh", callParamsI, callParamsF, callParamsS, null, null, null, null, null, remoteApi.simx_opmode_blocking);
     }
 
+    /**
+     * Delete objects in simulation which should not be stored for automatic deletion. This method does not care about the deletion list.
+     * @param handles Handles to identify the objects for deletion
+     * @throws VRepException
+     */
     public void deleteObjects(List<Integer> handles) throws VRepException
     {
         List<VRepException> exceptions = new ArrayList<>();
@@ -377,6 +382,11 @@ public class VRepObjectCreation
         }
     }
 
+    /**
+     * Deletes objects in simulation which are stored for automatic deletion. Objects are deleted and the entry in the simulators deletion list is removed (see lua-script)
+     * @param handles Handles to identify the objects for deletion
+     * @throws VRepException
+     */
     public void deleteAutomaticObjects(List<Integer> handles) throws VRepException
     {
         List<VRepException> exceptions = new ArrayList<>();

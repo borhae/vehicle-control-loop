@@ -349,7 +349,19 @@ public class RoadMap
         double minDist = Double.MAX_VALUE;
         for (Line2D curLine : lines)
         {
-            double curDistance = curLine.distance(position);
+            double curDistance;
+            Vector2D v = new Vector2D(curLine);
+            Position2D perpendicularIntersection = Vector2D.getPerpendicularIntersection(v, position);
+            if(perpendicularIntersection == null)
+            {
+                double p1Dist = position.distance(curLine.getP1());
+                double p2Dist = position.distance(curLine.getP2());
+                curDistance = Math.min(p1Dist, p2Dist);
+            }
+            else
+            {
+                curDistance = position.distance(perpendicularIntersection);
+            }
             if(curDistance < minDist)
             {
                 minDist = curDistance;

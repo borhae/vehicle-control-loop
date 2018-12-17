@@ -23,7 +23,15 @@ public class BlockingArrivedListener implements IArrivedListener
         try
         {
             boolean noTimout = _countDownLatch.await(_timeout, _timeUnit);
-            System.out.println("passed latch, noTimeout was: " + noTimout);
+            if(noTimout)
+            {
+                System.out.println("clean arrival");
+            }
+            else
+            {
+                String maybeS = _timeout == 1 ? "" : "s";
+                System.out.println("stopped because we couldn't reach target within " + _timeout + " " + _timeUnit.toString() + maybeS);
+            }
         }
         catch (InterruptedException exc)
         {

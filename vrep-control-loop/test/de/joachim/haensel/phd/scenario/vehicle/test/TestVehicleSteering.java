@@ -105,6 +105,11 @@ public class TestVehicleSteering
                 public void activateDebugging(DebugParams params)
                 {
                 }
+
+                @Override
+                public void deactivateDebugging()
+                {
+                }
             };
         };
         TestJustSteeringController llControl = new TestJustSteeringController();
@@ -182,6 +187,11 @@ public class TestVehicleSteering
 
                 @Override
                 public void activateDebugging(DebugParams params)
+                {
+                }
+
+                @Override
+                public void deactivateDebugging()
                 {
                 }
             };
@@ -335,6 +345,20 @@ public class TestVehicleSteering
             // TODO Auto-generated method stub
             
         }
+
+        @Override
+        public void clearSegmentBuffer()
+        {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        public void clearArrivedListeners()
+        {
+            // TODO Auto-generated method stub
+            
+        }
     }
     
     public class TestJustSteeringController implements ILowerLayerControl<Object>
@@ -397,6 +421,20 @@ public class TestVehicleSteering
 
         @Override
         public void addArrivedListener(IArrivedListener arrivedListener)
+        {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        public void clearSegmentBuffer()
+        {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        public void clearArrivedListeners()
         {
             // TODO Auto-generated method stub
             

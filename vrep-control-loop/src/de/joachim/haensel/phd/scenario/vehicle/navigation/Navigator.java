@@ -36,17 +36,17 @@ public class Navigator
         EdgeType targetEdge = _roadMap.getClosestEdgeFor(targetPosition);
         JunctionType startJunction = _roadMap.getJunctionForName(startEdge.getTo());
         JunctionType targetJunction = _roadMap.getJunctionForName(targetEdge.getFrom());
-        List<Line2D> route = getRoute(startJunction, targetJunction);
+        List<Line2D> route = getRoute(startJunction, targetJunction, startEdge, targetEdge);
         return route;
     }
 
-    public List<Line2D> getRoute(JunctionType startJunction, JunctionType targetJunction)
+    public List<Line2D> getRoute(JunctionType startJunction, JunctionType targetJunction, EdgeType startEdge, EdgeType targetEdge)
     {
         IShortestPathAlgorithm shortestPathSolver = new DijkstraAlgo(_roadMap);
         shortestPathSolver.setSource(startJunction);
         shortestPathSolver.setTarget(targetJunction);
         List<Node> path = shortestPathSolver.getPath();
-        List<Line2D> result = createLinesFromPath(path);
+        List<Line2D> result = createLinesFromPath(path, startEdge, targetEdge);
         notifyListeners(result);
         return result;
     }
@@ -56,7 +56,7 @@ public class Navigator
         _segmentBuildingListeners.forEach(listener -> listener.notifyNewRoute(result));
     }
 
-    private List<Line2D> createLinesFromPath(List<Node> path)
+    private List<Line2D> createLinesFromPath(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
     {
         List<Line2D> result = new ArrayList<>();
         List<EdgeType> edges = new ArrayList<>();
@@ -67,24 +67,68 @@ public class Navigator
             EdgeType sumoEdge = getEdgeBetween(cur, next);
             edges.add(sumoEdge);
         }
+        edges.add(0, startEdge);
+        edges.add(targetEdge);
         for (EdgeType curEdge : edges)
         {
             List<LaneType> lanes = curEdge.getLane();
             String shape = lanes.get(0).getShape();
             result.addAll(Line2D.createLines(shape));
         }
-
-        List<Line2D> beginningSections = computeSectionsBetweenPosAndNode(path.get(0), _sourcePosition, true);
-        if(beginningSections != null)
+        // epsilon has high tolerance since the start and endpoints might not exactly be on the street.
+        boolean resultContainsSourcePosition = false;
+        for(int idx = 0; idx < result.size(); idx++)
         {
-            result.addAll(0, beginningSections);
+            if(result.get(idx).contains(_sourcePosition, 0.5))
+            {
+                resultContainsSourcePosition = true;
+                break;
+            }
         }
-        List<Line2D> endingSections = computeSectionsBetweenPosAndNode(path.get(path.size() - 1), _targetPosition, false);
-        Collections.reverse(endingSections);
-        if((endingSections != null) && !endingSections.isEmpty())
+        if(resultContainsSourcePosition)
         {
-            result.addAll(result.size(), endingSections);
+            for(Line2D curLine = result.get(0); !curLine.contains(_sourcePosition, 0.5); curLine = result.get(0))
+            {
+                result.remove(0);
+                if(result.isEmpty())
+                {
+                    break;
+                }
+            }
         }
+        boolean resultContainsTargetPosition = false;
+        for(int idx = 0; idx < result.size(); idx++)
+        {
+            if(result.get(idx).contains(_targetPosition, 0.5))
+            {
+                resultContainsTargetPosition = true;
+                break;
+            }
+        }
+        if(resultContainsTargetPosition)
+        {
+            for(Line2D curLine = result.get(result.size() - 1); !curLine.contains(_targetPosition, 0.5); curLine = result.get(result.size() - 1))
+            {
+                result.remove(result.size() - 1);
+                if(result.isEmpty())
+                {
+                    break;
+                }
+            }
+        }
+        result.get(0).setP1(_sourcePosition);
+        result.get(result.size() - 1).setP2(_targetPosition);
+//        List<Line2D> beginningSections = computeSectionsBetweenPosAndNode(path.get(0), _sourcePosition, true);
+//        if(beginningSections != null)
+//        {
+//            result.addAll(0, beginningSections);
+//        }
+//        List<Line2D> endingSections = computeSectionsBetweenPosAndNode(path.get(path.size() - 1), _targetPosition, false);
+//        Collections.reverse(endingSections);
+//        if((endingSections != null) && !endingSections.isEmpty())
+//        {
+//            result.addAll(result.size(), endingSections);
+//        }
         return result;
     }
 

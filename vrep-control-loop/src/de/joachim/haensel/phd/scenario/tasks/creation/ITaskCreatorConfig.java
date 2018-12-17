@@ -4,7 +4,10 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 
 public interface ITaskCreatorConfig
 {   
-    public static final double PACE_ESTIMATE = 0.06;
+//    public static final double PACE_ESTIMATE = 0.06; we should be able to drive 60km/h but we aren't currently
+//    public static final double PACE_ESTIMATE = 0.12; // so 30km/h must do
+    public static final double PACE_ESTIMATE = 0.72; // ok lets try 5km/h
+
 
     public int getNumOfTasks();
 

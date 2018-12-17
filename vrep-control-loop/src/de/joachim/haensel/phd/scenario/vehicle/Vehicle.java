@@ -68,6 +68,7 @@ public class Vehicle implements IVehicle
     public void deacvtivateDebugging()
     {
         _lowerControlLayer.deactivateDebugging();
+        _upperControlLayer.deactivateDebugging();
     }
 
     public IVehicleHandles getVehicleHandles()
@@ -83,7 +84,6 @@ public class Vehicle implements IVehicle
     @Override
     public void setPosition(double posX, double posY, double posZ) throws VRepException
     {
-        
         _actuatingSensing.setPosition((float)posX, (float)posY, (float)posZ);
     }
     
@@ -98,9 +98,19 @@ public class Vehicle implements IVehicle
     
     public void driveTo(double x, double y, RoadMap roadMap)
     {
+        _lowerControlLayer.stop();
+        try
+        {
+            Thread.sleep(500); // give the lower layer time to actually stop
+        }
+        catch (InterruptedException exc)
+        {
+            exc.printStackTrace();
+        } 
         _roadMap = roadMap;
         Position2D targetPosition = new Position2D(x, y);
         _upperControlLayer.buildSegmentBuffer(targetPosition, roadMap);
+        _lowerControlLayer.clearSegmentBuffer();
         List<ILowerLayerControl> listeners = _controlEventGenerator.getListeners();
         listeners.stream().forEach(l -> l.driveTo(targetPosition));
     }
@@ -108,6 +118,7 @@ public class Vehicle implements IVehicle
     @Override
     public void driveTo(double x, double y, RoadMap map, IArrivedListener arrivedListener)
     {
+        _lowerControlLayer.clearArrivedListeners();
         _lowerControlLayer.addArrivedListener(arrivedListener);
         driveTo(x, y, map);
     }

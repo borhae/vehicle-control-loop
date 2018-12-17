@@ -50,7 +50,6 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
             Consumer<Position2D> driveToAction = target -> _expectedTarget = target; 
             Consumer<PurePursuitController> driveAction = controller -> controller.driveAction();
             Consumer<PurePursuitController> breakAndStopAction = controller -> controller.breakAndStopAction();
-            
 
             createTransition(ControllerStates.IDLE, ControllerMsg.DRIVE_TO, null, ControllerStates.DRIVING, driveToAction);
             
@@ -71,7 +70,7 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
             _actuatorsSensors.computeAndLockSensorData(); 
             Position2D curPos = _actuatorsSensors.getPosition();
             double distance = Position2D.distance(curPos, _expectedTarget);
-            boolean arrived = distance < 2.0;
+            boolean arrived = distance < _lookahead;
             System.out.printf("distance %.2f \n", distance);
             return arrived;
         }
@@ -135,11 +134,11 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     @Override
     public void driveTo(Position2D target)
     {
-        _stateMachine.driveTo(target);
         ensureBufferSize();
         _actuatorsSensors.computeAndLockSensorData();
         Position2D currentPosition = _actuatorsSensors.getPosition();
         chooseCurrentSegment(currentPosition);
+        _stateMachine.driveTo(target);
     }
     
     @Override
@@ -153,6 +152,13 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     {
         _stateMachine.controlEvent(this);
     }
+    
+    @Override
+    public void clearSegmentBuffer()
+    {
+        _currentSegment = null;
+        _segmentBuffer.clear();
+    }
 
     public void breakAndStopAction()
     {
@@ -160,6 +166,7 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
         _actuatorsSensors.drive(0.0f, 0.0f);
         Position2D position = _actuatorsSensors.getFrontWheelCenterPosition();
         _arrivedListeners.forEach(listener -> listener.arrived(position));
+        _arrivedListeners.clear();
     }
     
     private void driveAction()
@@ -195,7 +202,7 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
             targetWheelRotation = computeTargetWheelRotationSpeed();
             targetSteeringAngle = computeTargetSteeringAngle();
         }
-        if(_debugging)
+        if(_debugging && _debugParams.getSpeedometer() != null)
         {
             _debugParams.getSpeedometer().updateWheelRotationSpeed(targetWheelRotation);
             _debugParams.getSpeedometer().updateCurrentSegment(_currentSegment);
@@ -327,5 +334,11 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     public void addArrivedListener(IArrivedListener arrivedListener)
     {
         _arrivedListeners.add(arrivedListener);
+    }
+
+    @Override
+    public void clearArrivedListeners()
+    {
+        _arrivedListeners.clear();
     }
 }

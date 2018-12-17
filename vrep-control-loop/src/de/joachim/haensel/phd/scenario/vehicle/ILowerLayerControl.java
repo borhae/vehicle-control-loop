@@ -11,6 +11,8 @@ public interface ILowerLayerControl<P>
 {
     public void controlEvent();
     public void driveTo(Position2D position);
+    public void clearSegmentBuffer();
+    public void clearArrivedListeners();
     public void initController(IActuatingSensing actuatorsSensors, ITrajectoryProvider trajectoryProvider);
     public void activateDebugging(IVrepDrawing actuatingSensing, DebugParams params);
     public void deactivateDebugging();
