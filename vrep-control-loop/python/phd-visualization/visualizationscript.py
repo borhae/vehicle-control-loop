@@ -156,6 +156,7 @@ def main():
     parser.add_argument("path", nargs="*")
     args = parser.parse_args()
 
+    print("hallo")
     print(args.path)
     print(args.v)
 
@@ -207,11 +208,15 @@ def main():
         pyplot.show()
 
 def crawlDir(paths):
+    print("crawling")
+    print(paths)
     pathlists = []
     for path_name in paths:
         cur_series_list = []
         path = PurePath(path_name)
         path_stem = path.stem
+        print("stem")
+        print(path_stem)
         for (_, _, filenammes) in walk(path.parent):
             for cur_fname in filenammes:
                 if(re.match(r"^" + re.escape(path_stem) + r"\d\d\d\d\d\d", cur_fname)):

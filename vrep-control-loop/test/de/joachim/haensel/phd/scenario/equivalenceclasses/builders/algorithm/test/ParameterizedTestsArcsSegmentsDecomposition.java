@@ -59,12 +59,12 @@ public class ParameterizedTestsArcsSegmentsDecomposition
 //            {0.3, Math.PI / 4.0, 3, 1.5, "10_"},
 //            {0.3, Math.PI / 4.0, 3, 0.5, "11_"},
 //            {0.3, Math.PI / 4.0, 3, 0.05, "12_"},
-            {0.3, Math.PI / 4.0, 3, 1.0, "13_"}, // -> best so far: don't prefer arcs over segments or the other way round, small 
+            {0.3, Math.PI / 4.0, 3, 1.0, 4.0, "13_"}, // -> best so far: don't prefer arcs over segments or the other way round, small 
 //            {0.2, Math.PI / 4.0, 3, 1.2, "14_"},
-            {0.2, Math.PI, 3, 1.2, "15_"},
-            {0.2, Math.PI / 2.0, 3, 1.2, "16_"},
-            {0.2, Math.PI / 4.0, 3, 1.2, "17_"},
-            {0.2, Math.PI / 8.0, 3, 1.2, "18_"}
+            {0.2, Math.PI, 3, 1.2, 4.0, "15_"},
+            {0.2, Math.PI / 2.0, 3, 1.2, 4.0,  "16_"},
+            {0.2, Math.PI / 4.0, 3, 1.2, 4.0, "17_"},
+            {0.2, Math.PI / 8.0, 3, 1.2, 4.0, "18_"}
         });
     }
 

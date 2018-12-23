@@ -76,6 +76,7 @@ public class Navigator
             result.addAll(Line2D.createLines(shape));
         }
         // epsilon has high tolerance since the start and endpoints might not exactly be on the street.
+        // endpoints could also be literally on a crossing, I did not took care for that yet
         boolean resultContainsSourcePosition = false;
         for(int idx = 0; idx < result.size(); idx++)
         {
