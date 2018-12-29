@@ -304,6 +304,21 @@ public class Vector2D
     }
 
     /**
+     * Stretches the vector by addition in both directions
+     * @param addition the amount by which this vector will be lengthened on both sides
+     */
+    public void lengthen(double addition)
+    {
+        double dx = _normX * addition;
+        double dy = _normY * addition;
+        _bX = _bX - dx;
+        _bY = _bY - dy;
+        _dX = _dX + dx;
+        _dY = _dY + dy;
+        updateLength();
+    }
+    
+    /**
      * Computes on which side the other vector is in relation to this one
      * @param other the other vector
      * @return values smaller than 0 indicate on the right side, greater 0 on the left side and 0 means collinear

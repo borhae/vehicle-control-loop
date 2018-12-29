@@ -7,6 +7,7 @@ import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.Edge;
 import de.joachim.haensel.phd.scenario.sumo2vrep.Node;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
@@ -33,6 +34,18 @@ public class Navigator
         _sourcePosition = currentPosition;
         _targetPosition = targetPosition;
         EdgeType startEdge = _roadMap.getClosestEdgeFor(currentPosition);
+        EdgeType targetEdge = _roadMap.getClosestEdgeFor(targetPosition);
+        JunctionType startJunction = _roadMap.getJunctionForName(startEdge.getTo());
+        JunctionType targetJunction = _roadMap.getJunctionForName(targetEdge.getFrom());
+        List<Line2D> route = getRoute(startJunction, targetJunction, startEdge, targetEdge);
+        return route;
+    }
+    
+    public List<Line2D> getRouteWithInitialOrientation(Position2D currentPosition, Position2D targetPosition, Vector2D orientation)
+    {
+        _sourcePosition = currentPosition;
+        _targetPosition = targetPosition;
+        EdgeType startEdge = _roadMap.getClosestEdgeForOrientationRestricted(currentPosition, orientation);
         EdgeType targetEdge = _roadMap.getClosestEdgeFor(targetPosition);
         JunctionType startJunction = _roadMap.getJunctionForName(startEdge.getTo());
         JunctionType targetJunction = _roadMap.getJunctionForName(targetEdge.getFrom());
@@ -77,10 +90,45 @@ public class Navigator
         }
         // epsilon has high tolerance since the start and endpoints might not exactly be on the street.
         // endpoints could also be literally on a crossing, I did not took care for that yet
+        result = cutStartLaneShapes(result);
+        cutEndLaneShapes(result);
+        result.get(0).setP1(_sourcePosition);
+        result.get(result.size() - 1).setP2(_targetPosition);
+        return result;
+    }
+    
+    private List<Line2D> cutStartLaneShapes(List<Line2D> result)
+    {
+        double minDist = Double.POSITIVE_INFINITY;
+        double curDist = Double.POSITIVE_INFINITY;
+        int minIdx = Integer.MAX_VALUE;
+        for (int idx = 0; idx < result.size(); idx++)
+        {
+            Line2D curLine = result.get(idx);
+            curDist = curLine.perpendicularDistanceWithEndpointLimit(_sourcePosition, 3.0);
+            if(curDist < minDist)
+            {
+                minDist = curDist;
+                minIdx = idx;
+            }
+        }
+        if(minDist < Double.POSITIVE_INFINITY)
+        {
+            return result.subList(minIdx, result.size() - 1);
+        }
+        else
+        {
+            return result;
+        }
+    }
+
+    private void cutStartLaneShapesOld(List<Line2D> result)
+    {
         boolean resultContainsSourcePosition = false;
         for(int idx = 0; idx < result.size(); idx++)
         {
-            if(result.get(idx).contains(_sourcePosition, 0.5))
+            Line2D curLine = result.get(idx);
+            if(curLine.contains(_sourcePosition, 0.5))
             {
                 resultContainsSourcePosition = true;
                 break;
@@ -97,6 +145,10 @@ public class Navigator
                 }
             }
         }
+    }
+
+    private void cutEndLaneShapes(List<Line2D> result)
+    {
         boolean resultContainsTargetPosition = false;
         for(int idx = 0; idx < result.size(); idx++)
         {
@@ -117,20 +169,6 @@ public class Navigator
                 }
             }
         }
-        result.get(0).setP1(_sourcePosition);
-        result.get(result.size() - 1).setP2(_targetPosition);
-//        List<Line2D> beginningSections = computeSectionsBetweenPosAndNode(path.get(0), _sourcePosition, true);
-//        if(beginningSections != null)
-//        {
-//            result.addAll(0, beginningSections);
-//        }
-//        List<Line2D> endingSections = computeSectionsBetweenPosAndNode(path.get(path.size() - 1), _targetPosition, false);
-//        Collections.reverse(endingSections);
-//        if((endingSections != null) && !endingSections.isEmpty())
-//        {
-//            result.addAll(result.size(), endingSections);
-//        }
-        return result;
     }
 
     /** 

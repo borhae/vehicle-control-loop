@@ -85,6 +85,12 @@ public class Position2D
         init(x, y);
     }
     
+
+    public void setXY(Position2D newValue)
+    {
+        setXY(newValue._x, newValue._y);
+    }
+    
     /**
      * The point between p1 and p2
      * @param p1

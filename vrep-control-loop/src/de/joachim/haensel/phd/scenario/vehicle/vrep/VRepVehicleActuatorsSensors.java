@@ -331,8 +331,8 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
         FloatWA rearLeftWheelPos = new FloatWA(3);
         try
         {
-            _vrep.simxGetObjectPosition(_clientID, rearLeftWheelHandle, -1, frontLeftWheelPos, remoteApi.simx_opmode_blocking);
-            _vrep.simxGetObjectPosition(_clientID, frontLeftWheelHandle, -1, rearLeftWheelPos, remoteApi.simx_opmode_blocking);
+            _vrep.simxGetObjectPosition(_clientID, rearLeftWheelHandle, -1, rearLeftWheelPos, remoteApi.simx_opmode_blocking);
+            _vrep.simxGetObjectPosition(_clientID, frontLeftWheelHandle, -1, frontLeftWheelPos, remoteApi.simx_opmode_blocking);
         }
         catch (VRepException exc)
         {

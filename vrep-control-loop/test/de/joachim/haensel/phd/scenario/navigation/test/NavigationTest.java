@@ -165,15 +165,11 @@ public class NavigationTest implements TestConstants
     {
         RoadMapAndCenterMatrix mapAndCenterMatrix = 
                 SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
-        RoadMap map = mapAndCenterMatrix.getRoadMap();
         TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
-        TaskCreator taskCreator = new TaskCreator();
-        PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(3);
         
-//        Position2D p1 = new Position2D(5841.15, 4890.38).transform(centerMatrix);
         Position2D startPosition = new Position2D(3971.66, 4968.91).transform(centerMatrix);
         Position2D destinationPosition = new Position2D(2998.93, 4829.77).transform(centerMatrix);
-        
+
         drawPosition(startPosition, Color.ORANGE, _objectCreator, "start");
         drawPosition(destinationPosition, Color.BLUE, _objectCreator, "goal");
 
@@ -188,7 +184,32 @@ public class NavigationTest implements TestConstants
         List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
         drawRoute(route, _objectCreator);
         System.out.println("done");
+    }
+    
+    @Test
+    public void testSourceBeforeJunctionUTurn() throws VRepException
+    {
+        RoadMapAndCenterMatrix mapAndCenterMatrix = 
+                SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+        TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+      
+        Position2D startPosition = new Position2D(2998.93, 4829.77).transform(centerMatrix);
+        Position2D destinationPosition = new Position2D(3246.30, 2117.18).transform(centerMatrix);
 
+        drawPosition(startPosition, Color.ORANGE, _objectCreator, "start");
+        drawPosition(destinationPosition, Color.BLUE, _objectCreator, "goal");
+
+        RoadMap roadMap = mapAndCenterMatrix.getRoadMap();
+        Position2D closestToStartOnMap = roadMap.getClosestPointOnMap(startPosition);
+        Position2D closestToDestinationOnMap = roadMap.getClosestPointOnMap(destinationPosition);
+        
+        drawPosition(closestToStartOnMap, Color.ORANGE, _objectCreator, "startOnMap");
+        drawPosition(closestToDestinationOnMap, Color.BLUE, _objectCreator, "goalOnMap");
+        
+        Navigator navigator = new Navigator(roadMap);
+        List<Line2D> route = navigator.getRoute(startPosition, destinationPosition);
+        drawRoute(route, _objectCreator);
+        System.out.println("done");
     }
     
     private void drawPosition(Position2D position, Color orange, VRepObjectCreation objectCreator, String name) throws VRepException

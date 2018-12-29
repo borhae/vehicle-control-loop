@@ -107,16 +107,12 @@ public class TestTaskExecutor
             RoadMap map = mapAndCenterMatrix.getRoadMap();
             TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
             TaskCreator taskCreator = new TaskCreator();
-            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(3);
+            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(1);
             
-//            Position2D p1 = new Position2D(5841.15, 4890.38).transform(centerMatrix);
-            Position2D p2 = new Position2D(3971.66, 4968.91).transform(centerMatrix);
-            Position2D p3 = new Position2D(2998.93, 4829.77).transform(centerMatrix);
-            Position2D p4 = new Position2D(3246.30, 2117.18).transform(centerMatrix);
-            Position2D p5 = new Position2D(5647.77, 2749.04).transform(centerMatrix);
+            Position2D startPoint = new Position2D(3971.66, 4968.91).transform(centerMatrix);
+            Position2D endPoint = new Position2D(2998.93, 4829.77).transform(centerMatrix);
             
-//            config.setTargetPoints(Arrays.asList(new Position2D[]{p1, p2, p3, p4, p5}));
-            config.setTargetPoints(Arrays.asList(new Position2D[]{p2, p3, p4, p5}));
+            config.setTargetPoints(Arrays.asList(new Position2D[]{startPoint, endPoint}));
             taskCreator.configure(config);
             List<Task> tasks = taskCreator.createTasks();
 
@@ -131,6 +127,36 @@ public class TestTaskExecutor
         }
     }
     
+    @Test
+    public void testExecuteOneDefinedAToBTask3()
+    {
+        try
+        {
+            RoadMapAndCenterMatrix mapAndCenterMatrix = 
+                    SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+            RoadMap map = mapAndCenterMatrix.getRoadMap();
+            TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+            TaskCreator taskCreator = new TaskCreator();
+            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(1);
+            
+            Position2D p3 = new Position2D(2998.93, 4829.77).transform(centerMatrix);
+            Position2D p4 = new Position2D(3246.30, 2117.18).transform(centerMatrix);
+            
+            config.setTargetPoints(Arrays.asList(new Position2D[]{p3, p4}));
+            taskCreator.configure(config);
+            List<Task> tasks = taskCreator.createTasks();
+
+            TaskExecutor executor = new TaskExecutor(_clientID, _vrep, _objectCreator);
+            executor.setMap(map);
+            executor.execute(tasks);
+            System.out.println("bla");
+        }
+        catch (VRepException exc)
+        {
+            fail(exc.toString());
+        }
+    }
+
     @Test
     public void testExecute4PointRoute()
     {
@@ -150,6 +176,37 @@ public class TestTaskExecutor
             Position2D p5 = new Position2D(5647.77, 2749.04).transform(centerMatrix);
             
             config.setTargetPoints(Arrays.asList(new Position2D[]{p1, p2, p3, p4, p5}));
+            taskCreator.configure(config);
+            List<Task> tasks = taskCreator.createTasks();
+
+            TaskExecutor executor = new TaskExecutor(_clientID, _vrep, _objectCreator);
+            executor.setMap(map);
+            executor.execute(tasks);
+            System.out.println("bla");
+        }
+        catch (VRepException exc)
+        {
+            fail(exc.toString());
+        }
+    }
+
+    @Test
+    public void testExecute2PointRoute()
+    {
+        try
+        {
+            RoadMapAndCenterMatrix mapAndCenterMatrix = 
+                    SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+            RoadMap map = mapAndCenterMatrix.getRoadMap();
+            TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+            TaskCreator taskCreator = new TaskCreator();
+            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(2);
+            
+            Position2D p2 = new Position2D(3122.84, 4937.96).transform(centerMatrix);
+            Position2D p3 = new Position2D(2998.93, 4829.77).transform(centerMatrix);
+            Position2D p4 = new Position2D(3246.30, 2117.18).transform(centerMatrix);
+            
+            config.setTargetPoints(Arrays.asList(new Position2D[]{p2, p3, p4}));
             taskCreator.configure(config);
             List<Task> tasks = taskCreator.createTasks();
 

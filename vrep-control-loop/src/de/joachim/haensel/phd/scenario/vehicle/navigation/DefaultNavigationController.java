@@ -6,6 +6,7 @@ import java.util.List;
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
@@ -48,9 +49,10 @@ public class DefaultNavigationController implements IUpperLayerControl
     {
         _roadMap = roadMap;
         Position2D currentPosition = _sensorsActuators.getNonDynamicPosition();
+        Vector2D orientation = _sensorsActuators.getOrientation();
         Navigator navigator = new Navigator(_roadMap);
         navigator.addSegmentBuildingListeners(_segmentBuildingListeners);
-        List<Line2D> routeBasis = navigator.getRoute(currentPosition, targetPosition);
+        List<Line2D> routeBasis = navigator.getRouteWithInitialOrientation(currentPosition, targetPosition, orientation);
         _debuggingParameters.notifyNavigationListenersRouteChanged(routeBasis);
         ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
         IVelocityAssignerFactory velocityAssignerFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, _maxSpeed, 6.0, 16.0, 16.0);

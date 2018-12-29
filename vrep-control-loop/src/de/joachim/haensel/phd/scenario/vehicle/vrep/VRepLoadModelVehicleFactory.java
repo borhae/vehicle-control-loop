@@ -97,9 +97,8 @@ public class VRepLoadModelVehicleFactory implements IVehicleFactory
             if(orientationToAlignTo != null)
             {
                 Vector2D orientation = vehicle.getOrientation();
-                double correctionAngle = Vector2D.computeAngle(orientation, orientationToAlignTo);
-                correctionAngle = (correctionAngle + Math.PI);
-                vehicle.setOrientation((float)0.0, (float)0.0, (float)correctionAngle);
+                double correctionAngle = Vector2D.computeAngleSpecial(orientation, orientationToAlignTo);
+                vehicle.setOrientation((float)0.0, (float)0.0, (float)(correctionAngle));
                 orientation = vehicle.getOrientation();
                 System.out.println("orientation");
             }

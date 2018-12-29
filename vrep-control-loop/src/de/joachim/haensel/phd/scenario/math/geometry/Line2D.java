@@ -39,6 +39,15 @@ public class Line2D
         this(p1.getX(), p1.getY(), p2.getX(), p2.getY());
     }
 
+    public void setLine(Line2D newLine)
+    {
+        _x1 = newLine._x1;
+        _y1 = newLine._y1;
+        _x2 = newLine._x2;
+        _y2 = newLine._y2;
+        _c = Position2D.distance(_x1, _y1, _x2, _y2);
+    }
+
     public double length(double x1, double y1, double x2, double y2)
     {
         double dx = x2 - x1;
@@ -49,6 +58,27 @@ public class Line2D
     public double distance(Position2D position)
     {
         return new Vector2D(this).unboundedDistance(position);
+    }
+    
+    /**
+     * Perpendicular distance within segment extended by endPointLimit
+     * @param pos
+     * @param endPointLimit by how much is this line extended and still supposed to result in a value
+     * @return
+     */
+    public double perpendicularDistanceWithEndpointLimit(Position2D pos, double endPointLimit)
+    {
+        Vector2D v = new Vector2D(this);
+        v.lengthen(endPointLimit);
+        Position2D intersectionPoint = Vector2D.getPerpendicularIntersection(v, pos);
+        if(intersectionPoint != null)
+        {
+            return Position2D.distance(intersectionPoint, pos);
+        }
+        else
+        {
+            return Double.POSITIVE_INFINITY;
+        }
     }
     
     public double length()
@@ -236,4 +266,5 @@ public class Line2D
             }
         }
     }
+
 }
