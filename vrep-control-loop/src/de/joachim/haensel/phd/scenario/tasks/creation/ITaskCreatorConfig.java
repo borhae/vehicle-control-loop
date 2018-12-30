@@ -1,6 +1,7 @@
 package de.joachim.haensel.phd.scenario.tasks.creation;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.tasks.ITask;
 
 public interface ITaskCreatorConfig
 {   
@@ -9,9 +10,10 @@ public interface ITaskCreatorConfig
     public static final double PACE_ESTIMATE = 0.72; // ok lets try 5km/h
 
 
-    public int getNumOfTasks();
-
-    public Task getNext();
+    public boolean hasNext();
+    public ITask getNext();
+    public void init();
+    
     
     public static int estimateTimeout(double xSource, double ySource, double xTarget, double yTarget)
     {

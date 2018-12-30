@@ -1,11 +1,9 @@
 package de.joachim.haensel.phd.scenario.tasks.execution.test;
 
+import static org.junit.Assert.fail;
+
 import java.util.Arrays;
 import java.util.List;
-
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -18,10 +16,10 @@ import de.joachim.haensel.phd.scenario.SimulationSetupConvenienceMethods;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
-import de.joachim.haensel.phd.scenario.tasks.creation.AllSameTaskCreatorConfig;
+import de.joachim.haensel.phd.scenario.tasks.ITask;
+import de.joachim.haensel.phd.scenario.tasks.creation.AllSameAToBDrivingTaskCreatorConfig;
 import de.joachim.haensel.phd.scenario.tasks.creation.FixedSourceTargetContinuousRouteTaskCreatorConfig;
 import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig;
-import de.joachim.haensel.phd.scenario.tasks.creation.Task;
 import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
@@ -54,13 +52,14 @@ public class TestTaskExecutor
         {
             RoadMap map = SimulationSetupConvenienceMethods.createMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
             TaskCreator taskCreator = new TaskCreator();
-            AllSameTaskCreatorConfig config = new AllSameTaskCreatorConfig(1);
-            config.setAllSameOnMap(0.0, 0.0, 200.0, 200.0, map);
+            AllSameAToBDrivingTaskCreatorConfig config = new AllSameAToBDrivingTaskCreatorConfig(1, true);
+            config.setMap(map);
+            config.configRoutesOnMap(0.0, 0.0, 200.0, 200.0);
+            config.configSimulator(_vrep, _clientID, _objectCreator);
             taskCreator.configure(config);
-            List<Task> tasks = taskCreator.createTasks();
+            List<ITask> tasks = taskCreator.createTasks();
 
-            TaskExecutor executor = new TaskExecutor(_clientID, _vrep, _objectCreator);
-            executor.setMap(map);
+            TaskExecutor executor = new TaskExecutor();
             executor.execute(tasks);
         }
         catch (VRepException exc)
@@ -84,10 +83,9 @@ public class TestTaskExecutor
             Position2D target = new Position2D(5594.0, 4794.0).transform(centerMatrix);
             config.setSourceTarget(source, target , map);
             taskCreator.configure(config);
-            List<Task> tasks = taskCreator.createTasks();
+            List<ITask> tasks = taskCreator.createTasks();
 
-            TaskExecutor executor = new TaskExecutor(_clientID, _vrep, _objectCreator);
-            executor.setMap(map);
+            TaskExecutor executor = new TaskExecutor();
             executor.execute(tasks);
             System.out.println("bla");
         }
@@ -107,17 +105,18 @@ public class TestTaskExecutor
             RoadMap map = mapAndCenterMatrix.getRoadMap();
             TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
             TaskCreator taskCreator = new TaskCreator();
-            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(1);
+            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(true);
             
             Position2D startPoint = new Position2D(3971.66, 4968.91).transform(centerMatrix);
             Position2D endPoint = new Position2D(2998.93, 4829.77).transform(centerMatrix);
             
+            config.setMap(map);
+            config.configSimulator(_vrep, _clientID, _objectCreator);
             config.setTargetPoints(Arrays.asList(new Position2D[]{startPoint, endPoint}));
             taskCreator.configure(config);
-            List<Task> tasks = taskCreator.createTasks();
+            List<ITask> tasks = taskCreator.createTasks();
 
-            TaskExecutor executor = new TaskExecutor(_clientID, _vrep, _objectCreator);
-            executor.setMap(map);
+            TaskExecutor executor = new TaskExecutor();
             executor.execute(tasks);
             System.out.println("bla");
         }
@@ -137,17 +136,19 @@ public class TestTaskExecutor
             RoadMap map = mapAndCenterMatrix.getRoadMap();
             TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
             TaskCreator taskCreator = new TaskCreator();
-            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(1);
+            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(true);
             
             Position2D p3 = new Position2D(2998.93, 4829.77).transform(centerMatrix);
             Position2D p4 = new Position2D(3246.30, 2117.18).transform(centerMatrix);
-            
+      
+            config.setMap(map);
+            config.configSimulator(_vrep, _clientID, _objectCreator);
+
             config.setTargetPoints(Arrays.asList(new Position2D[]{p3, p4}));
             taskCreator.configure(config);
-            List<Task> tasks = taskCreator.createTasks();
+            List<ITask> tasks = taskCreator.createTasks();
 
-            TaskExecutor executor = new TaskExecutor(_clientID, _vrep, _objectCreator);
-            executor.setMap(map);
+            TaskExecutor executor = new TaskExecutor();
             executor.execute(tasks);
             System.out.println("bla");
         }
@@ -167,20 +168,22 @@ public class TestTaskExecutor
             RoadMap map = mapAndCenterMatrix.getRoadMap();
             TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
             TaskCreator taskCreator = new TaskCreator();
-            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(4);
+            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(true);
             
             Position2D p1 = new Position2D(5841.15, 4890.38).transform(centerMatrix);
             Position2D p2 = new Position2D(3971.66, 4968.91).transform(centerMatrix);
             Position2D p3 = new Position2D(2998.93, 4829.77).transform(centerMatrix);
             Position2D p4 = new Position2D(3246.30, 2117.18).transform(centerMatrix);
             Position2D p5 = new Position2D(5647.77, 2749.04).transform(centerMatrix);
-            
+
+            config.setMap(map);
+            config.configSimulator(_vrep, _clientID, _objectCreator);
+
             config.setTargetPoints(Arrays.asList(new Position2D[]{p1, p2, p3, p4, p5}));
             taskCreator.configure(config);
-            List<Task> tasks = taskCreator.createTasks();
+            List<ITask> tasks = taskCreator.createTasks();
 
-            TaskExecutor executor = new TaskExecutor(_clientID, _vrep, _objectCreator);
-            executor.setMap(map);
+            TaskExecutor executor = new TaskExecutor();
             executor.execute(tasks);
             System.out.println("bla");
         }
@@ -200,18 +203,20 @@ public class TestTaskExecutor
             RoadMap map = mapAndCenterMatrix.getRoadMap();
             TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
             TaskCreator taskCreator = new TaskCreator();
-            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(2);
+            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(true);
             
             Position2D p2 = new Position2D(3122.84, 4937.96).transform(centerMatrix);
             Position2D p3 = new Position2D(2998.93, 4829.77).transform(centerMatrix);
             Position2D p4 = new Position2D(3246.30, 2117.18).transform(centerMatrix);
-            
+           
+            config.setMap(map);
+            config.configSimulator(_vrep, _clientID, _objectCreator);
+
             config.setTargetPoints(Arrays.asList(new Position2D[]{p2, p3, p4}));
             taskCreator.configure(config);
-            List<Task> tasks = taskCreator.createTasks();
+            List<ITask> tasks = taskCreator.createTasks();
 
-            TaskExecutor executor = new TaskExecutor(_clientID, _vrep, _objectCreator);
-            executor.setMap(map);
+            TaskExecutor executor = new TaskExecutor();
             executor.execute(tasks);
             System.out.println("bla");
         }

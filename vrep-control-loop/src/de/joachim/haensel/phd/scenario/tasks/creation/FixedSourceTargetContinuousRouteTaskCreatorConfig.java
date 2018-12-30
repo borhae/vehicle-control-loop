@@ -5,6 +5,7 @@ import java.util.List;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
+import de.joachim.haensel.phd.scenario.tasks.DriveAtoBTask;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
 
 public class FixedSourceTargetContinuousRouteTaskCreatorConfig implements ITaskCreatorConfig
@@ -22,13 +23,7 @@ public class FixedSourceTargetContinuousRouteTaskCreatorConfig implements ITaskC
     }
 
     @Override
-    public int getNumOfTasks()
-    {
-        return _numOfTasks;
-    }
-
-    @Override
-    public Task getNext()
+    public DriveAtoBTask getNext()
     {
         Position2D source;
         Position2D target;
@@ -51,7 +46,9 @@ public class FixedSourceTargetContinuousRouteTaskCreatorConfig implements ITaskC
         }
         _current += _stepSize;
         int timeoutSec = ITaskCreatorConfig.estimateTimeout(source, target);
-        return new Task(source, target, timeoutSec );
+        // TODO add vehicle creation tasks in init
+//        return new DriveAtoBTask(source, target, timeoutSec );
+        return null;
     }
 
     public void setSourceTarget(Position2D source, Position2D target, RoadMap map)
@@ -72,5 +69,19 @@ public class FixedSourceTargetContinuousRouteTaskCreatorConfig implements ITaskC
         _route = navigator.getRoute(_source, _target);
         _current = 0;
         _stepSize = _route.size() / _numOfTasks;
+    }
+
+    @Override
+    public boolean hasNext()
+    {
+        org.junit.Assert.fail();
+        return false;
+    }
+
+    @Override
+    public void init()
+    {
+        org.junit.Assert.fail();
+        // TODO Auto-generated method stub
     }
 }

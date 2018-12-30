@@ -3,22 +3,23 @@ package de.joachim.haensel.phd.scenario.tasks.creation;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.joachim.haensel.phd.scenario.tasks.ITask;
+
 public class TaskCreator
 {
-    private List<Task> _tasks;
-    private int _numOfTasks;
+    private List<ITask> _tasks;
     private ITaskCreatorConfig _config;
 
     public void configure(ITaskCreatorConfig config)
     {
         _tasks = new ArrayList<>();
-        _numOfTasks = config.getNumOfTasks();
         _config = config;
     }
 
-    public List<Task> createTasks()
+    public List<ITask> createTasks()
     {
-        for(int cnt = 0; cnt < _numOfTasks; cnt++)
+        _config.init();
+        while(_config.hasNext())
         {
             _tasks.add(_config.getNext());
         }

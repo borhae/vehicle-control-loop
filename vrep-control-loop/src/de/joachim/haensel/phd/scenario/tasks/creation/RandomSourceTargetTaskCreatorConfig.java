@@ -2,6 +2,7 @@ package de.joachim.haensel.phd.scenario.tasks.creation;
 
 import de.joachim.haensel.phd.scenario.math.XYMinMax;
 import de.joachim.haensel.phd.scenario.random.MersenneTwister;
+import de.joachim.haensel.phd.scenario.tasks.DriveAtoBTask;
 
 public class RandomSourceTargetTaskCreatorConfig implements ITaskCreatorConfig
 {
@@ -16,17 +17,11 @@ public class RandomSourceTargetTaskCreatorConfig implements ITaskCreatorConfig
     }
 
     @Override
-    public int getNumOfTasks()
-    {
-        return _numberOfTasks;
-    }
-
-    @Override
-    public Task getNext()
+    public DriveAtoBTask getNext()
     {
         if(_range == null)
         {
-            return new Task();
+            return null;
         }
         else
         {
@@ -35,12 +30,31 @@ public class RandomSourceTargetTaskCreatorConfig implements ITaskCreatorConfig
             double xT = _randomGen.nextDouble() * _range.distX() + _range.minX();
             double yT = _randomGen.nextDouble() * _range.distY() + _range.minY();
             int timeoutSec = ITaskCreatorConfig.estimateTimeout(xS, yS, xT, yT);
-            return new Task(xS, yS, xT, yT, timeoutSec);
+            // TODO add vehicle creation stuff and then add that to the drive task
+//            return new DriveAtoBTask(xS, yS, xT, yT, timeoutSec);
+            return null;
         }
     }
 
     public void setXYRange(XYMinMax range)
     {
         _range = range;
+    }
+
+    @Override
+    public boolean hasNext()
+    {
+        if(_range == null)
+        {
+            return false;
+        }
+        org.junit.Assert.fail();
+        return false;
+    }
+
+    @Override
+    public void init()
+    {
+        org.junit.Assert.fail();
     }
 }

@@ -114,7 +114,7 @@ public class Navigator
         }
         if(minDist < Double.POSITIVE_INFINITY)
         {
-            return result.subList(minIdx, result.size() - 1);
+            return result.subList(minIdx, result.size());
         }
         else
         {

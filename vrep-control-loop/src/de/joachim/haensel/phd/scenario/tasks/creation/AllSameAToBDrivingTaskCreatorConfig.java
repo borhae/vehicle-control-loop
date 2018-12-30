@@ -1,0 +1,117 @@
+package de.joachim.haensel.phd.scenario.tasks.creation;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
+import de.joachim.haensel.phd.scenario.tasks.DriveAtoBTask;
+import de.joachim.haensel.phd.scenario.tasks.ITask;
+import de.joachim.haensel.phd.scenario.tasks.SimStartTask;
+import de.joachim.haensel.phd.scenario.tasks.SimStopTask;
+import de.joachim.haensel.phd.scenario.tasks.VehicleBuildTask;
+import de.joachim.haensel.phd.scenario.tasks.VehicleDeactivateDebugTask;
+import de.joachim.haensel.phd.scenario.tasks.VehicleStartDebugTask;
+import de.joachim.haensel.phd.scenario.tasks.VehicleStartTask;
+import de.joachim.haensel.phd.scenario.tasks.VehicleStopTask;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
+import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
+
+public class AllSameAToBDrivingTaskCreatorConfig implements ITaskCreatorConfig, IDrivingTask
+{
+    private int _numOfTasks;
+    private double _xSource;
+    private double _ySource;
+    private double _xTarget;
+    private double _yTarget;
+    private int _timeoutSec;
+    private List<ITask> _tasks;
+    private boolean _debug;
+    private Iterator<ITask> _taskIterator;
+    private VRepRemoteAPI _vrep;
+    private int _clientID;
+    private VRepObjectCreation _objectCreator;
+    private RoadMap _map;
+    
+    public AllSameAToBDrivingTaskCreatorConfig(int numOfTasks, boolean debug)
+    {
+        _debug = debug;
+        _numOfTasks = numOfTasks;
+    }
+
+    public void setAllSame(double xSource, double ySource, double xTarget, double yTarget)
+    {
+        _xSource = xSource;
+        _ySource = ySource;
+        _xTarget = xTarget;
+        _yTarget = yTarget;
+        _timeoutSec = ITaskCreatorConfig.estimateTimeout(xSource, ySource, xTarget, yTarget);
+    }
+    
+    public void configRoutesOnMap(double xSource, double ySource, double xTarget, double yTarget)
+    {
+        Position2D source = _map.getClosestPointOnMap(new Position2D(xSource, ySource));
+        Position2D target = _map.getClosestPointOnMap(new Position2D(xTarget, yTarget));
+        _xSource = source.getX();
+        _ySource = source.getY();
+        _xTarget = target.getX();
+        _yTarget = target.getY();
+        _timeoutSec = ITaskCreatorConfig.estimateTimeout(xSource, ySource, xTarget, yTarget);
+    }
+
+    public void configSimulator(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator)
+    {
+        _vrep = vrep;
+        _clientID = clientID;
+        _objectCreator = objectCreator;
+    }
+
+    public void setMap(RoadMap map)
+    {
+        _map = map;
+    }
+
+    @Override
+    public void init()
+    {
+        _tasks = new ArrayList<>();
+        for(int cnt = 0; cnt < _numOfTasks; cnt++)
+        {
+            Position2D startPosition = new Position2D(_xSource, _ySource);
+            Vector2D orientation = IDrivingTask.computeOrientation(_map, startPosition, new Position2D(_xTarget, _yTarget));
+            VehicleBuildTask vehicleBuildTask = new VehicleBuildTask(_vrep, _clientID, _objectCreator, _map, startPosition, orientation);
+            _tasks.add(vehicleBuildTask);
+            _tasks.add(new SimStartTask(_vrep, _clientID));
+            _tasks.add(new VehicleStartTask(vehicleBuildTask));
+            if(_debug)
+            {
+                _tasks.add(new VehicleStartDebugTask(_objectCreator, vehicleBuildTask));
+            }
+            _tasks.add(new DriveAtoBTask(_xSource, _ySource, _xTarget, _yTarget, _timeoutSec, vehicleBuildTask, _map));
+            if(_debug)
+            {
+                _tasks.add(new VehicleDeactivateDebugTask(vehicleBuildTask));
+            }
+            _tasks.add(new VehicleStopTask(vehicleBuildTask));
+            _tasks.add(new SimStopTask(_vrep, _clientID));
+            _taskIterator = _tasks.iterator();
+        }
+    }
+    
+    @Override
+    public boolean hasNext()
+    {
+        return _taskIterator.hasNext();
+    }
+
+    @Override
+    public ITask getNext()
+    {
+        return _taskIterator.next();
+    }
+    
+}
