@@ -79,6 +79,11 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
             _vrep.simxCallScriptFunction(_clientID, _vehicleScriptParentName, remoteApi.sim_scripttype_childscript, "sense", 
                     null, null, null, null, null, returnValF, null, null, remoteApi.simx_opmode_blocking);
             float[] vals = returnValF.getArray();
+            if(vals == null || vals.length == 0)
+            {
+                //simulation probably not running
+                return;
+            }
             _curPosition.setXY(vals[0], vals[1]);
             _frontWheelCenterPosition.setXY(vals[2], vals[3]);
             _rearWheelCenterPosition.setXY(vals[4], vals[5]);
@@ -286,13 +291,13 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     }
     
     @Override
-    public void blowTire(int i)
+    public void blowTire(int i, float tireScale)
     {
         String parentObj = VRepObjectCreation.VREP_LOADING_SCRIPT_PARENT_OBJECT;
         FloatWA inFloats = new FloatWA(3);
         IntWA inInts = new IntWA(1);
         inInts.getArray()[0] = _vehicleHandles.getFrontLeftWheel();
-        inFloats.getArray()[0] = 0.5f;
+        inFloats.getArray()[0] = tireScale;
         inFloats.getArray()[1] = 1.0f;
         inFloats.getArray()[2] = 1.0f;
         try

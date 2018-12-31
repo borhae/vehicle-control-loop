@@ -81,7 +81,7 @@ public class Positioner implements IActuatingSensing
     }
 
     @Override
-    public void blowTire(int i)
+    public void blowTire(int i, float tireScale)
     {
     }
 }

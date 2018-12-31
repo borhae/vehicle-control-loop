@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.vehicle.experiment.test;
+package de.joachim.haensel.phd.scenario.vehicle.experiment;
 
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
@@ -17,13 +17,24 @@ public class TireBlowOutEventGenerator implements ILowerLayerControl
     private Position2D _startPosition;
     private double _distance;
     private Position2D _lastPosition;
-    private boolean _eventAlreadyHappened;
+    private float[] _tireScaleList;
+    private int _tireRescalings;
 
-    public TireBlowOutEventGenerator(double distanceUntilBlowout)
+    public TireBlowOutEventGenerator(double distanceUntilBlowout, float reducedTireScale)
     {
         _distanceUntilBlowout = distanceUntilBlowout;
         _lastPosition = null;
-        _eventAlreadyHappened = false;
+        _tireScaleList = new float[1];
+        _tireScaleList[0] = reducedTireScale;
+        _tireRescalings = 0;
+    }
+
+    public TireBlowOutEventGenerator(int distanceUntilBlowout, float[] tireScaleList)
+    {
+        _distanceUntilBlowout = distanceUntilBlowout;
+        _lastPosition = null;
+        _tireScaleList = tireScaleList;
+        _tireRescalings = 0;
     }
 
     @Override
@@ -31,11 +42,11 @@ public class TireBlowOutEventGenerator implements ILowerLayerControl
     {
         if(_startPosition != null)
         {
-            if((_distance > _distanceUntilBlowout) && !_eventAlreadyHappened)
+            if((_distance > _distanceUntilBlowout) && (_tireRescalings < _tireScaleList.length))
             {
-                _actuatorsSensors.blowTire(3);
+                _actuatorsSensors.blowTire(3, _tireScaleList[_tireRescalings]);
                 System.out.println("blowed tire");
-                _eventAlreadyHappened = true;
+                _tireRescalings++;
             }
             else
             {
@@ -46,7 +57,7 @@ public class TireBlowOutEventGenerator implements ILowerLayerControl
                 Position2D currentPos = new Position2D(_actuatorsSensors.getPosition());
                 double distance = _lastPosition.distance(currentPos);
                 _distance += distance;
-                System.out.println("distance" + _distance);
+//                System.out.println("distance" + _distance);
                 _lastPosition = currentPos;
             }
         }
@@ -58,7 +69,7 @@ public class TireBlowOutEventGenerator implements ILowerLayerControl
         _startPosition = _actuatorsSensors.getPosition();
         _distance = 0.0;
         _lastPosition = null;
-        _eventAlreadyHappened = false;
+        _tireRescalings = 0;
     }
 
     @Override

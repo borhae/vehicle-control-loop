@@ -17,8 +17,9 @@ public interface IActuatingSensing
     /**
      * Simulates the blow up of a tire
      * @param i the tire to blow (1 front left, 2 front right, 3 back right, 4 back left
+     * @param tireScale TODO
      */
-    public void blowTire(int i);
+    public void blowTire(int i, float tireScale);
  
     /**
      * Returns the cars orientation vector

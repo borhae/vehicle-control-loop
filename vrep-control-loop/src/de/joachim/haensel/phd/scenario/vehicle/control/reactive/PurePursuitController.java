@@ -71,7 +71,7 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
             Position2D curPos = _actuatorsSensors.getPosition();
             double distance = Position2D.distance(curPos, _expectedTarget);
             boolean arrived = distance < _lookahead;
-            System.out.printf("distance %.2f \n", distance);
+//            System.out.printf("distance %.2f \n", distance);
             return arrived;
         }
 

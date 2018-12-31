@@ -1,5 +1,10 @@
 package de.joachim.haensel.phd.scenario.vehicle.experiment.test;
 
+import static org.junit.Assert.fail;
+
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -9,6 +14,8 @@ import coppelia.IntWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.RoadMapAndCenterMatrix;
+import de.joachim.haensel.phd.scenario.SimulationSetupConvenienceMethods;
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.debug.INavigationListener;
 import de.joachim.haensel.phd.scenario.debug.Speedometer;
@@ -18,6 +25,11 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.sumo2vrep.VRepMap;
+import de.joachim.haensel.phd.scenario.tasks.ITask;
+import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig;
+import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfigBasicCar;
+import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
+import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
@@ -26,6 +38,7 @@ import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
+import de.joachim.haensel.phd.scenario.vehicle.experiment.TireBlowOutEventGenerator;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
@@ -96,7 +109,7 @@ public class TestTireBlowout implements TestConstants
         IVehicleConfiguration vehicleConf = createConfiguration(roadMap, startPosition, destinationPosition);
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();
-        vehicle.addLowLevelEventGeneratorListener(new TireBlowOutEventGenerator(100.0));
+        vehicle.addLowLevelEventGeneratorListener(new TireBlowOutEventGenerator(100.0, 0.5f));
 
         try
         {
@@ -145,6 +158,72 @@ public class TestTireBlowout implements TestConstants
         }
     }
     
+    @Test
+    public void testTireBlowOutScenario2()
+    {
+        try
+        {
+            RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+            RoadMap map = mapAndCenterMatrix.getRoadMap();
+            TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+            TaskCreator taskCreator = new TaskCreator();
+            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(true);
+
+            Position2D p2 = new Position2D(3122.84, 4937.96).transform(centerMatrix);
+            Position2D p3 = new Position2D(2998.93, 4829.77).transform(centerMatrix);
+            Position2D p4 = new Position2D(3246.30, 2117.18).transform(centerMatrix);
+
+            config.setMap(map);
+            config.configSimulator(_vrep, _clientID, _objectCreator);
+            config.addLowerLayerControl(new TireBlowOutEventGenerator(100.0, 0.5f));
+
+            config.setTargetPoints(Arrays.asList(new Position2D[] { p2, p3, p4 }));
+            taskCreator.configure(config);
+            List<ITask> tasks = taskCreator.createTasks();
+
+            TaskExecutor executor = new TaskExecutor();
+            executor.execute(tasks);
+            System.out.println("bla");
+        }
+        catch (VRepException exc)
+        {
+            fail(exc.toString());
+        }
+    }
+    
+    @Test
+    public void testTireBlowOutScenario3()
+    {
+        try
+        {
+            RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+            RoadMap map = mapAndCenterMatrix.getRoadMap();
+            TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+            TaskCreator taskCreator = new TaskCreator();
+            PointListTaskCreatorConfig config = new PointListTaskCreatorConfigBasicCar(true);
+            
+            Position2D p2 = new Position2D(2967.31, 4819.69).transform(centerMatrix);
+            Position2D p3 = new Position2D(2924.78, 4830.75).transform(centerMatrix);
+            Position2D p4 = new Position2D(2947.13, 4796.47).transform(centerMatrix);
+
+            config.setMap(map);
+            config.configSimulator(_vrep, _clientID, _objectCreator);
+            config.addLowerLayerControl(new TireBlowOutEventGenerator(20, new float[]{1.2f, 0.2f}));
+
+            config.setTargetPoints(Arrays.asList(new Position2D[] { p2, p3, p4 }));
+            taskCreator.configure(config);
+            List<ITask> tasks = taskCreator.createTasks();
+
+            TaskExecutor executor = new TaskExecutor();
+            executor.execute(tasks);
+            System.out.println("bla");
+        }
+        catch (VRepException exc)
+        {
+            fail(exc.toString());
+        }
+    }
+
     private IVehicleConfiguration createConfiguration(RoadMap roadMap, Position2D startPosition, Position2D destinationPosition)
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();

@@ -1,60 +1,26 @@
 package de.joachim.haensel.phd.scenario.tasks.creation;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
-import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.tasks.AdditionalLowerControlLayerInitTask;
 import de.joachim.haensel.phd.scenario.tasks.DriveAtoBTask;
-import de.joachim.haensel.phd.scenario.tasks.ITask;
 import de.joachim.haensel.phd.scenario.tasks.SimStartTask;
 import de.joachim.haensel.phd.scenario.tasks.SimStopTask;
+import de.joachim.haensel.phd.scenario.tasks.SimpleVehicleBuildTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleBuildTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleDeactivateDebugTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStartDebugTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStartTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStopTask;
-import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
-import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
-public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingTask
+public class PointListTaskCreatorConfigBasicCar extends PointListTaskCreatorConfig
 {
-    protected List<Position2D> _targetPoints;
-    protected List<ITask> _tasks;
-    protected RoadMap _map;
-    protected VRepRemoteAPI _vrep;
-    protected int _clientID;
-    protected VRepObjectCreation _objectCreator;
-    protected boolean _debug;
-    protected Iterator<ITask> _taskIterator;
-    protected List<ILowerLayerControl> _lowerLayerControls;
 
-    public PointListTaskCreatorConfig(boolean debug)
+    public PointListTaskCreatorConfigBasicCar(boolean debug)
     {
-        _targetPoints = new ArrayList<>();
-        _lowerLayerControls = new ArrayList<>();
-        _debug = debug;
-    }
-
-    public void setTargetPoints(List<Position2D> targetPoints)
-    {
-        _targetPoints = targetPoints;
-    }
-
-    @Override
-    public ITask getNext()
-    {
-        return _taskIterator.next();
-    }
-
-    @Override
-    public boolean hasNext()
-    {
-        return _taskIterator.hasNext();
+        super(debug);
     }
 
     @Override
@@ -68,7 +34,7 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
         Position2D startPosition = _targetPoints.get(0);
         
         Vector2D orientation = IDrivingTask.computeOrientation(_map, startPosition, _targetPoints.get(1));
-        VehicleBuildTask vehicleBuildTask = new VehicleBuildTask(_vrep, _clientID, _objectCreator, _map, startPosition, orientation);
+        SimpleVehicleBuildTask vehicleBuildTask = new SimpleVehicleBuildTask(_vrep, _clientID, _objectCreator, _map, startPosition, orientation);
         _tasks.add(vehicleBuildTask);
         if(!_lowerLayerControls.isEmpty())
         {
@@ -95,21 +61,4 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
         _tasks.add(new SimStopTask(_vrep, _clientID));
         _taskIterator = _tasks.iterator();
     }
-
-    public void setMap(RoadMap map)
-    {
-        _map = map;
-    }
-
-    public void configSimulator(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator)
-    {
-        _vrep = vrep;
-        _clientID = clientID;
-        _objectCreator = objectCreator;
-    }
-
-    public void addLowerLayerControl(ILowerLayerControl lowerLayerControl)
-    {
-        _lowerLayerControls.add(lowerLayerControl);
-    }
-}    
+}

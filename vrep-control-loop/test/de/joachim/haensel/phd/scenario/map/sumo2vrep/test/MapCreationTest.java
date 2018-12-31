@@ -244,6 +244,7 @@ public class MapCreationTest implements TestConstants
         
         VRepMap mapCreator = new VRepMap(1.6f, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createMeshBasedMap(roadMap);
+        mapCreator.createMapSizedRectangle(roadMap, false);
     }
 
     @Test

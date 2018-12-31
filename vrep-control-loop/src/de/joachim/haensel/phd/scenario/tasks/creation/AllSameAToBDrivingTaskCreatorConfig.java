@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
-import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
@@ -18,7 +17,6 @@ import de.joachim.haensel.phd.scenario.tasks.VehicleDeactivateDebugTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStartDebugTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStartTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStopTask;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class AllSameAToBDrivingTaskCreatorConfig implements ITaskCreatorConfig, IDrivingTask
