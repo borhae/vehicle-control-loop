@@ -7,6 +7,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import de.joachim.haensel.phd.converters.UnitConverter;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 
@@ -20,12 +21,11 @@ public class Speedometer extends JPanel
     public static Speedometer createWindow()
     {
         JFrame frame = new JFrame("Speedometer");
-        frame.setSize(200, 100);
+        frame.setSize(500, 150);
         Speedometer instance = new Speedometer();
         instance.init();
         frame.add(instance);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
         frame.setVisible(true);
         return instance;
     }
@@ -73,8 +73,8 @@ public class Speedometer extends JPanel
 
     public void updateActualVelocity(double[] vehicleVelocity)
     {
-        DecimalFormat f = new DecimalFormat("+00.0000; -#");
-        Vector2D planeVel = new Vector2D(0.0, 0.0, vehicleVelocity[0], vehicleVelocity[1]);
-        _velocityLabel.setText("Velocities: forward: " + f.format(planeVel.getLength()) + ", x:" + f.format(vehicleVelocity[0]) + ", y: " + f.format(vehicleVelocity[1]) + ", z: " + f.format(vehicleVelocity[2]));
+        Vector2D planeVelVector = new Vector2D(0.0, 0.0, vehicleVelocity[0], vehicleVelocity[1]);
+        double planeVelocity = planeVelVector.getLength();
+        _velocityLabel.setText(String.format("v: %.2f m/s, %.2f km/h | x: %.2f, y: %.2f, z: %.2f", planeVelocity, UnitConverter.meterPerSecondToKilometerPerHour(planeVelocity), vehicleVelocity[0], vehicleVelocity[1], vehicleVelocity[2]));
     }
 }

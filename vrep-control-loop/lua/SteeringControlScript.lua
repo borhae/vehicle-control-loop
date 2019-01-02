@@ -75,7 +75,7 @@ init = function()
   end
   
   local lengthFR = -1 
-  local wheelDiam = -1 
+  wheelDiam = -1 
   
   errVal, wheelDiamMin = sim.getObjectFloatParameter(frontLeftWheel, sim_objfloatparam_objbbox_min_x)
   errVal, wheelDiamMax = sim.getObjectFloatParameter(frontLeftWheel, sim_objfloatparam_objbbox_max_x)
@@ -117,9 +117,9 @@ end
 sense = function(inInts, inFloats, inStrings, inBuffer)
   -- positions computed in main loop, provided for external usage
   if (positions == nil) then
-    positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
   end 
-  return {}, {positions[1], positions[2], positions[3], positions[4], positions[5], positions[6], positions[7], positions[8], positions[9]}, {}, "" 
+  return {}, {positions[1], positions[2], positions[3], positions[4], positions[5], positions[6], positions[7], positions[8], positions[9], wheelDiam}, {}, "" 
 end
 
 debugCircle = function(inInts, inFloats, inStrings, inBuffer)

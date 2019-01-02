@@ -9,7 +9,6 @@ import de.joachim.haensel.phd.scenario.tasks.DriveAtoBTask;
 import de.joachim.haensel.phd.scenario.tasks.SimStartTask;
 import de.joachim.haensel.phd.scenario.tasks.SimStopTask;
 import de.joachim.haensel.phd.scenario.tasks.SimpleVehicleBuildTask;
-import de.joachim.haensel.phd.scenario.tasks.VehicleBuildTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleDeactivateDebugTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStartDebugTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStartTask;
@@ -35,6 +34,8 @@ public class PointListTaskCreatorConfigBasicCar extends PointListTaskCreatorConf
         
         Vector2D orientation = IDrivingTask.computeOrientation(_map, startPosition, _targetPoints.get(1));
         SimpleVehicleBuildTask vehicleBuildTask = new SimpleVehicleBuildTask(_vrep, _clientID, _objectCreator, _map, startPosition, orientation);
+        vehicleBuildTask.setControlParams(_lookahead, _maxVelocity, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
+
         _tasks.add(vehicleBuildTask);
         if(!_lowerLayerControls.isEmpty())
         {

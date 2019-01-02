@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import de.joachim.haensel.phd.converters.UnitConverter;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.XYMinMax;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
@@ -31,6 +32,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segme
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterCircleIntersection;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.Segmenter;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.BasicVelocityAssigner;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.GlodererHertleVelocityAssigner;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.BasicVelocityAssigner.ICurvatureChangeListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.BasicVelocityAssigner.IProfileChangeListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.IVelocityAssignerFactory;
@@ -57,7 +59,51 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
 
-        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
+        ITrajectorizer trajectorizer = createTrajectorizerBasicVelocityAssigner(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
+        
+        Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.showOnScreen(1);
+        IProfileChangeListener listener = profile -> _visualizationIdVelocities = visualize(profile, frame, _visualizationIdVelocities);
+        ICurvatureChangeListener curveListener = profile -> _visualizationIdCurve = visualizeCurvature(profile, frame, _visualizationIdCurve);
+        trajectorizer.getVelocityAssigner().addProfileChangeListener(listener);
+        trajectorizer.getVelocityAssigner().addCurvatureChangeListener(curveListener);
+        frame.setVisible(true);
+        frame.updateVisuals();
+        
+        SegmentBuffer route = new SegmentBuffer();
+        route.fillBuffer(trajectorizer.createTrajectory(lineRoute));
+        List<Trajectory> trajectories = route.getSegments(route.getSize());
+        
+        for(int idx = 0; idx < trajectories.size(); idx++)
+        {
+            Trajectory curTrajectory = trajectories.get(idx);
+            double actualVelocity = curTrajectory.getVelocity();
+            assertThat("velocity should be a number (index: " + idx + ").", actualVelocity, isANumber());
+        }
+        Deque<Vector2D> vectorSegments = trajectories.stream().map(t -> t.getVector()).collect(Collectors.toCollection(() -> new LinkedList<>()));
+        frame.addVectorSet(vectorSegments, Color.BLACK, 1.0, 0.15);
+        frame.updateVisuals();
+    }
+
+
+    @Test
+    public void testRealWorldSpeedprofileValidVelocities60KMpH()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
+        TMatrix scaleOffsetMatrix = centerMap(roadMap);
+
+        Navigator navigator = new Navigator(roadMap);
+        Position2D startPosition = new Position2D(5747.01f, 2979.22f).transform(scaleOffsetMatrix);
+        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).transform(scaleOffsetMatrix);
+        List<Line2D> lineRoute = navigator.getRoute(startPosition, destinationPosition);
+        
+        double maxVelocity = UnitConverter.kilometersPerHourToMetersPerSecond(60);
+        double segmentSize = 5.0;
+        double maxLongDec = 8.0;
+        double maxLongAcc = 2.0;
+        double maxLateralAcc = 1.5;
+
+        ITrajectorizer trajectorizer = createTrajectorizerBasicVelocityAssigner(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
         frame.showOnScreen(1);
@@ -84,6 +130,50 @@ public class SpeedProfileTest
     }
 
     @Test
+    public void testRealWorldSpeedprofileValidVelocities60KMpHGlodererHertleVelocityAssigner()
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
+        TMatrix scaleOffsetMatrix = centerMap(roadMap);
+
+        Navigator navigator = new Navigator(roadMap);
+        Position2D startPosition = new Position2D(5747.01f, 2979.22f).transform(scaleOffsetMatrix);
+        Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).transform(scaleOffsetMatrix);
+        List<Line2D> lineRoute = navigator.getRoute(startPosition, destinationPosition);
+        
+        double maxVelocity = UnitConverter.kilometersPerHourToMetersPerSecond(60);
+        double segmentSize = 5.0;
+        double maxLongDec = 8.0;
+        double maxLongAcc = 2.0;
+        double maxLateralAcc = 1.5;
+
+        ITrajectorizer trajectorizer = createTrajectorizerGlodererHertleAssigner(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
+        
+        Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.showOnScreen(1);
+        IProfileChangeListener listener = profile -> _visualizationIdVelocities = visualize(profile, frame, _visualizationIdVelocities);
+        ICurvatureChangeListener curveListener = profile -> _visualizationIdCurve = visualizeCurvature(profile, frame, _visualizationIdCurve);
+        trajectorizer.getVelocityAssigner().addProfileChangeListener(listener);
+        trajectorizer.getVelocityAssigner().addCurvatureChangeListener(curveListener);
+        frame.setVisible(true);
+        frame.updateVisuals();
+        
+        SegmentBuffer route = new SegmentBuffer();
+        route.fillBuffer(trajectorizer.createTrajectory(lineRoute));
+        List<Trajectory> trajectories = route.getSegments(route.getSize());
+        
+        for(int idx = 0; idx < trajectories.size(); idx++)
+        {
+            Trajectory curTrajectory = trajectories.get(idx);
+            double actualVelocity = curTrajectory.getVelocity();
+            assertThat("velocity should be a number (index: " + idx + ").", actualVelocity, isANumber());
+        }
+        Deque<Vector2D> vectorSegments = trajectories.stream().map(t -> t.getVector()).collect(Collectors.toCollection(() -> new LinkedList<>()));
+        frame.addVectorSet(vectorSegments, Color.BLACK, 1.0, 0.15);
+        frame.updateVisuals();
+    }
+
+
+    @Test
     public void testRealWorldSpeedprofileMaxVelocity()
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
@@ -100,7 +190,7 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
 
-        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
+        ITrajectorizer trajectorizer = createTrajectorizerBasicVelocityAssigner(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
         frame.showOnScreen(1);
@@ -145,7 +235,7 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
 
-        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
+        ITrajectorizer trajectorizer = createTrajectorizerBasicVelocityAssigner(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
         frame.showOnScreen(1);
@@ -213,7 +303,7 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0;
         double maxLateralAcc = 0.5;
 
-        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
+        ITrajectorizer trajectorizer = createTrajectorizerBasicVelocityAssigner(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
         frame.showOnScreen(1);
@@ -280,7 +370,7 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
 
-        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
+        ITrajectorizer trajectorizer = createTrajectorizerBasicVelocityAssigner(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
         frame.showOnScreen(1);
@@ -334,7 +424,7 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0; // 2 m^2/s
         double maxLateralAcc = 3.0; // 3 m^2/s
 
-        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
+        ITrajectorizer trajectorizer = createTrajectorizerBasicVelocityAssigner(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
         frame.showOnScreen(1);
@@ -388,7 +478,7 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
 
-        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
+        ITrajectorizer trajectorizer = createTrajectorizerBasicVelocityAssigner(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
         frame.showOnScreen(1);
@@ -442,7 +532,7 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
 
-        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
+        ITrajectorizer trajectorizer = createTrajectorizerBasicVelocityAssigner(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
         frame.showOnScreen(1);
@@ -501,7 +591,7 @@ public class SpeedProfileTest
         double maxLongAcc = 2.0;
         double maxLateralAcc = 3.0;
 
-        ITrajectorizer trajectorizer = createTrajectorizer(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
+        ITrajectorizer trajectorizer = createTrajectorizerBasicVelocityAssigner(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
         
         Vector2DVisualizer frame = new Vector2DVisualizer();
         frame.showOnScreen(1);
@@ -527,10 +617,18 @@ public class SpeedProfileTest
         }
     }
 
-    private ITrajectorizer createTrajectorizer(double maxVelocity, double segmentSize, double maxLongDec, double maxLongAcc, double maxLateralAcc)
+    private ITrajectorizer createTrajectorizerBasicVelocityAssigner(double maxVelocity, double segmentSize, double maxLongDec, double maxLongAcc, double maxLateralAcc)
     {
         ISegmenterFactory segmenterFactory = segmentSizeParam -> new Segmenter(segmentSizeParam, new InterpolationSegmenterCircleIntersection());
         IVelocityAssignerFactory velocityAssignerFactory = segmentSizeParam -> new BasicVelocityAssigner(segmentSizeParam, maxVelocity, maxLateralAcc , maxLongAcc , maxLongDec);
+        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , segmentSize);
+        return trajectorizer;
+    }
+
+    private ITrajectorizer createTrajectorizerGlodererHertleAssigner(double maxVelocity, double segmentSize, double maxLongDec, double maxLongAcc, double maxLateralAcc)
+    {
+        ISegmenterFactory segmenterFactory = segmentSizeParam -> new Segmenter(segmentSizeParam, new InterpolationSegmenterCircleIntersection());
+        IVelocityAssignerFactory velocityAssignerFactory = segmentSizeParam -> new GlodererHertleVelocityAssigner(segmentSizeParam, maxVelocity, maxLateralAcc , maxLongAcc , maxLongDec);
         ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , segmentSize);
         return trajectorizer;
     }

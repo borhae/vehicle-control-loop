@@ -39,7 +39,6 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     private boolean _debugging;
     private boolean _debuggingCircleAttached;
     private DebugParams _debugParams;
-    //-0.25
     private double _speedToWheelRotationFactor;
     private List<IArrivedListener> _arrivedListeners;
 
@@ -50,13 +49,14 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
             Consumer<Position2D> driveToAction = target -> _expectedTarget = target; 
             Consumer<PurePursuitController> driveAction = controller -> controller.driveAction();
             Consumer<PurePursuitController> breakAndStopAction = controller -> controller.breakAndStopAction();
+            Consumer<PurePursuitController> arrivedBreakAndStopAction = controller -> controller.arrivedBreakAndStopAction();
 
             createTransition(ControllerStates.IDLE, ControllerMsg.DRIVE_TO, null, ControllerStates.DRIVING, driveToAction);
             
             Guard arrivedAtTargetGuard = () -> arrivedAtTarget();
             Guard notArrivedGuard = () -> !arrivedAtTargetGuard.isTrue();
             
-            createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, arrivedAtTargetGuard, ControllerStates.IDLE, breakAndStopAction);
+            createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, arrivedAtTargetGuard, ControllerStates.IDLE, arrivedBreakAndStopAction);
             createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, notArrivedGuard, ControllerStates.DRIVING, driveAction);
             
             createTransition(ControllerStates.DRIVING, ControllerMsg.STOP, null, ControllerStates.IDLE, breakAndStopAction);
@@ -136,6 +136,7 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     {
         ensureBufferSize();
         _actuatorsSensors.computeAndLockSensorData();
+        _speedToWheelRotationFactor = 2 / _actuatorsSensors.getWheelDiameter(); // 2/diameter = 1/radius
         Position2D currentPosition = _actuatorsSensors.getPosition();
         chooseCurrentSegment(currentPosition);
         _stateMachine.driveTo(target);
@@ -161,6 +162,12 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     }
 
     public void breakAndStopAction()
+    {
+        System.out.println("pure pursuit stoped");
+        _actuatorsSensors.drive(0.0f, 0.0f);
+    }
+    
+    public void arrivedBreakAndStopAction()
     {
         System.out.println("pure pursuit arrived");
         _actuatorsSensors.drive(0.0f, 0.0f);

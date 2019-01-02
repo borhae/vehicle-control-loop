@@ -14,19 +14,19 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.veloc
 public class Trajectorizer implements ITrajectorizer
 {
     private ISegmenter _segmenter;
-    private IVelocityAssigner _velocitizer;
+    private IVelocityAssigner _velocityAssigner;
 
     public Trajectorizer(ISegmenterFactory segmenterFactory, IVelocityAssignerFactory velocityAssignerFactory, double segmentSize)
     {
         _segmenter = segmenterFactory.create(segmentSize);
-        _velocitizer = velocityAssignerFactory.create(segmentSize);
+        _velocityAssigner = velocityAssignerFactory.create(segmentSize);
     }
 
     @Override
     public List<Trajectory> createTrajectory(List<Line2D> route)
     {
         List<Trajectory> result = _segmenter.createSegments(route);
-        _velocitizer.addVelocities(result);
+        _velocityAssigner.addVelocities(result);
         return result;
     }
 
@@ -39,6 +39,6 @@ public class Trajectorizer implements ITrajectorizer
     @Override
     public IVelocityAssigner getVelocityAssigner()
     {
-        return _velocitizer;
+        return _velocityAssigner;
     }
 }

@@ -1,8 +1,6 @@
 package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
@@ -91,7 +89,7 @@ public class Navigator
         // epsilon has high tolerance since the start and endpoints might not exactly be on the street.
         // endpoints could also be literally on a crossing, I did not took care for that yet
         result = cutStartLaneShapes(result);
-        cutEndLaneShapes(result);
+        result = cutEndLaneShapes(result);
         result.get(0).setP1(_sourcePosition);
         result.get(result.size() - 1).setP2(_targetPosition);
         return result;
@@ -121,131 +119,29 @@ public class Navigator
             return result;
         }
     }
-
-    private void cutStartLaneShapesOld(List<Line2D> result)
+    
+    private List<Line2D> cutEndLaneShapes(List<Line2D> result)
     {
-        boolean resultContainsSourcePosition = false;
-        for(int idx = 0; idx < result.size(); idx++)
+        double minDist = Double.POSITIVE_INFINITY;
+        double curDist = Double.POSITIVE_INFINITY;
+        int minIdx = Integer.MAX_VALUE;
+        for (int idx = 0; idx < result.size(); idx++)
         {
             Line2D curLine = result.get(idx);
-            if(curLine.contains(_sourcePosition, 0.5))
+            curDist = curLine.perpendicularDistanceWithEndpointLimit(_targetPosition, 3.0);
+            if(curDist < minDist)
             {
-                resultContainsSourcePosition = true;
-                break;
+                minDist = curDist;
+                minIdx = idx;
             }
         }
-        if(resultContainsSourcePosition)
+        if(minDist < Double.POSITIVE_INFINITY)
         {
-            for(Line2D curLine = result.get(0); !curLine.contains(_sourcePosition, 0.5); curLine = result.get(0))
-            {
-                result.remove(0);
-                if(result.isEmpty())
-                {
-                    break;
-                }
-            }
-        }
-    }
-
-    private void cutEndLaneShapes(List<Line2D> result)
-    {
-        boolean resultContainsTargetPosition = false;
-        for(int idx = 0; idx < result.size(); idx++)
-        {
-            if(result.get(idx).contains(_targetPosition, 0.5))
-            {
-                resultContainsTargetPosition = true;
-                break;
-            }
-        }
-        if(resultContainsTargetPosition)
-        {
-            for(Line2D curLine = result.get(result.size() - 1); !curLine.contains(_targetPosition, 0.5); curLine = result.get(result.size() - 1))
-            {
-                result.remove(result.size() - 1);
-                if(result.isEmpty())
-                {
-                    break;
-                }
-            }
-        }
-    }
-
-    /** 
-     * Looks up the incoming (or outgoing) lane from given target node that is closest to the given source position.
-     * It then returns the parts of the sections of the lane that are between the position
-     * and the node
-     * Assumption: later elements in line shape are closer to node
-     * @param node target node
-     * @param position source position
-     * @return
-     */
-    private List<Line2D> computeSectionsBetweenPosAndNode(Node node, Position2D position, boolean computeForIncomming)
-    {
-        Collection<Edge> edgesFromNode;
-        if(computeForIncomming)
-        {
-            edgesFromNode = node.getIncomingEdges();
+            return result.subList(0, minIdx + 1);
         }
         else
         {
-            edgesFromNode = node.getOutgoingEdges();
-        }
-        List<Line2D> closestResolvedLane = null;
-        int closestSectionIdx = -1;
-        
-        double closestDistance = Double.MAX_VALUE;
-        
-        for(Edge curEdge : edgesFromNode)
-        {
-            List<LaneType> lanes = curEdge.getSumoEdge().getLane();
-            for (LaneType curLane : lanes)
-            {
-                String shape = curLane.getShape();
-                if(shape == null)
-                {
-                    continue;
-                }
-                List<Line2D> laneSections = Line2D.createLines(shape);
-                for (int idx = 0; idx < laneSections.size(); idx++)
-                {
-                    double curDistance = laneSections.get(idx).distance(position);
-                    if(curDistance < closestDistance)
-                    {
-                        closestDistance = curDistance;
-                        closestResolvedLane = laneSections;
-                        closestSectionIdx = idx;
-                    }
-                }
-            }
-        }
-        if(closestResolvedLane == null)
-        {
-            return null;
-        }
-        else
-        {
-            if(closestResolvedLane.size() == 1)
-            {
-                Line2D onlyLine = closestResolvedLane.get(0);
-                if(node.distance(onlyLine.getP1()) <= node.distance(onlyLine.getP2()))
-                {
-                    onlyLine.setP2(position);
-                }
-                else
-                {
-                    onlyLine.setP1(position);
-                }
-                return closestResolvedLane;
-            }
-            else
-            {
-                // TODO check out which direction is shorter! this way we wouldn't need the assumption
-                List<Line2D> lanesBetweenCurrentPositionAndFirstJunction = closestResolvedLane.subList(closestSectionIdx, closestResolvedLane.size());
-                Line2D firstLane = lanesBetweenCurrentPositionAndFirstJunction.get(0);
-                firstLane.setP1(position);
-                return lanesBetweenCurrentPositionAndFirstJunction;
-            }
+            return result;
         }
     }
 

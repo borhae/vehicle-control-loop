@@ -161,6 +161,12 @@ public class LayerInteractionTest implements TestConstants
             public void blowTire(int i, float tireScale)
             {
             }
+
+            @Override
+            public double getWheelDiameter()
+            {
+                return 0;
+            }
         };
         controller.initController(sensorsActuators, roadMap);
         controller.buildSegmentBuffer(destinationPosition, roadMap);

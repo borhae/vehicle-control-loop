@@ -20,20 +20,39 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.veloc
 
 public class DefaultNavigationController implements IUpperLayerControl
 {
+    private static final double MAX_LONGITUDINAL_DECCELERATION = 8.0;
+    private static final double MAX_LONGITUDINAL_ACCELERATION = 2.0;
+    private static final double MAX_LATERAL_ACCELERATION = 1.5;
     private RoadMap _roadMap;
     private IActuatingSensing _sensorsActuators;
     private SegmentBuffer _segmentBuffer;
     private double _segmentSize;
     private List<ISegmentBuildingListener> _segmentBuildingListeners;
     private DebugParams _debuggingParameters;
-    private double _maxSpeed;
+    private double _maxVelocity;
+    private double _maxLateralAcceleration;
+    private double _maxLongitudinalAcceleration;
+    private double _maxLongitudinalDecceleration;
+    private IVelocityAssignerFactory _velocityAssignerFactory;
     
-    public DefaultNavigationController(double segmentSize, double maxSpeed)
+    public DefaultNavigationController(double segmentSize, double maxVelocity)
     {
         _segmentSize = segmentSize;
         _segmentBuildingListeners = new ArrayList<ISegmentBuildingListener>();
-        _maxSpeed = maxSpeed;
+        _maxVelocity = maxVelocity;
         _debuggingParameters = new DebugParams();
+        _maxLateralAcceleration = MAX_LATERAL_ACCELERATION;
+        _maxLongitudinalAcceleration = MAX_LONGITUDINAL_ACCELERATION;
+        _maxLongitudinalDecceleration = MAX_LONGITUDINAL_DECCELERATION;
+        _velocityAssignerFactory = segSize -> {return new BasicVelocityAssigner(segSize, _maxVelocity, _maxLateralAcceleration, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration);};
+    }
+
+    public DefaultNavigationController(double segmentSize, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration)
+    {
+        this(segmentSize, maxVelocity);
+        _maxLateralAcceleration = maxLateralAcceleration;
+        _maxLongitudinalAcceleration = maxLongitudinalAcceleration;
+        _maxLongitudinalDecceleration = maxLongitudinalDecceleration;
     }
 
     @Override
@@ -55,8 +74,7 @@ public class DefaultNavigationController implements IUpperLayerControl
         List<Line2D> routeBasis = navigator.getRouteWithInitialOrientation(currentPosition, targetPosition, orientation);
         _debuggingParameters.notifyNavigationListenersRouteChanged(routeBasis);
         ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
-        IVelocityAssignerFactory velocityAssignerFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, _maxSpeed, 6.0, 16.0, 16.0);
-        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityAssignerFactory , _segmentSize);
+        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, _velocityAssignerFactory , _segmentSize);
         trajectorizer.addSegmentBuildingListeners(_segmentBuildingListeners);
         List<Trajectory> allSegments = trajectorizer.createTrajectory(routeBasis);
         _segmentBuffer.fillBuffer(allSegments);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.converters.UnitConverter;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
@@ -22,6 +23,8 @@ import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class VehicleBuildTask implements ITask, IVehicleProvider
 {
+    private static final double VELOCITY_TO_WHEEL_ROTATION = 0.25;
+
     private VRepRemoteAPI _vrep;
     private int _clientID;
     private VRepObjectCreation _objectCreator;
@@ -30,6 +33,11 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
     private Vector2D _orientation;
 
     private IVehicle _vehicle;
+    private double _lookahead;
+    private double _maxVelocity;
+    private double _maxLongitudinalAcceleration;
+    private double _maxLongitudinalDecceleration;
+    private double _maxLateralAcceleration;
 
     public VehicleBuildTask(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator, RoadMap map, Position2D position, Vector2D orientation)
     {
@@ -39,6 +47,15 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
         _map = map;
         _position = position;
         _orientation = orientation;
+    }
+
+    public void setControlParams(double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration)
+    {
+        _lookahead = lookahead;
+        _maxVelocity = maxVelocity;
+        _maxLongitudinalAcceleration = maxLongitudinalAcceleration;
+        _maxLongitudinalDecceleration = maxLongitudinalDecceleration;
+        _maxLateralAcceleration = maxLateralAcceleration;
     }
     
     @Override
@@ -56,7 +73,6 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
 
     private IVehicle createVehicle(RoadMap map, Position2D vehiclePosition, Vector2D orientation)
     {
-//        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", 1.0f);
         IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/carvisuals.ttm", 1.0f);
         IVehicleConfiguration vehicleConf = createMercedesLikeConfiguration(map, vehiclePosition, orientation, 1.5);
         factory.configure(vehicleConf);
@@ -67,11 +83,10 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
     public IVehicleConfiguration createMercedesLikeConfiguration(RoadMap roadMap, Position2D startPosition, Vector2D orientation, double placementHeight)
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
-        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(5.0, 60.0);};
+        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(5.0, UnitConverter.kilometersPerHourToMetersPerSecond(_maxVelocity), _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);};
         ILowerLayerFactory lowerFact = () -> {
             PurePursuitController ctrl = new PurePursuitController();
-            PurePursuitParameters parameters = new PurePursuitParameters(10.0, 0.25);
-            parameters.setSpeed(2.5);
+            PurePursuitParameters parameters = new PurePursuitParameters(_lookahead, VELOCITY_TO_WHEEL_ROTATION);
             ctrl.setParameters(parameters);
             return ctrl;
         };

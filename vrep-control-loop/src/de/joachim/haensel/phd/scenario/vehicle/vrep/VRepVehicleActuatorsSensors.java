@@ -35,6 +35,7 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     private Map<String, DrawingObject> _drawingObjectsStore;
     private double[] _vechicleVelocity;
     private VRepObjectCreation _vRepObjectCreator;
+    private double _wheelDiameter;
     
     public VRepVehicleActuatorsSensors(IVehicleHandles vehicleHandles, ISimulatorData simulatorData)
     {
@@ -51,6 +52,7 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
         _vrep = vrepData.getVRepRemoteAPI();
         _clientID = vrepData.getClientID();
         _vRepObjectCreator = vrepData.getVRepObjectCreator();
+        _wheelDiameter = INVALID_WHEEL_DIAMETER;
     }
 
     @Override
@@ -75,7 +77,7 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     {
         try
         {
-            FloatWA returnValF = new FloatWA(9);
+            FloatWA returnValF = new FloatWA(10);
             _vrep.simxCallScriptFunction(_clientID, _vehicleScriptParentName, remoteApi.sim_scripttype_childscript, "sense", 
                     null, null, null, null, null, returnValF, null, null, remoteApi.simx_opmode_blocking);
             float[] vals = returnValF.getArray();
@@ -90,6 +92,7 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
             _vechicleVelocity[0] = vals[6];
             _vechicleVelocity[1] = vals[7];
             _vechicleVelocity[2] = vals[8];
+            _wheelDiameter = vals[9];
         }
         catch (VRepException exc)
         {
@@ -382,5 +385,11 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
         {
             exc.printStackTrace();
         }
+    }
+
+    @Override
+    public double getWheelDiameter()
+    {
+        return _wheelDiameter;
     }
 }

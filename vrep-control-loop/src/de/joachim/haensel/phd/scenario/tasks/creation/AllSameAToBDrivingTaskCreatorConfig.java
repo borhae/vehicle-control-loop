@@ -34,11 +34,21 @@ public class AllSameAToBDrivingTaskCreatorConfig implements ITaskCreatorConfig, 
     private int _clientID;
     private VRepObjectCreation _objectCreator;
     private RoadMap _map;
+    private double _lookahead;
+    private double _maxVelocity;
+    private double _maxLongitudinalAcceleration;
+    private double _maxLongitudinalDecceleration;
+    private double _maxLateralAcceleration;
     
     public AllSameAToBDrivingTaskCreatorConfig(int numOfTasks, boolean debug)
     {
         _debug = debug;
         _numOfTasks = numOfTasks;
+        _lookahead = DEFAULT_PURE_PURSUIT_LOOKAHEAD;
+        _maxVelocity = DEFAULT_MAX_VELOCITY;
+        _maxLongitudinalAcceleration = DEFAULT_MAX_LONGITUDINAL_ACCELERATION;
+        _maxLongitudinalDecceleration = DEFAULT_MAX_LONGITUDINAL_DECCELERATION;
+        _maxLateralAcceleration = DEFAULT_MAX_LATERAL_ACCELERATION;
     }
 
     public void setAllSame(double xSource, double ySource, double xTarget, double yTarget)
@@ -82,6 +92,7 @@ public class AllSameAToBDrivingTaskCreatorConfig implements ITaskCreatorConfig, 
             Position2D startPosition = new Position2D(_xSource, _ySource);
             Vector2D orientation = IDrivingTask.computeOrientation(_map, startPosition, new Position2D(_xTarget, _yTarget));
             VehicleBuildTask vehicleBuildTask = new VehicleBuildTask(_vrep, _clientID, _objectCreator, _map, startPosition, orientation);
+            vehicleBuildTask.setControlParams(_lookahead, _maxVelocity, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
             _tasks.add(vehicleBuildTask);
             _tasks.add(new SimStartTask(_vrep, _clientID));
             _tasks.add(new VehicleStartTask(vehicleBuildTask));
@@ -111,5 +122,14 @@ public class AllSameAToBDrivingTaskCreatorConfig implements ITaskCreatorConfig, 
     {
         return _taskIterator.next();
     }
-    
+
+    @Override
+    public void setControlParams(double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration)
+    {
+        _lookahead = lookahead;
+        _maxVelocity = maxVelocity;
+        _maxLongitudinalAcceleration = maxLongitudinalAcceleration;
+        _maxLongitudinalDecceleration = maxLongitudinalDecceleration;
+        _maxLateralAcceleration = maxLateralAcceleration;
+    }
 }

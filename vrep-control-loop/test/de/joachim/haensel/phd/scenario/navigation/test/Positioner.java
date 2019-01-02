@@ -84,4 +84,10 @@ public class Positioner implements IActuatingSensing
     public void blowTire(int i, float tireScale)
     {
     }
+
+    @Override
+    public double getWheelDiameter()
+    {
+        return 0.0;
+    }
 }

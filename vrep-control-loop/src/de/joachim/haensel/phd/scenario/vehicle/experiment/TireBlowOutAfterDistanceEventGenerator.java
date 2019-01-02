@@ -10,7 +10,7 @@ import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRe
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 
-public class TireBlowOutEventGenerator implements ILowerLayerControl
+public class TireBlowOutAfterDistanceEventGenerator implements ILowerLayerControl
 {
     private double _distanceUntilBlowout;
     private IActuatingSensing _actuatorsSensors;
@@ -20,7 +20,7 @@ public class TireBlowOutEventGenerator implements ILowerLayerControl
     private float[] _tireScaleList;
     private int _tireRescalings;
 
-    public TireBlowOutEventGenerator(double distanceUntilBlowout, float reducedTireScale)
+    public TireBlowOutAfterDistanceEventGenerator(double distanceUntilBlowout, float reducedTireScale)
     {
         _distanceUntilBlowout = distanceUntilBlowout;
         _lastPosition = null;
@@ -29,7 +29,7 @@ public class TireBlowOutEventGenerator implements ILowerLayerControl
         _tireRescalings = 0;
     }
 
-    public TireBlowOutEventGenerator(int distanceUntilBlowout, float[] tireScaleList)
+    public TireBlowOutAfterDistanceEventGenerator(int distanceUntilBlowout, float[] tireScaleList)
     {
         _distanceUntilBlowout = distanceUntilBlowout;
         _lastPosition = null;

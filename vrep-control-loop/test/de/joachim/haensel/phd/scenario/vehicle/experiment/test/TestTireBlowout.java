@@ -38,7 +38,8 @@ import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
-import de.joachim.haensel.phd.scenario.vehicle.experiment.TireBlowOutEventGenerator;
+import de.joachim.haensel.phd.scenario.vehicle.experiment.TireBlowOutAfterDistanceEventGenerator;
+import de.joachim.haensel.phd.scenario.vehicle.experiment.TireBlowOutAtPositionEventGenerator;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
@@ -109,7 +110,7 @@ public class TestTireBlowout implements TestConstants
         IVehicleConfiguration vehicleConf = createConfiguration(roadMap, startPosition, destinationPosition);
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();
-        vehicle.addLowLevelEventGeneratorListener(new TireBlowOutEventGenerator(100.0, 0.5f));
+        vehicle.addLowLevelEventGeneratorListener(new TireBlowOutAfterDistanceEventGenerator(100.0, 0.5f));
 
         try
         {
@@ -159,7 +160,7 @@ public class TestTireBlowout implements TestConstants
     }
     
     @Test
-    public void testTireBlowOutScenario2()
+    public void testTireBlowOutScenario2Variant1()
     {
         try
         {
@@ -168,6 +169,7 @@ public class TestTireBlowout implements TestConstants
             TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
             TaskCreator taskCreator = new TaskCreator();
             PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(true);
+            config.setControlParams(20, 120, 2.0, 3.0, 1.3);
 
             Position2D p2 = new Position2D(3122.84, 4937.96).transform(centerMatrix);
             Position2D p3 = new Position2D(2998.93, 4829.77).transform(centerMatrix);
@@ -175,9 +177,79 @@ public class TestTireBlowout implements TestConstants
 
             config.setMap(map);
             config.configSimulator(_vrep, _clientID, _objectCreator);
-            config.addLowerLayerControl(new TireBlowOutEventGenerator(100.0, 0.5f));
+            config.addLowerLayerControl(new TireBlowOutAfterDistanceEventGenerator(100.0, 0.5f));
 
             config.setTargetPoints(Arrays.asList(new Position2D[] { p2, p3, p4 }));
+            taskCreator.configure(config);
+            List<ITask> tasks = taskCreator.createTasks();
+
+            TaskExecutor executor = new TaskExecutor();
+            executor.execute(tasks);
+            System.out.println("bla");
+        }
+        catch (VRepException exc)
+        {
+            fail(exc.toString());
+        }
+    }
+    
+    @Test
+    public void testTireBlowOutScenario2Variant2()
+    {
+        try
+        {
+            RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+            RoadMap map = mapAndCenterMatrix.getRoadMap();
+            TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+            TaskCreator taskCreator = new TaskCreator();
+            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(true);
+            config.setControlParams(20, 120, 6.0, 8.0, 5.0);
+
+            Position2D p1 = new Position2D(3653.19, 4666.35).transform(centerMatrix);
+            Position2D p2 = new Position2D(3845.60, 4744.58).transform(centerMatrix);
+            Position2D p3 = new Position2D(3599.51, 4841.12).transform(centerMatrix);
+            
+            Position2D blowoutPosition = new Position2D(3861.07, 4705.83).transform(centerMatrix);
+
+            config.setMap(map);
+            config.configSimulator(_vrep, _clientID, _objectCreator);
+            config.addLowerLayerControl(new TireBlowOutAtPositionEventGenerator(blowoutPosition, 10.0, 0.5f));
+
+            config.setTargetPoints(Arrays.asList(new Position2D[] { p1, p2, p3 }));
+            taskCreator.configure(config);
+            List<ITask> tasks = taskCreator.createTasks();
+
+            TaskExecutor executor = new TaskExecutor();
+            executor.execute(tasks);
+            System.out.println("bla");
+        }
+        catch (VRepException exc)
+        {
+            fail(exc.toString());
+        }
+    }
+    
+    @Test
+    public void test2Variant2NoBlowout()
+    {
+        try
+        {
+            RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+            RoadMap map = mapAndCenterMatrix.getRoadMap();
+            TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+            TaskCreator taskCreator = new TaskCreator();
+            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(true);
+            config.setControlParams(20, 120, 6.0, 8.0, 5.0);
+
+            Position2D p1 = new Position2D(3653.19, 4666.35).transform(centerMatrix);
+            Position2D p2 = new Position2D(3845.60, 4744.58).transform(centerMatrix);
+            Position2D p3 = new Position2D(3599.51, 4841.12).transform(centerMatrix);
+            
+
+            config.setMap(map);
+            config.configSimulator(_vrep, _clientID, _objectCreator);
+
+            config.setTargetPoints(Arrays.asList(new Position2D[] { p1, p2, p3 }));
             taskCreator.configure(config);
             List<ITask> tasks = taskCreator.createTasks();
 
@@ -208,7 +280,7 @@ public class TestTireBlowout implements TestConstants
 
             config.setMap(map);
             config.configSimulator(_vrep, _clientID, _objectCreator);
-            config.addLowerLayerControl(new TireBlowOutEventGenerator(20, new float[]{1.2f, 0.2f}));
+            config.addLowerLayerControl(new TireBlowOutAfterDistanceEventGenerator(120, new float[]{1.2f, 0.2f}));
 
             config.setTargetPoints(Arrays.asList(new Position2D[] { p2, p3, p4 }));
             taskCreator.configure(config);

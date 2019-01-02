@@ -3,8 +3,6 @@ package de.joachim.haensel.phd.scenario.math.geometry;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.event.MenuKeyListener;
-
 import de.joachim.haensel.phd.scenario.lists.CircularAccessList;
 
 /**

@@ -5,6 +5,8 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
 public interface IActuatingSensing
 {
+    public static final double INVALID_WHEEL_DIAMETER = Double.NaN;
+
     public void setOrientation(float angleAlpha, float angleBeta, float angleGamma);
     
     public void setPosition(float posX, float posY, float posZ);
@@ -57,6 +59,11 @@ public interface IActuatingSensing
      * @return 
      */
     public double getVehicleLength();
+
+    /**
+     * will return the diameter of a wheel that actuates the vehicle
+     */
+    public double getWheelDiameter();
     
     /**
      * Returns the vehicles measured velocity in simulation (in objects x, y and z direction)
