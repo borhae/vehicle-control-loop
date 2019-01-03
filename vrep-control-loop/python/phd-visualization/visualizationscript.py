@@ -1,23 +1,21 @@
 import matplotlib.pyplot as pyplot
-import matplotlib.patheffects as path_effects
 import argparse
 import csv 
 import math
 import re
 import numpy as np 
 
-from matplotlib.lines import Line2D
-from matplotlib.patches import Arc
 from matplotlib.patches import Circle
 from matplotlib.patches import Arrow
 from matplotlib.patches import Polygon
 
-from pathlib import Path
 from pathlib import PurePath
 
 from os import walk
 
 from pandas import DataFrame
+from sympy import fibonacci
+
 
 class ZoomPanAnimate:
     def __init__(self):
@@ -245,6 +243,7 @@ def readFrameContent(path, segs, arcs, arc_points, points, idx):
         data = csv.reader(csvfile, delimiter=" ")
         last_tip_x = 0
         last_tip_y = 0
+        first_point_pass = True
         for row in data:
             if(row[0] == "seg"):                
                 segs.append(Arrow(float(row[1]), float(row[2]), float(row[3]) - float(row[1]), float(row[4]) - float(row[2]), width=1, linestyle="-", alpha=0.5, color="green"))
@@ -256,16 +255,21 @@ def readFrameContent(path, segs, arcs, arc_points, points, idx):
                 arc_points.append(Circle([float(row[6]), float(row[7])], radius=0.5, color="magenta", alpha=0.3))
                 arc_points.append(Circle([float(row[8]), float(row[9])], radius=0.5, color="yellow", alpha=0.3))
             elif (row[0] == "point"):
-                if(points):
+                if(len(row) == 4):
+                    arrow_color=row[3]
+                else:
+                    arrow_color="blue"
+                if(not first_point_pass):
                     new_tip_x = float(row[1])
                     new_tip_y = float(row[2])
-                    points.append(Arrow(last_tip_x, last_tip_y, new_tip_x - last_tip_x, new_tip_y - last_tip_y, width=1, fill=False, linestyle="-", alpha=0.5, color="blue"))
+                    points.append(Arrow(last_tip_x, last_tip_y, new_tip_x - last_tip_x, new_tip_y - last_tip_y, width=1, fill=False, linestyle="-", alpha=0.5, color=arrow_color))
                     last_tip_x = new_tip_x
                     last_tip_y = new_tip_y
                 else:
-                    points.append(Arrow(float(row[1]), float(row[2]), 0.0, 0.0, width=1, linestyle="-", alpha=0.5, color="blue"))
+                    points.append(Arrow(float(row[1]), float(row[2]), 0.0, 0.0, width=1, linestyle="-", alpha=0.5, color=arrow_color))
                     last_tip_x = float(row[1])
                     last_tip_y = float(row[2])
+                    first_point_pass = False
             else:
                 print("what? uknown found")
                 print(row)

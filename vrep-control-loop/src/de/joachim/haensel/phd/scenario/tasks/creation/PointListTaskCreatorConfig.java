@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.debug.INavigationListener;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
@@ -19,6 +20,7 @@ import de.joachim.haensel.phd.scenario.tasks.VehicleStartDebugTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStartTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStopTask;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
+import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingTask
@@ -32,11 +34,14 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
     protected boolean _debug;
     protected Iterator<ITask> _taskIterator;
     protected List<ILowerLayerControl> _lowerLayerControls;
+    private List<INavigationListener> _navigationListeners;
+
     protected double _lookahead;
     protected double _maxVelocity;
     protected double _maxLongitudinalAcceleration;
     protected double _maxLongitudinalDecceleration;
     protected double _maxLateralAcceleration;
+    private ILowerLayerFactory _lowerLayerFactory;
 
     public PointListTaskCreatorConfig(boolean debug)
     {
@@ -80,6 +85,10 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
         Vector2D orientation = IDrivingTask.computeOrientation(_map, startPosition, _targetPoints.get(1));
         VehicleBuildTask vehicleBuildTask = new VehicleBuildTask(_vrep, _clientID, _objectCreator, _map, startPosition, orientation);
         vehicleBuildTask.setControlParams(_lookahead, _maxVelocity, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
+        if(_lowerLayerFactory != null)
+        {
+            vehicleBuildTask.setLowerLayerFactory(_lowerLayerFactory);
+        }
         _tasks.add(vehicleBuildTask);
         if(!_lowerLayerControls.isEmpty())
         {
@@ -89,7 +98,12 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
         _tasks.add(new VehicleStartTask(vehicleBuildTask));
         if(_debug)
         {
-            _tasks.add(new VehicleStartDebugTask(_objectCreator, vehicleBuildTask));
+            VehicleStartDebugTask debugTask = new VehicleStartDebugTask(_objectCreator, vehicleBuildTask);
+            if(_navigationListeners != null)
+            {
+                debugTask.addNavigationListeners(_navigationListeners);
+            }
+            _tasks.add(debugTask);
         }
         Position2D lastTarget = startPosition;
         for(int idx = 0; idx < _targetPoints.size() - 1; idx++)
@@ -132,5 +146,19 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
         _maxLongitudinalAcceleration = maxLongitudinalAcceleration;
         _maxLongitudinalDecceleration = maxLongitudinalDecceleration;
         _maxLateralAcceleration = maxLateralAcceleration;
+    }
+
+    public void addNavigationListener(INavigationListener navigationListener)
+    {
+        if(_navigationListeners == null)
+        {
+            _navigationListeners = new ArrayList<>();
+        }
+        _navigationListeners.add(navigationListener);
+    }
+
+    public void setLowerLayerController(ILowerLayerFactory lowerLayerFactory)
+    {
+        _lowerLayerFactory = lowerLayerFactory;
     }
 }

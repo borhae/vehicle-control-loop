@@ -1,5 +1,7 @@
 package de.joachim.haensel.phd.scenario.tasks;
 
+import java.util.List;
+
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.debug.INavigationListener;
 import de.joachim.haensel.phd.scenario.debug.Speedometer;
@@ -10,6 +12,7 @@ public class VehicleStartDebugTask implements ITask
 {
     private VRepObjectCreation _objectCreator;
     private IVehicleProvider _vehicleProvider;
+    private List<INavigationListener> _navigationListeners;
 
     public VehicleStartDebugTask(VRepObjectCreation objectCreator, IVehicleProvider vehicleProvider)
     {
@@ -27,6 +30,7 @@ public class VehicleStartDebugTask implements ITask
         INavigationListener navigationListener = new VRepNavigationListener(_objectCreator);
         navigationListener.activateSegmentDebugging();
         debParam.addNavigationListener(navigationListener);
+        _navigationListeners.forEach(listener -> debParam.addNavigationListener(listener));
         _vehicleProvider.getVehicle().activateDebugging(debParam);
     }
 
@@ -37,4 +41,8 @@ public class VehicleStartDebugTask implements ITask
         return 0;
     }
 
+    public void addNavigationListeners(List<INavigationListener> navigationListeners)
+    {
+        _navigationListeners = navigationListeners;
+    }
 }

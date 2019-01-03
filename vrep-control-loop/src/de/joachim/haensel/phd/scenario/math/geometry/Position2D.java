@@ -180,6 +180,11 @@ public class Position2D
         return String.format("point %s %s", _x, _y);
     }
 
+    public String toPyPlotString(String color)
+    {
+        return toPyPlotString() + " " + color;
+    }
+    
     public static Position2D[] valueOf(String[] coordinates)
     {
         Position2D[] result = new Position2D[coordinates.length];

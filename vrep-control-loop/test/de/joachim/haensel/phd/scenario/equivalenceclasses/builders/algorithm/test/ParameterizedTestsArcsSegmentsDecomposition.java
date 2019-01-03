@@ -116,13 +116,7 @@ public class ParameterizedTestsArcsSegmentsDecomposition
             String routeFileName, String tangentSpaceFileName, String decompositionFileName)
     {
         String counter = String.format("%06d", curIdx);
-        Deque<Vector2D> routeVectors = curWindow.stream().map(trajectory -> trajectory.getVector()).collect(Collectors.toCollection(new Supplier<Deque<Vector2D>>() {
-            @Override
-            public Deque<Vector2D> get()
-            {
-                return new LinkedList<>();
-            }
-        }));
+        Deque<Vector2D> routeVectors = curWindow.stream().map(trajectory -> trajectory.getVector()).collect(Collectors.toCollection(LinkedList::new));
         List<String> routeAsString = routeVectors.stream().map(vec -> vec.getBase().toPyPlotString()).collect(Collectors.toList());
         
         try

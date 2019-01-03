@@ -17,14 +17,16 @@ public class TireBlowOutAtPositionEventGenerator implements ILowerLayerControl
     private float[] _tireScaleList;
     private Position2D _blowOutTargetPositon;
     private double _locationPrecision;
+    private boolean[] _tiresToBlow;
 
-    public TireBlowOutAtPositionEventGenerator(Position2D blowOutTargetPositon, double locationPrecision, float reducedTireScale)
+    public TireBlowOutAtPositionEventGenerator(Position2D blowOutTargetPositon, double locationPrecision, boolean[] tiresToBlow, float reducedTireScale)
     {
         _blowOutTargetPositon = blowOutTargetPositon;
         _tireScaleList = new float[1];
         _tireScaleList[0] = reducedTireScale;
         _tireRescalings = 0;
         _locationPrecision = locationPrecision;
+        _tiresToBlow = tiresToBlow;
     }
 
     public TireBlowOutAtPositionEventGenerator(Position2D blowOutTargetPositon, double locationPrecision, float[] tireScaleList)
@@ -40,13 +42,13 @@ public class TireBlowOutAtPositionEventGenerator implements ILowerLayerControl
     {
         if((_actuatorsSensors.getPosition().equals(_blowOutTargetPositon, _locationPrecision)) && (_tireRescalings < _tireScaleList.length))
         {
-            _actuatorsSensors.blowTire(3, _tireScaleList[_tireRescalings]);
+            _actuatorsSensors.blowTire(_tiresToBlow, _tireScaleList[_tireRescalings]);
             System.out.println("blowed tire");
             _tireRescalings++;
         }
         else if((_tireRescalings > 0) && (_tireRescalings < _tireScaleList.length))
         {
-            _actuatorsSensors.blowTire(3, _tireScaleList[_tireRescalings]);
+            _actuatorsSensors.blowTire(_tiresToBlow, _tireScaleList[_tireRescalings]);
             System.out.println("blowed tire");
             _tireRescalings++;
         }

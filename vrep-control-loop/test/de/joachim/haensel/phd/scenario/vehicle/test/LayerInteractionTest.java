@@ -158,7 +158,7 @@ public class LayerInteractionTest implements TestConstants
             }
 
             @Override
-            public void blowTire(int i, float tireScale)
+            public void blowTire(boolean[] tiresToBlow, float tireScale)
             {
             }
 

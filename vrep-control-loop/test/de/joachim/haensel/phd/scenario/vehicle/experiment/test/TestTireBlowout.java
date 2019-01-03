@@ -213,7 +213,7 @@ public class TestTireBlowout implements TestConstants
 
             config.setMap(map);
             config.configSimulator(_vrep, _clientID, _objectCreator);
-            config.addLowerLayerControl(new TireBlowOutAtPositionEventGenerator(blowoutPosition, 10.0, 0.5f));
+            config.addLowerLayerControl(new TireBlowOutAtPositionEventGenerator(blowoutPosition, 10.0, new boolean[]{true, false, false, false}, 0.5f));
 
             config.setTargetPoints(Arrays.asList(new Position2D[] { p1, p2, p3 }));
             taskCreator.configure(config);

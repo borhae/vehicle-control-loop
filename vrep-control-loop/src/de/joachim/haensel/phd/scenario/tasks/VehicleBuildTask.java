@@ -39,6 +39,8 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
     private double _maxLongitudinalDecceleration;
     private double _maxLateralAcceleration;
 
+    private ILowerLayerFactory _lowerLayerFactory;
+
     public VehicleBuildTask(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator, RoadMap map, Position2D position, Vector2D orientation)
     {
         _vrep = vrep;
@@ -84,12 +86,20 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(5.0, UnitConverter.kilometersPerHourToMetersPerSecond(_maxVelocity), _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);};
-        ILowerLayerFactory lowerFact = () -> {
-            PurePursuitController ctrl = new PurePursuitController();
-            PurePursuitParameters parameters = new PurePursuitParameters(_lookahead, VELOCITY_TO_WHEEL_ROTATION);
-            ctrl.setParameters(parameters);
-            return ctrl;
-        };
+        ILowerLayerFactory lowerFact = null;
+        if(_lowerLayerFactory != null)
+        {
+            lowerFact = _lowerLayerFactory;
+        }
+        else
+        {
+            lowerFact = () -> {
+                PurePursuitController ctrl = new PurePursuitController();
+                PurePursuitParameters parameters = new PurePursuitParameters(_lookahead, VELOCITY_TO_WHEEL_ROTATION);
+                ctrl.setParameters(parameters);
+                return ctrl;
+            };
+        }
         vehicleConf.setUpperCtrlFactory(upperFact);
         vehicleConf.setLowerCtrlFactory(lowerFact);
         
@@ -115,5 +125,10 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
     public IVehicle getVehicle()
     {
         return _vehicle;
+    }
+
+    public void setLowerLayerFactory(ILowerLayerFactory lowerLayerFactory)
+    {
+        _lowerLayerFactory = lowerLayerFactory;
     }
 }

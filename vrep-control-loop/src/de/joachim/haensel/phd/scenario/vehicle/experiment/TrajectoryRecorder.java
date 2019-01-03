@@ -1,75 +1,58 @@
 package de.joachim.haensel.phd.scenario.vehicle.experiment;
 
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
+import de.joachim.haensel.phd.scenario.debug.INavigationListener;
+import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ITrajectoryProvider;
 import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 
-public class TireBlowOutAfterDistanceEventGenerator implements ILowerLayerControl
+public class TrajectoryRecorder implements ILowerLayerControl, INavigationListener
 {
-    private double _distanceUntilBlowout;
+
     private IActuatingSensing _actuatorsSensors;
-    private Position2D _startPosition;
-    private double _distance;
-    private Position2D _lastPosition;
-    private float[] _tireScaleList;
-    private int _tireRescalings;
+    private List<Position2D> _trajectoryRecord;
+    private List<Position2D> _plannedTrajectory;
 
-    public TireBlowOutAfterDistanceEventGenerator(double distanceUntilBlowout, float reducedTireScale)
+    public TrajectoryRecorder()
     {
-        _distanceUntilBlowout = distanceUntilBlowout;
-        _lastPosition = null;
-        _tireScaleList = new float[1];
-        _tireScaleList[0] = reducedTireScale;
-        _tireRescalings = 0;
+        _trajectoryRecord = new ArrayList<>();
+        _plannedTrajectory = new ArrayList<>();
     }
-
-    public TireBlowOutAfterDistanceEventGenerator(int distanceUntilBlowout, float[] tireScaleList)
-    {
-        _distanceUntilBlowout = distanceUntilBlowout;
-        _lastPosition = null;
-        _tireScaleList = tireScaleList;
-        _tireRescalings = 0;
-    }
-
+    
     @Override
     public void controlEvent()
     {
-        if(_startPosition != null)
-        {
-            if((_distance > _distanceUntilBlowout) && (_tireRescalings < _tireScaleList.length))
-            {
-                _actuatorsSensors.blowTire(new boolean[]{false, false, true, false}, _tireScaleList[_tireRescalings]);
-                System.out.println("blowed tire");
-                _tireRescalings++;
-            }
-            else
-            {
-                if(_lastPosition == null)
-                {
-                    _lastPosition = _startPosition;
-                }
-                Position2D currentPos = new Position2D(_actuatorsSensors.getPosition());
-                double distance = _lastPosition.distance(currentPos);
-                _distance += distance;
-//                System.out.println("distance" + _distance);
-                _lastPosition = currentPos;
-            }
-        }
+        _trajectoryRecord.add(new Position2D(_actuatorsSensors.getPosition()));
     }
 
     @Override
     public void driveTo(Position2D position)
     {
-        _startPosition = _actuatorsSensors.getPosition();
-        _distance = 0.0;
-        _lastPosition = null;
-        _tireRescalings = 0;
+    }
+
+    @Override
+    public void clearSegmentBuffer()
+    {
+    }
+
+    @Override
+    public void clearArrivedListeners()
+    {
+        // TODO Auto-generated method stub
     }
 
     @Override
@@ -82,55 +65,91 @@ public class TireBlowOutAfterDistanceEventGenerator implements ILowerLayerContro
     public void activateDebugging(IVrepDrawing actuatingSensing, DebugParams params)
     {
         // TODO Auto-generated method stub
+
     }
 
     @Override
     public void deactivateDebugging()
     {
         // TODO Auto-generated method stub
+
     }
 
     @Override
     public void setParameters(Object parameters)
     {
         // TODO Auto-generated method stub
+
     }
 
     @Override
     public void stop()
     {
         // TODO Auto-generated method stub
+
     }
 
     @Override
     public void addTrajectoryRequestListener(ITrajectoryRequestListener requestListener)
     {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
     public void addTrajectoryReportListener(ITrajectoryReportListener reportListener)
     {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
     public void addArrivedListener(IArrivedListener arrivedListener)
     {
         // TODO Auto-generated method stub
+
+    }
+
+    public List<Position2D> getTrajectory()
+    {
+        return _trajectoryRecord;
+    }
+
+    @Override
+    public void notifySegmentsChanged(List<Trajectory> segments)
+    {
+        List<Position2D> segmentsToAdd = segments.stream().map(trajectory -> trajectory.getVector().getBase()).collect(Collectors.toList());
+        if(_plannedTrajectory == null)
+        {
+            _plannedTrajectory = segmentsToAdd;
+        }
+        else
+        {
+            _plannedTrajectory.addAll(segmentsToAdd);
+        }
+    }
+    
+    public List<Position2D> getPlannedTrajectory()
+    {
+        return _plannedTrajectory;
+    }
+
+    @Override
+    public void notifyRouteChanged(List<Line2D> route)
+    {
+        // TODO Auto-generated method stub
         
     }
 
     @Override
-    public void clearSegmentBuffer()
+    public void activateRouteDebugging()
     {
         // TODO Auto-generated method stub
+        
     }
 
     @Override
-    public void clearArrivedListeners()
+    public void activateSegmentDebugging()
     {
         // TODO Auto-generated method stub
         

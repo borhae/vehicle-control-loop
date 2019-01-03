@@ -81,7 +81,7 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
             _vrep.simxCallScriptFunction(_clientID, _vehicleScriptParentName, remoteApi.sim_scripttype_childscript, "sense", 
                     null, null, null, null, null, returnValF, null, null, remoteApi.simx_opmode_blocking);
             float[] vals = returnValF.getArray();
-            if(vals == null || vals.length == 0)
+            if(vals == null || vals.length == 0 || (Double.isNaN(vals[0]) || Double.isNaN(vals[1])))
             {
                 //simulation probably not running
                 return;
@@ -294,22 +294,44 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     }
     
     @Override
-    public void blowTire(int i, float tireScale)
+    public void blowTire(boolean[] tiresToBlow, float tireScale)
     {
         String parentObj = VRepObjectCreation.VREP_LOADING_SCRIPT_PARENT_OBJECT;
         FloatWA inFloats = new FloatWA(3);
         IntWA inInts = new IntWA(1);
-        inInts.getArray()[0] = _vehicleHandles.getFrontLeftWheel();
-        inFloats.getArray()[0] = tireScale;
-        inFloats.getArray()[1] = 1.0f;
-        inFloats.getArray()[2] = 1.0f;
-        try
+        for(int idx = 0; idx < tiresToBlow.length; idx++)
         {
-            _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_customizationscript, "scaleObject", inInts, inFloats, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
-        }
-        catch (VRepException exc)
-        {
-            exc.printStackTrace();
+            if(tiresToBlow[idx])
+            {
+                switch (idx)
+                {
+                    case 0:
+                        inInts.getArray()[0] = _vehicleHandles.getFrontLeftWheel();
+                        break;
+                    case 1:
+                        inInts.getArray()[0] = _vehicleHandles.getFrontRightWheel();
+                        break;
+                    case 2:
+                        inInts.getArray()[0] = _vehicleHandles.getRearRightWheel();
+                        break;
+                    case 3:
+                        inInts.getArray()[0] = _vehicleHandles.getRearLeftWheel();
+                        break;
+                    default:
+                        break;
+                }
+            }
+            inFloats.getArray()[0] = tireScale;
+            inFloats.getArray()[1] = 1.0f;
+            inFloats.getArray()[2] = 1.0f;
+            try
+            {
+                _vrep.simxCallScriptFunction(_clientID, parentObj, remoteApi.sim_scripttype_customizationscript, "scaleObject", inInts, inFloats, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+            }
+            catch (VRepException exc)
+            {
+                exc.printStackTrace();
+            }
         }
     }
 

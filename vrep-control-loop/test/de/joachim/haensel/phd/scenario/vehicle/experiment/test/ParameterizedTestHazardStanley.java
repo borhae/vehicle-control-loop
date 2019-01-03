@@ -31,12 +31,16 @@ import de.joachim.haensel.phd.scenario.tasks.ITask;
 import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig;
 import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
+import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
+import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.StanleyController;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TireBlowOutAtPositionEventGenerator;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 @RunWith(Parameterized.class)
-public class ParameterizedTestHazard
+public class ParameterizedTestHazardStanley
 {
     private static VRepRemoteAPI _vrep;
     private static int _clientID;
@@ -59,17 +63,14 @@ public class ParameterizedTestHazard
     {
         return Arrays.asList(new Object[][]
         {
-//            {20 ,120, 6.0, 8.0, 5.0, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58), new Position2D(3599.51, 4841.12)), new Position2D(3861.07, 4705.83), "test_20_120_6.0_8.0_5.0", "blue"},
-//            {20 ,60, 6.0, 8.0, 5.0, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58), new Position2D(3599.51, 4841.12)), new Position2D(3861.07, 4705.83), "test_20_60_6.0_8.0_5.0", "green"},
-//            {20 ,60, 6.0, 8.0, 5.0, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58), new Position2D(3599.51, 4841.12)), null, "test_20_60_6.0_8.0_5.0_noBlowout", "red"},
-            {20 ,60, 6.0, 8.0, 5.0, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{false, true, false, false}, "test_20_120_6.0_8.0_5.0", "red"},
-            {20 ,60, 6.0, 8.0, 5.0, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), null, new boolean[]{false, true, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
-//            {20 ,60, 6.0, 8.0, 5.0, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), "test_20_60_6.0_8.0_5.0", "green"},
-//            {20 ,60, 6.0, 8.0, 5.0, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), null, "test_20_60_6.0_8.0_5.0_noBlowout", "red"},
+//            {20, 120, 6.0, 8.0, 5.0, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0", "red"},
+//            {20, 120, 6.0, 8.0, 5.0, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), null, new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
+            {20, 60, 2.0, 8.0, 5.0, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0", "red"},
+            {20, 60, 2.0, 8.0, 5.0, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), null, new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
         });
     }
 
-    public ParameterizedTestHazard(double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, Position2D eventPosition, boolean[] tiresToBlow, String paramID, String color)
+    public ParameterizedTestHazardStanley(double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, Position2D eventPosition, boolean[] tiresToBlow, String paramID, String color)
     {
         _lookahead = lookahead;
         _maxVelocity = maxVelocity;
@@ -157,6 +158,17 @@ public class ParameterizedTestHazard
 
             config.setTargetPoints(_targetPoints);
             config.addNavigationListener(trajectoryRecorder);
+            config.setLowerLayerController(new ILowerLayerFactory() {
+                
+                @Override
+                public ILowerLayerControl create()
+                {
+                    StanleyController controller = new StanleyController();
+                    controller.setParameters(new PurePursuitParameters(_lookahead, 0.0));
+                    
+                    return controller;
+                }
+            });
             taskCreator.configure(config);
             List<ITask> tasks = taskCreator.createTasks();
 
