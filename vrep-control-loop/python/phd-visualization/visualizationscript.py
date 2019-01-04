@@ -145,7 +145,8 @@ def paint_panda_row(idx, len, data, ax, fig):
         arcs = data[1]
         arc_points = data[2]
         points = data[3]
-        plotFrameContent(segs, arcs, arc_points, points, ax, idx)
+        lines = data[4]
+        plotFrameContent(segs, arcs, arc_points, points, lines, ax, idx)
         fig.canvas.draw()
 
 def main():
@@ -167,12 +168,13 @@ def main():
             segs = []
             arcs = []
             arc_points = []
-            points = [] 
+            points = []
+            lines = []
             for path in path_pair:
                 if(path):
-                    readFrameContent(path, segs, arcs, arc_points, points, idx)
-            data_in.append([segs, arcs, arc_points, points, idx])
-        all_content = DataFrame(data=data_in, columns=["segs", "arcs", "arc_points", "points", "idx"])
+                    readFrameContent(path, segs, arcs, arc_points, points, lines, idx)
+            data_in.append([segs, arcs, arc_points, points, lines, idx])
+        all_content = DataFrame(data=data_in, columns=["segs", "arcs", "arc_points", "points", "lines", "idx"])
         figure = pyplot.figure()
         ax = figure.add_subplot(1, 1, 1)
         zoom_pan_animate = ZoomPanAnimate()
@@ -190,14 +192,15 @@ def main():
         arcs = []
         arc_points = []
         points = []
+        lines = []
 
         figure = pyplot.figure()
         ax = figure.add_subplot(1, 1, 1)
 
         for path in args.path:
-            readFrameContent(path, segs, arcs, arc_points, points, 0)
+            readFrameContent(path, segs, arcs, arc_points, points, lines, 0)
 
-        plotFrameContent(segs, arcs, arc_points, points, ax, 0)
+        plotFrameContent(segs, arcs, arc_points, points, lines, ax, 0)
         zoom_pan = ZoomPanAnimate()
         figZoom = zoom_pan.zoom_factory(ax, base_scale=1.1)
         figPan = zoom_pan.pan_factory(ax)
@@ -223,7 +226,7 @@ def crawlDir(paths):
         pathlists.append(cur_series_list)
     return pathlists
 
-def plotFrameContent(segs, arcs, arc_points, points, ax, frame_idx):
+def plotFrameContent(segs, arcs, arc_points, points, lines, ax, frame_idx):
     # format for segments: "seg x1 y1 x2 y2"
     # format for arcs: "arc center_x center_y radius start_angle end_angle"
     # for debugging reasons we store arc_points as well 
@@ -237,13 +240,18 @@ def plotFrameContent(segs, arcs, arc_points, points, ax, frame_idx):
         ax.add_patch(cur_arc_point)
     for cur_point in points:
         ax.add_patch(cur_point)
+    for cur_line in lines:
+        ax.add_patch(cur_line)
 
-def readFrameContent(path, segs, arcs, arc_points, points, idx):
+def readFrameContent(path, segs, arcs, arc_points, points, lines, idx):
     with open(path) as csvfile:
         data = csv.reader(csvfile, delimiter=" ")
         last_tip_x = 0
         last_tip_y = 0
+        last_line_tip_x = 0
+        last_line_tip_y = 0
         first_point_pass = True
+        first_line_point_pass = True
         for row in data:
             if(row[0] == "seg"):                
                 segs.append(Arrow(float(row[1]), float(row[2]), float(row[3]) - float(row[1]), float(row[4]) - float(row[2]), width=1, linestyle="-", alpha=0.5, color="green"))
@@ -256,9 +264,9 @@ def readFrameContent(path, segs, arcs, arc_points, points, idx):
                 arc_points.append(Circle([float(row[8]), float(row[9])], radius=0.5, color="yellow", alpha=0.3))
             elif (row[0] == "point"):
                 if(len(row) == 4):
-                    arrow_color=row[3]
+                    arrow_color = row[3]
                 else:
-                    arrow_color="blue"
+                    arrow_color = "blue"
                 if(not first_point_pass):
                     new_tip_x = float(row[1])
                     new_tip_y = float(row[2])
@@ -270,8 +278,26 @@ def readFrameContent(path, segs, arcs, arc_points, points, idx):
                     last_tip_x = float(row[1])
                     last_tip_y = float(row[2])
                     first_point_pass = False
+            elif (row[0] == "line"):
+                if(len(row) == 4):
+                    arrow_color = row[3]
+                else:
+                    arrow_color = "blue"
+                if(not first_line_point_pass):
+                    new_line_tip_x = float(row[1])
+                    new_line_tip_y = float(row[2])
+                    xy = np.array([[last_line_tip_x, last_line_tip_y], [new_line_tip_x, new_line_tip_y]])
+                    lines.append(Polygon(xy, closed=False, fill=False, linestyle="-", alpha=0.5, color=arrow_color))
+                    last_line_tip_x = new_line_tip_x
+                    last_line_tip_y = new_line_tip_y
+                else:
+                    xy = np.array([[float(row[1]), float(row[2])], [float(row[1]), float(row[2])]])
+                    lines.append(Polygon(xy, closed=False, fill=False, linestyle="-", alpha=0.5, color=arrow_color))
+                    last_line_tip_x = float(row[1])
+                    last_line_tip_y = float(row[2])
+                    first_line_point_pass = False
             else:
-                print("what? uknown found")
+                print("what? unknown found")
                 print(row)
 
 if __name__ == '__main__':

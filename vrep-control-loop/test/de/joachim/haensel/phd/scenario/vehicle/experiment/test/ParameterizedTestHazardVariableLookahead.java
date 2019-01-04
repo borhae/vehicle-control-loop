@@ -80,8 +80,42 @@ public class ParameterizedTestHazardVariableLookahead
 // Almost no curve cutting, heavily overshooting both getting back to the road. Tire-Blowout overshoots significantly more
 //            {15, 120, 4.0, 6.0, 1.5, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0", "red"},
 //            {15, 120, 4.0, 6.0, 1.5, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), null, new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
-            {15, 120, 4.0, 6.0, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0", "red"},
-            {15, 120, 4.0, 6.0, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), null, new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
+// Almost ideal with blown out tire, undercut with all wheels
+//            {15, 120, 4.0, 4.0, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0", "red"},
+//            {15, 120, 4.0, 4.0, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), null, new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
+// Overshoot
+//            {15, 120, 4.0, 5.0, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0", "red"},
+//            {15, 120, 4.0, 5.0, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), null, new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
+// Almost 
+//          {15, 120, 4.0, 4.5, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0", "red"},
+//          {15, 120, 4.0, 4.5, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), null, new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
+
+
+// A little more decceleration and this is awesome: blow out tire overshoots, all in-tact results in slight undercut and minimal overshoot
+//            {15, 120, 4.0, 4.3, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0", "red"},
+//            {15, 120, 4.0, 4.3, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), null, new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
+// Let's try a different speed: kind of the same, doesn't accelerate much more on the distance
+//            {15, 240, 4.0, 4.3, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0", "red"},
+//            {15, 240, 4.0, 4.3, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), null, new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
+// Let's go slower: Both heavily undercut
+//            {15, 50, 4.0, 4.3, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0", "red"},
+//            {15, 50, 4.0, 4.3, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), null, new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
+// Minimal lookahead: works perfect for both
+//            {10, 50, 4.0, 4.3, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0", "red"},
+//            {10, 50, 4.0, 4.3, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), null, new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
+// Minimal lookahead and fast: works good for intact wheels and blow out overshoots: nice!            
+//            {10, 120, 4.0, 4.3, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0", "red"},
+//            {10, 120, 4.0, 4.3, 1.2, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), null, new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
+// Let's go for a different route and turn down the lateral velocity
+//            {10, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(4874.12, 2690.66), new Position2D(5213.40,2791.03), new Position2D(5370.22,2858.77)), new Position2D(5191.27, 2793.11), new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0", "red"},
+//            {10, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(4874.12, 2690.66), new Position2D(5213.40,2791.03), new Position2D(5370.22,2858.77)), null, new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
+// Let's blow the other front tire            
+//            {10, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(4874.12, 2690.66), new Position2D(5213.40,2791.03), new Position2D(5370.22,2858.77)), new Position2D(5191.27, 2793.11), new boolean[]{false, true, false, false}, "test_20_120_6.0_8.0_5.0", "red"},
+//            {10, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(4874.12, 2690.66), new Position2D(5213.40,2791.03), new Position2D(5370.22,2858.77)), null, new boolean[]{false, true, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
+// Low Lateral velocity with old route and both left and right tire           
+            {10, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{false, true, false, false}, "test_20_120_6.0_8.0_5.0_frontright", "red"},
+            {10, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0_frontleft", "orange"},
+            {10, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), null, new boolean[]{false, true, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
         });
     }
 
@@ -190,8 +224,8 @@ public class ParameterizedTestHazardVariableLookahead
             executor.execute(tasks);
             System.out.println("bla");
             
-            List<String> actualTrajectory = trajectoryRecorder.getTrajectory().stream().filter(p -> p.getX() != 0 && p.getY() != 0.0).map(pos -> pos.toPyPlotString(_color)).collect(Collectors.toList());
-            List<String> plannedTrajectory = trajectoryRecorder.getPlannedTrajectory().stream().map(pos -> pos.toPyPlotString("black")).collect(Collectors.toList());
+            List<String> actualTrajectory = trajectoryRecorder.getTrajectory().stream().filter(p -> p.getX() != 0 && p.getY() != 0.0).map(pos -> pos.toPyPlotString(_color, "line")).collect(Collectors.toList());
+            List<String> plannedTrajectory = trajectoryRecorder.getPlannedTrajectory().stream().map(pos -> pos.toPyPlotString("black", "line")).collect(Collectors.toList());
             try
             {
                 Files.write(new File("./res/hazardtestoutput/trajectory" + _paramID + ".actual.pyplot").toPath(), actualTrajectory, Charset.defaultCharset());

@@ -185,6 +185,20 @@ public class Position2D
         return toPyPlotString() + " " + color;
     }
     
+    public String toPyPlotString(String color, String type)
+    {
+        if(color == null)
+        {
+            color = "";
+        }
+        if(type == null)
+        {
+            type = "point";
+        }
+        return String.format(type + " %s %s " + color, _x, _y);
+    }
+
+    
     public static Position2D[] valueOf(String[] coordinates)
     {
         Position2D[] result = new Position2D[coordinates.length];
