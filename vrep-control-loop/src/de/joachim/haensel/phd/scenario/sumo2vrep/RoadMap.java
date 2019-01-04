@@ -86,7 +86,18 @@ public class RoadMap
 
     public RoadMap(String networkFileName)
     {
-        _roadNetwork = readSumoMap(networkFileName);
+        NetType netType = readSumoMap(networkFileName);
+        initMap(netType);
+    }
+
+    public RoadMap(NetType netType)
+    {
+        initMap(netType);
+    }
+
+    private void initMap(NetType netType)
+    {
+        _roadNetwork = netType;
         _navigableNetwork = new HashMap<>();
         _nameToJunctionMap = new HashMap<>();
         _nameToLaneMap = new HashMap<>();

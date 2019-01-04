@@ -1,7 +1,12 @@
 package de.joachim.haensel.phd.scenario.equivalenceclasses.builders;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import de.joachim.haensel.phd.scenario.math.Linspace;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
@@ -42,6 +47,8 @@ public class Arc implements IArcsSegmentContainerElement
             return _stringRep;
         }
     }
+
+    private static final double LINE_LENGTH = 2.0; //if this is split into lines they should be of this length
 
     private List<Position2D> _elements;
     private Position2D _center;
@@ -197,11 +204,62 @@ public class Arc implements IArcsSegmentContainerElement
         return _center;
     }
 
+    @Override
     public Position2D getStart()
     {
         return _elements.get(0);
     }
 
+    @Override
+    public List<Line2D> getLines()
+    {
+        List<Line2D> result = new ArrayList<>();
+        
+        Position2D aNC = _elements.get(0);
+        Position2D bNC = _elements.get(_elements.size() - 1);
+        Position2D a = Position2D.minus(aNC, _center);
+        Position2D b = Position2D.minus(bNC, _center);
+        double angle1 = Math.atan2(a.getY(), a.getX());
+        double angle2 = Math.atan2(b.getY(), b.getX());
+
+        double angleDist = Math.toDegrees(Math.abs(angle2 - angle1));
+        double length = (angleDist/360) * 2.0 * Math.PI * _radius;
+        int nrOfLines = (int)(length / LINE_LENGTH);
+
+        List<Double> thetaRange = new ArrayList<>();
+        if(_centerTo == CenterAt.LEFT)
+        {
+            if(angle1 > 0 && angle2 < 0)
+            {
+                angle2 = 2 * Math.PI + angle2;
+            }
+            thetaRange = Linspace.linspace(angle1, angle2, nrOfLines);
+        }
+        else if(_centerTo == CenterAt.RIGHT)
+        {
+            if(angle1 < 0 && angle2 > 0)
+            {
+                angle1 = 2 * Math.PI + angle1;
+            }
+            thetaRange = Linspace.linspace(angle2, angle1, nrOfLines);
+        }
+        Collections.reverse(thetaRange);
+        List<Position2D> points = thetaRange.stream().map(theta -> new Position2D(_center.getX() + Math.cos(theta) * _radius, _center.getY() + Math.sin(theta) * _radius)).collect(Collectors.toList());
+        
+        Position2D last = null;
+        for(int idx = 0; idx < points.size(); idx++)
+        {
+            Position2D current = points.get(idx);
+            if(last != null)
+            {
+                result.add(new Line2D(last, current));
+            }
+            last = current;
+        }
+        return result;
+    }
+
+    @Override
     public Position2D getEnd()
     {
         return _elements.get(_elements.size() - 1);

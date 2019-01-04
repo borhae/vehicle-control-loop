@@ -267,4 +267,9 @@ public class Line2D
         }
     }
 
+    public String toPyplotString()
+    {
+        return String.format("seg %.6f %.6f %.6f %.6f", _x1, _y1, _x2, _y2);
+    }
+
 }

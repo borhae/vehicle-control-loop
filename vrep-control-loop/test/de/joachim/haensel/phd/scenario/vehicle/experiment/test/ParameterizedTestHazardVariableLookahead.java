@@ -151,7 +151,7 @@ public class ParameterizedTestHazardVariableLookahead
         _paramID = paramID;
         _color = color;
     }
-    
+     
     @BeforeClass
     public static void setupVrep() throws VRepException
     {
@@ -193,69 +193,61 @@ public class ParameterizedTestHazardVariableLookahead
     
     
     @Test
-    public void testTireBlowOutScenario()
+    public void testTireBlowOutScenario() throws VRepException
     {
+        TaskCreator taskCreator = new TaskCreator();
+        PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(true);
+        config.setControlParams(_lookahead, _maxVelocity, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
+
+        config.setMap(_map);
+        config.configSimulator(_vrep, _clientID, _objectCreator);
+        if(_eventPosition != null)
+        {
+            config.addLowerLayerControl(new TireBlowOutAtPositionEventGenerator(_eventPosition, 10.0, _tiresToBlow, 0.5f));
+        }
+        TrajectoryRecorder trajectoryRecorder = new TrajectoryRecorder();
+        config.addLowerLayerControl(trajectoryRecorder);
+
+        config.setTargetPoints(_targetPoints);
+        config.addNavigationListener(trajectoryRecorder);
+        config.setLowerLayerController(new ILowerLayerFactory() {
+            
+            @Override
+            public ILowerLayerControl create()
+            {
+                PurePursuitControllerVariableLookahead purePursuitControllerVariableLookahead = new PurePursuitControllerVariableLookahead();
+                purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(_lookahead, 0.0));
+                return purePursuitControllerVariableLookahead;
+            }
+        });
+        taskCreator.configure(config);
+        List<ITask> tasks = taskCreator.createTasks();
+
+        TaskExecutor executor = new TaskExecutor();
+        executor.execute(tasks);
+        
+        List<String> actualTrajectory = trajectoryRecorder.getTrajectory().stream().filter(p -> p.getX() != 0 && p.getY() != 0.0).map(pos -> pos.toPyPlotString(_color, "point")).collect(Collectors.toList());
+        List<Position2D> plannedTrajectoryPre = trajectoryRecorder.getPlannedTrajectory();
+        List<Line2D> lines = new ArrayList<>();
+        for(int idx = 0; idx < plannedTrajectoryPre.size() - 1; idx++)
+        {
+            Position2D p1 = plannedTrajectoryPre.get(idx);
+            Position2D p2 = plannedTrajectoryPre.get(idx + 1);
+            lines.add(new Line2D(p1, p2));
+        }
+        List<Vector2D> leftBorder = lines.stream().map(line -> new Vector2D(line).shift(-1.6)).collect(Collectors.toList());
+        List<Vector2D> rightBorder = lines.stream().map(line -> new Vector2D(line).shift(1.6)).collect(Collectors.toList());
+        List<String> plannedTrajectoryLeft = leftBorder.stream().map(vector -> vector.getBase().toPyPlotString("black", "line") + "\n" + vector.getTip().toPyPlotString("black", "line")).collect(Collectors.toList());
+        List<String> plannedTrajectoryRight = rightBorder.stream().map(vector -> vector.getBase().toPyPlotString("black", "line") + "\n" + vector.getTip().toPyPlotString("black", "line")).collect(Collectors.toList());
         try
         {
-            TaskCreator taskCreator = new TaskCreator();
-            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(true);
-            config.setControlParams(_lookahead, _maxVelocity, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
-
-            config.setMap(_map);
-            config.configSimulator(_vrep, _clientID, _objectCreator);
-            if(_eventPosition != null)
-            {
-                config.addLowerLayerControl(new TireBlowOutAtPositionEventGenerator(_eventPosition, 10.0, _tiresToBlow, 0.5f));
-            }
-            TrajectoryRecorder trajectoryRecorder = new TrajectoryRecorder();
-            config.addLowerLayerControl(trajectoryRecorder);
-
-            config.setTargetPoints(_targetPoints);
-            config.addNavigationListener(trajectoryRecorder);
-            config.setLowerLayerController(new ILowerLayerFactory() {
-                
-                @Override
-                public ILowerLayerControl create()
-                {
-                    PurePursuitControllerVariableLookahead purePursuitControllerVariableLookahead = new PurePursuitControllerVariableLookahead();
-                    purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(_lookahead, 0.0));
-                    return purePursuitControllerVariableLookahead;
-                }
-            });
-            taskCreator.configure(config);
-            List<ITask> tasks = taskCreator.createTasks();
-
-            TaskExecutor executor = new TaskExecutor();
-            executor.execute(tasks);
-            System.out.println("bla");
-            
-            List<String> actualTrajectory = trajectoryRecorder.getTrajectory().stream().filter(p -> p.getX() != 0 && p.getY() != 0.0).map(pos -> pos.toPyPlotString(_color, "point")).collect(Collectors.toList());
-            List<Position2D> plannedTrajectoryPre = trajectoryRecorder.getPlannedTrajectory();
-            List<Line2D> lines = new ArrayList<>();
-            for(int idx = 0; idx < plannedTrajectoryPre.size() - 1; idx++)
-            {
-                Position2D p1 = plannedTrajectoryPre.get(idx);
-                Position2D p2 = plannedTrajectoryPre.get(idx + 1);
-                lines.add(new Line2D(p1, p2));
-            }
-            List<Vector2D> leftBorder = lines.stream().map(line -> new Vector2D(line).shift(-1.6)).collect(Collectors.toList());
-            List<Vector2D> rightBorder = lines.stream().map(line -> new Vector2D(line).shift(1.6)).collect(Collectors.toList());
-            List<String> plannedTrajectoryLeft = leftBorder.stream().map(vector -> vector.getBase().toPyPlotString("black", "line") + "\n" + vector.getTip().toPyPlotString("black", "line")).collect(Collectors.toList());
-            List<String> plannedTrajectoryRight = rightBorder.stream().map(vector -> vector.getBase().toPyPlotString("black", "line") + "\n" + vector.getTip().toPyPlotString("black", "line")).collect(Collectors.toList());
-            try
-            {
-                Files.write(new File("./res/hazardtestoutput/trajectory" + _paramID + ".actual.pyplot").toPath(), actualTrajectory, Charset.defaultCharset());
-                Files.write(new File("./res/hazardtestoutput/trajectory" + _paramID + ".plannedleft.pyplot").toPath(), plannedTrajectoryLeft, Charset.defaultCharset());
-                Files.write(new File("./res/hazardtestoutput/trajectory" + _paramID + ".plannedright.pyplot").toPath(), plannedTrajectoryRight, Charset.defaultCharset());
-            }
-            catch (IOException exc)
-            {
-                exc.printStackTrace();
-            }
+            Files.write(new File("./res/hazardtestoutput/trajectory" + _paramID + ".actual.pyplot").toPath(), actualTrajectory, Charset.defaultCharset());
+            Files.write(new File("./res/hazardtestoutput/trajectory" + _paramID + ".plannedleft.pyplot").toPath(), plannedTrajectoryLeft, Charset.defaultCharset());
+            Files.write(new File("./res/hazardtestoutput/trajectory" + _paramID + ".plannedright.pyplot").toPath(), plannedTrajectoryRight, Charset.defaultCharset());
         }
-        catch (VRepException exc)
+        catch (IOException exc)
         {
-            fail(exc.toString());
+            exc.printStackTrace();
         }
     }
 }

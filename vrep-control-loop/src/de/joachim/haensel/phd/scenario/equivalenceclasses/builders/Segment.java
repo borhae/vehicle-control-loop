@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.equivalenceclasses.builders;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
@@ -90,5 +91,25 @@ public class Segment implements IArcsSegmentContainerElement
         Position2D first = _segment.getBase();
         Position2D last = _segment.getTip();
         return "seg " + first.getX() + " " + first.getY() + " " + last.getX() + " " + last.getY();
+    }
+
+    @Override
+    public Position2D getStart()
+    {
+        return _elements.get(0);
+    }
+
+    @Override
+    public Position2D getEnd()
+    {
+        return _elements.get(_elements.size() - 1);
+    }
+
+    @Override
+    public List<Line2D> getLines()
+    {
+        ArrayList<Line2D> result = new ArrayList<>();
+        result.add(getLine());
+        return result;
     }
 }

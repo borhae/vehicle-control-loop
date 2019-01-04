@@ -20,7 +20,7 @@ public class ArcSegmentDecomposition
         return ngoSegmentationAlgorithm(dataPoints, thickness, alphaMax , nbCirclePoint , isseTol);
     }
 
-    public List<IArcsSegmentContainerElement> createSegments(Deque<Vector2D> dataPoints)
+    public List<IArcsSegmentContainerElement> decompose(Deque<Vector2D> dataPoints)
     {
         double thickness = 0.2;
         double alphaMax = Math.PI / 4.0;
@@ -29,7 +29,7 @@ public class ArcSegmentDecomposition
         return ngoSegmentationAlgorithm(dataPoints, thickness, alphaMax , nbCirclePoint , isseTol);
     }
     
-    public List<IArcsSegmentContainerElement> createSegments(List<Position2D> dataPoints)
+    public List<IArcsSegmentContainerElement> decompose(List<Position2D> dataPoints)
     {
         double thickness = 0.2;
         double alphaMax = Math.PI / 4.0;

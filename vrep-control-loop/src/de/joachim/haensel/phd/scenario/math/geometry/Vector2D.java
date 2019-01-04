@@ -62,8 +62,7 @@ public class Vector2D
             System.out.println("Illegal instantiation");
             throw new RuntimeException("Illegal vector instantiation (" + _bX + ", " + _bY + ", " + _length + ") (baseX, baseY, length)");
         }
-        _normX = _dX / _length;
-        _normY = _dY / _length;
+        computeNormVector();
     }
 
     public Vector2D(Line2D line)
@@ -77,8 +76,21 @@ public class Vector2D
         }
         _dX = line.getX2() - line.getX1();
         _dY = line.getY2() - line.getY1();
-        _normX = _dX / _length;
-        _normY = _dY / _length;
+        computeNormVector();
+    }
+
+    private void computeNormVector()
+    {
+        if(_length != 0.0)
+        {
+            _normX = _dX / _length;
+            _normY = _dY / _length;
+        }
+        else
+        {
+            _normX = 0.0;
+            _normY = 0.0;
+        }
     }
 
     public Vector2D(Position2D base, Position2D tip)
