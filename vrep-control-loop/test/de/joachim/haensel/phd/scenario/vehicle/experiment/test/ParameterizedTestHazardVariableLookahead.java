@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -25,7 +26,9 @@ import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.RoadMapAndCenterMatrix;
 import de.joachim.haensel.phd.scenario.SimulationSetupConvenienceMethods;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
+import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.tasks.ITask;
 import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig;
@@ -112,9 +115,11 @@ public class ParameterizedTestHazardVariableLookahead
 // Let's blow the other front tire            
 //            {10, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(4874.12, 2690.66), new Position2D(5213.40,2791.03), new Position2D(5370.22,2858.77)), new Position2D(5191.27, 2793.11), new boolean[]{false, true, false, false}, "test_20_120_6.0_8.0_5.0", "red"},
 //            {10, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(4874.12, 2690.66), new Position2D(5213.40,2791.03), new Position2D(5370.22,2858.77)), null, new boolean[]{false, true, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
-// Low Lateral velocity with old route and both left and right tire           
-            {10, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{false, true, false, false}, "test_20_120_6.0_8.0_5.0_frontright", "red"},
-            {10, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0_frontleft", "orange"},
+// Low Lateral velocity with old route and all tires blown, one after the other           
+            {10, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{true, false, false, false}, "test_20_120_6.0_8.0_5.0_frontleft", "red"},
+            {10, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{false, true, false, false}, "test_20_120_6.0_8.0_5.0_frontright", "orange"},
+            {10, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{false, false, true, false}, "test_20_120_6.0_8.0_5.0_rearright", "magenta"},
+            {10, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), new Position2D(3861.07, 4705.83), new boolean[]{false, false, false, true}, "test_20_120_6.0_8.0_5.0_reartleft", "darkviolet"},
             {10, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(3653.19, 4666.35), new Position2D(3845.60, 4744.58)), null, new boolean[]{false, true, false, false}, "test_20_120_6.0_8.0_5.0_noBlowout", "blue"},
         });
     }
@@ -224,12 +229,24 @@ public class ParameterizedTestHazardVariableLookahead
             executor.execute(tasks);
             System.out.println("bla");
             
-            List<String> actualTrajectory = trajectoryRecorder.getTrajectory().stream().filter(p -> p.getX() != 0 && p.getY() != 0.0).map(pos -> pos.toPyPlotString(_color, "line")).collect(Collectors.toList());
-            List<String> plannedTrajectory = trajectoryRecorder.getPlannedTrajectory().stream().map(pos -> pos.toPyPlotString("black", "line")).collect(Collectors.toList());
+            List<String> actualTrajectory = trajectoryRecorder.getTrajectory().stream().filter(p -> p.getX() != 0 && p.getY() != 0.0).map(pos -> pos.toPyPlotString(_color, "point")).collect(Collectors.toList());
+            List<Position2D> plannedTrajectoryPre = trajectoryRecorder.getPlannedTrajectory();
+            List<Line2D> lines = new ArrayList<>();
+            for(int idx = 0; idx < plannedTrajectoryPre.size() - 1; idx++)
+            {
+                Position2D p1 = plannedTrajectoryPre.get(idx);
+                Position2D p2 = plannedTrajectoryPre.get(idx + 1);
+                lines.add(new Line2D(p1, p2));
+            }
+            List<Vector2D> leftBorder = lines.stream().map(line -> new Vector2D(line).shift(-1.6)).collect(Collectors.toList());
+            List<Vector2D> rightBorder = lines.stream().map(line -> new Vector2D(line).shift(1.6)).collect(Collectors.toList());
+            List<String> plannedTrajectoryLeft = leftBorder.stream().map(vector -> vector.getBase().toPyPlotString("black", "line") + "\n" + vector.getTip().toPyPlotString("black", "line")).collect(Collectors.toList());
+            List<String> plannedTrajectoryRight = rightBorder.stream().map(vector -> vector.getBase().toPyPlotString("black", "line") + "\n" + vector.getTip().toPyPlotString("black", "line")).collect(Collectors.toList());
             try
             {
                 Files.write(new File("./res/hazardtestoutput/trajectory" + _paramID + ".actual.pyplot").toPath(), actualTrajectory, Charset.defaultCharset());
-                Files.write(new File("./res/hazardtestoutput/trajectory" + _paramID + ".planned.pyplot").toPath(), plannedTrajectory, Charset.defaultCharset());
+                Files.write(new File("./res/hazardtestoutput/trajectory" + _paramID + ".plannedleft.pyplot").toPath(), plannedTrajectoryLeft, Charset.defaultCharset());
+                Files.write(new File("./res/hazardtestoutput/trajectory" + _paramID + ".plannedright.pyplot").toPath(), plannedTrajectoryRight, Charset.defaultCharset());
             }
             catch (IOException exc)
             {
