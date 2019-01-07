@@ -41,13 +41,17 @@ public class Navigator
     
     public List<Line2D> getRouteWithInitialOrientation(Position2D currentPosition, Position2D targetPosition, Vector2D orientation)
     {
+        System.out.print("Start routing: looking for closest start lane with correct orientation");
         _sourcePosition = currentPosition;
         _targetPosition = targetPosition;
         EdgeType startEdge = _roadMap.getClosestEdgeForOrientationRestricted(currentPosition, orientation);
+        System.out.print("done, looking for closest target orientation");
         EdgeType targetEdge = _roadMap.getClosestEdgeFor(targetPosition);
         JunctionType startJunction = _roadMap.getJunctionForName(startEdge.getTo());
         JunctionType targetJunction = _roadMap.getJunctionForName(targetEdge.getFrom());
+        System.out.print(" done, now the actual routing: ");
         List<Line2D> route = getRoute(startJunction, targetJunction, startEdge, targetEdge);
+        System.out.println(" Routing done");
         return route;
     }
 
@@ -57,7 +61,9 @@ public class Navigator
         shortestPathSolver.setSource(startJunction);
         shortestPathSolver.setTarget(targetJunction);
         List<Node> path = shortestPathSolver.getPath();
+        System.out.print(" route found, now turning junction path into actual path... ");
         List<Line2D> result = createLinesFromPath(path, startEdge, targetEdge);
+        System.out.print(", actual path computed, now notifying listeners");
         notifyListeners(result);
         return result;
     }

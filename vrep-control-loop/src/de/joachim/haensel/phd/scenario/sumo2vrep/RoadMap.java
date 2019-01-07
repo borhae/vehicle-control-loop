@@ -10,9 +10,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -74,13 +74,13 @@ public class RoadMap
 
     private static final String INTERNAL_DESIGNATOR = "internal";
     private NetType _roadNetwork;
-    private HashMap<JunctionType, Node> _navigableNetwork;
+    private ConcurrentMap<JunctionType, Node> _navigableNetwork;
 
-    private Map<String, JunctionType> _nameToJunctionMap;
-    private Map<String, LaneType> _nameToLaneMap;
-    private Map<String, EdgeType> _nameToEdgeMap;
+    private ConcurrentMap<String, JunctionType> _nameToJunctionMap;
+    private ConcurrentMap<String, LaneType> _nameToLaneMap;
+    private ConcurrentMap<String, EdgeType> _nameToEdgeMap;
 
-    private Map<Position2D, LaneType> _positionToLaneMap;
+    private ConcurrentMap<Position2D, LaneType> _positionToLaneMap;
     private TMatrix _transformationMatrix;
 
 
@@ -98,13 +98,63 @@ public class RoadMap
     private void initMap(NetType netType)
     {
         _roadNetwork = netType;
-        _navigableNetwork = new HashMap<>();
-        _nameToJunctionMap = new HashMap<>();
-        _nameToLaneMap = new HashMap<>();
-        _nameToEdgeMap = new HashMap<>();
-        _positionToLaneMap = new HashMap<>();
-        getJunctions().stream().forEach(junction -> {if(!isInternal(junction)){_nameToJunctionMap.put(junction.getId(), junction);}});
-        getEdges().stream().forEach(edge -> {if(!isInternal(edge)){insertAllLanesFrom(edge); _nameToEdgeMap.put(edge.getId(), edge);}});
+        _navigableNetwork = new ConcurrentHashMap<>();
+        _nameToJunctionMap = new ConcurrentHashMap<>();
+        _nameToLaneMap = new ConcurrentHashMap<>();
+        _nameToEdgeMap = new ConcurrentHashMap<>();
+        _positionToLaneMap = new ConcurrentHashMap<>(); 
+//        System.out.println("Read junctions from network");
+//        List<JunctionType> junctions = getJunctions();
+//        System.out.println("will try to parse " + junctions.size() + " junctions.");
+//        int junctionCnt = 0;
+//        for (JunctionType curJunction : junctions)
+//        {
+//            if(junctionCnt % 20 == 0)
+//            {
+//                System.out.print("|" + junctionCnt + "|");
+//            }
+//            if(!isInternal(curJunction))
+//            {
+//                _nameToJunctionMap.put(curJunction.getId(), curJunction);
+//            }
+//            junctionCnt++;
+//        }
+//        System.out.println("Junctions read, now for the edges");
+//        List<EdgeType> edges = getEdges();
+//        System.out.println("will try to parse " + edges.size() + " edges.");
+//        int edgeCnt = 0;
+//        for (EdgeType curEdge : edges)
+//        {
+//            if(edgeCnt % 20 == 0)
+//            {
+//                System.out.print("|" + edgeCnt + "|");
+//            }
+//            if(!isInternal(curEdge))
+//            {
+//                insertAllLanesFrom(curEdge);
+//                _nameToEdgeMap.put(curEdge.getId(), curEdge);
+//            }
+//            edgeCnt++;
+//        }
+////        getJunctions().stream().forEach(junction -> {if(!isInternal(junction)){_nameToJunctionMap.put(junction.getId(), junction);}});
+////        getEdges().stream().forEach(edge -> {if(!isInternal(edge)){insertAllLanesFrom(edge); _nameToEdgeMap.put(edge.getId(), edge);}});
+        int junctionCnt = 0;
+        getJunctions().parallelStream().forEach(junction ->
+        {
+            if (!isInternal(junction))
+            {
+                _nameToJunctionMap.put(junction.getId(), junction);
+            }
+        });
+        int edgeCnt = 0;
+        getEdges().parallelStream().forEach(edge ->
+        {
+            if (!isInternal(edge))
+            {
+                insertAllLanesFrom(edge);
+                _nameToEdgeMap.put(edge.getId(), edge);
+            }
+        });
         createNavigableNetwork();
     }
 
@@ -129,12 +179,12 @@ public class RoadMap
     private void createNodes()
     {
         List<JunctionType> junctions = _roadNetwork.getJunction();
-        junctions.stream().forEach(junction -> _navigableNetwork.put(junction, new Node(junction)));
+        junctions.parallelStream().forEach(junction -> _navigableNetwork.put(junction, new Node(junction)));
     }
 
     private void connectNodes()
     {
-       _roadNetwork.getEdge().stream().forEach(edge -> createEdgeConnections(edge));
+       _roadNetwork.getEdge().parallelStream().forEach(edge -> createEdgeConnections(edge));
     }
 
     private void createEdgeConnections(EdgeType edge)
@@ -151,13 +201,27 @@ public class RoadMap
         Node navigableFromJunction = _navigableNetwork.get(fromJunction);
         Node navigableToJunction = _navigableNetwork.get(toJunction);
 
-        navigableFromJunction.addOutgoing(navigableEdge, navigableToJunction);
-        navigableToJunction.addIncomming(navigableEdge, navigableFromJunction);
+        if(navigableFromJunction != null)
+        {
+            navigableFromJunction.addOutgoing(navigableEdge, navigableToJunction);
+        }
+        else
+        {
+            System.out.println("No navigable Node entry for from-junction: " + fromJunction.getId() );
+        }
+        if(navigableToJunction != null)
+        {
+            navigableToJunction.addIncomming(navigableEdge, navigableFromJunction);
+        }
+        else
+        {
+            System.out.println("No navigable Node entry for to-junction: " + toJunction.getId() );
+        }
     }
 
     private void insertAllLanesFrom(EdgeType edge)
     {
-        edge.getLane().stream().forEach(lane -> {_nameToLaneMap.put(lane.getId(), lane); insertAllPositions(lane);});
+        edge.getLane().parallelStream().forEach(lane -> {_nameToLaneMap.put(lane.getId(), lane); insertAllPositions(lane);});
     }
 
     private void insertAllPositions(LaneType lane)
@@ -318,7 +382,7 @@ public class RoadMap
         {
             List<EdgeIntersection> closestEdges = new ArrayList<>(edgeIntersections).subList(0, Math.min(10, edgeIntersections.size()) - 1);
             closestEdges.forEach(cur -> cur.computeOrientationDelta(orientation));
-            closestEdges.stream().filter(cur -> cur.getOrientationDelta() < (Math.PI / 2.0));
+            closestEdges.parallelStream().filter(cur -> cur.getOrientationDelta() < (Math.PI / 2.0));
             curClosest = closestEdges.get(0).getEdge();
         }
         return curClosest;
@@ -455,7 +519,7 @@ public class RoadMap
     {
         Collection<JunctionType> junctions = _nameToJunctionMap.values();
         Comparator<JunctionType> junctionComp = (j1, j2) -> Double.compare(junctionDist(j1, currentPosition), junctionDist(j2, currentPosition)); 
-        return junctions.stream().min(junctionComp).get();
+        return junctions.parallelStream().min(junctionComp).get();
     }
 
     private double junctionDist(JunctionType junction, Position2D position)
@@ -564,12 +628,13 @@ public class RoadMap
         List<JunctionType> junctions = getJunctions();
         List<EdgeType> edges = getEdges();
         
-        junctions.forEach(junction -> transformJunction(junction, transformationMatrix));
-        for(int idx = 0; idx < edges.size(); idx++)
-        {
-            EdgeType curEdge = edges.get(idx);
-            transformEdge(curEdge, transformationMatrix);
-        }
+        junctions.parallelStream().forEach(junction -> transformJunction(junction, transformationMatrix));
+//        for(int idx = 0; idx < edges.size(); idx++)
+//        {
+//            EdgeType curEdge = edges.get(idx);
+//            transformEdge(curEdge, transformationMatrix);
+//        }
+        edges.parallelStream().forEach(edge -> transformEdge(edge, transformationMatrix));
     }
 
     private void transformJunction(JunctionType junction, TMatrix transformationMatrix)
@@ -600,29 +665,30 @@ public class RoadMap
         String transformed = transformStringCoordinateList(transformationMatrix, edgeShape);
         edge.setShape(transformed);
         List<LaneType> lanes = edge.getLane();
-        for (LaneType curLane : lanes)
+        lanes.parallelStream().forEach(lane -> transformLane(transformationMatrix, lane));
+    }
+
+    private void transformLane(TMatrix transformationMatrix, LaneType curLane)
+    {
+        String laneShape = curLane.getShape();
+        if(laneShape != null && !laneShape.isEmpty())
         {
-            String laneShape = curLane.getShape();
-            if(laneShape != null && !laneShape.isEmpty())
+            Stream<Position2D> transformedPositions = transformIntoPosition2D(transformationMatrix, laneShape);
+            List<Position2D> transPos = transformedPositions.collect(Collectors.toList());
+            double newLength = 0.0;
+            for(int idx = 0; idx < transPos.size() -1; idx++)
             {
-                Stream<Position2D> transformedPositions = transformIntoPosition2D(transformationMatrix, laneShape);
-                List<Position2D> transPos = transformedPositions.collect(Collectors.toList());
-                double newLength = 0.0;
-                for(int idx = 0; idx < transPos.size() -1; idx++)
-                {
-                    newLength += Position2D.distance(transPos.get(idx), transPos.get(idx + 1));
-                }
-                curLane.setLength((float) newLength);
-                curLane.setShape(position2DToString(transPos.stream()));
+                newLength += Position2D.distance(transPos.get(idx), transPos.get(idx + 1));
             }
-            String laneCustomShape = curLane.getCustomShape();
-            if(laneCustomShape != null && !laneCustomShape.isEmpty())
-            {
-                String transformedLaneCustomShape = transformStringCoordinateList(transformationMatrix, laneCustomShape);
-                curLane.setShape(transformedLaneCustomShape);
-            }
+            curLane.setLength((float) newLength);
+            curLane.setShape(position2DToString(transPos.parallelStream()));
         }
-        
+        String laneCustomShape = curLane.getCustomShape();
+        if(laneCustomShape != null && !laneCustomShape.isEmpty())
+        {
+            String transformedLaneCustomShape = transformStringCoordinateList(transformationMatrix, laneCustomShape);
+            curLane.setShape(transformedLaneCustomShape);
+        }
     }
     
     private String transformStringCoordinateList(TMatrix transformationMatrix, String coordinates)
@@ -639,7 +705,7 @@ public class RoadMap
         }
         else
         {
-            Stream<String> stringCoordinates = Arrays.asList(coordinates.split(" ")).stream();
+            Stream<String> stringCoordinates = Arrays.asList(coordinates.split(" ")).parallelStream();
             Stream<Position2D> posCoordinates = stringCoordinates.map(coordinate -> new Position2D(coordinate));
             Stream<Position2D> transformedPositions = posCoordinates.map(position -> position.transform(transformationMatrix));
             return transformedPositions;

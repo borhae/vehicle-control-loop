@@ -248,7 +248,7 @@ public class MapCreationTest implements TestConstants
     }
 
     @Test
-    public void testLoadRealWorldJustPlanMapAndStartSimulation() throws VRepException
+    public void testLoadRealWorldJustPlaenMapAndStartSimulation() throws VRepException
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldJustCars.net.xml");
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
@@ -301,5 +301,31 @@ public class MapCreationTest implements TestConstants
         
         _vrep.simxStartSimulation(_clientID, remoteApi.simx_opmode_blocking);
         _vrep.simxStopSimulation(_clientID, remoteApi.simx_opmode_blocking);
+    }
+    
+    @Test
+    public void testLoadChandigarhMap() throws VRepException
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/chadigarh.net.xml");
+        XYMinMax mapDimensions = roadMap.computeMapDimensions();
+        TMatrix centerMatrix = TMatrix.createCenterMatrix(mapDimensions);
+        roadMap.transform(centerMatrix);
+        
+        VRepMap mapCreator = new VRepMap(1.6f, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMeshBasedMap(roadMap);
+        mapCreator.createMapSizedRectangle(roadMap, false);
+    }
+    
+    @Test
+    public void testLoadLuebeckMap() throws VRepException
+    {
+        RoadMap roadMap = new RoadMap("./res/roadnetworks/luebeck-roads.net.xml");
+        XYMinMax mapDimensions = roadMap.computeMapDimensions();
+        TMatrix centerMatrix = TMatrix.createCenterMatrix(mapDimensions);
+        roadMap.transform(centerMatrix);
+        
+        VRepMap mapCreator = new VRepMap(1.6f, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
+        mapCreator.createMeshBasedMap(roadMap);
+        mapCreator.createMapSizedRectangle(roadMap, false);
     }
 }

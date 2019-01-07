@@ -24,6 +24,8 @@ import de.joachim.haensel.statemachine.States;
 
 public class PurePursuitControllerVariableLookahead implements ILowerLayerControl<PurePursuitParameters>
 {
+    private static final int MIN_DYNAMIC_LOOKAHEAD = 3;
+    private static final int MAX_DYNAMIC_LOOKAHEAD = 35;
     private static final String CURRENT_SEGMENT_DEBUG_KEY = "curSeg";
     private static final int MIN_SEGMENT_BUFFER_SIZE = 5;
     private static final int SEGMENT_BUFFER_SIZE = 10;
@@ -369,8 +371,8 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
             double k = 1.0;
 //            double l_d = rearWheelToLookAhead.length();
             double kv = k * velocity;
-            kv = kv > 25 ? 25 : kv;
-            kv = kv < 3 ? 3 : kv;
+            kv = kv > MAX_DYNAMIC_LOOKAHEAD ? MAX_DYNAMIC_LOOKAHEAD : kv;
+            kv = kv < MIN_DYNAMIC_LOOKAHEAD ? MIN_DYNAMIC_LOOKAHEAD : kv;
             //            System.out.println("k * vel: " + k * velocity + ", l_d: " +  l_d + "");
             double delta = Math.atan( (2.0 * L * Math.sin(alpha)) / kv);
             return (float) delta;
