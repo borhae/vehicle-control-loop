@@ -8,7 +8,7 @@ import de.hpi.giese.coppeliawrapper.VRepException;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Point3D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.streamextensions.IndexAdder;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
@@ -53,7 +53,7 @@ public class VRepNavigationListener implements INavigationListener
     }
 
     @Override
-    public void notifySegmentsChanged(List<Trajectory> segments)
+    public void notifySegmentsChanged(List<TrajectoryElement> segments)
     {
         if(_segmentDebugging)
         {
@@ -71,7 +71,7 @@ public class VRepNavigationListener implements INavigationListener
         }
     }
 
-    private void addSegmentToMesh(Trajectory segment, ArrayList<Point3D> vertices, ArrayList<Integer> indices)
+    private void addSegmentToMesh(TrajectoryElement segment, ArrayList<Point3D> vertices, ArrayList<Integer> indices)
     {
         double vectorThickness = 1;
         int lastIndex = vertices.size();

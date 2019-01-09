@@ -3,6 +3,8 @@ package de.joachim.haensel.phd.scenario.math.geometry;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.joachim.haensel.phd.scenario.math.TMatrix;
+
 public class Vector2D
 {
     private double _bX; //baseX
@@ -47,7 +49,9 @@ public class Vector2D
 
     public void setLength(double length)
     {
-        _length = length;
+        _dX = _normX * length;
+        _dY = _normY * length;
+        updateLength();
     }
 
     public Vector2D(double baseX, double baseY, double dirX, double dirY)
@@ -294,10 +298,11 @@ public class Vector2D
         return Double.compare(v1.getTip().getY(), v2.getTip().getY());
     }
 
-    public void sub(double x, double y)
+    public Vector2D sub(double x, double y)
     {
         _bX -= x;
         _bY -= y;
+        return this;
     }
     
     public void add(int x, int y)
@@ -717,5 +722,23 @@ public class Vector2D
     public static boolean isParallel(Vector2D a, Vector2D b)
     {
         return dotProduct(a, b) == 1.0;
+    }
+
+    public void transform(TMatrix transformationMatrix)
+    {
+        Position2D base = getBase();
+        base.transform(transformationMatrix);
+        _bX = base.getX();
+        _bY = base.getY();
+        TMatrix rotationScaleMatrix = transformationMatrix.withoutTranslate();
+        Position2D dir = getDir();
+        dir.transform(rotationScaleMatrix);
+        _dX = dir.getX();
+        _dY = dir.getY();
+    }
+
+    public Line2D toLine()
+    {
+        return new Line2D(getBase(), getTip());
     }
 }

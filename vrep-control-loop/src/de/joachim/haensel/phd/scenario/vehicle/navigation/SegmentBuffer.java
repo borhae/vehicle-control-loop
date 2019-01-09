@@ -4,16 +4,16 @@ import java.util.List;
 
 public class SegmentBuffer
 {
-    private List<Trajectory> _segments;
+    private List<TrajectoryElement> _segments;
     private int _currentIdx;
 
-    public void fillBuffer(List<Trajectory> trajectory)
+    public void fillBuffer(List<TrajectoryElement> trajectory)
     {
         _segments = trajectory;
         _currentIdx = 0;
     }
 
-    public List<Trajectory> getSegments(int requestSize)
+    public List<TrajectoryElement> getSegments(int requestSize)
     {
         int lowerIdx = _currentIdx;
         int higherIdx = Math.min(lowerIdx + requestSize, _segments.size());
@@ -22,7 +22,7 @@ public class SegmentBuffer
         return _segments.subList(lowerIdx, higherIdx);
     }
 
-    public Trajectory peek()
+    public TrajectoryElement peek()
     {
         return _segments.get(0);
     }

@@ -27,6 +27,11 @@ public class ArcSegmentDecompositionAlgorithmByNgoEtAl
     {
         return ngoSegmentationAlgorithm(dataPoints, thickness, alphaMax , nbCirclePoint , isseTol, maxRadius);
     }
+    
+    public List<IArcsSegmentContainerElement> createSegments(List<Position2D> dataPoints, double thickness, double alphaMax, double nbCirclePoint, double isseTol, double maxRadius)
+    {
+        return ngoSegmentationAlgorithm(dataPoints, thickness, alphaMax , nbCirclePoint , isseTol, maxRadius);
+    }
 
     public List<IArcsSegmentContainerElement> createSegments(Deque<Vector2D> dataPoints)
     {
@@ -51,13 +56,13 @@ public class ArcSegmentDecompositionAlgorithmByNgoEtAl
     private List<IArcsSegmentContainerElement> ngoSegmentationAlgorithm(List<Position2D> dataPoints, double thickness, double alphaMax, double nbCirclePoint, double isseTol, double maxRadius)
     {
         List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
-        return inputFormatIndependentNgoSegmentationAlgorithm(tangentSpace, thickness, alphaMax, nbCirclePoint, isseTol, maxRadius);
+        return tangentSpaceNgoSegmentationAlgorithm(tangentSpace, thickness, alphaMax, nbCirclePoint, isseTol, maxRadius);
     }
 
     private List<IArcsSegmentContainerElement> ngoSegmentationAlgorithm(Deque<Vector2D> dataPoints, double thickness, double alphaMax, double nbCirclePoint, double isseTol, double maxRadius)
     {
         List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
-        return inputFormatIndependentNgoSegmentationAlgorithm(tangentSpace, thickness, alphaMax, nbCirclePoint, isseTol, maxRadius);
+        return tangentSpaceNgoSegmentationAlgorithm(tangentSpace, thickness, alphaMax, nbCirclePoint, isseTol, maxRadius);
     }
 
     /**
@@ -70,7 +75,7 @@ public class ArcSegmentDecompositionAlgorithmByNgoEtAl
      * @param maxRadius 
      * @return
      */
-    private List<IArcsSegmentContainerElement> inputFormatIndependentNgoSegmentationAlgorithm(List<TangentSegment> tangentSpace, double thickness, double alphaMax, double nbCirclePoint, double isseTol, double maxRadius)
+    private List<IArcsSegmentContainerElement> tangentSpaceNgoSegmentationAlgorithm(List<TangentSegment> tangentSpace, double thickness, double alphaMax, double nbCirclePoint, double isseTol, double maxRadius)
     {
         List<IArcsSegmentContainerElement> result = new ArrayList<>();
         List<Midpoint> midpointSet = TangentSpaceMidpointComputer.compute(tangentSpace);

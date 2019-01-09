@@ -37,7 +37,7 @@ import de.joachim.haensel.phd.scenario.navigation.visualization.VectorContentEle
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.streamextensions.IndexAdder;
 
 public class TestArcsSegmentDecomposition
@@ -330,9 +330,9 @@ public class TestArcsSegmentDecomposition
         
         upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
         
-        List<Trajectory> allDataPoints = getDataPoints(upperCtrl);
+        List<TrajectoryElement> allDataPoints = getDataPoints(upperCtrl);
         
-        List<List<Trajectory>> slidingWindows = createSlidingWindows(allDataPoints, 100, 5);
+        List<List<TrajectoryElement>> slidingWindows = createSlidingWindows(allDataPoints, 100, 5);
         Deque<Deque<Vector2D>> slidingWindowsVectors = transformToVectorDeque(slidingWindows);
 
         Vector2DVisualizer visualizer = new Vector2DVisualizer();
@@ -340,7 +340,7 @@ public class TestArcsSegmentDecomposition
         Deque<Vector2D> firstWindow = slidingWindowsVectors.getFirst();
         VectorContentElement visualizee = new VectorContentElement(firstWindow, Color.BLACK, new BasicStroke(4.0f), 0.1);
         visualizer.addVectorSet(firstWindow, Color.BLACK, 4.0, 0.02);
-        List<List<Trajectory>> data = new ArrayList<>();
+        List<List<TrajectoryElement>> data = new ArrayList<>();
         data.add(allDataPoints);
         
         visualizer.addContentElement(visualizee);
@@ -379,9 +379,9 @@ public class TestArcsSegmentDecomposition
         
         upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
         
-        List<Trajectory> allDataPoints = getDataPoints(upperCtrl);
+        List<TrajectoryElement> allDataPoints = getDataPoints(upperCtrl);
         
-        List<List<Trajectory>> slidingWindows = createSlidingWindows(allDataPoints, 200, 5);
+        List<List<TrajectoryElement>> slidingWindows = createSlidingWindows(allDataPoints, 200, 5);
         Deque<Deque<Vector2D>> slidingWindowsVectors = transformToVectorDeque(slidingWindows);
 
         Deque<Vector2D> firstWindow = slidingWindowsVectors.getFirst();
@@ -437,9 +437,9 @@ public class TestArcsSegmentDecomposition
         
         upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
         
-        List<Trajectory> allDataPoints = getDataPoints(upperCtrl);
+        List<TrajectoryElement> allDataPoints = getDataPoints(upperCtrl);
         
-        List<List<Trajectory>> slidingWindows = createSlidingWindows(allDataPoints, 50, 5);
+        List<List<TrajectoryElement>> slidingWindows = createSlidingWindows(allDataPoints, 50, 5);
         Deque<Deque<Vector2D>> slidingWindowsVectors = transformToVectorDeque(slidingWindows);
 
         Deque<Vector2D> firstWindow = slidingWindowsVectors.getFirst();
@@ -495,9 +495,9 @@ public class TestArcsSegmentDecomposition
         
         upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
         
-        List<Trajectory> allDataPoints = getDataPoints(upperCtrl);
+        List<TrajectoryElement> allDataPoints = getDataPoints(upperCtrl);
         
-        List<List<Trajectory>> slidingWindows = createSlidingWindows(allDataPoints, 10, 5);
+        List<List<TrajectoryElement>> slidingWindows = createSlidingWindows(allDataPoints, 10, 5);
         Deque<Deque<Vector2D>> slidingWindowsVectors = transformToVectorDeque(slidingWindows);
 
         Deque<Vector2D> firstWindow = slidingWindowsVectors.getFirst();
@@ -553,7 +553,7 @@ public class TestArcsSegmentDecomposition
         
         upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
         
-        List<Trajectory> allDataPoints = getDataPoints(upperCtrl);
+        List<TrajectoryElement> allDataPoints = getDataPoints(upperCtrl);
         Deque<Vector2D> routeVectors = allDataPoints.stream().map(trajectory -> trajectory.getVector()).collect(Collectors.toCollection(new Supplier<Deque<Vector2D>>() {
             @Override
             public Deque<Vector2D> get()
@@ -628,10 +628,10 @@ public class TestArcsSegmentDecomposition
         
         upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
         
-        List<Trajectory> allDataPoints = getDataPoints(upperCtrl);
+        List<TrajectoryElement> allDataPoints = getDataPoints(upperCtrl);
         
         int windowSize = 30;
-        List<List<Trajectory>> slidingWindows = createSlidingWindows(allDataPoints, windowSize, allDataPoints.size() / windowSize);
+        List<List<TrajectoryElement>> slidingWindows = createSlidingWindows(allDataPoints, windowSize, allDataPoints.size() / windowSize);
         double thickness = 1.5;
         double alphaMax = Math.PI / 4.0;
         double nbCirclePoint = 3;
@@ -662,10 +662,10 @@ public class TestArcsSegmentDecomposition
         
         upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
         
-        List<Trajectory> allDataPoints = getDataPoints(upperCtrl);
+        List<TrajectoryElement> allDataPoints = getDataPoints(upperCtrl);
         
         int windowSize = 30;
-        List<List<Trajectory>> slidingWindows = createSlidingWindows(allDataPoints, windowSize, allDataPoints.size() / windowSize);
+        List<List<TrajectoryElement>> slidingWindows = createSlidingWindows(allDataPoints, windowSize, allDataPoints.size() / windowSize);
         double thickness = 1.5;
         double alphaMax = Math.PI / 4.0;
         double nbCirclePoint = 3;
@@ -673,13 +673,13 @@ public class TestArcsSegmentDecomposition
         double maxRadius = 100000;
         slidingWindows = slidingWindows.subList(0, 4);
         String basePath = "./res/equivalencesegmentationtest/segmentationprogression_short/";
-        Consumer<? super IndexAdder<List<Trajectory>>> decompose = 
+        Consumer<? super IndexAdder<List<TrajectoryElement>>> decompose = 
                 curWindow -> decomposeWindow(curWindow.v(), curWindow.idx(), thickness, alphaMax, nbCirclePoint, isseTol, maxRadius,
                         basePath + "sampleWholeRoute", basePath + "sampleWholeRouteTangentSpace", basePath + "sampleWholeRouteSegmentation");
         slidingWindows.stream().map(IndexAdder.indexed()).forEach(decompose);
     }
 
-    private List<IArcsSegmentContainerElement> decomposeWindow(List<Trajectory> curWindow, int curIdx, 
+    private List<IArcsSegmentContainerElement> decomposeWindow(List<TrajectoryElement> curWindow, int curIdx, 
             double thickness, double alphaMax, double nbCirclePoint, double isseTol, 
             double maxRadius, String routeFileName, String tangentSpaceFileName, String decompositionFileName)
     {
@@ -732,24 +732,24 @@ public class TestArcsSegmentDecomposition
         return segments;
     }
 
-    private Deque<Deque<Vector2D>> transformToVectorDeque(List<List<Trajectory>> slidingWindows)
+    private Deque<Deque<Vector2D>> transformToVectorDeque(List<List<TrajectoryElement>> slidingWindows)
     {
         Deque<Deque<Vector2D>> result = new LinkedList<>();
         slidingWindows.forEach(curWindow -> result.addLast(new LinkedList<>(trajectoryToVector2DList(curWindow))));
         return result;
     }
 
-    private List<Vector2D> trajectoryToVector2DList(List<Trajectory> curWindow)
+    private List<Vector2D> trajectoryToVector2DList(List<TrajectoryElement> curWindow)
     {
         return curWindow.stream().map(t -> t.getVector()).collect(Collectors.toList());
     }
 
-    private List<List<Trajectory>> createSlidingWindows(List<Trajectory> allDataPoints, int windowSize, int amount)
+    private List<List<TrajectoryElement>> createSlidingWindows(List<TrajectoryElement> allDataPoints, int windowSize, int amount)
     {
-        List<List<Trajectory>> result = new ArrayList<>();
+        List<List<TrajectoryElement>> result = new ArrayList<>();
         for(int cnt = 0; cnt < allDataPoints.size(); cnt++)
         {
-            List<Trajectory> newWindow = new ArrayList<>();
+            List<TrajectoryElement> newWindow = new ArrayList<>();
             for(int windowCnt = 0; windowCnt < windowSize; windowCnt++)
             {
                 int dataPointsIndex = cnt + windowCnt;
@@ -767,10 +767,10 @@ public class TestArcsSegmentDecomposition
         return result;
     }
 
-    private List<Trajectory> getDataPoints(IUpperLayerControl upperCtrl)
+    private List<TrajectoryElement> getDataPoints(IUpperLayerControl upperCtrl)
     {
-        List<Trajectory> result = new ArrayList<>();
-        List<Trajectory> intermedidate;;
+        List<TrajectoryElement> result = new ArrayList<>();
+        List<TrajectoryElement> intermedidate;;
         intermedidate = upperCtrl.getNewSegments(10);
         while(!intermedidate.isEmpty())
         {

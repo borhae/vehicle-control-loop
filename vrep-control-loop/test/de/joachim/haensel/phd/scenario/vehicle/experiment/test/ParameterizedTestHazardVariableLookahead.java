@@ -191,7 +191,6 @@ public class ParameterizedTestHazardVariableLookahead
         _objectCreator.deleteAll();
     }
     
-    
     @Test
     public void testTireBlowOutScenario() throws VRepException
     {

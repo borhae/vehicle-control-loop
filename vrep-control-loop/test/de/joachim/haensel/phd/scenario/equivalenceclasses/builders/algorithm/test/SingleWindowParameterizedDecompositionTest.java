@@ -29,7 +29,7 @@ import de.joachim.haensel.phd.scenario.navigation.test.Positioner;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.streamextensions.IndexAdder;
 
 @RunWith(Parameterized.class)
@@ -100,13 +100,13 @@ public class SingleWindowParameterizedDecompositionTest
         
         upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
         
-        List<Trajectory> allDataPoints = getDataPoints(upperCtrl);
+        List<TrajectoryElement> allDataPoints = getDataPoints(upperCtrl);
         
         int windowSize = 30;
-        List<List<Trajectory>> slidingWindows = createSlidingWindows(allDataPoints, windowSize, allDataPoints.size() / windowSize);
+        List<List<TrajectoryElement>> slidingWindows = createSlidingWindows(allDataPoints, windowSize, allDataPoints.size() / windowSize);
         slidingWindows = slidingWindows.subList(396, 397);
         String basePath = "./res/equivalencesegmentationtest/segmentationtuning/";
-        Consumer<? super IndexAdder<List<Trajectory>>> decompose = 
+        Consumer<? super IndexAdder<List<TrajectoryElement>>> decompose = 
                 curWindow -> decomposeWindow(curWindow.v(), curWindow.idx(), _thickness, _alphaMax, _nbCirclePoint, _isseTol, _maxRadius,
                         basePath + "sampleWholeRoute" + _suffix, basePath + "sampleWholeRouteTangentSpace" + _suffix, basePath + "sampleWholeRouteSegmentation" + _suffix);
         slidingWindows.stream().map(IndexAdder.indexed()).forEach(decompose);
@@ -133,19 +133,19 @@ public class SingleWindowParameterizedDecompositionTest
         
         upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
         
-        List<Trajectory> allDataPoints = getDataPoints(upperCtrl);
+        List<TrajectoryElement> allDataPoints = getDataPoints(upperCtrl);
         
         int windowSize = 30;
-        List<List<Trajectory>> slidingWindows = createSlidingWindows(allDataPoints, windowSize, allDataPoints.size() / windowSize);
+        List<List<TrajectoryElement>> slidingWindows = createSlidingWindows(allDataPoints, windowSize, allDataPoints.size() / windowSize);
 //        slidingWindows = slidingWindows.subList(1400, 1500);
         String basePath = "./res/equivalencesegmentationtest/segmentationtuning/";
-        Consumer<? super IndexAdder<List<Trajectory>>> decompose = 
+        Consumer<? super IndexAdder<List<TrajectoryElement>>> decompose = 
                 curWindow -> decomposeWindow(curWindow.v(), curWindow.idx(), _thickness, _alphaMax, _nbCirclePoint, _isseTol, _maxRadius,
                         basePath + "sampleWholeRoute" + _suffix, basePath + "sampleWholeRouteTangentSpace" + _suffix, basePath + "sampleWholeRouteSegmentation" + _suffix);
         slidingWindows.stream().map(IndexAdder.indexed()).forEach(decompose);
     }
     
-    private List<IArcsSegmentContainerElement> decomposeWindow(List<Trajectory> curWindow, int curIdx, 
+    private List<IArcsSegmentContainerElement> decomposeWindow(List<TrajectoryElement> curWindow, int curIdx, 
             double thickness, double alphaMax, double nbCirclePoint, double isseTol, 
             double maxRadius, String routeFileName, String tangentSpaceFileName, String decompositionFileName)
     {
@@ -198,12 +198,12 @@ public class SingleWindowParameterizedDecompositionTest
         return segments;
     }
 
-    private List<List<Trajectory>> createSlidingWindows(List<Trajectory> allDataPoints, int windowSize, int amount)
+    private List<List<TrajectoryElement>> createSlidingWindows(List<TrajectoryElement> allDataPoints, int windowSize, int amount)
     {
-        List<List<Trajectory>> result = new ArrayList<>();
+        List<List<TrajectoryElement>> result = new ArrayList<>();
         for(int cnt = 0; cnt < allDataPoints.size(); cnt++)
         {
-            List<Trajectory> newWindow = new ArrayList<>();
+            List<TrajectoryElement> newWindow = new ArrayList<>();
             for(int windowCnt = 0; windowCnt < windowSize; windowCnt++)
             {
                 int dataPointsIndex = cnt + windowCnt;
@@ -221,10 +221,10 @@ public class SingleWindowParameterizedDecompositionTest
         return result;
     }
     
-    private List<Trajectory> getDataPoints(IUpperLayerControl upperCtrl)
+    private List<TrajectoryElement> getDataPoints(IUpperLayerControl upperCtrl)
     {
-        List<Trajectory> result = new ArrayList<>();
-        List<Trajectory> intermedidate;;
+        List<TrajectoryElement> result = new ArrayList<>();
+        List<TrajectoryElement> intermedidate;;
         intermedidate = upperCtrl.getNewSegments(10);
         while(!intermedidate.isEmpty())
         {

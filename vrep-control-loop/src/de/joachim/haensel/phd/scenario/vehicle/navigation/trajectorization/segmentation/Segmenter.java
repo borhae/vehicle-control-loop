@@ -9,7 +9,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class Segmenter implements ISegmenter
 {
@@ -26,9 +26,9 @@ public class Segmenter implements ISegmenter
     }
     
     @Override
-    public List<Trajectory> createSegments(List<Line2D> route)
+    public List<TrajectoryElement> createSegments(List<Line2D> route)
     {
-        List<Trajectory> result = new ArrayList<>();
+        List<TrajectoryElement> result = new ArrayList<>();
         LinkedList<Vector2D> unpatchedRoute = Line2D.lineListToVectorList(route);
         LinkedList<Vector2D> srcRoute = patchHolesInRoute(unpatchedRoute);
         LinkedList<Vector2D> segmentList = new LinkedList<>();
@@ -42,7 +42,7 @@ public class Segmenter implements ISegmenter
             {
                 Vector2D v = segmentList.pop();
                 addCnt++;
-                Trajectory t = new Trajectory(v);
+                TrajectoryElement t = new TrajectoryElement(v);
                 t.setIsOriginal();
                 t.setIdx(addCnt);
                 result.add(t);

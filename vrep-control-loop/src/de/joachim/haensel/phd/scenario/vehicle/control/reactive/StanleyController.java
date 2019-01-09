@@ -19,7 +19,7 @@ import de.joachim.haensel.phd.scenario.vehicle.ITrajectoryProvider;
 import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
@@ -40,9 +40,9 @@ public class StanleyController implements ILowerLayerControl<PurePursuitParamete
     private Position2D _expectedTarget;
     private IActuatingSensing _actuatorsSensors;
     private DefaultReactiveControllerStateMachine _stateMachine;
-    private LinkedList<Trajectory> _segmentBuffer;
+    private LinkedList<TrajectoryElement> _segmentBuffer;
     private ITrajectoryProvider _segmentProvider;
-    private Trajectory _currentSegment;
+    private TrajectoryElement _currentSegment;
     private double _lookahead;
     private IVrepDrawing _vrepDrawing;
     private PurePursuitParameters _parameters;
@@ -297,7 +297,7 @@ public class StanleyController implements ILowerLayerControl<PurePursuitParamete
         if(_segmentBuffer.size() < MIN_SEGMENT_BUFFER_SIZE)
         {
             int segmentRequestSize = SEGMENT_BUFFER_SIZE - _segmentBuffer.size();
-            List<Trajectory> trajectories = _segmentProvider.getNewSegments(segmentRequestSize);
+            List<TrajectoryElement> trajectories = _segmentProvider.getNewSegments(segmentRequestSize);
             if(trajectories == null)
             {
                 return;

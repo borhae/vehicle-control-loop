@@ -26,7 +26,7 @@ import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterBinarySearch;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterCircleIntersection;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.OverlaySegmenter;
@@ -575,7 +575,7 @@ public class SegmentBuildingTest implements TestConstants
         
         OverlaySegmenter trajectorizer = new OverlaySegmenter(2, new InterpolationSegmenterBinarySearch()); 
         LinkedList<Vector2D> patchedRoute = trajectorizer.patchHolesInRoute(originalDownsacledVectorRoute);
-        List<Trajectory> trajectory = trajectorizer.createSegments(downscaledRoute);
+        List<TrajectoryElement> trajectory = trajectorizer.createSegments(downscaledRoute);
         
         String length = trajectory.stream().map(trj -> "l: " + trj.getVector().getLength()).collect(Collectors.joining(System.lineSeparator()));
         
@@ -637,7 +637,7 @@ public class SegmentBuildingTest implements TestConstants
         nav.addSegmentBuilderListener(new SegmentBuildingAdapter(visualizer));
         nav.initController(new Positioner(startingPoint), roadMap);
         nav.buildSegmentBuffer(destinationPosition, roadMap);
-        Stream<Trajectory> segmentStream = nav.getNewSegments(nav.getSegmentBufferSize()).stream();
+        Stream<TrajectoryElement> segmentStream = nav.getNewSegments(nav.getSegmentBufferSize()).stream();
         Deque<Vector2D> segmentBufferAsVectors = segmentStream.map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
     }
 

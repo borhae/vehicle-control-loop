@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory.VelocityEdgeType;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement.VelocityEdgeType;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryType;
 
 
@@ -28,7 +28,7 @@ public class BasicVelocityAssigner implements IVelocityAssigner
 
     public interface IProfileChangeListener
     {
-        public void notifyChange(List<Trajectory> trajectories);
+        public void notifyChange(List<TrajectoryElement> trajectories);
     }
 
 
@@ -63,10 +63,10 @@ public class BasicVelocityAssigner implements IVelocityAssigner
     }
 
     @Override
-    public void addVelocities(List<Trajectory> trajectories)
+    public void addVelocities(List<TrajectoryElement> trajectories)
     {
-        List<Trajectory> original = filterOutType(trajectories, TrajectoryType.OVERLAY);
-        List<Trajectory> overlay = filterOutType(trajectories, TrajectoryType.ORIGINAL);
+        List<TrajectoryElement> original = filterOutType(trajectories, TrajectoryType.OVERLAY);
+        List<TrajectoryElement> overlay = filterOutType(trajectories, TrajectoryType.ORIGINAL);
         computeCurvatures(original);
         notifyListeners(trajectories);
 
@@ -94,7 +94,7 @@ public class BasicVelocityAssigner implements IVelocityAssigner
 //        notifyListeners(trajectories);
     }
 
-    private void capAccelerationDeceleration(List<Trajectory> trajectories)
+    private void capAccelerationDeceleration(List<TrajectoryElement> trajectories)
     {
         double s_i = _segmentSize / 2.0; // this is approximately true (s_i traveldistance between two points)
         double threshold = 0.1;
@@ -107,8 +107,8 @@ public class BasicVelocityAssigner implements IVelocityAssigner
             double curMaxChange = 0.0;
             for (int idx = 0; idx < trajectories.size() - 1; idx++)
             {
-                Trajectory curTrajectory = trajectories.get(idx);
-                Trajectory nextTrajectory = trajectories.get(idx + 1); 
+                TrajectoryElement curTrajectory = trajectories.get(idx);
+                TrajectoryElement nextTrajectory = trajectories.get(idx + 1); 
                 double v_i_sq = curTrajectory.getVelocity() * curTrajectory.getVelocity();
                 double v_i_p1_sq = nextTrajectory.getVelocity() * nextTrajectory.getVelocity();
                 double delta = 0.0;
@@ -145,12 +145,12 @@ public class BasicVelocityAssigner implements IVelocityAssigner
         }
     }
 
-    private void fillInitialPadding(List<Trajectory> trajectories)
+    private void fillInitialPadding(List<TrajectoryElement> trajectories)
     {
-        Trajectory nextTrajectory = null;
+        TrajectoryElement nextTrajectory = null;
         for (int idx = trajectories.size() - 1; idx >= 0; idx--)
         {
-            Trajectory curTrajectory = trajectories.get(idx);
+            TrajectoryElement curTrajectory = trajectories.get(idx);
             if((nextTrajectory != null) && (curTrajectory.getRiseFall() == VelocityEdgeType.START))
             {
                 curTrajectory.setRiseFall(nextTrajectory.getRiseFall());
@@ -159,13 +159,13 @@ public class BasicVelocityAssigner implements IVelocityAssigner
         }
     }
 
-    private void identifyRegions(List<Trajectory> trajectories)
+    private void identifyRegions(List<TrajectoryElement> trajectories)
     {
         for (int idx = 0; idx < trajectories.size() - 1; idx++)
         {
-            Trajectory lastTrajectory = idx == 0 ? null : trajectories.get(idx - 1);
-            Trajectory curTrajectory = trajectories.get(idx);
-            Trajectory nextTrajectory = trajectories.get(idx + 1);
+            TrajectoryElement lastTrajectory = idx == 0 ? null : trajectories.get(idx - 1);
+            TrajectoryElement curTrajectory = trajectories.get(idx);
+            TrajectoryElement nextTrajectory = trajectories.get(idx + 1);
             if(nextTrajectory.getVelocity() > curTrajectory.getVelocity())
             {
                 curTrajectory.setRiseFall(VelocityEdgeType.RAISE);
@@ -189,13 +189,13 @@ public class BasicVelocityAssigner implements IVelocityAssigner
         
     }
 
-    private void computeCurvatures(List<Trajectory> trajectory)
+    private void computeCurvatures(List<TrajectoryElement> trajectory)
     {
         Deque<Vector2D> curvatures = new LinkedList<>();
         for(int idx = 0; idx < trajectory.size() - 1; idx++)
         {
-            Trajectory t1 = trajectory.get(idx);
-            Trajectory t2 = trajectory.get(idx + 1);
+            TrajectoryElement t1 = trajectory.get(idx);
+            TrajectoryElement t2 = trajectory.get(idx + 1);
             double radius = computeRadius(t1, t2);
             double kappa = 1 / radius;
             t1.setRadius(radius);
@@ -206,12 +206,12 @@ public class BasicVelocityAssigner implements IVelocityAssigner
         notifyCurvatureListeners(curvatures);
     }
 
-    private void curvatureLimitedPass(List<Trajectory> trajectories)
+    private void curvatureLimitedPass(List<TrajectoryElement> trajectories)
     {
 //            original formula where only curvature kappa is known:
 //            double maxCentripetal = Math.sqrt(A_MAX_LATERAL / kappa);
 //            Reducible to due to curvature radius relation:
-        Consumer<Trajectory> curvatureToVelocity = t -> 
+        Consumer<TrajectoryElement> curvatureToVelocity = t -> 
         {
             double maxCentripedal = Math.sqrt(_accelerationMaxLateral * t.getRadius());
             double velocity = Math.min(_velocityMaxLongitudinal, maxCentripedal);
@@ -220,7 +220,7 @@ public class BasicVelocityAssigner implements IVelocityAssigner
         trajectories.forEach(curvatureToVelocity);
     }
 
-    private double computeRadius(Trajectory t1, Trajectory t2)
+    private double computeRadius(TrajectoryElement t1, TrajectoryElement t2)
     {
         Vector2D perpendicular1 = t1.getVector().getMiddlePerpendicular();
         Vector2D perpendicular2 = t2.getVector().getMiddlePerpendicular();
@@ -233,7 +233,7 @@ public class BasicVelocityAssigner implements IVelocityAssigner
         return radius;
     }
 
-    private List<Trajectory> filterOutType(List<Trajectory> trajectories, TrajectoryType type)
+    private List<TrajectoryElement> filterOutType(List<TrajectoryElement> trajectories, TrajectoryType type)
     {
         return trajectories.stream().filter(t -> t.hasType(type)).collect(Collectors.toList());
     }
@@ -244,7 +244,7 @@ public class BasicVelocityAssigner implements IVelocityAssigner
         _profileChangeListener.add(listener);
     }
     
-    private void notifyListeners(List<Trajectory> trajectories)
+    private void notifyListeners(List<TrajectoryElement> trajectories)
     {
         _profileChangeListener.forEach(l -> l.notifyChange(trajectories));
     }

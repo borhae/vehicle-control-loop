@@ -28,8 +28,9 @@ controlLoop = function()
       local rWCP = {(rLWP[1] + rRWP[1])/2, (rLWP[2] + rRWP[2])/2}
       local fWCP = {(fLWP[1] + fRWP[1])/2, (fLWP[2] + fRWP[2])/2}
       local carPos = {posi[1], posi[2]}
+      local timeStamp = sim.getSimulationTime()
       -- car center position, front wheel center position, rear wheel center position (2D), velocity (3D)
-      positions = {carPos[1], carPos[2], fWCP[1], fWCP[2], rWCP[1], rWCP[2], v[1], v[2], v[3]}
+      sensedValues = {carPos[1], carPos[2], fWCP[1], fWCP[2], rWCP[1], rWCP[2], v[1], v[2], v[3], timeStamp}
   
       -- Since this script is threaded, don't waste time here:
       simSwitchThread() -- Resume the script at next simulation loop start
@@ -100,7 +101,7 @@ init = function()
   d = middleDistWheels / 2 -- 2*d = distance between left and right wheels
   --l = 2.5772 -- l = distance between front and rear wheels
   l = middleDistWheelsFR -- l = distance between front and rear wheels
-  positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+  sensedValues = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 end
 
 control = function(inInts, inFloats, inStrings, inBuffer)
@@ -115,11 +116,11 @@ control = function(inInts, inFloats, inStrings, inBuffer)
 end
 
 sense = function(inInts, inFloats, inStrings, inBuffer)
-  -- positions computed in main loop, provided for external usage
-  if (positions == nil) then
-    positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+  -- sensedValues computed in main loop, provided for external usage
+  if (sensedValues == nil) then
+    sensedValues = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
   end 
-  return {}, {positions[1], positions[2], positions[3], positions[4], positions[5], positions[6], positions[7], positions[8], positions[9], wheelDiam}, {}, "" 
+  return {}, {sensedValues[1], sensedValues[2], sensedValues[3], sensedValues[4], sensedValues[5], sensedValues[6], sensedValues[7], sensedValues[8], sensedValues[9], sensedValues[10], wheelDiam}, {}, "" 
 end
 
 debugCircle = function(inInts, inFloats, inStrings, inBuffer)

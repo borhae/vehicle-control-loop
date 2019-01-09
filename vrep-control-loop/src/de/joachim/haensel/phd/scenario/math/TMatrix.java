@@ -36,6 +36,10 @@ public class TMatrix
         };
     }
 
+    private TMatrix()
+    {
+    }
+
     public double[] transform(double x, double y)
     {
         double[] input = new double[]{x, y, 1};
@@ -52,6 +56,23 @@ public class TMatrix
         result = new double[]{result[0], result[1]};
         return result;
     }
+    
+    public TMatrix withoutTranslate()
+    {
+        TMatrix result = new TMatrix();
+        double[][] m = new double[][]{
+            {_m[0][0], _m[0][1], 0},
+            {_m[1][0], _m[1][1], 0},
+            {0       , 0       , 1}
+        };
+        result.setM(m);
+        return result;
+    }
+    
+    private void setM(double[][] m)
+    {
+        _m = m;
+    }
 
     public static TMatrix createCenterMatrix(XYMinMax dimensions)
     {
@@ -59,5 +80,18 @@ public class TMatrix
         double offY = dimensions.minY() + dimensions.distY()/2.0;
 
         return new TMatrix(1.0, -offX, -offY);
+    }
+
+    public static TMatrix rotationMatrix(double angle)
+    {
+        double sin = Math.sin(angle);
+        double cos = Math.cos(angle);
+        TMatrix result = new TMatrix();
+        result.setM(new double[][] {
+            {cos, -sin, 0.0},
+            {sin,  cos, 0.0},
+            {0.0,  0.0, 1.0}
+        });
+        return result;
     }
 }

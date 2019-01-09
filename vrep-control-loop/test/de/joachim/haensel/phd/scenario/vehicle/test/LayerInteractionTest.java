@@ -30,12 +30,13 @@ import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
+import de.joachim.haensel.phd.scenario.vehicle.NullBehaviorActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleCreator;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleActuatorsSensors;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
@@ -91,81 +92,12 @@ public class LayerInteractionTest implements TestConstants
         RoadMap roadMap = new RoadMap("./res/roadnetworks/testing3Junctions2Edges2Lanes.net.xml");
         DefaultNavigationController controller = new DefaultNavigationController(2.0, 30.0);
         Position2D destinationPosition = new Position2D(101.81f, 9.23f);
-        IActuatingSensing sensorsActuators = new IActuatingSensing() {
-            @Override
-            public double getVehicleLength()
-            {
-                return 0;
-            }
-            
-            @Override
-            public Position2D getRearWheelCenterPosition()
-            {
-                return null;
-            }
-            
-            @Override
-            public Position2D getFrontWheelCenterPosition()
-            {
-                return null;
-            }
-            
+        IActuatingSensing sensorsActuators = new NullBehaviorActuatingSensing() 
+        {
             @Override
             public Position2D getPosition()
             {
                 return new Position2D(0.73, 39.18);
-            }
-            
-            @Override
-            public void drive(float targetWheelRotation, float targetSteeringAngle){ }
-
-            @Override
-            public void computeAndLockSensorData()
-            {
-            }
-
-            @Override
-            public void setOrientation(float angleAlpha, float angleBeta, float angleGamma)
-            {
-            }
-
-            @Override
-            public void setPosition(float posX, float posY, float posZ)
-            {
-            }
-
-            @Override
-            public Vector2D getOrientation()
-            {
-                return null;
-            }
-
-            @Override
-            public Position2D getNonDynamicPosition()
-            {
-                return null;
-            }
-
-            @Override
-            public double[] getVehicleVelocity()
-            {
-                return null;
-            }
-
-            @Override
-            public void initialize()
-            {
-            }
-
-            @Override
-            public void blowTire(boolean[] tiresToBlow, float tireScale)
-            {
-            }
-
-            @Override
-            public double getWheelDiameter()
-            {
-                return 0;
             }
         };
         controller.initController(sensorsActuators, roadMap);
@@ -634,7 +566,7 @@ public class LayerInteractionTest implements TestConstants
         visualizer.updateVisuals();
         visualizer.setVisible(true);
         
-        Trajectory firstSeg = fakeNav.segmentsPeek();
+        TrajectoryElement firstSeg = fakeNav.segmentsPeek();
         Vector2D firstSegOrientation = firstSeg.getVector();
         
         double correctionAngle = Vector2D.computeAngle(carOrientation, firstSegOrientation);

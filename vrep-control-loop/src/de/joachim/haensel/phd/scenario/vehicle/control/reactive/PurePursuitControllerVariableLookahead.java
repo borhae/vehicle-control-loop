@@ -15,7 +15,7 @@ import de.joachim.haensel.phd.scenario.vehicle.ITrajectoryProvider;
 import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
@@ -24,18 +24,19 @@ import de.joachim.haensel.statemachine.States;
 
 public class PurePursuitControllerVariableLookahead implements ILowerLayerControl<PurePursuitParameters>
 {
+    private static final double LOOKAHEAD_FACTOR = 1.0;
     private static final int MIN_DYNAMIC_LOOKAHEAD = 3;
     private static final int MAX_DYNAMIC_LOOKAHEAD = 35;
     private static final String CURRENT_SEGMENT_DEBUG_KEY = "curSeg";
     private static final int MIN_SEGMENT_BUFFER_SIZE = 5;
-    private static final int SEGMENT_BUFFER_SIZE = 10;
+    private static final int SEGMENT_BUFFER_SIZE = 20;
     private Position2D _expectedTarget;
     private IActuatingSensing _actuatorsSensors;
     private DefaultReactiveControllerStateMachine _stateMachine;
-    private LinkedList<Trajectory> _segmentBuffer;
-    private List<Trajectory> _droppedSegmentCollector;
+    private LinkedList<TrajectoryElement> _segmentBuffer;
+    private List<TrajectoryElement> _droppedSegmentCollector;
     private ITrajectoryProvider _segmentProvider;
-    private Trajectory _currentLookaheadSegment;
+    private TrajectoryElement _currentLookaheadSegment;
     private double _lookahead;
     private IVrepDrawing _vrepDrawing;
     private PurePursuitParameters _parameters;
@@ -44,6 +45,8 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     private DebugParams _debugParams;
     private double _speedToWheelRotationFactor;
     private List<IArrivedListener> _arrivedListeners;
+    private List<ITrajectoryRequestListener> _trajectoryRequestListeners;
+    private List<ITrajectoryReportListener> _trajectoryReportListeners;
 
     public class DefaultReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
@@ -99,6 +102,8 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         _debugging = false;
         _arrivedListeners = new ArrayList<>();
         _droppedSegmentCollector = new ArrayList<>();
+        _trajectoryRequestListeners = new ArrayList<>();
+        _trajectoryReportListeners = new ArrayList<>();
     }
 
     @Override
@@ -187,7 +192,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
 
         double lookahead = _lookahead;
         chooseCurrentLookaheadSegment(_actuatorsSensors.getRearWheelCenterPosition(), lookahead);
-        Trajectory closestSegment = chooseClosestSegment(_actuatorsSensors.getPosition());
+        TrajectoryElement closestSegment = chooseClosestSegment(_actuatorsSensors.getPosition());
         float targetWheelRotation = 0.0f;
         float targetSteeringAngle = 0.0f;
         if(_debugging)
@@ -225,14 +230,14 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
     }
 
-    private Trajectory chooseClosestSegment(Position2D position)
+    private TrajectoryElement chooseClosestSegment(Position2D position)
     {
         if(position == null || _droppedSegmentCollector.isEmpty())
         {
             //with no input we just rely on the other segment
             return _currentLookaheadSegment;
         }
-        Trajectory result = null;
+        TrajectoryElement result = null;
         double minDist = Double.POSITIVE_INFINITY;
         int minDistIdx = Integer.MAX_VALUE;
         for(int idx = 0; idx < _droppedSegmentCollector.size(); idx++)
@@ -303,7 +308,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         {
             boolean segmentFound = false;
             int dropCount = 0;
-            for (Trajectory curTraj : _segmentBuffer)
+            for (TrajectoryElement curTraj : _segmentBuffer)
             {
                 dropCount++;
                 if(isInRange(currentPosition, curTraj.getVector(), lookahead))
@@ -342,13 +347,21 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         if(_segmentBuffer.size() < MIN_SEGMENT_BUFFER_SIZE)
         {
             int segmentRequestSize = SEGMENT_BUFFER_SIZE - _segmentBuffer.size();
-            List<Trajectory> trajectories = _segmentProvider.getNewSegments(segmentRequestSize);
+            List<TrajectoryElement> trajectories = _segmentProvider.getNewSegments(segmentRequestSize);
+            notifyTrajectoryRequestListeners(trajectories);
             if(trajectories == null)
             {
                 return;
             }
             trajectories.stream().forEach(traj -> _segmentBuffer.add(traj));
         }
+    }
+
+    private void notifyTrajectoryRequestListeners(List<TrajectoryElement> trajectories)
+    {
+        List<TrajectoryElement> copy = new ArrayList<>();
+        trajectories.forEach(t -> copy.add(t));
+        _trajectoryRequestListeners.stream().forEach(listener -> listener.notifyNewTrajectories(copy, _actuatorsSensors.getTimeStamp()));
     }
 
     protected float computeTargetSteeringAngle(double lookahead)
@@ -368,12 +381,10 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
             double L = _actuatorsSensors.getVehicleLength();
             double[] vehicleVelocityXYZ = _actuatorsSensors.getVehicleVelocity();
             double velocity = new Vector2D(0.0, 0.0, vehicleVelocityXYZ[0], vehicleVelocityXYZ[1]).getLength();
-            double k = 1.0;
-//            double l_d = rearWheelToLookAhead.length();
+            double k = LOOKAHEAD_FACTOR;
             double kv = k * velocity;
             kv = kv > MAX_DYNAMIC_LOOKAHEAD ? MAX_DYNAMIC_LOOKAHEAD : kv;
             kv = kv < MIN_DYNAMIC_LOOKAHEAD ? MIN_DYNAMIC_LOOKAHEAD : kv;
-            //            System.out.println("k * vel: " + k * velocity + ", l_d: " +  l_d + "");
             double delta = Math.atan( (2.0 * L * Math.sin(alpha)) / kv);
             return (float) delta;
         }
@@ -395,7 +406,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         }
     }
 
-    protected float computeTargetWheelRotationSpeed(Trajectory closestSegment)
+    protected float computeTargetWheelRotationSpeed(TrajectoryElement closestSegment)
     {
         double speed = closestSegment.getVelocity();
         return (float) (speed * _speedToWheelRotationFactor);
@@ -411,15 +422,14 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     @Override
     public void addTrajectoryRequestListener(ITrajectoryRequestListener requestListener)
     {
-        // TODO Auto-generated method stub
+        _trajectoryRequestListeners.add(requestListener);
     }
 
     @Override
     public void addTrajectoryReportListener(ITrajectoryReportListener reportListener)
     {
-        // TODO Auto-generated method stub
+        _trajectoryReportListeners.add(reportListener);
     }
-
     @Override
     public void addArrivedListener(IArrivedListener arrivedListener)
     {

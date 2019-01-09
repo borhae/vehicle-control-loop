@@ -9,7 +9,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class OverlaySegmenter implements ISegmenter
 {
@@ -38,9 +38,9 @@ public class OverlaySegmenter implements ISegmenter
         _segmentBuildingListeners.forEach(listener -> listener.updateTrajectory(newVector, updatedList));
     }
 
-    public List<Trajectory> createSegments(List<Line2D> route)
+    public List<TrajectoryElement> createSegments(List<Line2D> route)
     {
-        List<Trajectory> result = new ArrayList<>();
+        List<TrajectoryElement> result = new ArrayList<>();
         LinkedList<Vector2D> unpatchedRoute = Line2D.lineListToVectorList(route);
         LinkedList<Vector2D> srcRoute = patchHolesInRoute(unpatchedRoute);
         LinkedList<Vector2D> quantizedRoute = new LinkedList<>();
@@ -55,7 +55,7 @@ public class OverlaySegmenter implements ISegmenter
             {
                 Vector2D vec1 = overlay.pop();
                 addCnt++;
-                Trajectory elem1 = new Trajectory(vec1);
+                TrajectoryElement elem1 = new TrajectoryElement(vec1);
                 elem1.setIsOverlay();
                 result.add(elem1);
             }
@@ -63,7 +63,7 @@ public class OverlaySegmenter implements ISegmenter
             {
                 Vector2D vec2 = quantizedRoute.pop();
                 addCnt++;
-                Trajectory elem2 = new Trajectory(vec2);
+                TrajectoryElement elem2 = new TrajectoryElement(vec2);
                 elem2.setIsOriginal();
                 result.add(elem2);
             }

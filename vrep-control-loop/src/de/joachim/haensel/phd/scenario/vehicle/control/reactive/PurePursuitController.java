@@ -15,7 +15,7 @@ import de.joachim.haensel.phd.scenario.vehicle.ITrajectoryProvider;
 import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
@@ -30,9 +30,9 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     private Position2D _expectedTarget;
     private IActuatingSensing _actuatorsSensors;
     private DefaultReactiveControllerStateMachine _stateMachine;
-    private LinkedList<Trajectory> _segmentBuffer;
+    private LinkedList<TrajectoryElement> _segmentBuffer;
     private ITrajectoryProvider _segmentProvider;
-    private Trajectory _currentSegment;
+    private TrajectoryElement _currentSegment;
     private double _lookahead;
     private IVrepDrawing _vrepDrawing;
     private PurePursuitParameters _parameters;
@@ -41,6 +41,8 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     private DebugParams _debugParams;
     private double _speedToWheelRotationFactor;
     private List<IArrivedListener> _arrivedListeners;
+    private List<ITrajectoryRequestListener> _trajectoryRequestListeners;
+    private List<ITrajectoryReportListener> _trajectoryReportListeners;
 
     public class DefaultReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
@@ -60,7 +62,6 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
             createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, notArrivedGuard, ControllerStates.DRIVING, driveAction);
             
             createTransition(ControllerStates.DRIVING, ControllerMsg.STOP, null, ControllerStates.IDLE, breakAndStopAction);
-            
             setInitialState(ControllerStates.IDLE);
             reset();
         }
@@ -95,6 +96,8 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     {
         _debugging = false;
         _arrivedListeners = new ArrayList<>();
+        _trajectoryReportListeners = new ArrayList<>();
+        _trajectoryRequestListeners = new ArrayList<>();
     }
 
     @Override
@@ -230,7 +233,7 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
         {
             boolean segmentFound = false;
             int dropCount = 0;
-            for (Trajectory curTraj : _segmentBuffer)
+            for (TrajectoryElement curTraj : _segmentBuffer)
             {
                 dropCount++;
                 if(isInRange(currentPosition, curTraj.getVector(), _lookahead))
@@ -268,7 +271,7 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
         if(_segmentBuffer.size() < MIN_SEGMENT_BUFFER_SIZE)
         {
             int segmentRequestSize = SEGMENT_BUFFER_SIZE - _segmentBuffer.size();
-            List<Trajectory> trajectories = _segmentProvider.getNewSegments(segmentRequestSize);
+            List<TrajectoryElement> trajectories = _segmentProvider.getNewSegments(segmentRequestSize);
             if(trajectories == null)
             {
                 return;
@@ -328,13 +331,13 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     @Override
     public void addTrajectoryRequestListener(ITrajectoryRequestListener requestListener)
     {
-        // TODO Auto-generated method stub
+        _trajectoryRequestListeners.add(requestListener);
     }
 
     @Override
     public void addTrajectoryReportListener(ITrajectoryReportListener reportListener)
     {
-        // TODO Auto-generated method stub
+        _trajectoryReportListeners.add(reportListener);
     }
 
     @Override

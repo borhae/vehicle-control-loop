@@ -77,7 +77,8 @@ public class TangentSpaceTransformer
             Position2D tn1 = new Position2D(tn1_x, tn1_y);
             
             double tn2_x = tn1.getX();
-            double tn2_y = tn1_y + Vector2D.computeSplitAngle(v0, v1);
+            double tn2_y = v0.getNorm().equals(v1.getNorm(), 0.0000000000001) ? tn1_y : tn1_y + Vector2D.computeSplitAngle(v0, v1);
+
             Position2D tn2 = new Position2D(tn2_x, tn2_y);
             
             tangentSpace.add(new TangentSegment(tn1, tn2, p1));

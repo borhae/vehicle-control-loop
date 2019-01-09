@@ -9,7 +9,7 @@ import javax.swing.JPanel;
 
 import de.joachim.haensel.phd.converters.UnitConverter;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class Speedometer extends JPanel
 {
@@ -48,7 +48,7 @@ public class Speedometer extends JPanel
         _wheelSpeedLabel.setText(_format.format(targetWheelRotation));
     }
 
-    public void updateCurrentSegment(Trajectory currentSegment)
+    public void updateCurrentSegment(TrajectoryElement currentSegment)
     {
         if(currentSegment != null)
         {

@@ -17,6 +17,12 @@ public interface IActuatingSensing
     public void computeAndLockSensorData();
     
     /**
+     * Get's the current time in the simulator in milliseconds 
+     * @return
+     */
+    public long getTimeStamp();
+
+    /**
      * Simulates the blow up of a tire
      * @param tiresToBlow the tire to blow: set to true at the following index:1 front left, 2 front right, 3 back right, 4 back left
      * @param tireScale blown wheel size

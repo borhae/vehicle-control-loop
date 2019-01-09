@@ -56,7 +56,6 @@ public class ParameterizedTestCollectInVariousMaps
     private double _maxLateralAcceleration;
     private List<Position2D> _targetPoints;
     private RoadMap _map;
-    private String _paramID;
     private String _color;
     private String _mapFileName;
     
@@ -65,12 +64,12 @@ public class ParameterizedTestCollectInVariousMaps
     {
         return Arrays.asList(new Object[][]
         {
-            {15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(6656.36,3627.95), new Position2D(440.32,627.73)), "luebeck-roads.net.xml", "test_10_120_4.0_4.3_0.8", "blue"},
-            {15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(10669.82,11374.52), new Position2D(6562.38,3497.54)), "chandigarh-roads.net.xml", "test_10_120_4.0_4.3_0.8", "blue"},
+            {15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(6656.36,3627.95), new Position2D(440.32,627.73)), "luebeck-roads.net.xml", "blue"},
+            {15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(10669.82,11374.52), new Position2D(6562.38,3497.54)), "chandigarh-roads.net.xml", "blue"},
         });
     }
 
-    public ParameterizedTestCollectInVariousMaps(double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String paramID, String color)
+    public ParameterizedTestCollectInVariousMaps(double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color)
     {
         _lookahead = lookahead;
         _maxVelocity = maxVelocity;
@@ -90,7 +89,6 @@ public class ParameterizedTestCollectInVariousMaps
         {
             fail();
         }
-        _paramID = paramID;
         _color = color;
     }
     

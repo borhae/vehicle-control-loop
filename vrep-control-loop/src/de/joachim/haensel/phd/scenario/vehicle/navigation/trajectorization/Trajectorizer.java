@@ -5,7 +5,7 @@ import java.util.List;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.ISegmenter;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.ISegmenterFactory;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.IVelocityAssigner;
@@ -23,9 +23,9 @@ public class Trajectorizer implements ITrajectorizer
     }
 
     @Override
-    public List<Trajectory> createTrajectory(List<Line2D> route)
+    public List<TrajectoryElement> createTrajectory(List<Line2D> route)
     {
-        List<Trajectory> result = _segmenter.createSegments(route);
+        List<TrajectoryElement> result = _segmenter.createSegments(route);
         _velocityAssigner.addVelocities(result);
         return result;
     }

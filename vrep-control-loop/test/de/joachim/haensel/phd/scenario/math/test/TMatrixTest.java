@@ -3,6 +3,9 @@ package de.joachim.haensel.phd.scenario.math.test;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 
@@ -55,6 +58,17 @@ public class TMatrixTest
         TMatrix m = new TMatrix(1.0, 0.0, 0.0, Math.PI/2.0);
         actual.transform(m);
         Position2D expected = new Position2D(0.0, 1.0);
+        assertEquals(expected, actual);
+    }
+    
+    @Test
+    public void testRotate45Angle()
+    {
+        Position2D actual = new Position2D(1.0/Math.sqrt(2.0), 1.0/Math.sqrt(2.0));
+        TMatrix m = new TMatrix(1.0, 0.0, 0.0, Math.PI/4.0);
+        actual.transform(m);
+        Position2D expected = new Position2D(0.0, 1.0);
+        System.out.println(Math.getExponent(Double.MIN_VALUE));
         assertEquals(expected, actual);
     }
 }

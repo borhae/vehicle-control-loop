@@ -76,18 +76,18 @@ public class DefaultNavigationController implements IUpperLayerControl
         ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
         ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, _velocityAssignerFactory , _segmentSize);
         trajectorizer.addSegmentBuildingListeners(_segmentBuildingListeners);
-        List<Trajectory> allSegments = trajectorizer.createTrajectory(routeBasis);
+        List<TrajectoryElement> allSegments = trajectorizer.createTrajectory(routeBasis);
         _segmentBuffer.fillBuffer(allSegments);
         _debuggingParameters.notifyNavigationListenersSegmentsChanged(allSegments);
     }
 
     @Override
-    public List<Trajectory> getNewSegments(int requestSize)
+    public List<TrajectoryElement> getNewSegments(int requestSize)
     {
         return _segmentBuffer.getSegments(requestSize);
     }
 
-    public Trajectory segmentsPeek()
+    public TrajectoryElement segmentsPeek()
     {
         return _segmentBuffer.peek();
     }

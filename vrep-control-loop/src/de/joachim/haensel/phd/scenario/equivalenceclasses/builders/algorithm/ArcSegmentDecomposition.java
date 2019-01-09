@@ -41,13 +41,13 @@ public class ArcSegmentDecomposition
     private List<IArcsSegmentContainerElement> ngoSegmentationAlgorithm(List<Position2D> dataPoints, double thickness, double alphaMax, double nbCirclePoint, double isseTol)
     {
         List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
-        return inputFormatIndependentNgoSegmentationAlgorithm(tangentSpace, thickness, alphaMax, nbCirclePoint, isseTol);
+        return tangentSpaceNgoSegmentationAlgorithm(tangentSpace, thickness, alphaMax, nbCirclePoint, isseTol);
     }
 
     private List<IArcsSegmentContainerElement> ngoSegmentationAlgorithm(Deque<Vector2D> dataPoints, double thickness, double alphaMax, double nbCirclePoint, double isseTol)
     {
         List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
-        return inputFormatIndependentNgoSegmentationAlgorithm(tangentSpace, thickness, alphaMax, nbCirclePoint, isseTol);
+        return tangentSpaceNgoSegmentationAlgorithm(tangentSpace, thickness, alphaMax, nbCirclePoint, isseTol);
     }
 
     /**
@@ -59,7 +59,7 @@ public class ArcSegmentDecomposition
      * @param isseTol
      * @return
      */
-    private List<IArcsSegmentContainerElement> inputFormatIndependentNgoSegmentationAlgorithm(List<TangentSegment> tangentSpace, double thickness, double alphaMax, double nbCirclePoint, double isseTol)
+    private List<IArcsSegmentContainerElement> tangentSpaceNgoSegmentationAlgorithm(List<TangentSegment> tangentSpace, double thickness, double alphaMax, double nbCirclePoint, double isseTol)
     {
         List<IArcsSegmentContainerElement> result = new ArrayList<>();
         List<Midpoint> midpointSet = TangentSpaceMidpointComputer.compute(tangentSpace);

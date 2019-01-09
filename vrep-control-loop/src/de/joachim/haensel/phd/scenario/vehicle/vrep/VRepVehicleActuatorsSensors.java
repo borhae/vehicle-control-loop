@@ -36,6 +36,7 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     private double[] _vechicleVelocity;
     private VRepObjectCreation _vRepObjectCreator;
     private double _wheelDiameter;
+    private float _timeStamp; //current Simulation times
     
     public VRepVehicleActuatorsSensors(IVehicleHandles vehicleHandles, ISimulatorData simulatorData)
     {
@@ -92,7 +93,8 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
             _vechicleVelocity[0] = vals[6];
             _vechicleVelocity[1] = vals[7];
             _vechicleVelocity[2] = vals[8];
-            _wheelDiameter = vals[9];
+            _timeStamp = vals[9];
+            _wheelDiameter = vals[10];
         }
         catch (VRepException exc)
         {
@@ -413,5 +415,12 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     public double getWheelDiameter()
     {
         return _wheelDiameter;
+    }
+
+    @Override
+    public long getTimeStamp()
+    {
+        // Vrep gives us seconds with up to 2 digits behind the decimal point. 
+        return (long)(_timeStamp * 1000.0f);
     }
 }

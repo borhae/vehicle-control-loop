@@ -17,7 +17,7 @@ import de.joachim.haensel.phd.scenario.vehicle.ITrajectoryProvider;
 import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 
 public class TrajectoryRecorder implements ILowerLayerControl, INavigationListener
@@ -116,7 +116,7 @@ public class TrajectoryRecorder implements ILowerLayerControl, INavigationListen
     }
 
     @Override
-    public void notifySegmentsChanged(List<Trajectory> segments)
+    public void notifySegmentsChanged(List<TrajectoryElement> segments)
     {
         List<Position2D> segmentsToAdd = segments.stream().map(trajectory -> trajectory.getVector().getBase()).collect(Collectors.toList());
         if(_plannedTrajectory == null)

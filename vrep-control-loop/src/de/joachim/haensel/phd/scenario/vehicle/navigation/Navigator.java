@@ -35,6 +35,7 @@ public class Navigator
         EdgeType targetEdge = _roadMap.getClosestEdgeFor(targetPosition);
         JunctionType startJunction = _roadMap.getJunctionForName(startEdge.getTo());
         JunctionType targetJunction = _roadMap.getJunctionForName(targetEdge.getFrom());
+        System.out.print("Start routing: without orientation with start and target edge");
         List<Line2D> route = getRoute(startJunction, targetJunction, startEdge, targetEdge);
         return route;
     }

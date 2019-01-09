@@ -423,5 +423,19 @@ public class Vector2DTest
          
          assertEquals(expected, actual, Math.ulp(0.0));
      }
+     
+     @Test
+     public void testSetLength()
+     {
+         Vector2D v = new Vector2D(0.0, 0.0, 3.0, 4.0);
+         double actualLength = v.getLength();
+         double expectedLength = 5.0;
+         assertEquals(expectedLength, actualLength, Math.ulp(0.0));
+         
+         v.setLength(10.0);
+         double actualNewLength = v.getLength();
+         double expectedNewLength = 10.0;
+         assertEquals(expectedNewLength, actualNewLength, Math.ulp(0.0));
+     }
 }
 

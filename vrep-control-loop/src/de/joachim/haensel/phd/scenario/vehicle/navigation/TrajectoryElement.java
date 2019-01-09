@@ -1,8 +1,9 @@
 package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
+import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
-public class Trajectory
+public class TrajectoryElement
 {
     public enum VelocityEdgeType
     {
@@ -17,7 +18,7 @@ public class Trajectory
     private double _kappa;
     private int _index;
 
-    public Trajectory(Vector2D vector)
+    public TrajectoryElement(Vector2D vector)
     {
         _vector = vector;
         _type = TrajectoryType.UNKNOWN;
@@ -108,5 +109,11 @@ public class Trajectory
     public int getIdx()
     {
         return _index;
+    }
+
+    public TrajectoryElement transform(TMatrix transformationMatrix)
+    {
+        _vector.transform(transformationMatrix);
+        return this;
     }
 }

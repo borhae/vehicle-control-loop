@@ -19,7 +19,7 @@ import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class LayerInterfaceAccessTest
 {
@@ -37,9 +37,9 @@ public class LayerInterfaceAccessTest
         
         upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
         
-        List<Trajectory> allDataPoints = getDataPoints(upperCtrl);
+        List<TrajectoryElement> allDataPoints = getDataPoints(upperCtrl);
         
-        List<List<Trajectory>> slidingWindows = createSlidingWindows(allDataPoints, 10);
+        List<List<TrajectoryElement>> slidingWindows = createSlidingWindows(allDataPoints, 10);
         Deque<Deque<Vector2D>> slidingWindowsVectors = transformToVectorDeque(slidingWindows);
         Vector2DVisualizer visualizer = new Vector2DVisualizer();
         Deque<Vector2D> firstWindow = slidingWindowsVectors.getFirst();
@@ -72,19 +72,19 @@ public class LayerInterfaceAccessTest
         lowerCtrl.addTrajectoryReportListener(reportListener);
     }
 
-    private Deque<Deque<Vector2D>> transformToVectorDeque(List<List<Trajectory>> slidingWindows)
+    private Deque<Deque<Vector2D>> transformToVectorDeque(List<List<TrajectoryElement>> slidingWindows)
     {
         Deque<Deque<Vector2D>> result = new LinkedList<>();
         slidingWindows.forEach(curWindow -> result.addLast(new LinkedList<>(curWindow.stream().map(t -> t.getVector()).collect(Collectors.toList()))));
         return result;
     }
 
-    private List<List<Trajectory>> createSlidingWindows(List<Trajectory> allDataPoints, int windowSize)
+    private List<List<TrajectoryElement>> createSlidingWindows(List<TrajectoryElement> allDataPoints, int windowSize)
     {
-        List<List<Trajectory>> result = new ArrayList<>();
+        List<List<TrajectoryElement>> result = new ArrayList<>();
         for(int cnt = 0; cnt < allDataPoints.size(); cnt++)
         {
-            List<Trajectory> newWindow = new ArrayList<>();
+            List<TrajectoryElement> newWindow = new ArrayList<>();
             for(int windowCnt = 0; windowCnt < windowSize; windowCnt++)
             {
                 int dataPointsIndex = cnt + windowCnt;
@@ -102,10 +102,10 @@ public class LayerInterfaceAccessTest
         return result;
     }
 
-    private List<Trajectory> getDataPoints(IUpperLayerControl upperCtrl)
+    private List<TrajectoryElement> getDataPoints(IUpperLayerControl upperCtrl)
     {
-        List<Trajectory> result = new ArrayList<>();
-        List<Trajectory> intermedidate;;
+        List<TrajectoryElement> result = new ArrayList<>();
+        List<TrajectoryElement> intermedidate;;
         intermedidate = upperCtrl.getNewSegments(10);
         while(!intermedidate.isEmpty())
         {

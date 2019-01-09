@@ -8,7 +8,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.veloc
 
 public interface ITrajectorizer
 {
-    public List<Trajectory> createTrajectory(List<Line2D> mapBasedLineRoute);
+    public List<TrajectoryElement> createTrajectory(List<Line2D> mapBasedLineRoute);
     
     public void addSegmentBuildingListeners(List<ISegmentBuildingListener> listeners);
 

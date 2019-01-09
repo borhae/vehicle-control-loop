@@ -25,7 +25,7 @@ import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
 import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.Trajectory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleCreator;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
@@ -86,7 +86,7 @@ public class TestVehicleSteering
             return new IUpperLayerControl() {
 
                 @Override
-                public List<Trajectory> getNewSegments(int segmentRequestSize)
+                public List<TrajectoryElement> getNewSegments(int segmentRequestSize)
                 {
                     return null;
                 }
@@ -170,7 +170,7 @@ public class TestVehicleSteering
             return new IUpperLayerControl() {
 
                 @Override
-                public List<Trajectory> getNewSegments(int segmentRequestSize)
+                public List<TrajectoryElement> getNewSegments(int segmentRequestSize)
                 {
                     return null;
                 }
