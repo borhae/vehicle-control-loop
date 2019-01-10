@@ -41,7 +41,9 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
 
     private ILowerLayerFactory _lowerLayerFactory;
 
-    public VehicleBuildTask(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator, RoadMap map, Position2D position, Vector2D orientation)
+    private String _carmodel;
+
+    public VehicleBuildTask(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator, RoadMap map, Position2D position, Vector2D orientation, String carmodel)
     {
         _vrep = vrep;
         _clientID = clientID;
@@ -49,6 +51,7 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
         _map = map;
         _position = position;
         _orientation = orientation;
+        _carmodel = carmodel;
     }
 
     public void setControlParams(double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration)
@@ -75,7 +78,7 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
 
     private IVehicle createVehicle(RoadMap map, Position2D vehiclePosition, Vector2D orientation)
     {
-        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/carvisuals.ttm", 1.0f);
+        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, _carmodel, 1.0f);
         IVehicleConfiguration vehicleConf = createMercedesLikeConfiguration(map, vehiclePosition, orientation, 1.5);
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();

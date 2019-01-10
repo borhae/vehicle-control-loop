@@ -24,7 +24,7 @@ public class MonitoringController implements ILowerLayerControl<Object>
         
         _debugParams.getSpeedometer().updateWheelRotationSpeed(0.0f);
         _debugParams.getSpeedometer().updateCurrentSegment(null);
-        _debugParams.getSpeedometer().updateActualVelocity(_actuatorsSensors.getVehicleVelocity());
+        _debugParams.getSpeedometer().updateVelocities(_actuatorsSensors.getVehicleVelocity(), 0.0);
         _debugParams.getSpeedometer().repaint();
     }
 

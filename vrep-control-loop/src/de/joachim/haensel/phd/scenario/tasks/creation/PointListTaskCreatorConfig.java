@@ -42,6 +42,7 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
     protected double _maxLongitudinalDecceleration;
     protected double _maxLateralAcceleration;
     private ILowerLayerFactory _lowerLayerFactory;
+    private String _carmodel;
 
     public PointListTaskCreatorConfig(boolean debug)
     {
@@ -83,7 +84,7 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
         Position2D startPosition = _targetPoints.get(0);
         
         Vector2D orientation = IDrivingTask.computeOrientation(_map, startPosition, _targetPoints.get(1));
-        VehicleBuildTask vehicleBuildTask = new VehicleBuildTask(_vrep, _clientID, _objectCreator, _map, startPosition, orientation);
+        VehicleBuildTask vehicleBuildTask = new VehicleBuildTask(_vrep, _clientID, _objectCreator, _map, startPosition, orientation, _carmodel);
         vehicleBuildTask.setControlParams(_lookahead, _maxVelocity, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
         if(_lowerLayerFactory != null)
         {
@@ -160,5 +161,10 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
     public void setLowerLayerController(ILowerLayerFactory lowerLayerFactory)
     {
         _lowerLayerFactory = lowerLayerFactory;
+    }
+
+    public void setCarModel(String carModel)
+    {
+        _carmodel = carModel;
     }
 }

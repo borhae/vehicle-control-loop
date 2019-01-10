@@ -91,7 +91,7 @@ public class AllSameAToBDrivingTaskCreatorConfig implements ITaskCreatorConfig, 
         {
             Position2D startPosition = new Position2D(_xSource, _ySource);
             Vector2D orientation = IDrivingTask.computeOrientation(_map, startPosition, new Position2D(_xTarget, _yTarget));
-            VehicleBuildTask vehicleBuildTask = new VehicleBuildTask(_vrep, _clientID, _objectCreator, _map, startPosition, orientation);
+            VehicleBuildTask vehicleBuildTask = new VehicleBuildTask(_vrep, _clientID, _objectCreator, _map, startPosition, orientation, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm");
             vehicleBuildTask.setControlParams(_lookahead, _maxVelocity, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
             _tasks.add(vehicleBuildTask);
             _tasks.add(new SimStartTask(_vrep, _clientID));

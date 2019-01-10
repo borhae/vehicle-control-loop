@@ -211,7 +211,7 @@ public class DriveRoutesTest
             exc.printStackTrace();
         }
     }
-
+    
     private IVehicleConfiguration createConfiguration(RoadMap roadMap, Position2D startPosition, Position2D destinationPosition)
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();

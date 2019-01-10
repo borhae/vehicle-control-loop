@@ -225,7 +225,7 @@ public class StanleyController implements ILowerLayerControl<PurePursuitParamete
         {
             _debugParams.getSpeedometer().updateWheelRotationSpeed(targetWheelRotation);
             _debugParams.getSpeedometer().updateCurrentSegment(_currentSegment);
-            _debugParams.getSpeedometer().updateActualVelocity(_actuatorsSensors.getVehicleVelocity());
+            _debugParams.getSpeedometer().updateVelocities(_actuatorsSensors.getVehicleVelocity(), _currentSegment.getVelocity());
             _debugParams.getSpeedometer().repaint();
         }
         _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);

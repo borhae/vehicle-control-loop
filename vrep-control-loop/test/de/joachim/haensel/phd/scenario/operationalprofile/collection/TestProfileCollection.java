@@ -67,6 +67,8 @@ public class TestProfileCollection
     private RoadMap _map;
     private String _color;
 
+    private String _testID;
+
    @BeforeClass
    public static void setupVrep() throws VRepException
    {
@@ -111,13 +113,15 @@ public class TestProfileCollection
    {
        return Arrays.asList(new Object[][]
        {
-           {15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(5579.18,3023.38), new Position2D(6375.32,3687.02)), "luebeck-roads.net.xml", "blue"},
-           {15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(8564.44,9559.52), new Position2D(7998.74,8151.80)), "chandigarh-roads.net.xml", "blue"},
+           {"luebeck_small", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(5579.18,3023.38), new Position2D(6375.32,3687.02)), "luebeck-roads.net.xml", "blue"},
+           {"chandigarh_small", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(8564.44,9559.52), new Position2D(7998.74,8151.80)), "chandigarh-roads.net.xml", "blue"},
+           {"chandigarh_medium", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(8564.44,9559.52), new Position2D(7998.74,8151.80), new Position2D(7596.09,7264.80), new Position2D(8262.70,3244.63), new Position2D(11286.49,5458.54)), "chandigarh-roads.net.xml", "blue"},
        });
    }
 
-   public TestProfileCollection(double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color)
+   public TestProfileCollection(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color)
    {
+       _testID = testID;
        _lookahead = lookahead;
        _maxVelocity = maxVelocity;
        _maxLongitudinalAcceleration = maxLongitudinalAcceleration;
@@ -204,7 +208,6 @@ public class TestProfileCollection
                 decompositions.put(curTrajectoryEntry.getKey(), decomposition);
             }
         }
-        System.out.println("end");
 
         Consumer<? super Entry<Long, List<TrajectoryElement>>> writeTrajectoryToFile = entry ->
         {
@@ -213,7 +216,7 @@ public class TestProfileCollection
                 if (entry.getValue() != null)
                 {
                     List<String> trajectory = entry.getValue().stream().map(element -> element.getVector().toLine().toPyplotString()).collect(Collectors.toList());
-                    String fileName = String.format("./res/operationalprofiletest/normalizedtrajectories/TrajectoryTest%s%06d.pyplot", _mapFileName, entry.getKey());
+                    String fileName = String.format("./res/operationalprofiletest/normalizedtrajectories/TrajectoryTest%s%06d.pyplot", _testID, entry.getKey());
                     Files.write(new File(fileName).toPath(), trajectory, Charset.defaultCharset());
                 }
             }
@@ -230,7 +233,7 @@ public class TestProfileCollection
                 if (entry.getValue() != null)
                 {
                     List<String> decomposition = entry.getValue().stream().map(element -> element.toPyPlotString()).collect(Collectors.toList());
-                    String fileName = String.format("./res/operationalprofiletest/normalizedtrajectories/DecompositionTest%s%06d.pyplot", _mapFileName, entry.getKey());
+                    String fileName = String.format("./res/operationalprofiletest/normalizedtrajectories/DecompositionTest%s%06d.pyplot", _testID, entry.getKey());
                     Files.write(new File(fileName).toPath(), decomposition, Charset.defaultCharset());
                 }
             }

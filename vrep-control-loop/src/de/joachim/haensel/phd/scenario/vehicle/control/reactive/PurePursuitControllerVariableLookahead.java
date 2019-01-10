@@ -50,6 +50,8 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
 
     public class DefaultReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
+        private static final double DISTANCE_TO_TARGET_THRESHOLD = 5.0;
+
         public DefaultReactiveControllerStateMachine()
         {
             Consumer<Position2D> driveToAction = target -> _expectedTarget = target; 
@@ -76,8 +78,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
             _actuatorsSensors.computeAndLockSensorData(); 
             Position2D curPos = _actuatorsSensors.getPosition();
             double distance = Position2D.distance(curPos, _expectedTarget);
-            boolean arrived = distance < _lookahead;
-//            System.out.printf("distance %.2f \n", distance);
+            boolean arrived = distance < DISTANCE_TO_TARGET_THRESHOLD;
             return arrived;
         }
 
@@ -190,7 +191,14 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         _actuatorsSensors.computeAndLockSensorData();
         ensureBufferSize();
 
-        double lookahead = _lookahead;
+        double[] vehicleVelocityXYZ = _actuatorsSensors.getVehicleVelocity();
+        double velocity = new Vector2D(0.0, 0.0, vehicleVelocityXYZ[0], vehicleVelocityXYZ[1]).getLength();
+        double k = LOOKAHEAD_FACTOR;
+        double kv = k * velocity;
+        kv = kv > MAX_DYNAMIC_LOOKAHEAD ? MAX_DYNAMIC_LOOKAHEAD : kv;
+        kv = kv < MIN_DYNAMIC_LOOKAHEAD ? MIN_DYNAMIC_LOOKAHEAD : kv;
+
+        double lookahead = kv;
         chooseCurrentLookaheadSegment(_actuatorsSensors.getRearWheelCenterPosition(), lookahead);
         TrajectoryElement closestSegment = chooseClosestSegment(_actuatorsSensors.getPosition());
         float targetWheelRotation = 0.0f;
@@ -224,7 +232,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         {
             _debugParams.getSpeedometer().updateWheelRotationSpeed(targetWheelRotation);
             _debugParams.getSpeedometer().updateCurrentSegment(_currentLookaheadSegment);
-            _debugParams.getSpeedometer().updateActualVelocity(_actuatorsSensors.getVehicleVelocity());
+            _debugParams.getSpeedometer().updateVelocities(_actuatorsSensors.getVehicleVelocity(), closestSegment.getVelocity());
             _debugParams.getSpeedometer().repaint();
         }
         _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);

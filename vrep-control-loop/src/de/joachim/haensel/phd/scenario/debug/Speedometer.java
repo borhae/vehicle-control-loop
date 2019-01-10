@@ -17,6 +17,7 @@ public class Speedometer extends JPanel
     private DecimalFormat _format;
     private JLabel _segmentLabel;
     private JLabel _velocityLabel;
+    private JLabel _plannedVelocityLabel;
 
     public static Speedometer createWindow()
     {
@@ -32,7 +33,7 @@ public class Speedometer extends JPanel
 
     private void init()
     {   
-        setLayout(new GridLayout(4, 1));
+        setLayout(new GridLayout(5, 1));
         _format = new DecimalFormat("000.000");
         add(new JLabel("Shows current speed of car from controller"));
         _wheelSpeedLabel = new JLabel(_format.format(0.0));
@@ -41,6 +42,8 @@ public class Speedometer extends JPanel
         add(_segmentLabel);
         _velocityLabel = new JLabel("");
         add(_velocityLabel);
+        _plannedVelocityLabel = new JLabel("");
+        add(_plannedVelocityLabel);
     }
 
     public void updateWheelRotationSpeed(float targetWheelRotation)
@@ -71,10 +74,13 @@ public class Speedometer extends JPanel
         return String.format("[(%.2f, %.2f) -> (%.2f, %.2f)], <->: %.2f ", vector.getbX(), vector.getbY(), vector.getdX(), vector.getdY(), vector.getLength());
     }
 
-    public void updateActualVelocity(double[] vehicleVelocity)
+    public void updateVelocities(double[] vehicleVelocity, double plannedVelocity)
     {
         Vector2D planeVelVector = new Vector2D(0.0, 0.0, vehicleVelocity[0], vehicleVelocity[1]);
         double planeVelocity = planeVelVector.getLength();
-        _velocityLabel.setText(String.format("v: %.2f m/s, %.2f km/h | x: %.2f, y: %.2f, z: %.2f", planeVelocity, UnitConverter.meterPerSecondToKilometerPerHour(planeVelocity), vehicleVelocity[0], vehicleVelocity[1], vehicleVelocity[2]));
+        double planeVelKMh = UnitConverter.meterPerSecondToKilometerPerHour(planeVelocity);
+        double plannedVelKMh = UnitConverter.meterPerSecondToKilometerPerHour(plannedVelocity);
+        _velocityLabel.setText(String.format("v: %.2f km/h, %.2f m/s | x: %.2f, y: %.2f, z: %.2f", planeVelKMh, planeVelocity, vehicleVelocity[0], vehicleVelocity[1], vehicleVelocity[2]));
+        _plannedVelocityLabel.setText(String.format("planned: %.2f, diff: %.2f", plannedVelKMh, planeVelKMh - plannedVelKMh));
     }
 }

@@ -45,6 +45,7 @@ public class BasicVelocityAssigner implements IVelocityAssigner
     private double _segmentSize;
     private List<IProfileChangeListener> _profileChangeListener;
     private List<ICurvatureChangeListener> _curvatureChangeListener;
+    private double _initialVelocity;
 
     public BasicVelocityAssigner(double segmentSize, double maxSpeed)
     {
@@ -52,6 +53,7 @@ public class BasicVelocityAssigner implements IVelocityAssigner
         _segmentSize = segmentSize;
         _profileChangeListener = new ArrayList<>();
         _curvatureChangeListener = new ArrayList<>();
+        _initialVelocity = 2.0;
     }
     
     public BasicVelocityAssigner(double segmentSize, double maxVelocity, double maxLateralAcc, double maxLongAcc, double maxLongDec)
@@ -79,7 +81,7 @@ public class BasicVelocityAssigner implements IVelocityAssigner
             trajectories.remove(0);
         }
         curvatureLimitedPass(trajectories);
-        
+        trajectories.get(0).setVelocity(_initialVelocity);
 //        lowPassFilter(trajectories);
 //        notifyListeners(trajectories);
         
