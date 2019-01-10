@@ -78,6 +78,7 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
 
     private IVehicle createVehicle(RoadMap map, Position2D vehiclePosition, Vector2D orientation)
     {
+        _carmodel = _carmodel == null ? "./res/simcarmodel/cvehicleAllAnglesCleanedUpNoScript.ttm" : _carmodel;
         IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, _carmodel, 1.0f);
         IVehicleConfiguration vehicleConf = createMercedesLikeConfiguration(map, vehiclePosition, orientation, 1.5);
         factory.configure(vehicleConf);

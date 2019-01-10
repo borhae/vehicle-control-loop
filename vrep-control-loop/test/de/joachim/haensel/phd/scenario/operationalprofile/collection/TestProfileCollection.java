@@ -113,15 +113,15 @@ public class TestProfileCollection
    {
        return Arrays.asList(new Object[][]
        {
-           {"luebeck_small", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(5579.18,3023.38), new Position2D(6375.32,3687.02)), "luebeck-roads.net.xml", "blue"},
-           {"chandigarh_small", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(8564.44,9559.52), new Position2D(7998.74,8151.80)), "chandigarh-roads.net.xml", "blue"},
-           {"chandigarh_medium", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(8564.44,9559.52), new Position2D(7998.74,8151.80), new Position2D(7596.09,7264.80), new Position2D(8262.70,3244.63), new Position2D(11286.49,5458.54)), "chandigarh-roads.net.xml", "blue"},
+//           {"luebeck_small", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(5579.18,3023.38), new Position2D(6375.32,3687.02)), "luebeck-roads.net.xml", "blue"},
+//           {"chandigarh_small", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(8564.44,9559.52), new Position2D(7998.74,8151.80)), "chandigarh-roads.net.xml", "blue"},
+//           {"chandigarh_medium", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(8564.44,9559.52), new Position2D(7998.74,8151.80), new Position2D(7596.09,7264.80), new Position2D(8158.54,3236.11), new Position2D(11286.49,5458.54)), "chandigarh-roads.net.xml", "blue"},
+           {"chandigarh_medium", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(7596.09,7264.80), new Position2D(8256.48,3253.43), new Position2D(8135.55,3218.77), new Position2D(8139.54,3115.05), new Position2D(11286.49,5458.54)), "chandigarh-roads.net.xml", "blue"},
        });
    }
 
    public TestProfileCollection(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color)
    {
-       _testID = testID;
        _lookahead = lookahead;
        _maxVelocity = maxVelocity;
        _maxLongitudinalAcceleration = maxLongitudinalAcceleration;
@@ -141,6 +141,7 @@ public class TestProfileCollection
            fail();
        }
        _color = color;
+       _testID = testID + String.format("%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
    }
 
     @Test
@@ -150,13 +151,13 @@ public class TestProfileCollection
 
         TaskCreator taskCreator = new TaskCreator();
         PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(true);
-        config.setControlParams(_lookahead, _maxVelocity, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration,
-                _maxLateralAcceleration);
+        config.setControlParams(_lookahead, _maxVelocity, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
 
         config.setMap(_map);
         config.configSimulator(_vrep, _clientID, _objectCreator);
         TrajectoryRecorder trajectoryRecorder = new TrajectoryRecorder();
         config.addLowerLayerControl(trajectoryRecorder);
+        config.setCarModel("./res/simcarmodel/vehicleVisualsBrakeScript.ttm");
 
         config.setTargetPoints(_targetPoints);
         config.addNavigationListener(trajectoryRecorder);
@@ -216,7 +217,7 @@ public class TestProfileCollection
                 if (entry.getValue() != null)
                 {
                     List<String> trajectory = entry.getValue().stream().map(element -> element.getVector().toLine().toPyplotString()).collect(Collectors.toList());
-                    String fileName = String.format("./res/operationalprofiletest/normalizedtrajectories/TrajectoryTest%s%06d.pyplot", _testID, entry.getKey());
+                    String fileName = String.format("./res/operationalprofiletest/normalizedtrajectories/Trajectory%s%06d.pyplot", _testID, entry.getKey());
                     Files.write(new File(fileName).toPath(), trajectory, Charset.defaultCharset());
                 }
             }
@@ -233,7 +234,7 @@ public class TestProfileCollection
                 if (entry.getValue() != null)
                 {
                     List<String> decomposition = entry.getValue().stream().map(element -> element.toPyPlotString()).collect(Collectors.toList());
-                    String fileName = String.format("./res/operationalprofiletest/normalizedtrajectories/DecompositionTest%s%06d.pyplot", _testID, entry.getKey());
+                    String fileName = String.format("./res/operationalprofiletest/normalizedtrajectories/Decomposition%s%06d.pyplot", _testID, entry.getKey());
                     Files.write(new File(fileName).toPath(), decomposition, Charset.defaultCharset());
                 }
             }
