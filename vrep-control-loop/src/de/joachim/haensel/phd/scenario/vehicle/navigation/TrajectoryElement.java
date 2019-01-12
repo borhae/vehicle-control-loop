@@ -11,6 +11,7 @@ public class TrajectoryElement
     }
 
     private Vector2D _vector;
+//TODO remove the different types
     private TrajectoryType _type;
     private double _velocity;
     private VelocityEdgeType _velocityEdgeType;
@@ -115,5 +116,18 @@ public class TrajectoryElement
     {
         _vector.transform(transformationMatrix);
         return this;
+    }
+
+    public TrajectoryElement deepCopy()
+    {
+        Vector2D vCopy = new Vector2D(_vector);
+        TrajectoryElement copy = new TrajectoryElement(vCopy);
+        copy._index = _index;
+        copy._kappa = _kappa;
+        copy._radius = _radius;
+        copy._type = _type;
+        copy._velocity = _velocity;
+        copy._velocityEdgeType = _velocityEdgeType;
+        return copy;
     }
 }

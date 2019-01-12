@@ -17,11 +17,11 @@ public class Line2D
     public Line2D(String p1, String p2)
     {
         String[] coordinate1 = p1.split(",");
-        _x1  = Float.valueOf(coordinate1[0]);
-        _y1  = Float.valueOf(coordinate1[1]);
+        _x1  = Double.valueOf(coordinate1[0]);
+        _y1  = Double.valueOf(coordinate1[1]);
         String[] coordinate2 = p2.split(",");
-        _x2  = Float.valueOf(coordinate2[0]);
-        _y2  = Float.valueOf(coordinate2[1]);
+        _x2  = Double.valueOf(coordinate2[0]);
+        _y2  = Double.valueOf(coordinate2[1]);
         _c = Position2D.distance(_x1, _y1, _x2, _y2);
     }
     
@@ -46,13 +46,6 @@ public class Line2D
         _x2 = newLine._x2;
         _y2 = newLine._y2;
         _c = Position2D.distance(_x1, _y1, _x2, _y2);
-    }
-
-    public double length(double x1, double y1, double x2, double y2)
-    {
-        double dx = x2 - x1;
-        double dy = y2 - y1;
-        return Math.sqrt(dx * dx + dy * dy);
     }
 
     public double distance(Position2D position)
@@ -102,10 +95,12 @@ public class Line2D
         }
         else
         {
-            result.add(new Line2D(coordinateList.get(0), coordinateList.get(1)));
-            if(coordinateList.size() >= 3)
+            String lastCoordinate = coordinateList.get(0);
+            for(int idx = 1; idx < coordinateList.size(); idx++)
             {
-                createLines(coordinateList.subList(1, coordinateList.size()), result);
+                String curCoordinate = coordinateList.get(idx);
+                result.add(new Line2D(lastCoordinate, curCoordinate));
+                lastCoordinate = curCoordinate;
             }
         }
     }
@@ -172,12 +167,14 @@ public class Line2D
     {
         _x1 = position.getX();
         _y1 = position.getY();
+        _c = Position2D.distance(_x1, _y1, _x2, _y2);
     }
 
     public void setP2(Position2D position)
     {
         _x2 = position.getX();
         _y2 = position.getY();
+        _c = Position2D.distance(_x1, _y1, _x2, _y2);
     }
 
     /**

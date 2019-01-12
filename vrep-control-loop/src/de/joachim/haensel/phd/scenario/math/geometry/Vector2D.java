@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.TMatrix;
+import sun.print.DocumentPropertiesUI;
 
 public class Vector2D
 {
@@ -66,24 +67,24 @@ public class Vector2D
             System.out.println("Illegal instantiation");
             throw new RuntimeException("Illegal vector instantiation (" + _bX + ", " + _bY + ", " + _length + ") (baseX, baseY, length)");
         }
-        computeNormVector();
+        updateNormVector();
     }
 
     public Vector2D(Line2D line)
     {
         _bX = line.getX1();
         _bY = line.getY1();
-        _length = line.length();
         if(Double.isNaN(_bX) || Double.isNaN(_bY) || Double.isNaN(_length))
         {
             System.out.println("we got some not a numbers!!");
         }
         _dX = line.getX2() - line.getX1();
         _dY = line.getY2() - line.getY1();
-        computeNormVector();
+        _length = computeLength(_dX, _dY);
+        updateNormVector();
     }
 
-    private void computeNormVector()
+    private void updateNormVector()
     {
         if(_length != 0.0)
         {
@@ -209,31 +210,126 @@ public class Vector2D
         return Math.sqrt(dx * dx + dy * dy);
     }
     
+    /**
+     * Angle between two vectors, taking care of similarly directed vectors like in the apache library 
+     * @param a
+     * @param b
+     * @return
+     */
     public static double computeAngle(Vector2D a, Vector2D b)
     {
-        if(a._dX == b._dX && a._dY == b._dY)
+        double result = 0.0;
+        if (!(a._dX == b._dX && a._dY == b._dY) && !(Position2D.equals(a.getNorm(), b.getNorm(), Math.ulp(result))))
         {
-            return 0.0;
+            double dotProduct = Vector2D.dotProduct(a, b);
+            double magnitudeProduct = a.getLength() * b.getLength();
+            double threshold = magnitudeProduct * 0.9999;
+            if((dotProduct < -threshold) || (dotProduct > threshold))
+            {
+                double n = Math.abs(linearCombination(a._dX, b._dY, -a._dY, b._dX));
+                if(dotProduct >= 0)
+                {
+                    result = Math.asin(n / magnitudeProduct);
+                }
+                else
+                {
+                    result = Math.PI - Math.asin(n / magnitudeProduct);
+                }
+            }
+            else
+            {
+                double divsionResult = dotProduct/magnitudeProduct;
+                result = Math.acos(divsionResult);
+                if(divsionResult > 1.0)
+                {
+                    //TODO remove me or throw exception
+                    System.out.println("problem");
+                }
+            }
         }
-        else if (Position2D.equals(a.getNorm(), b.getNorm(), Math.ulp(0.0)))
+        if(result == Double.NaN)
         {
+            System.out.println("uh oh: angle is not a number");
             return 0.0;
         }
         else
         {
-            double dotProduct = Vector2D.dotProduct(a, b);
-            double magnitudeProduct = a.getLength() * b.getLength();
-            double divsionResult = dotProduct/magnitudeProduct;
-            double result = Math.acos(divsionResult);
-            if(divsionResult > 1.0)
-            {
-                //TODO remove me or throw exception
-               System.out.println("problem");
-            }
             return result;
         }
     }
     
+    /**
+     * Compute a linear combination accurately. Included from Part of Apaches' Commons Math library. TODO Use the library: more consistent and less errors 
+     * <p>
+     * This method computes a<sub>1</sub>&times;b<sub>1</sub> +
+     * a<sub>2</sub>&times;b<sub>2</sub> to high accuracy. It does
+     * so by using specific multiplication and addition algorithms to
+     * preserve accuracy and reduce cancellation effects. It is based
+     * on the 2005 paper <a
+     * href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.2.1547">
+     * Accurate Sum and Dot Product</a> by Takeshi Ogita,
+     * Siegfried M. Rump, and Shin'ichi Oishi published in SIAM J. Sci. Comput.
+     * </p>
+     * @param a1 first factor of the first term
+     * @param b1 second factor of the first term
+     * @param a2 first factor of the second term
+     * @param b2 second factor of the second term
+     * @return a<sub>1</sub>&times;b<sub>1</sub> +
+     * a<sub>2</sub>&times;b<sub>2</sub>
+     * @see #linearCombination(double, double, double, double, double, double)
+     * @see #linearCombination(double, double, double, double, double, double, double, double)
+     */
+    private static double linearCombination(final double a1, final double b1,
+                                           final double a2, final double b2) {
+
+        // the code below is split in many additions/subtractions that may
+        // appear redundant. However, they should NOT be simplified, as they
+        // use IEEE754 floating point arithmetic rounding properties.
+        // The variable naming conventions are that xyzHigh contains the most significant
+        // bits of xyz and xyzLow contains its least significant bits. So theoretically
+        // xyz is the sum xyzHigh + xyzLow, but in many cases below, this sum cannot
+        // be represented in only one double precision number so we preserve two numbers
+        // to hold it as long as we can, combining the high and low order bits together
+        // only at the end, after cancellation may have occurred on high order bits
+
+        // split a1 and b1 as one 26 bits number and one 27 bits number
+        final double a1High     = Double.longBitsToDouble(Double.doubleToRawLongBits(a1) & ((-1L) << 27));
+        final double a1Low      = a1 - a1High;
+        final double b1High     = Double.longBitsToDouble(Double.doubleToRawLongBits(b1) & ((-1L) << 27));
+        final double b1Low      = b1 - b1High;
+
+        // accurate multiplication a1 * b1
+        final double prod1High  = a1 * b1;
+        final double prod1Low   = a1Low * b1Low - (((prod1High - a1High * b1High) - a1Low * b1High) - a1High * b1Low);
+
+        // split a2 and b2 as one 26 bits number and one 27 bits number
+        final double a2High     = Double.longBitsToDouble(Double.doubleToRawLongBits(a2) & ((-1L) << 27));
+        final double a2Low      = a2 - a2High;
+        final double b2High     = Double.longBitsToDouble(Double.doubleToRawLongBits(b2) & ((-1L) << 27));
+        final double b2Low      = b2 - b2High;
+
+        // accurate multiplication a2 * b2
+        final double prod2High  = a2 * b2;
+        final double prod2Low   = a2Low * b2Low - (((prod2High - a2High * b2High) - a2Low * b2High) - a2High * b2Low);
+
+        // accurate addition a1 * b1 + a2 * b2
+        final double s12High    = prod1High + prod2High;
+        final double s12Prime   = s12High - prod2High;
+        final double s12Low     = (prod2High - (s12High - s12Prime)) + (prod1High - s12Prime);
+
+        // final rounding, s12 may have suffered many cancellations, we try
+        // to recover some bits from the extra words we have saved up to now
+        double result = s12High + (prod1Low + prod2Low + s12Low);
+
+        if (Double.isNaN(result)) {
+            // either we have split infinite numbers or some coefficients were NaNs,
+            // just rely on the naive implementation and let IEEE754 handle this
+            result = a1 * b1 + a2 * b2;
+        }
+
+        return result;
+    }
+
     /**
      * Takes too input vectors. Computes the single angle between them. If the result is larger PI 
      * p2 is considered to point to the left side of p1, otherwise to the right.
@@ -593,16 +689,42 @@ public class Vector2D
 
     public Vector2D getPerpendicular()
     {
+        return getPerpendicularCounterclockwise();
+    }
+
+    public Vector2D getPerpendicularCounterclockwise()
+    {
         return new Vector2D(_bX, _bY, -_dY, _dX);
+    }
+
+    public Vector2D getPerpendicularClockwise()
+    {
+        return new Vector2D(_bX, _bY, _dY, -_dX);
     }
 
     public Vector2D getMiddlePerpendicular()
     {
-        Vector2D result = getPerpendicular();
+        return getMiddlePerpendicularCounterclockwise();
+    }
+
+    public Vector2D getMiddlePerpendicularCounterclockwise()
+    {
+        Vector2D result = getPerpendicularCounterclockwise();
+        return makeMiddle(result);
+    }
+    
+    public Vector2D getMiddlePerpendicularClockwise()
+    {
+        Vector2D result = getPerpendicularClockwise();
+        return makeMiddle(result);
+    }
+
+    private Vector2D makeMiddle(Vector2D v)
+    {
         double newBX = _bX + _dX * 0.5;
         double newBY = _bY + _dY * 0.5;
-        result.resetBase(newBX, newBY);
-        return result;
+        v.resetBase(newBX, newBY);
+        return v;
     }
 
     public static Position2D getUnrangedPerpendicularIntersection(Vector2D v, Position2D p)
@@ -630,6 +752,11 @@ public class Vector2D
     {
         _bX = bX;
         _bY = bY;
+    }
+    
+    public void resetBase(Position2D newBase)
+    {
+        resetBase(newBase.getX(), newBase.getY());
     }
 
 //    This is the original computation together with the minimal blurred segment convex hull thickness computation. It doesn't give the expected results.
@@ -735,10 +862,20 @@ public class Vector2D
         dir.transform(rotationScaleMatrix);
         _dX = dir.getX();
         _dY = dir.getY();
+        updateNormVector();
     }
 
     public Line2D toLine()
     {
         return new Line2D(getBase(), getTip());
+    }
+
+    public void rotateDir(double angle)
+    {
+        TMatrix rotationMatrix = TMatrix.rotationMatrix(angle);
+        Position2D dir = getDir();
+        dir.transform(rotationMatrix);
+        _dX = dir.getX();
+        _dY = dir.getY();
     }
 }

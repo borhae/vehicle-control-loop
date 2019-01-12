@@ -13,7 +13,7 @@ import de.joachim.haensel.phd.scenario.tasks.ITask;
 import de.joachim.haensel.phd.scenario.tasks.SimStartTask;
 import de.joachim.haensel.phd.scenario.tasks.SimStopTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleBuildTask;
-import de.joachim.haensel.phd.scenario.tasks.VehicleDeactivateDebugTask;
+import de.joachim.haensel.phd.scenario.tasks.VehicleStopDebugTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStartDebugTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStartTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStopTask;
@@ -103,7 +103,7 @@ public class AllSameAToBDrivingTaskCreatorConfig implements ITaskCreatorConfig, 
             _tasks.add(new DriveAtoBTask(_xSource, _ySource, _xTarget, _yTarget, _timeoutSec, vehicleBuildTask, _map));
             if(_debug)
             {
-                _tasks.add(new VehicleDeactivateDebugTask(vehicleBuildTask));
+                _tasks.add(new VehicleStopDebugTask(vehicleBuildTask));
             }
             _tasks.add(new VehicleStopTask(vehicleBuildTask));
             _tasks.add(new SimStopTask(_vrep, _clientID));

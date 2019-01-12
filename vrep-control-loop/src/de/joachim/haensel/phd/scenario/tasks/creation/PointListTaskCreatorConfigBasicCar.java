@@ -9,7 +9,7 @@ import de.joachim.haensel.phd.scenario.tasks.DriveAtoBTask;
 import de.joachim.haensel.phd.scenario.tasks.SimStartTask;
 import de.joachim.haensel.phd.scenario.tasks.SimStopTask;
 import de.joachim.haensel.phd.scenario.tasks.SimpleVehicleBuildTask;
-import de.joachim.haensel.phd.scenario.tasks.VehicleDeactivateDebugTask;
+import de.joachim.haensel.phd.scenario.tasks.VehicleStopDebugTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStartDebugTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStartTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStopTask;
@@ -56,7 +56,7 @@ public class PointListTaskCreatorConfigBasicCar extends PointListTaskCreatorConf
         }
         if(_debug)
         {
-            _tasks.add(new VehicleDeactivateDebugTask(vehicleBuildTask));
+            _tasks.add(new VehicleStopDebugTask(vehicleBuildTask));
         }
         _tasks.add(new VehicleStopTask(vehicleBuildTask));
         _tasks.add(new SimStopTask(_vrep, _clientID));

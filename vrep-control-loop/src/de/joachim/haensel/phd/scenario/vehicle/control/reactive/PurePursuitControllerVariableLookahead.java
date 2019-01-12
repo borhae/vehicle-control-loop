@@ -25,10 +25,10 @@ import de.joachim.haensel.statemachine.States;
 public class PurePursuitControllerVariableLookahead implements ILowerLayerControl<PurePursuitParameters>
 {
     private static final double LOOKAHEAD_FACTOR = 1.0;
-    private static final int MIN_DYNAMIC_LOOKAHEAD = 3;
+    private static final int MIN_DYNAMIC_LOOKAHEAD = 4;
     private static final int MAX_DYNAMIC_LOOKAHEAD = 35;
     private static final String CURRENT_SEGMENT_DEBUG_KEY = "curSeg";
-    private static final int MIN_SEGMENT_BUFFER_SIZE = 5;
+    private static final int MIN_SEGMENT_BUFFER_SIZE = 15;
     private static final int SEGMENT_BUFFER_SIZE = 20;
     private Position2D _expectedTarget;
     private IActuatingSensing _actuatorsSensors;
@@ -41,7 +41,6 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     private IVrepDrawing _vrepDrawing;
     private PurePursuitParameters _parameters;
     private boolean _debugging;
-    private boolean _debuggingCircleAttached;
     private DebugParams _debugParams;
     private double _speedToWheelRotationFactor;
     private List<IArrivedListener> _arrivedListeners;
@@ -111,7 +110,6 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     public void activateDebugging(IVrepDrawing vrepDrawing, DebugParams debugParams)
     {
         _debugging = true;
-        _debuggingCircleAttached = false;
         _debugParams = debugParams;
         _vrepDrawing = vrepDrawing;
         _vrepDrawing.registerDrawingObject(CURRENT_SEGMENT_DEBUG_KEY, DrawingType.LINE, Color.RED);
@@ -148,10 +146,26 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         _actuatorsSensors.computeAndLockSensorData();
         _speedToWheelRotationFactor = 2 / _actuatorsSensors.getWheelDiameter(); // 2/diameter = 1/radius
         Position2D currentPosition = _actuatorsSensors.getPosition();
-        chooseCurrentLookaheadSegment(currentPosition, _lookahead);
+        _currentLookaheadSegment = chooseClosestSegmentFromBuffer(currentPosition);
         _stateMachine.driveTo(target);
     }
     
+    private TrajectoryElement chooseClosestSegmentFromBuffer(Position2D currentPosition)
+    {
+        double minDist = Double.POSITIVE_INFINITY;
+        TrajectoryElement closestElem = _segmentBuffer.peek();
+        for (TrajectoryElement curElem : _segmentBuffer)
+        {
+            double curDist = curElem.getVector().getBase().distance(currentPosition);
+            if(curDist < minDist)
+            {
+                closestElem = curElem;
+                minDist = curDist;
+            }
+        }
+        return closestElem;
+    }
+
     @Override
     public void stop()
     {
@@ -199,27 +213,14 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         kv = kv < MIN_DYNAMIC_LOOKAHEAD ? MIN_DYNAMIC_LOOKAHEAD : kv;
 
         double lookahead = kv;
-        chooseCurrentLookaheadSegment(_actuatorsSensors.getRearWheelCenterPosition(), lookahead);
+        chooseCurrentLookaheadSegment(_actuatorsSensors.getRearWheelCenterPosition(), _actuatorsSensors.getOrientation(), lookahead);
         TrajectoryElement closestSegment = chooseClosestSegment(_actuatorsSensors.getPosition());
         float targetWheelRotation = 0.0f;
         float targetSteeringAngle = 0.0f;
-        if(_debugging)
-        {
-            if(!_debuggingCircleAttached)
-            {
-                _vrepDrawing.attachDebugCircle(lookahead);
-                _debuggingCircleAttached = true;
-            }
-        }
         if(_currentLookaheadSegment != null)
         {
             if(_debugging)
             {
-                if(!_debuggingCircleAttached)
-                {
-                    _vrepDrawing.attachDebugCircle(lookahead);
-                    _debuggingCircleAttached = true;
-                }
                 Vector2D curSegVector = _currentLookaheadSegment.getVector();
                 double debugMarkerHeight = _debugParams.getSimulationDebugMarkerHeight();
                 _vrepDrawing.updateLine(CURRENT_SEGMENT_DEBUG_KEY, curSegVector, debugMarkerHeight, Color.RED);
@@ -305,7 +306,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         return result;
     }
 
-    private void chooseCurrentLookaheadSegment(Position2D currentPosition, double lookahead)
+    private void chooseCurrentLookaheadSegment(Position2D currentPosition, Vector2D orientation, double lookahead)
     {
         if(_currentLookaheadSegment != null && isInRange(currentPosition, _currentLookaheadSegment.getVector(), lookahead))
         {
@@ -356,19 +357,20 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         {
             int segmentRequestSize = SEGMENT_BUFFER_SIZE - _segmentBuffer.size();
             List<TrajectoryElement> trajectories = _segmentProvider.getNewSegments(segmentRequestSize);
-            notifyTrajectoryRequestListeners(trajectories);
             if(trajectories == null)
             {
                 return;
             }
             trajectories.stream().forEach(traj -> _segmentBuffer.add(traj));
+            notifyTrajectoryRequestListeners(_segmentBuffer);
+//            notifyTrajectoryRequestListeners(trajectories);
         }
     }
 
     private void notifyTrajectoryRequestListeners(List<TrajectoryElement> trajectories)
     {
         List<TrajectoryElement> copy = new ArrayList<>();
-        trajectories.forEach(t -> copy.add(t));
+        trajectories.forEach(t -> copy.add(t.deepCopy()));
         _trajectoryRequestListeners.stream().forEach(listener -> listener.notifyNewTrajectories(copy, _actuatorsSensors.getTimeStamp()));
     }
 

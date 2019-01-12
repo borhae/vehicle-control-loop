@@ -1,10 +1,10 @@
 package de.joachim.haensel.phd.scenario.tasks;
 
-public class VehicleDeactivateDebugTask implements ITask
+public class VehicleStopDebugTask implements ITask
 {
     private IVehicleProvider _vehicleProvider;
 
-    public VehicleDeactivateDebugTask(IVehicleProvider vehicleProvider)
+    public VehicleStopDebugTask(IVehicleProvider vehicleProvider)
     {
         _vehicleProvider = vehicleProvider;
     }

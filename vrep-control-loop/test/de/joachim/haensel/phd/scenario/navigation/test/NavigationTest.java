@@ -210,6 +210,61 @@ public class NavigationTest implements TestConstants
         System.out.println("done");
     }
     
+    @Test
+    public void test180DegreeTurnDiagonal() throws VRepException
+    {
+        RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/chandigarh-roads.net.xml");
+        TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+        
+        Navigator navigator = new Navigator(mapAndCenterMatrix.getRoadMap());
+
+        Position2D start1 = new Position2D(8262.06,3246.62).transform(centerMatrix);
+        Position2D destination1 = new Position2D(8283.08,3213.24).transform(centerMatrix);
+        List<Line2D> route1 = navigator.getRoute(start1, destination1);
+        drawRoute(route1, _objectCreator, "route1_");
+        
+        Position2D start2 = new Position2D(8215.48,3303.46).transform(centerMatrix);
+        Position2D destination2 = new Position2D(8218.85,3305.09).transform(centerMatrix);
+        List<Line2D> route2 = navigator.getRoute(start2, destination2);
+        drawRoute(route2, _objectCreator, "route2_");
+
+        Position2D start3 = new Position2D(8215.94,3273.68).transform(centerMatrix);
+        Position2D destination3 = new Position2D(8193.96,3262.87).transform(centerMatrix);
+        List<Line2D> route3 = navigator.getRoute(start3, destination3);
+        drawRoute(route3, _objectCreator, "route3_");
+        System.out.println("wait here");
+    }
+    
+    @Test
+    public void test180DegreeTurn90Rectangular() throws VRepException
+    {
+        RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/chandigarh-roads.net.xml");
+        TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+        
+        Navigator navigator = new Navigator(mapAndCenterMatrix.getRoadMap());
+
+        Position2D start1 = new Position2D(2488.35,2913.97).transform(centerMatrix);
+        Position2D destination1 = new Position2D(2496.21,2909.68).transform(centerMatrix);
+        List<Line2D> route1 = navigator.getRoute(start1, destination1);
+        drawRoute(route1, _objectCreator, "route1_");
+        
+        Position2D start2 = new Position2D(2453.71,2910.47).transform(centerMatrix);
+        Position2D destination2 = new Position2D(2449.42,2913.65).transform(centerMatrix);
+        List<Line2D> route2 = navigator.getRoute(start2, destination2);
+        drawRoute(route2, _objectCreator, "route2_");
+
+        Position2D start3 = new Position2D(2474.13,2900.47).transform(centerMatrix);
+        Position2D destination3 = new Position2D(2470.87,2899.67).transform(centerMatrix);
+        List<Line2D> route3 = navigator.getRoute(start3, destination3);
+        drawRoute(route3, _objectCreator, "route3_");
+
+        Position2D start4 = new Position2D(2406.44,2927.00).transform(centerMatrix);
+        Position2D destination4 = new Position2D(2410.41,2928.67).transform(centerMatrix);
+        List<Line2D> route4 = navigator.getRoute(start4, destination4);
+        drawRoute(route4, _objectCreator, "route4_");
+        System.out.println("wait here");
+    }
+    
     private void drawPosition(Position2D position, Color orange, VRepObjectCreation objectCreator, String name) throws VRepException
     {
         ShapeParameters shapeParams = new ShapeParameters();
@@ -224,6 +279,21 @@ public class NavigationTest implements TestConstants
         shapeParams.setType(EVRepShapes.SPHERE);
         shapeParams.setVisibility(true);
         objectCreator.createPrimitive(shapeParams);
+    }
+
+    private void drawRoute(List<Line2D> route, VRepObjectCreation objectCreator, String routeName)
+    {
+        Color color = new Color(255, 0, 0);
+        route.stream().map(IndexAdder.indexed()).forEachOrdered(indexedLine -> {
+            try
+            {
+                objectCreator.createLine(indexedLine.v(), DOWN_SCALE_FACTOR, 1.0f, 0.5f, routeName + indexedLine.idx(), color);
+            }
+            catch (VRepException exc)
+            {
+                exc.printStackTrace();
+            }
+        });
     }
 
     private void drawRoute(List<Line2D> route, VRepObjectCreation objectCreator)

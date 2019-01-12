@@ -77,7 +77,16 @@ public class TangentSpaceTransformer
             Position2D tn1 = new Position2D(tn1_x, tn1_y);
             
             double tn2_x = tn1.getX();
-            double tn2_y = v0.getNorm().equals(v1.getNorm(), 0.0000000000001) ? tn1_y : tn1_y + Vector2D.computeSplitAngle(v0, v1);
+            double tn2_y = 0.0;
+            if(v0.getNorm().equals(v1.getNorm(), 0.0000000001) || (v0.getLength() == 0.0) || v1.getLength() == 0.0)
+            {
+                tn2_y = tn1_y;
+            }
+            else
+            {
+                double angle = Vector2D.computeSplitAngle(v0, v1);
+                tn2_y = tn1_y + angle;
+            }
 
             Position2D tn2 = new Position2D(tn2_x, tn2_y);
             

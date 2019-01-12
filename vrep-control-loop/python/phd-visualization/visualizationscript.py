@@ -1,3 +1,5 @@
+import glob
+
 import matplotlib.pyplot as pyplot
 import argparse
 import csv 
@@ -14,7 +16,6 @@ from pathlib import PurePath
 from os import walk
 
 from pandas import DataFrame
-from sympy import fibonacci
 
 
 class ZoomPanAnimate:
@@ -160,6 +161,7 @@ def main():
     print(args.v)
 
     if(args.v):
+        print("file list for slideshow")
         pathlists = crawlDir(args.v[0])
         path_pairs = DataFrame(data=pathlists).transpose()
         
@@ -197,8 +199,13 @@ def main():
         figure = pyplot.figure()
         ax = figure.add_subplot(1, 1, 1)
 
-        for path in args.path:
-            readFrameContent(path, segs, arcs, arc_points, points, lines, 0)
+        reg_paths = []
+        for cur_reg in args.path:
+            paths = glob.glob(cur_reg)
+            reg_paths.append(paths)
+        for paths in reg_paths:
+            for path in paths:
+                readFrameContent(path, segs, arcs, arc_points, points, lines, 0)
 
         plotFrameContent(segs, arcs, arc_points, points, lines, ax, 0)
         zoom_pan = ZoomPanAnimate()
