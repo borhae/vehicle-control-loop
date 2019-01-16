@@ -48,7 +48,15 @@ public class RoadMap
 
         public void computeOrientationDelta(Vector2D orientation)
         {
-            _orientationDelta = Vector2D.computeAngle(new Vector2D(_line), orientation);
+            if(_line == null)
+            {
+                _orientationDelta = Double.POSITIVE_INFINITY;
+                return;
+            }
+            else
+            {
+                _orientationDelta = Vector2D.computeAngle(new Vector2D(_line), orientation);
+            }
         }
 
         public double getOrientationDelta()
@@ -354,38 +362,61 @@ public class RoadMap
     /**
      * Returns the edge that is closest to the point with the given orientation
      * (Internally edges are collected with respect to distance. The last 10 edges are filtered for the ones that 
-     * have an orientation discrepancy of more than 90 degree. From this result the first and therefore closest is taken).
+     * have an orientation discrepancy of more than 120 degree. From this result the first and therefore closest is taken).
      * @param position
      * @param orientation
      * @return
      */
     public EdgeType getClosestEdgeForOrientationRestricted(Position2D position, Vector2D orientation)
     {
-        double smallestDist = Double.MAX_VALUE;
         double curDist = Double.MAX_VALUE;
-        EdgeType curClosest = null;
         Collection<EdgeType> edges = _nameToEdgeMap.values();
-        Deque<EdgeIntersection> edgeIntersections = new ArrayDeque<>(); 
+        int smallestElementsBufferSize = 10;
+        double[] mindDistances = new double[smallestElementsBufferSize];
+        EdgeIntersection[] closestEdges = new EdgeIntersection[smallestElementsBufferSize];
+        Arrays.fill(mindDistances, Double.POSITIVE_INFINITY);
+        Arrays.fill(closestEdges, new EdgeIntersection(null, null, Double.MAX_VALUE));
         for (EdgeType curEdge : edges)
         {
             Line2D resultLine = new Line2D(0.0, 0.0, 0.0, 0.0);
             curDist = computeSmallestEdgeToPointDistance(position, curEdge, resultLine);
-            if(curDist < smallestDist)
+            if(curDist < mindDistances[mindDistances.length - 1])
             {
-                smallestDist = curDist;
-                curClosest = curEdge;
-                EdgeIntersection curClosestEdgeIntersection = new EdgeIntersection(curEdge, resultLine, curDist);
-                edgeIntersections.push(curClosestEdgeIntersection);
+                for(int distIdx = 0; distIdx < mindDistances.length; distIdx++)
+                {
+                    if(curDist < mindDistances[distIdx])
+                    {
+                        double prevDist = mindDistances[distIdx];
+                        EdgeIntersection prevEdge = closestEdges[distIdx];
+                        double tmp = 0.0;
+                        EdgeIntersection tmpEdge = null;
+                        for(int updateIdx = distIdx + 1; updateIdx < mindDistances.length; updateIdx++)
+                        {
+                            tmp = mindDistances[updateIdx];
+                            tmpEdge = closestEdges[updateIdx];
+                            mindDistances[updateIdx] = prevDist;
+                            prevDist = tmp;
+                            prevEdge = tmpEdge;
+                        }
+                        mindDistances[distIdx] = curDist;
+                        closestEdges[distIdx] = new EdgeIntersection(curEdge, resultLine, curDist);
+                        break;
+                    }
+                }
             }
         }
-        if(!edgeIntersections.isEmpty())
+        //computeOrientationDelta returns infinity for the orientation if there is a null line (as in the initialized elements)
+        Arrays.asList(closestEdges).forEach(cur -> cur.computeOrientationDelta(orientation));
+        List<EdgeIntersection> aligned = Arrays.asList(closestEdges).stream().filter(cur -> cur.getOrientationDelta() < Math.toRadians(120)).collect(Collectors.toList());
+        if(aligned.isEmpty())
         {
-            List<EdgeIntersection> closestEdges = new ArrayList<>(edgeIntersections).subList(0, Math.min(10, edgeIntersections.size()) - 1);
-            closestEdges.forEach(cur -> cur.computeOrientationDelta(orientation));
-            closestEdges.parallelStream().filter(cur -> cur.getOrientationDelta() < (Math.PI / 2.0));
-            curClosest = closestEdges.get(0).getEdge();
+            return null;
         }
-        return curClosest;
+        else
+        {
+            EdgeType closestAlignedEdge = aligned.get(0).getEdge();
+            return closestAlignedEdge;
+        }
     }
 
     private double computeSmallestEdgeToPointDistance(Position2D position, EdgeType edge, Line2D resultLine)

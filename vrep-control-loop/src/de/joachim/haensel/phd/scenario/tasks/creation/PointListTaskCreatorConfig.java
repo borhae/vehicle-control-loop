@@ -46,9 +46,14 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
 
     public PointListTaskCreatorConfig(boolean debug)
     {
+        this();
+        _debug = debug;
+    }
+
+    public PointListTaskCreatorConfig()
+    {
         _targetPoints = new ArrayList<>();
         _lowerLayerControls = new ArrayList<>();
-        _debug = debug;
         _lookahead = DEFAULT_PURE_PURSUIT_LOOKAHEAD;
         _maxVelocity = DEFAULT_MAX_VELOCITY;
         _maxLongitudinalAcceleration = DEFAULT_MAX_LONGITUDINAL_ACCELERATION;
@@ -166,5 +171,10 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
     public void setCarModel(String carModel)
     {
         _carmodel = carModel;
+    }
+
+    public void setDebug(boolean debug)
+    {
+        _debug = debug;
     }
 }

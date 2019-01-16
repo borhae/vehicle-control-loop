@@ -5,10 +5,12 @@ import java.util.List;
 
 import org.junit.Test;
 
+import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
 import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
 
 public class Vector2DTest
 {
@@ -436,6 +438,21 @@ public class Vector2DTest
          double actualNewLength = v.getLength();
          double expectedNewLength = 10.0;
          assertEquals(expectedNewLength, actualNewLength, Math.ulp(0.0));
+     }
+     
+     @Test
+     public void testReverseRotation()
+     {
+         double length = 1.0/Math.sqrt(2.0);
+         Vector2D actual = new Vector2D(0.0, 0.0, length, length);
+         double actualAngle = Vector2D.computeAngle(new Vector2D(0.0, 0.0, 1.0, 0.0), actual);
+         double expectedAngle = Math.toRadians(45);
+         assertEquals(expectedAngle, actualAngle, 0.000000000000001);
+         
+         TMatrix rotationMatrix = TMatrix.rotationMatrix(-actualAngle);
+         actual.transform(rotationMatrix);
+         Vector2D expected = new Vector2D(0.0, 0.0, 1.0, 0.0);
+         assertThat(actual, is(expected));
      }
 }
 

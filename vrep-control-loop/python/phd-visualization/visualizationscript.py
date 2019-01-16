@@ -260,8 +260,12 @@ def readFrameContent(path, segs, arcs, arc_points, points, lines, idx):
         first_point_pass = True
         first_line_point_pass = True
         for row in data:
-            if(row[0] == "seg"):                
-                segs.append(Arrow(float(row[1]), float(row[2]), float(row[3]) - float(row[1]), float(row[4]) - float(row[2]), width=1, linestyle="-", alpha=0.5, color="green"))
+            if(row[0] == "seg"):
+                if (len(row) == 6):
+                    arrow_color = row[5]
+                else:
+                    arrow_color = "green"
+                segs.append(Arrow(float(row[1]), float(row[2]), float(row[3]) - float(row[1]), float(row[4]) - float(row[2]), width=1, linestyle="-", alpha=0.5, color=arrow_color))
             elif (row[0] == "arc"):
                 radius = float(row[3])
                 st_an = float(row[4])

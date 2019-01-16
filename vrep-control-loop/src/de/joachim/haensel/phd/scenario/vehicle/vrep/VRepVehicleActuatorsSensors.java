@@ -374,6 +374,12 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
         Position2D p2 = new Position2D(frontLeftWheelPos);
         return new Vector2D(p1, p2);
     }
+    
+    @Override
+    public Vector2D getLockedOrientation()
+    {
+        return new Vector2D(_rearWheelCenterPosition, _frontWheelCenterPosition);
+    }
 
     @Override
     public Position2D getNonDynamicPosition()

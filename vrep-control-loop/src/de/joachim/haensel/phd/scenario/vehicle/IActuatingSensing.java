@@ -36,6 +36,12 @@ public interface IActuatingSensing
     public Vector2D getOrientation();
     
     /**
+     * Returns the cars orientation vector at simulation time when computeAndLockSensorData was called
+     * @return
+     */
+    public Vector2D getLockedOrientation();
+
+    /**
      * This will gives 
      * Will give the vehicles position at the time that {@code IActuatingSensing.computeAndLockSensorData()} was called.
      * @return 

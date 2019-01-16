@@ -101,11 +101,11 @@ public class BasicVelocityAssigner implements IVelocityAssigner
         double s_i = _segmentSize / 2.0; // this is approximately true (s_i traveldistance between two points)
         double threshold = 0.1;
         double curProfileChange = Double.MAX_VALUE;
-        int iterationCnt = 1;
         notifyListeners(trajectories);
+        System.out.println("Velocity assignement: ");
         while(curProfileChange > threshold)
         {
-            System.out.println("iteration: " + iterationCnt + " --------------------------------------------- ");
+            System.out.print(".");
             double curMaxChange = 0.0;
             for (int idx = 0; idx < trajectories.size() - 1; idx++)
             {
@@ -141,7 +141,6 @@ public class BasicVelocityAssigner implements IVelocityAssigner
                     curMaxChange = delta;
                 }
             }
-            iterationCnt++;
             curProfileChange = curMaxChange;
             notifyListeners(trajectories);
         }
@@ -237,7 +236,7 @@ public class BasicVelocityAssigner implements IVelocityAssigner
 
     private List<TrajectoryElement> filterOutType(List<TrajectoryElement> trajectories, TrajectoryType type)
     {
-        return trajectories.stream().filter(t -> t.hasType(type)).collect(Collectors.toList());
+        return trajectories.stream().filter(t -> !t.hasType(type)).collect(Collectors.toList());
     }
 
     @Override

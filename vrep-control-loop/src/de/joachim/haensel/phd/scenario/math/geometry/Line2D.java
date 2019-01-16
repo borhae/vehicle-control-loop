@@ -193,49 +193,6 @@ public class Line2D
         return Math.signum(determinant);
     }
 
-//    /**
-//     * Is pos on this line, between p1 and p2? 
-//     * TODO maybe dispose
-//     * @param pos 
-//     * @return
-//     */
-//    public boolean containsDisposeThiseMethod(Position2D pos, double epsilon)
-//    {
-//        double ax = _x1;
-//        double bx = _x2;
-//        double cx = pos.getX();
-//
-//        double ay = _y1;
-//        double by = _y2;
-//        double cy = pos.getY();
-//        
-//        double crossProduct = (cy - ay) * (bx - ax) - (cx - ax) * (by - ay);
-//        if (Math.abs(crossProduct) > epsilon)
-//        {
-//            return false;
-//        }
-//        else
-//        {
-//            double dotProduct = (cx - ax) * (bx - ax) + (cy - ay) * (by - ay);
-//            if(dotProduct < epsilon)
-//            {
-//                return false;
-//            }
-//            else
-//            {
-//                double squaredLengthBA = (bx - ax) * (bx - ax) + (by - ay) * (by - ay);
-//                if(dotProduct > squaredLengthBA)
-//                {
-//                    return false;
-//                }
-//                else
-//                {
-//                    return true;
-//                }
-//            }
-//        }
-//    }
-
     /**
      * rather use this
      * @param pos
@@ -267,6 +224,27 @@ public class Line2D
     public String toPyplotString()
     {
         return String.format("seg %.6f %.6f %.6f %.6f", _x1, _y1, _x2, _y2);
+    }
+
+    public String toPyplotString(String color)
+    {
+        return toPyplotString() + " " + color;
+    }
+
+    public double distancePerpendicularOrEndpoints(Position2D position)
+    {
+        double result = Double.POSITIVE_INFINITY;
+        Vector2D v = new Vector2D(this);
+        Position2D intersection = Vector2D.getPerpendicularIntersection(v, position);
+        if(intersection != null)
+        {
+            result = intersection.distance(position);
+        }
+        else
+        {
+            result = Math.min(position.distance(getP1()), position.distance(getP2()));
+        }
+        return result;
     }
 
 }

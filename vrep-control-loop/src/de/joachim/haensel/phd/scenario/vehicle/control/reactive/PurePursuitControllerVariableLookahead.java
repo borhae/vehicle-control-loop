@@ -2,9 +2,16 @@ package de.joachim.haensel.phd.scenario.vehicle.control.reactive;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
@@ -24,20 +31,18 @@ import de.joachim.haensel.statemachine.States;
 
 public class PurePursuitControllerVariableLookahead implements ILowerLayerControl<PurePursuitParameters>
 {
-    private static final double LOOKAHEAD_FACTOR = 1.0;
+    private static final double LOOKAHEAD_FACTOR = 2.0;
     private static final int MIN_DYNAMIC_LOOKAHEAD = 4;
-    private static final int MAX_DYNAMIC_LOOKAHEAD = 35;
+    private static final int MAX_DYNAMIC_LOOKAHEAD = 50;
     private static final String CURRENT_SEGMENT_DEBUG_KEY = "curSeg";
     private static final int MIN_SEGMENT_BUFFER_SIZE = 15;
     private static final int SEGMENT_BUFFER_SIZE = 20;
     private Position2D _expectedTarget;
     private IActuatingSensing _actuatorsSensors;
     private DefaultReactiveControllerStateMachine _stateMachine;
-    private LinkedList<TrajectoryElement> _segmentBuffer;
-    private List<TrajectoryElement> _droppedSegmentCollector;
+    private List<TrajectoryElement> _segmentBuffer;
     private ITrajectoryProvider _segmentProvider;
     private TrajectoryElement _currentLookaheadSegment;
-    private double _lookahead;
     private IVrepDrawing _vrepDrawing;
     private PurePursuitParameters _parameters;
     private boolean _debugging;
@@ -46,6 +51,8 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     private List<IArrivedListener> _arrivedListeners;
     private List<ITrajectoryRequestListener> _trajectoryRequestListeners;
     private List<ITrajectoryReportListener> _trajectoryReportListeners;
+    //if the trajectory element provider (_segment provider) doesn't deliver enough trajectory elements this will be set to true
+    private boolean _routeEnding;
 
     public class DefaultReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
@@ -101,7 +108,6 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     {
         _debugging = false;
         _arrivedListeners = new ArrayList<>();
-        _droppedSegmentCollector = new ArrayList<>();
         _trajectoryRequestListeners = new ArrayList<>();
         _trajectoryReportListeners = new ArrayList<>();
     }
@@ -135,35 +141,19 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         _segmentBuffer = new LinkedList<>();
         _segmentProvider = trajectoryProvider;
         _currentLookaheadSegment = null;
-        _lookahead = _parameters.getLookahead();
         _speedToWheelRotationFactor = _parameters.getSpeedToWheelRotationFactor();
     }
 
     @Override
     public void driveTo(Position2D target)
     {
+        _routeEnding = false;
         ensureBufferSize();
         _actuatorsSensors.computeAndLockSensorData();
         _speedToWheelRotationFactor = 2 / _actuatorsSensors.getWheelDiameter(); // 2/diameter = 1/radius
         Position2D currentPosition = _actuatorsSensors.getPosition();
-        _currentLookaheadSegment = chooseClosestSegmentFromBuffer(currentPosition);
+        _currentLookaheadSegment = chooseClosestSegmentFromBuffer(_actuatorsSensors.getOrientation(), currentPosition);
         _stateMachine.driveTo(target);
-    }
-    
-    private TrajectoryElement chooseClosestSegmentFromBuffer(Position2D currentPosition)
-    {
-        double minDist = Double.POSITIVE_INFINITY;
-        TrajectoryElement closestElem = _segmentBuffer.peek();
-        for (TrajectoryElement curElem : _segmentBuffer)
-        {
-            double curDist = curElem.getVector().getBase().distance(currentPosition);
-            if(curDist < minDist)
-            {
-                closestElem = curElem;
-                minDist = curDist;
-            }
-        }
-        return closestElem;
     }
 
     @Override
@@ -213,8 +203,9 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         kv = kv < MIN_DYNAMIC_LOOKAHEAD ? MIN_DYNAMIC_LOOKAHEAD : kv;
 
         double lookahead = kv;
-        chooseCurrentLookaheadSegment(_actuatorsSensors.getRearWheelCenterPosition(), _actuatorsSensors.getOrientation(), lookahead);
-        TrajectoryElement closestSegment = chooseClosestSegment(_actuatorsSensors.getPosition());
+        chooseCurrentLookaheadSegment(_actuatorsSensors.getRearWheelCenterPosition(), _actuatorsSensors.getLockedOrientation(), lookahead);
+        TrajectoryElement closestSegment = chooseClosestSegment(_actuatorsSensors.getPosition(), _actuatorsSensors.getLockedOrientation());
+        
         float targetWheelRotation = 0.0f;
         float targetSteeringAngle = 0.0f;
         if(_currentLookaheadSegment != null)
@@ -233,122 +224,158 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         {
             _debugParams.getSpeedometer().updateWheelRotationSpeed(targetWheelRotation);
             _debugParams.getSpeedometer().updateCurrentSegment(_currentLookaheadSegment);
-            _debugParams.getSpeedometer().updateVelocities(_actuatorsSensors.getVehicleVelocity(), closestSegment.getVelocity());
+            _debugParams.getSpeedometer().updateVelocities(_actuatorsSensors.getVehicleVelocity(), _actuatorsSensors.getLockedOrientation(), closestSegment.getVelocity());
             _debugParams.getSpeedometer().repaint();
         }
         _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
     }
 
-    private TrajectoryElement chooseClosestSegment(Position2D position)
+    private TrajectoryElement chooseClosestSegment(Position2D position, Vector2D orientation)
     {
-        if(position == null || _droppedSegmentCollector.isEmpty())
+        TrajectoryElement result = null;
+        if(position == null || _segmentBuffer.isEmpty())
         {
             //with no input we just rely on the other segment
-            return _currentLookaheadSegment;
-        }
-        TrajectoryElement result = null;
-        double minDist = Double.POSITIVE_INFINITY;
-        int minDistIdx = Integer.MAX_VALUE;
-        for(int idx = 0; idx < _droppedSegmentCollector.size(); idx++)
-        {
-            Position2D perpendicularIntersection = Vector2D.getPerpendicularIntersection(_droppedSegmentCollector.get(idx).getVector(), position);
-            if(perpendicularIntersection != null)
-            {
-                double curDist = perpendicularIntersection.distance(position);
-                if(curDist < minDist)
-                {
-                    minDist = curDist;
-                    minDistIdx = idx;
-                }
-            }
-        }
-        if(minDistIdx != Integer.MAX_VALUE)
-        {
-            result = _droppedSegmentCollector.get(0);
-            for(int cnt = 0; cnt < minDistIdx; cnt++)
-            {
-                if(_droppedSegmentCollector.isEmpty())
-                {
-                    break;
-                }
-                result = _droppedSegmentCollector.remove(0);
-            }
+            result = _currentLookaheadSegment;
         }
         else
         {
-            for(int idx = 0; idx < _droppedSegmentCollector.size(); idx++)
+            double minDist = Double.POSITIVE_INFINITY;
+            int minDistIdx = Integer.MAX_VALUE;
+            for(int idx = 0; idx < _segmentBuffer.size(); idx++)
             {
-                Position2D roadPoint = _droppedSegmentCollector.get(idx).getVector().getBase();
-                double curDist = roadPoint.distance(position);
-                if(curDist < minDist)
+                TrajectoryElement curElem = _segmentBuffer.get(idx);
+                Vector2D curVector = curElem.getVector();
+                if(Math.toDegrees(Vector2D.computeAngle(curVector, orientation)) < 120)
                 {
-                    minDist = curDist;
-                    minDistIdx = idx;
-                }
-            }
-            if(minDistIdx != Integer.MAX_VALUE)
-            {
-                result = _droppedSegmentCollector.get(0);
-                for(int cnt = 0; cnt < minDistIdx; cnt++)
-                {
-                    if(_droppedSegmentCollector.isEmpty())
+                    double distance = curVector.toLine().distancePerpendicularOrEndpoints(position);
+                    if(distance < minDist)
                     {
-                        break;
+                        minDist = distance;
+                        minDistIdx  = idx;
+                        result = curElem;
                     }
-                    result = _droppedSegmentCollector.remove(0);
                 }
             }
-            else
-            {
-                result = _currentLookaheadSegment;
-            }
+          if(minDistIdx != 0 && minDistIdx != Integer.MAX_VALUE)
+          {
+              System.out.println(String.format("Buffer--------------------------------------------------minIDX: %d-------------", minDistIdx));
+              _segmentBuffer.forEach(elem -> System.out.println(elem.getVector().toLine().toPyplotString("green")));
+              System.out.println(position.toPyPlotString("red")); //current position
+              System.out.println(_expectedTarget.toPyPlotString("blue")); //target position
+              System.out.println(              "Buffer-------------------------------------------------------------------------");
+              _segmentBuffer = _segmentBuffer.subList(minDistIdx, _segmentBuffer.size());
+              System.out.println("Current Trajectory Element / Current orientation (pos)-------");
+              System.out.println(result.getVector().toLine().toPyplotString("cyan"));
+              System.out.println(orientation.toLine().toPyplotString());
+              System.out.println("Cur Trj elem / Cur orient------------------------------------");
+          }
+
         }
         return result;
     }
-
-    private void chooseCurrentLookaheadSegment(Position2D currentPosition, Vector2D orientation, double lookahead)
+    
+    private TrajectoryElement chooseClosestSegmentFromBuffer(Vector2D vehicleOrientation, Position2D currentPosition)
     {
-        if(_currentLookaheadSegment != null && isInRange(currentPosition, _currentLookaheadSegment.getVector(), lookahead))
+        double minDist = Double.POSITIVE_INFINITY;
+        List<TrajectoryElement> closeElements = new ArrayList<>();
+        closeElements.add(_segmentBuffer.get(0));
+        for (TrajectoryElement curElem : _segmentBuffer)
         {
-            // current segment still in range, we are good here
-            return;
-        }
-        else
-        {
-            boolean segmentFound = false;
-            int dropCount = 0;
-            for (TrajectoryElement curTraj : _segmentBuffer)
+            double curDist = curElem.getVector().getBase().distance(currentPosition);
+            if(curDist < minDist)
             {
-                dropCount++;
-                if(isInRange(currentPosition, curTraj.getVector(), lookahead))
+                closeElements.add(curElem);
+                minDist = curDist;
+            }
+        }
+        Collections.reverse(closeElements);
+        int maxSurround = Math.min(10, closeElements.size());
+        TrajectoryElement closestElement = closeElements.get(0);
+        closeElements = closeElements.subList(0, maxSurround);
+        
+        TrajectoryElement rightDegreeElement = null;
+        if(!closeElements.isEmpty())
+        {
+        //don't allow to choose a segment that is too much in the opposite direction
+            List<TrajectoryElement> closestAlignedElements = closeElements.stream().filter(element -> Math.toDegrees(Vector2D.computeAngle(element.getVector(), vehicleOrientation)) < 140).collect(Collectors.toList());
+            if(!closestAlignedElements.isEmpty())
+            {
+                rightDegreeElement = closestAlignedElements.get(0);
+            }
+        }
+        closestElement =  rightDegreeElement == null ? closestElement : rightDegreeElement;
+        return closestElement;
+    }
+
+    private void chooseCurrentLookaheadSegment(Position2D position, Vector2D orientation, double lookahead)
+    {
+        if(_currentLookaheadSegment == null || !isInRange(_currentLookaheadSegment, position, lookahead))
+        {
+            int bestMatchingSegmentIdx = 0;
+            Map<TrajectoryElement, Integer> matchingElements = new HashMap<>();
+            for(int idx = 0; idx < _segmentBuffer.size(); idx++)
+            {
+                TrajectoryElement curElement = _segmentBuffer.get(idx);
+                if(isInRange(curElement, position, lookahead))
                 {
-                    segmentFound = true;
-                    break;
+                    matchingElements.put(curElement, idx);
                 }
             }
-            if(!segmentFound)
+            if(matchingElements.size() > 0)
             {
-                //we have no direction here...
-//                System.out.println("No new segment. Lookahead:" +  _lookahead + ", Pos: " + currentPosition + ", buffer: " + _segmentBuffer);
-                return;
+                List<Entry<TrajectoryElement, Integer>> matchingOrientation = matchingElements.entrySet().stream().filter(entry -> Math.toDegrees(Vector2D.computeAngle(entry.getKey().getVector(), orientation)) < 120).collect(Collectors.toList());
+                if(matchingOrientation.size() > 0)
+                {
+                    bestMatchingSegmentIdx = matchingOrientation.get(0).getValue();
+                }
+                else
+                {
+                    List<Double> elementDegrees = matchingElements.entrySet().stream().map(entry -> Math.toDegrees(Vector2D.computeAngle(entry.getKey().getVector(), orientation))).collect(Collectors.toList());
+                    System.out.println("Current lookahead: " + lookahead + "Warning: no trajectory element found matching our orientation close enough (120 degrees). Matching elements have these angle differences: " + elementDegrees);
+                    
+                    bestMatchingSegmentIdx = matchingElements.entrySet().iterator().next().getValue();
+                }
+                TrajectoryElement newLookaheadTrajectoryElement = _segmentBuffer.get(bestMatchingSegmentIdx);
+                //don't go back to a former trajectory element (would be the case for new idx < old idx)
+                if(newLookaheadTrajectoryElement.getIdx() > _currentLookaheadSegment.getIdx())
+                {
+                    _currentLookaheadSegment = newLookaheadTrajectoryElement;
+                }
             }
             else
             {
-                while(dropCount > 0)
+                if(!_routeEnding)
                 {
-                    _currentLookaheadSegment = _segmentBuffer.pop();
-                    _droppedSegmentCollector.add(_currentLookaheadSegment);
-                    dropCount--;
+                    System.out.println("Warning: No matching trajectory element found, waiting for next buffer read");
+//                    _segmentBuffer.clear(); // TODO this made sense actually. 
+                    
                 }
+                //otherwise nothing needs to be done since it's the last trajectory element of the route
+                System.out.println("no routes left");
             }
+            System.out.println("lookahead: " + lookahead);
+            double angle1 = 0.0;
+            double angle2 = 2.0 * Math.PI;
+            System.out.println(String.format("arc %f %f %f %f %f %f %f %f %f %f %f " + "left", 
+                    position.getX(), position.getY(), lookahead, angle1, angle2, 
+                    position.getX(), position.getY(), position.getX(), position.getY(), position.getX(), position.getY()));
+            System.out.println(_currentLookaheadSegment.getVector().toLine().toPyplotString("orange"));
         }
     }
 
-    private boolean isInRange(Position2D position, Vector2D vector, double requiredDistance)
+    // don't know which one is more resource intensive
+//    private boolean isInRange(TrajectoryElement trajectoryElement, Position2D currentPosition, double lookahead)
+//    {
+//        return !Vector2D.circleIntersection(trajectoryElement.getVector(), currentPosition, lookahead).isEmpty();
+//    }
+
+    private boolean isInRange(TrajectoryElement trajectoryElement, Position2D position, double lookahead)
     {
+        Vector2D vector = trajectoryElement.getVector();
         double baseDist = Position2D.distance(vector.getBase(), position);
         double tipDist = Position2D.distance(vector.getTip(), position);
-        return tipDist > requiredDistance && baseDist <= requiredDistance;
+        return tipDist >= lookahead && baseDist <= lookahead;
     }
 
     private void ensureBufferSize()
@@ -357,13 +384,12 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         {
             int segmentRequestSize = SEGMENT_BUFFER_SIZE - _segmentBuffer.size();
             List<TrajectoryElement> trajectories = _segmentProvider.getNewSegments(segmentRequestSize);
-            if(trajectories == null)
+            if(trajectories == null || trajectories.size() < segmentRequestSize)
             {
-                return;
+                _routeEnding = true;
             }
             trajectories.stream().forEach(traj -> _segmentBuffer.add(traj));
             notifyTrajectoryRequestListeners(_segmentBuffer);
-//            notifyTrajectoryRequestListeners(trajectories);
         }
     }
 

@@ -93,4 +93,10 @@ public class NullBehaviorActuatingSensing implements IActuatingSensing
     public void initialize()
     {
     }
+
+    @Override
+    public Vector2D getLockedOrientation()
+    {
+        return null;
+    }
 }
