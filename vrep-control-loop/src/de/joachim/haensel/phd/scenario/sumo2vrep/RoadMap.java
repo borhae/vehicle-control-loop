@@ -395,6 +395,7 @@ public class RoadMap
                             tmp = mindDistances[updateIdx];
                             tmpEdge = closestEdges[updateIdx];
                             mindDistances[updateIdx] = prevDist;
+                            closestEdges[updateIdx] = prevEdge;
                             prevDist = tmp;
                             prevEdge = tmpEdge;
                         }

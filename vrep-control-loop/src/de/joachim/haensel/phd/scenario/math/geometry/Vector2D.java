@@ -209,7 +209,17 @@ public class Vector2D
         double dy = yP - yOnVector;
         return Math.sqrt(dx * dx + dy * dy);
     }
-    
+
+    /**
+     * Angle with respect to (1.0, 0.0)
+     * @return
+     */
+    public double getAngle()
+    {
+        Vector2D comp = new Vector2D(0.0, 0.0, 1.0, 0.0);
+        return Vector2D.computeAngle(comp, this);
+    }
+
     /**
      * Angle between two vectors, taking care of similarly directed vectors like in the apache library 
      * @param a

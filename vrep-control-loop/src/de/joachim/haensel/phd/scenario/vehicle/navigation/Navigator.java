@@ -1,6 +1,8 @@
 package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,6 +13,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.sumo2vrep.Edge;
 import de.joachim.haensel.phd.scenario.sumo2vrep.Node;
 import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
+import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap.EdgeIntersection;
 import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
 import sumobindings.EdgeType;
 import sumobindings.JunctionType;
@@ -38,7 +41,7 @@ public class Navigator
         EdgeType targetEdge = _roadMap.getClosestEdgeFor(targetPosition);
         JunctionType startJunction = _roadMap.getJunctionForName(startEdge.getTo());
         JunctionType targetJunction = _roadMap.getJunctionForName(targetEdge.getFrom());
-        List<Line2D> route = getRoute(startJunction, targetJunction, startEdge, targetEdge);
+        List<Line2D> route = getRoute(startJunction, targetJunction, startEdge, targetEdge, null);
         return route;
     }
     
@@ -50,18 +53,18 @@ public class Navigator
         EdgeType targetEdge = _roadMap.getClosestEdgeFor(targetPosition);
         JunctionType startJunction = _roadMap.getJunctionForName(startEdge.getTo());
         JunctionType targetJunction = _roadMap.getJunctionForName(targetEdge.getFrom());
-        List<Line2D> route = getRoute(startJunction, targetJunction, startEdge, targetEdge);
+        List<Line2D> route = getRoute(startJunction, targetJunction, startEdge, targetEdge, orientation);
         System.out.println(" Routing done");
         return route;
     }
 
-    public List<Line2D> getRoute(JunctionType startJunction, JunctionType targetJunction, EdgeType startEdge, EdgeType targetEdge)
+    public List<Line2D> getRoute(JunctionType startJunction, JunctionType targetJunction, EdgeType startEdge, EdgeType targetEdge, Vector2D orientation)
     {
         IShortestPathAlgorithm shortestPathSolver = new DijkstraAlgo(_roadMap);
         shortestPathSolver.setSource(startJunction);
         shortestPathSolver.setTarget(targetJunction);
         List<Node> path = shortestPathSolver.getPath();
-        List<Line2D> result = createLinesFromPath(path, startEdge, targetEdge);
+        List<Line2D> result = createLinesFromPath(path, startEdge, targetEdge, orientation);
         notifyListeners(result);
         return result;
     }
@@ -71,7 +74,7 @@ public class Navigator
         _segmentBuildingListeners.forEach(listener -> listener.notifyNewRoute(result));
     }
 
-    private List<Line2D> createLinesFromPath(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
+    private List<Line2D> createLinesFromPath(List<Node> path, EdgeType startEdge, EdgeType targetEdge, Vector2D orientation)
     {
         List<Line2D> result = new ArrayList<>();
         List<EdgeType> edges = new ArrayList<>();
@@ -90,7 +93,7 @@ public class Navigator
             regularLineAdd(result, curEdge);
         }
         // TODO start and end-points could also be literally on a crossing, I did not took care for that yet
-        result = cutStartLaneShapes(result);
+        result = cutStartLaneShapes(result, orientation);
         result = cutEndLaneShapes(result);
         result.get(0).setP1(_sourcePosition);
         result.get(result.size() - 1).setP2(_targetPosition);
@@ -230,27 +233,72 @@ public class Navigator
         return e1ID.equals(e2ID);
     }
 
-    private List<Line2D> cutStartLaneShapes(List<Line2D> result)
+    private List<Line2D> cutStartLaneShapes(List<Line2D> result, Vector2D orientation)
     {
-        double minDist = Double.POSITIVE_INFINITY;
-        double curDist = Double.POSITIVE_INFINITY;
-        int minIdx = Integer.MAX_VALUE;
-        for (int idx = 0; idx < result.size(); idx++)
+        Position2D position = _sourcePosition;
+        double curDist = Double.MAX_VALUE;
+        int smallestElementsBufferSize = 10;
+        double[] mindDistances = new double[smallestElementsBufferSize];
+        Integer[] closestLinesIdx = new Integer[smallestElementsBufferSize];
+        Arrays.fill(mindDistances, Double.POSITIVE_INFINITY);
+        Arrays.fill(closestLinesIdx, Integer.MAX_VALUE);
+        for(int resultLineIdx = 0; resultLineIdx < result.size(); resultLineIdx++)
         {
-            Line2D curLine = result.get(idx);
-            curDist = curLine.perpendicularDistanceWithEndpointLimit(_sourcePosition, 3.0);
-            if(curDist < minDist)
+            curDist = result.get(resultLineIdx).distancePerpendicularOrEndpoints(position);
+            if(curDist < mindDistances[mindDistances.length - 1])
             {
-                minDist = curDist;
-                minIdx = idx;
+                for(int distIdx = 0; distIdx < mindDistances.length; distIdx++)
+                {
+                    if(curDist < mindDistances[distIdx])
+                    {
+                        double prevDist = mindDistances[distIdx];
+                        int prevLineIdx = closestLinesIdx[distIdx];
+                        double tmp = 0.0;
+                        int tmpLineIdx = Integer.MAX_VALUE;
+                        for(int updateIdx = distIdx + 1; updateIdx < mindDistances.length; updateIdx++)
+                        {
+                            tmp = mindDistances[updateIdx];
+                            tmpLineIdx = closestLinesIdx[updateIdx];
+                            mindDistances[updateIdx] = prevDist;
+                            closestLinesIdx[updateIdx] = prevLineIdx;
+                            prevDist = tmp;
+                            prevLineIdx = tmpLineIdx;
+                        }
+                        mindDistances[distIdx] = curDist;
+                        closestLinesIdx[distIdx] = resultLineIdx;
+                        break;
+                    }
+                }
             }
         }
-        if(minDist < Double.POSITIVE_INFINITY)
+        List<Integer> alignedLinesIdxs = new ArrayList<>();
+        if(orientation == null)
         {
-            return result.subList(minIdx, result.size());
+            alignedLinesIdxs = Arrays.asList(closestLinesIdx);
         }
         else
         {
+            for (int idx = 0; idx < closestLinesIdx.length; idx++)
+            {
+                int cur = closestLinesIdx[idx];
+                if(cur == Integer.MAX_VALUE)
+                {
+                    continue;
+                }
+                Line2D curLine = result.get(cur);
+                if(Vector2D.computeAngle(new Vector2D(curLine), orientation) < Math.toRadians(120))
+                {
+                    alignedLinesIdxs.add(cur);
+                }
+            }
+        }
+        if(alignedLinesIdxs.isEmpty())
+        {
+            return null;
+        }
+        else
+        {
+            result = result.subList(alignedLinesIdxs.get(0), result.size());
             return result;
         }
     }
