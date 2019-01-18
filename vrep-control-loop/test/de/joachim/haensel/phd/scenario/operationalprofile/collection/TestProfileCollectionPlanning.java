@@ -49,7 +49,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 @RunWith(Parameterized.class)
-public class TestProfileCollection
+public class TestProfileCollectionPlanning
 {
     private static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
 
@@ -123,7 +123,7 @@ public class TestProfileCollection
        });
    }
 
-   public TestProfileCollection(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color)
+   public TestProfileCollectionPlanning(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color)
    {
        _lookahead = lookahead;
        _maxVelocity = maxVelocity;

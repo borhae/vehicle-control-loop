@@ -18,7 +18,7 @@ import sumobindings.LaneType;
 
 public class Vehicle implements IVehicle 
 {
-    private static final int CONTROL_LOOP_EXECUTION_FREQUENCY = 100; //milliseconds
+    private static final int CONTROL_LOOP_EXECUTION_FREQUENCY = 200; //milliseconds
 
     private IUpperLayerControl _upperControlLayer;
     private ILowerLayerControl _lowerControlLayer;

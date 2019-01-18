@@ -6,7 +6,7 @@ import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 
 public class SimStartTask implements ITask
 {
-    private static final int SIMULATION_START_TIME = 1000;
+    private static final int SIMULATION_START_TIME = 2000;
     private VRepRemoteAPI _vrep;
     private int _clientID;
 

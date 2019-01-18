@@ -59,6 +59,11 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     @Override
     public void setOrientation(float angleAlpha, float angleBeta, float angleGamma)
     {
+        internalSetOrientation(angleAlpha, angleBeta, angleGamma);
+    }
+
+    private synchronized void internalSetOrientation(float angleAlpha, float angleBeta, float angleGamma)
+    {
         FloatWA eulerAngles = new FloatWA(3);
         eulerAngles.getArray()[0] = angleAlpha;
         eulerAngles.getArray()[1] = angleBeta;
@@ -75,6 +80,11 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
 
     @Override
     public void computeAndLockSensorData()
+    {
+        internalComputeAndLockSensorData();
+    }
+
+    private synchronized void internalComputeAndLockSensorData()
     {
         try
         {
@@ -123,6 +133,11 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     @Override
     public double getVehicleLength()
     {
+        return internalGetVehicleLength();
+    }
+
+    private synchronized double internalGetVehicleLength()
+    {
         if(_vehicleLength < 0)
         {
             try
@@ -153,6 +168,11 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     @Override
     public void drive(float targetWheelRotation, float targetSteeringAngle)
     {
+        internalDrive(targetWheelRotation, targetSteeringAngle);
+    }
+
+    private synchronized void internalDrive(float targetWheelRotation, float targetSteeringAngle)
+    {
         try
         {
             FloatWA inFloats = new FloatWA(2);
@@ -168,6 +188,11 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
 
     @Override
     public void registerDrawingObject(String key, DrawingType type, Color lineColor)
+    {
+        internalRegisterDrawingObject(key, type, lineColor);
+    }
+
+    private synchronized void internalRegisterDrawingObject(String key, DrawingType type, Color lineColor)
     {
         String parentObj = VRepObjectCreation.VREP_LOADING_SCRIPT_PARENT_OBJECT;
         IntWA luaIntCallResult = new IntWA(1);
@@ -194,13 +219,26 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
         {
             exc.printStackTrace();
         }
-        int handle = luaIntCallResult.getArray()[0];
-        System.out.println("Added drawing object with handle" + handle);
-        _drawingObjectsStore.put(key, new DrawingObject(type, handle));
+        int[] luaResultArray = luaIntCallResult.getArray();
+        if(luaResultArray.length > 0)
+        {
+            int handle = luaResultArray[0];
+            System.out.println("Added drawing object with handle" + handle);
+            _drawingObjectsStore.put(key, new DrawingObject(type, handle));
+        }
+        else
+        {
+            System.out.println("Seems like we couldn't add a drawing object");
+        }
     }
     
     @Override
     public void attachDebugCircle(double lookahead)
+    {
+        internalAttachDebugCircle(lookahead);
+    }
+
+    private synchronized void internalAttachDebugCircle(double lookahead)
     {
         String parentObj = VRepPartwiseVehicleCreator.PHYSICAL_CAR_BODY_NAME;
         Color lineColor = Color.ORANGE;
@@ -231,7 +269,7 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
         _drawingObjectsStore.forEach((k, v) -> removeDrawingObject(v.getHandle()));
     }
 
-    private void removeDrawingObject(int handle)
+    private synchronized void removeDrawingObject(int handle)
     {
         String parentObj = VRepObjectCreation.VREP_LOADING_SCRIPT_PARENT_OBJECT;
         IntWA inHandle = new IntWA(1);
@@ -248,6 +286,11 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
 
     @Override
     public void updateLine(String key, Vector2D vector, double zValue, Color color)
+    {
+        internalUpdateLine(key, vector, zValue);
+    }
+
+    private synchronized void internalUpdateLine(String key, Vector2D vector, double zValue)
     {
         int handle = _drawingObjectsStore.get(key).getHandle();
         FloatWA callParamsF = new FloatWA(6);
@@ -274,6 +317,11 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     @Override
     public void updateCircle(String key, Position2D center, double zValue, double radius, Color color)
     {
+        internalUpdateCircle(key, center, zValue, radius);
+    }
+
+    private synchronized void internalUpdateCircle(String key, Position2D center, double zValue, double radius)
+    {
         int handle = _drawingObjectsStore.get(key).getHandle();
         FloatWA callParamsF = new FloatWA(6);
         float[] floatParamsArray = callParamsF.getArray();
@@ -297,6 +345,11 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     
     @Override
     public void blowTire(boolean[] tiresToBlow, float tireScale)
+    {
+        internalBlowTire(tiresToBlow, tireScale);
+    }
+
+    private synchronized void internalBlowTire(boolean[] tiresToBlow, float tireScale)
     {
         String parentObj = VRepObjectCreation.VREP_LOADING_SCRIPT_PARENT_OBJECT;
         FloatWA inFloats = new FloatWA(3);
@@ -340,6 +393,11 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     @Override
     public void setPosition(float posX, float posY, float posZ)
     {
+        internalSetPosition(posX, posY, posZ);
+    }
+
+    private synchronized void internalSetPosition(float posX, float posY, float posZ)
+    {
         FloatWA position = new FloatWA(3);
         position.getArray()[0] = posX;
         position.getArray()[1] = posY;
@@ -356,6 +414,11 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
 
     @Override
     public Vector2D getOrientation()
+    {
+        return internalGetOrientation();
+    }
+
+    private synchronized Vector2D internalGetOrientation()
     {
         int frontLeftWheelHandle = _vehicleHandles.getFrontLeftWheel();
         int rearLeftWheelHandle = _vehicleHandles.getRearLeftWheel();
@@ -384,6 +447,11 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     @Override
     public Position2D getNonDynamicPosition()
     {
+        return internalGetNonDynamicPosition();
+    }
+
+    private synchronized Position2D internalGetNonDynamicPosition()
+    {
         try
         {
             FloatWA pos3d = new FloatWA(3);
@@ -406,6 +474,11 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
 
     @Override
     public void initialize()
+    {
+        internalInitialize();
+    }
+
+    private synchronized void internalInitialize()
     {
         try
         {
