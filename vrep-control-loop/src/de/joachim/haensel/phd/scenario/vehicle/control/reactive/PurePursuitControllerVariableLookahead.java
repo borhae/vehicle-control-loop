@@ -52,6 +52,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     //if the trajectory element provider (_segment provider) doesn't deliver enough trajectory elements this will be set to true
     private boolean _routeEnding;
     private boolean _lostTrack;
+    private double _vehicleLength;
 
     public class ReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
@@ -175,7 +176,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     {
         _actuatorsSensors = actuatorsSensors;
         _stateMachine = new ReactiveControllerStateMachine();
-        _segmentBuffer = new LinkedList<>();
+        _segmentBuffer = new ArrayList<>();
         _segmentProvider = trajectoryProvider;
         _currentLookaheadSegment = null;
         _speedToWheelRotationFactor = _parameters.getSpeedToWheelRotationFactor();
@@ -185,6 +186,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     public void driveTo(Position2D target)
     {
         _actuatorsSensors.computeAndLockSensorData();
+        _vehicleLength = _actuatorsSensors.getVehicleLength();
         _routeEnding = false;
         _lostTrack = false;
         ensureBufferSize();
@@ -204,6 +206,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     public void controlEvent()
     {
         _actuatorsSensors.computeAndLockSensorData();
+        
         _stateMachine.controlEvent(this);
     }
     
@@ -225,7 +228,14 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         System.out.println("pure pursuit arrived");
         _actuatorsSensors.drive(0.0f, 0.0f);
         Position2D position = _actuatorsSensors.getFrontWheelCenterPosition();
-        _arrivedListeners.forEach(listener -> listener.arrived(position));
+//        Hopefully I don't get a concurrent modification exception if the list is copied to an array first
+//        weird though... TODO rethink this when I have the time
+//        _arrivedListeners.forEach(listener -> listener.arrived(position));
+        IArrivedListener[] array = _arrivedListeners.toArray(new IArrivedListener[0]);
+        for (int idx = 0; idx < array.length; idx++)
+        {
+            array[idx].arrived(position);
+        }
         _arrivedListeners.clear();
     }
     
@@ -267,17 +277,16 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     
     private void driveAction()
     {
-        long startTime = System.currentTimeMillis();
         ensureBufferSize();
-
+        
         double[] vehicleVelocityXYZ = _actuatorsSensors.getVehicleVelocity();
         double velocity = new Vector2D(0.0, 0.0, vehicleVelocityXYZ[0], vehicleVelocityXYZ[1]).getLength();
         double k = LOOKAHEAD_FACTOR;
         double kv = k * velocity;
         kv = kv > MAX_DYNAMIC_LOOKAHEAD ? MAX_DYNAMIC_LOOKAHEAD : kv;
         kv = kv < MIN_DYNAMIC_LOOKAHEAD ? MIN_DYNAMIC_LOOKAHEAD : kv;
-
         double lookahead = kv;
+        
         chooseCurrentLookaheadSegment(_actuatorsSensors.getRearWheelCenterPosition(), _actuatorsSensors.getLockedOrientation(), lookahead);
         TrajectoryElement closestSegment = chooseClosestSegment(_actuatorsSensors.getPosition(), _actuatorsSensors.getLockedOrientation());
         
@@ -302,9 +311,8 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
             _debugParams.getSpeedometer().updateVelocities(_actuatorsSensors.getVehicleVelocity(), _actuatorsSensors.getLockedOrientation(), closestSegment.getVelocity());
             _debugParams.getSpeedometer().repaint();
         }
+        
         _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
-        long duration = System.currentTimeMillis() - startTime;
-        System.out.println("dur:" + duration);
     }
 
     private TrajectoryElement chooseClosestSegment(Position2D position, Vector2D orientation)
@@ -350,19 +358,9 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
                     }
                 }
             }
-            if (minDistIdx != 0)
+            if (minDistIdx != 0 && minDist != Integer.MAX_VALUE)
             {
-//                System.out.println(String.format(
-//                        "Buffer--------------------------------------------------minIDX: %d-------------", minDistIdx));
-//                _segmentBuffer.forEach(elem -> System.out.println(elem.getVector().toLine().toPyplotString("green")));
-//                System.out.println(position.toPyPlotString("red")); // current position
-//                System.out.println(_expectedTarget.toPyPlotString("blue")); // target position
-//                System.out.println("Buffer-------------------------------------------------------------------------");
                 _segmentBuffer = _segmentBuffer.subList(minDistIdx, _segmentBuffer.size());
-//                System.out.println("Current Trajectory Element / Current orientation (pos)-------");
-//                System.out.println(result.getVector().toLine().toPyplotString("cyan"));
-//                System.out.println(orientation.toLine().toPyplotString());
-//                System.out.println("Cur Trj elem / Cur orient------------------------------------");
             }
         }
         return result;
@@ -445,28 +443,9 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
                 }
                 //otherwise nothing needs to be done since it's the last trajectory element of the route
                 System.out.println("no routes left");
-                double angle1 = 0.0;
-                double angle2 = 2.0 * Math.PI;
-                System.out.println(String.format("arc %f %f %f %f %f %f %f %f %f %f %f " + "left", position.getX(),
-                        position.getY(), lookahead, angle1, angle2, position.getX(), position.getY(), position.getX(),
-                        position.getY(), position.getX(), position.getY()));
-                System.out.println(_currentLookaheadSegment.getVector().toLine().toPyplotString("orange"));
             }
-            System.out.println("lookahead: " + lookahead);
-//            double angle1 = 0.0;
-//            double angle2 = 2.0 * Math.PI;
-//            System.out.println(String.format("arc %f %f %f %f %f %f %f %f %f %f %f " + "left", 
-//                    position.getX(), position.getY(), lookahead, angle1, angle2, 
-//                    position.getX(), position.getY(), position.getX(), position.getY(), position.getX(), position.getY()));
-//            System.out.println(_currentLookaheadSegment.getVector().toLine().toPyplotString("orange"));
         }
     }
-
-    // don't know which one is more resource intensive
-//    private boolean isInRange(TrajectoryElement trajectoryElement, Position2D currentPosition, double lookahead)
-//    {
-//        return !Vector2D.circleIntersection(trajectoryElement.getVector(), currentPosition, lookahead).isEmpty();
-//    }
 
     private boolean isInRange(TrajectoryElement trajectoryElement, Position2D position, double lookahead)
     {
@@ -482,6 +461,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         {
             int segmentRequestSize = SEGMENT_BUFFER_SIZE - _segmentBuffer.size();
             List<TrajectoryElement> trajectories = _segmentProvider.getNewSegments(segmentRequestSize);
+            
             if(trajectories == null || trajectories.size() < segmentRequestSize)
             {
                 _routeEnding = true;
@@ -493,9 +473,16 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
 
     private void notifyTrajectoryRequestListeners(List<TrajectoryElement> trajectories)
     {
-        List<TrajectoryElement> copy = new ArrayList<>();
-        trajectories.forEach(t -> copy.add(t.deepCopy()));
-        _trajectoryRequestListeners.stream().forEach(listener -> listener.notifyNewTrajectories(copy, _actuatorsSensors.getTimeStamp()));
+        Runnable copier = () ->   
+        {
+            List<TrajectoryElement> copy = new ArrayList<>();
+            trajectories.forEach(t -> copy.add(t.deepCopy()));
+            
+            _trajectoryRequestListeners.stream().forEach(listener -> listener.notifyNewTrajectories(copy, _actuatorsSensors.getTimeStamp()));
+        };
+
+        Thread reportThread = new Thread(copier);
+        reportThread.start();
     }
 
     protected float computeTargetSteeringAngle(double lookahead)
@@ -512,7 +499,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         else
         {
             double alpha = Vector2D.computeAngle(rearWheelToLookAhead, rearWheelToFrontWheel) * rearWheelToLookAhead.side(rearWheelToFrontWheel) * -1.0;
-            double L = _actuatorsSensors.getVehicleLength();
+            double L = _vehicleLength;
             double[] vehicleVelocityXYZ = _actuatorsSensors.getVehicleVelocity();
             double velocity = new Vector2D(0.0, 0.0, vehicleVelocityXYZ[0], vehicleVelocityXYZ[1]).getLength();
             double k = LOOKAHEAD_FACTOR;
@@ -542,8 +529,15 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
 
     protected float computeTargetWheelRotationSpeed(TrajectoryElement closestSegment)
     {
-        double speed = closestSegment.getVelocity();
-        return (float) (speed * _speedToWheelRotationFactor);
+        if(closestSegment != null)
+        {
+            double speed = closestSegment.getVelocity();
+            return (float) (speed * _speedToWheelRotationFactor);
+        }
+        else
+        {
+            return 0.0f;
+        }
     }
 
     @Override

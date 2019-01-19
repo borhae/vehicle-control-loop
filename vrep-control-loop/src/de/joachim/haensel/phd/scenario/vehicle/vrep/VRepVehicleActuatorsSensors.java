@@ -178,7 +178,7 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
             FloatWA inFloats = new FloatWA(2);
             inFloats.getArray()[0] = (float)(double) targetSteeringAngle;
             inFloats.getArray()[1] = (float)(double) targetWheelRotation;
-            _vrep.simxCallScriptFunction(_clientID, _vehicleScriptParentName, remoteApi.sim_scripttype_childscript, "control", null, inFloats, null, null, null, null, null, null, remoteApi.simx_opmode_blocking);
+            _vrep.simxCallScriptFunction(_clientID, _vehicleScriptParentName, remoteApi.sim_scripttype_childscript, "control", null, inFloats, null, null, null, null, null, null, remoteApi.simx_opmode_oneshot);
         }
         catch (VRepException exc)
         {
