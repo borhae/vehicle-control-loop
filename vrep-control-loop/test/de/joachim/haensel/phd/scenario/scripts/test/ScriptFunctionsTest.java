@@ -12,6 +12,7 @@ import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.debug.Speedometer;
+import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
@@ -25,6 +26,7 @@ import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import de.joachim.haensel.vrepshapecreation.shapes.EVRepShapes;
 import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
+import sumobindings.NetType;
 
 public class ScriptFunctionsTest
 {
@@ -76,6 +78,7 @@ public class ScriptFunctionsTest
     @Test
     public void testDriveForward() throws VRepException
     {
+        RoadMap roadMap = new RoadMap(new NetType());
         IVehicleFactory vehicleFactory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", 1.0); 
         VRepVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
         vehicleConf.setLowerCtrlFactory(new ILowerLayerFactory() {

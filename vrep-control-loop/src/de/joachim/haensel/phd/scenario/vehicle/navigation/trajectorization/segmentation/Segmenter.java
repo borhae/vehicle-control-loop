@@ -8,13 +8,13 @@ import java.util.List;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
+import de.joachim.haensel.phd.scenario.vehicle.IRouteBuildingListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class Segmenter implements ISegmenter
 {
     private double _stepSize;
-    private List<ISegmentBuildingListener>_segmentBuildingListeners;
+    private List<IRouteBuildingListener>_segmentBuildingListeners;
     private ISegmentationAlgorithm _algorithm;
 
     public Segmenter(double stepSize, ISegmentationAlgorithm algorithm)
@@ -75,7 +75,7 @@ public class Segmenter implements ISegmenter
     }
     
     @Override
-    public void addSegmentBuildingListeners(List<ISegmentBuildingListener> segmentBuildingListeners)
+    public void addSegmentBuildingListeners(List<IRouteBuildingListener> segmentBuildingListeners)
     {
         _segmentBuildingListeners = segmentBuildingListeners;
     }

@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.sumo2vrep.triangulation;
+package de.joachim.haensel.phd.scenario.map.sumo2vrep.triangulation;
 
 import java.util.ArrayList;
 import java.util.Comparator;

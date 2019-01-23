@@ -22,6 +22,7 @@ import org.junit.Test;
 import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsSegmentContainerElement;
 import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.ArcSegmentDecompositionAlgorithmByNgoEtAl;
 import de.joachim.haensel.phd.scenario.layerinterface.RandomMapPositionCreator;
+import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Midpoint;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
@@ -34,7 +35,6 @@ import de.joachim.haensel.phd.scenario.navigation.visualization.ArcSegmentConten
 import de.joachim.haensel.phd.scenario.navigation.visualization.IContentElement;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
 import de.joachim.haensel.phd.scenario.navigation.visualization.VectorContentElement;
-import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;

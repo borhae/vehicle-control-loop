@@ -3,7 +3,7 @@ package de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization;
 import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
-import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
+import de.joachim.haensel.phd.scenario.vehicle.IRouteBuildingListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.ISegmenter;
@@ -31,7 +31,7 @@ public class Trajectorizer implements ITrajectorizer
     }
 
     @Override
-    public void addSegmentBuildingListeners(List<ISegmentBuildingListener> listeners)
+    public void addSegmentBuildingListeners(List<IRouteBuildingListener> listeners)
     {
         _segmenter.addSegmentBuildingListeners(listeners);
     }

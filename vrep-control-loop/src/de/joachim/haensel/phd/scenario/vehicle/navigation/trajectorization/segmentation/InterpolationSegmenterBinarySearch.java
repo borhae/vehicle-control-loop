@@ -6,12 +6,12 @@ import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
+import de.joachim.haensel.phd.scenario.vehicle.IRouteBuildingListener;
 
 public class InterpolationSegmenterBinarySearch implements ISegmentationAlgorithm
 {
     private static final int RECURSION_LIMIT = 20;
-    private List<ISegmentBuildingListener> _segmentBuildingListeners;
+    private List<IRouteBuildingListener> _segmentBuildingListeners;
 
     public void quantize(Deque<Vector2D> srcRoute, Deque<Vector2D> result, double stepSize)
     {
@@ -97,7 +97,7 @@ public class InterpolationSegmenterBinarySearch implements ISegmentationAlgorith
     }
 
     @Override
-    public void setSegmentBuildingListeners(List<ISegmentBuildingListener> segmentBuildingListeners)
+    public void setSegmentBuildingListeners(List<IRouteBuildingListener> segmentBuildingListeners)
     {
         _segmentBuildingListeners = segmentBuildingListeners;
     }

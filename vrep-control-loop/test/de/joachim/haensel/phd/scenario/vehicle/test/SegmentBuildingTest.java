@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 import org.junit.Test;
 
+import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.XYMinMax;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
@@ -22,7 +23,6 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.navigation.test.Positioner;
 import de.joachim.haensel.phd.scenario.navigation.visualization.SegmentBuildingAdapter;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
-import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
@@ -634,7 +634,7 @@ public class SegmentBuildingTest implements TestConstants
         System.out.println("stop");
 
         DefaultNavigationController nav = new DefaultNavigationController(2.0 * scaleFactor, 30.0);
-        nav.addSegmentBuilderListener(new SegmentBuildingAdapter(visualizer));
+        nav.addRouteBuilderListener(new SegmentBuildingAdapter(visualizer));
         nav.initController(new Positioner(startingPoint), roadMap);
         nav.buildSegmentBuffer(destinationPosition, roadMap);
         Stream<TrajectoryElement> segmentStream = nav.getNewSegments(nav.getSegmentBufferSize()).stream();

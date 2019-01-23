@@ -2,6 +2,7 @@ package de.joachim.haensel.phd.scenario.vehicle.control.reactive;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -12,6 +13,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
+import de.joachim.haensel.phd.scenario.map.IStreetSection;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
@@ -33,7 +35,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     private static final int MIN_DYNAMIC_LOOKAHEAD = 4;
     private static final int MAX_DYNAMIC_LOOKAHEAD = 30;
     private static final String CURRENT_SEGMENT_DEBUG_KEY = "curSeg";
-    private static final int MIN_SEGMENT_BUFFER_SIZE = 15;
+    private static final int MIN_SEGMENT_BUFFER_SIZE = 18;
     private static final int SEGMENT_BUFFER_SIZE = 20;
     private Position2D _expectedTarget;
     private IActuatingSensing _actuatorsSensors;
@@ -53,6 +55,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     private boolean _routeEnding;
     private boolean _lostTrack;
     private double _vehicleLength;
+    private boolean _lastRouteReported;
 
     public class ReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
@@ -188,6 +191,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         _actuatorsSensors.computeAndLockSensorData();
         _vehicleLength = _actuatorsSensors.getVehicleLength();
         _routeEnding = false;
+        _lastRouteReported = false;
         _lostTrack = false;
         ensureBufferSize();
         _speedToWheelRotationFactor = 2 / _actuatorsSensors.getWheelDiameter(); // 2/diameter = 1/radius
@@ -461,24 +465,40 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         {
             int segmentRequestSize = SEGMENT_BUFFER_SIZE - _segmentBuffer.size();
             List<TrajectoryElement> trajectories = _segmentProvider.getNewSegments(segmentRequestSize);
-            
             if(trajectories == null || trajectories.size() < segmentRequestSize)
             {
                 _routeEnding = true;
             }
             trajectories.stream().forEach(traj -> _segmentBuffer.add(traj));
-            notifyTrajectoryRequestListeners(_segmentBuffer);
+            if(!_lastRouteReported)
+            {
+                long timeStamp = _actuatorsSensors.getTimeStamp();
+                notifyTrajectoryRequestListeners(_segmentBuffer, timeStamp);
+                notifyTrajectoryReportListeners(_actuatorsSensors.getRearWheelCenterPosition(), _actuatorsSensors.getFrontWheelCenterPosition(), _actuatorsSensors.getVehicleVelocity(), _actuatorsSensors.getViewAhead(), timeStamp);
+                if(_routeEnding)
+                {
+                    _lastRouteReported = true;
+                }
+            }
         }
     }
 
-    private void notifyTrajectoryRequestListeners(List<TrajectoryElement> trajectories)
+    private void notifyTrajectoryReportListeners(Position2D rearWheelCenterPosition, Position2D frontWheelCenterPosition, double[] vehicleVelocity, List<IStreetSection> viewAhead, long timeStamp)
+    {
+        Position2D rWCP = new Position2D(rearWheelCenterPosition);
+        Position2D fWCP = new Position2D(frontWheelCenterPosition);
+        double[] vel = Arrays.copyOf(vehicleVelocity, vehicleVelocity.length);
+        _trajectoryReportListeners.forEach(listener -> listener.notifyEnvironmentState(rWCP, fWCP, vel, viewAhead, timeStamp));
+    }
+
+    private void notifyTrajectoryRequestListeners(List<TrajectoryElement> trajectories, long timeStamp)
     {
         Runnable copier = () ->   
         {
             List<TrajectoryElement> copy = new ArrayList<>();
             trajectories.forEach(t -> copy.add(t.deepCopy()));
             
-            _trajectoryRequestListeners.stream().forEach(listener -> listener.notifyNewTrajectories(copy, _actuatorsSensors.getTimeStamp()));
+            _trajectoryRequestListeners.stream().forEach(listener -> listener.notifyNewTrajectories(copy, timeStamp));
         };
 
         Thread reportThread = new Thread(copier);
@@ -558,6 +578,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     {
         _trajectoryReportListeners.add(reportListener);
     }
+    
     @Override
     public void addArrivedListener(IArrivedListener arrivedListener)
     {

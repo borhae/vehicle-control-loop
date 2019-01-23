@@ -1,5 +1,11 @@
 package de.joachim.haensel.phd.scenario.vehicle;
 
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
+
+import de.joachim.haensel.phd.scenario.map.IStreetSection;
+import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
@@ -98,5 +104,36 @@ public class NullBehaviorActuatingSensing implements IActuatingSensing
     public Vector2D getLockedOrientation()
     {
         return null;
+    }
+
+    @Override
+    public List<IStreetSection> getViewAhead()
+    {
+        return null;
+    }
+
+    @Override
+    public void notifyNewRoute(List<Line2D> route)
+    {
+    }
+
+    @Override
+    public void notifyStartOriginalTrajectory(LinkedList<Vector2D> emptyRoute)
+    {
+    }
+
+    @Override
+    public void notifyStartOverlayTrajectory(Deque<Vector2D> emptyOverlay)
+    {
+    }
+
+    @Override
+    public void updateTrajectory(Vector2D newVector, Deque<Vector2D> updatedList)
+    {
+    }
+
+    @Override
+    public void notifyNewRouteStreetSections(List<IStreetSection> path)
+    {
     }
 }

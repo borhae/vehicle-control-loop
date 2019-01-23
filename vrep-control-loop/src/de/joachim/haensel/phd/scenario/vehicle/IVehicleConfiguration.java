@@ -2,8 +2,8 @@ package de.joachim.haensel.phd.scenario.vehicle;
 
 import java.util.List;
 
+import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 
 public interface IVehicleConfiguration
 {

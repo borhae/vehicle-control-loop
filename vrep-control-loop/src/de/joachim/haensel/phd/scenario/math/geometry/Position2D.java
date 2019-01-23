@@ -1,5 +1,9 @@
 package de.joachim.haensel.phd.scenario.math.geometry;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import coppelia.FloatWA;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 
@@ -29,7 +33,11 @@ public class Position2D
         init(Double.valueOf(coordinates[0]), Double.valueOf(coordinates[1]));
     }
     
-    
+    public static List<Position2D> createPointList(String shape)
+    {
+        String[] stringPositions = shape.split(" ");
+        return Stream.of(stringPositions).map(stringCoordinate -> new Position2D(stringCoordinate)).collect(Collectors.toList());
+    }
 
     public Position2D(FloatWA pos3d)
     {
@@ -42,6 +50,10 @@ public class Position2D
         init(Double.valueOf(coordinates[0]), Double.valueOf(coordinates[1]));
     }
 
+    /**
+     * copy constructor
+     * @param position
+     */
     public Position2D(Position2D position)
     {
         init(position._x, position._y);
@@ -99,7 +111,7 @@ public class Position2D
      */
     public static Position2D between(Position2D p1, Position2D p2)
     {
-        return new Position2D((p2._x  + p1._x)/2.0f, (p2._y + p1._y)/2.0f);
+        return new Position2D((p2._x  + p1._x)/2.0, (p2._y + p1._y)/2.0);
     }
 
     public boolean equals(Position2D other, double epsilon)
@@ -198,7 +210,13 @@ public class Position2D
         return String.format(type + " %s %s " + color, _x, _y);
     }
 
-    
+    public static String toPyplotPolyline(List<Position2D> positions, String color)
+    {
+        String polyline = positions.stream().map(position -> String.format("%f %f ", position._x, position._y)).collect(Collectors.joining());
+        String result = String.format("polyline %s %s", color, polyline);
+        return result;
+    }
+
     public static Position2D[] valueOf(String[] coordinates)
     {
         Position2D[] result = new Position2D[coordinates.length];
@@ -292,4 +310,4 @@ public class Position2D
             _y = _y / length;
         }
     }
-}
+ }

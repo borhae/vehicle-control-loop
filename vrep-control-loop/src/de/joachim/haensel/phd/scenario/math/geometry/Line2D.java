@@ -246,5 +246,4 @@ public class Line2D
         }
         return result;
     }
-
 }

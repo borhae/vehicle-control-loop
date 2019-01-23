@@ -2,7 +2,7 @@ package de.joachim.haensel.phd.scenario.vehicle;
 
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
-import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
+import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 
 public interface IVehicle

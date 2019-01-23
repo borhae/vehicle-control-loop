@@ -2,11 +2,11 @@ package de.joachim.haensel.phd.scenario.layerinterface;
 
 import java.util.List;
 
+import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.random.MersenneTwister;
-import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import sumobindings.EdgeType;
 import sumobindings.LaneType;
 

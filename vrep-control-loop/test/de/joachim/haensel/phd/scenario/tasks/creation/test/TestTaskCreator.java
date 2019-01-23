@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.XYMinMax;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
-import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.tasks.DriveAtoBTask;
 import de.joachim.haensel.phd.scenario.tasks.ITask;
 import de.joachim.haensel.phd.scenario.tasks.creation.AllSameAToBDrivingTaskCreatorConfig;

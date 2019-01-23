@@ -7,11 +7,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import de.joachim.haensel.phd.scenario.map.IStreetSection;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
+import de.joachim.haensel.phd.scenario.vehicle.IRouteBuildingListener;
 
-public class SegmentBuildingAdapter implements ISegmentBuildingListener
+public class SegmentBuildingAdapter implements IRouteBuildingListener
 {
     private Vector2DVisualizer _visualizer;
     private HashMap<SegmentBuildingListenerTypes, VectorContentElement> _listToContentMap;
@@ -67,5 +68,10 @@ public class SegmentBuildingAdapter implements ISegmentBuildingListener
             elementToUpdate.addVector(newVector);
             _visualizer.updateVisuals();
         }
+    }
+
+    @Override
+    public void notifyNewRouteStreetSections(List<IStreetSection> path)
+    {
     }
 }

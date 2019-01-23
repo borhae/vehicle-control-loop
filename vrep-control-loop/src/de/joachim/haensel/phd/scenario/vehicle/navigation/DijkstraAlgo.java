@@ -7,8 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Stack;
 
-import de.joachim.haensel.phd.scenario.sumo2vrep.Node;
-import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
+import de.joachim.haensel.phd.scenario.map.Node;
+import de.joachim.haensel.phd.scenario.map.RoadMap;
 import sumobindings.JunctionType;
 
 public class DijkstraAlgo implements IShortestPathAlgorithm

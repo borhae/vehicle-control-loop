@@ -1,9 +1,12 @@
 package de.joachim.haensel.phd.scenario.vehicle;
 
+import java.util.List;
+
+import de.joachim.haensel.phd.scenario.map.IStreetSection;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
-public interface IActuatingSensing
+public interface IActuatingSensing extends IRouteBuildingListener
 {
     public static final double INVALID_WHEEL_DIAMETER = Double.NaN;
 
@@ -94,4 +97,10 @@ public interface IActuatingSensing
      * Initialize the connection to the real world - simulator
      */
     public void initialize();
+
+    /**
+     * Returns the view ahead of the vehicle. Result will have a limited length (according to sight)
+     * @return 
+     */
+    public List<IStreetSection> getViewAhead();
 }

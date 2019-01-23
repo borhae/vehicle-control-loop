@@ -6,11 +6,11 @@ import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
+import de.joachim.haensel.phd.scenario.vehicle.IRouteBuildingListener;
 
 public class InterpolationSegmenterCircleIntersection implements ISegmentationAlgorithm
 {
-    private List<ISegmentBuildingListener> _segmentBuildingListeners;
+    private List<IRouteBuildingListener> _segmentBuildingListeners;
 
     @Override
     public void quantize(Deque<Vector2D> srcRoute, Deque<Vector2D> result, double stepSize)
@@ -75,7 +75,7 @@ public class InterpolationSegmenterCircleIntersection implements ISegmentationAl
     }
 
     @Override
-    public void setSegmentBuildingListeners(List<ISegmentBuildingListener> segmentBuildingListeners)
+    public void setSegmentBuildingListeners(List<IRouteBuildingListener> segmentBuildingListeners)
     {
         _segmentBuildingListeners = segmentBuildingListeners;
     }

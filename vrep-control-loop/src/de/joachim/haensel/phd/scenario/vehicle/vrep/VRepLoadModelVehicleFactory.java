@@ -10,6 +10,7 @@ import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorData;
+import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensingFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
@@ -90,7 +91,9 @@ public class VRepLoadModelVehicleFactory implements IVehicleFactory
             handles.setAdditionalObjectHandles(handlesToBeRemoved );
             
             VRepSimulatorData simulatorData = new VRepSimulatorData(_objectCreator, _vrep, _clientID, PHYSICAL_CAR_BODY_NAME);
-            Vehicle vehicle = new Vehicle(simulatorData, handles, _vehicleConf.getMap(), _vehicleConf.getUpperCtrlFactory(), _vehicleConf.getLowerCtrlFactory());
+            IActuatingSensingFactory actuatingSensingFactory = 
+                    () -> {return new VRepVehicleActuatorsSensors(handles, new VRepSimulatorData(_objectCreator, _vrep, _clientID, PHYSICAL_CAR_BODY_NAME), _vehicleConf.getMap());};
+            Vehicle vehicle = new Vehicle(simulatorData, handles, _vehicleConf.getMap(), _vehicleConf.getUpperCtrlFactory(), _vehicleConf.getLowerCtrlFactory(), actuatingSensingFactory);
 
             vehicle.setPosition((float)_vehicleConf.getXPos(), (float)_vehicleConf.getYPos(), (float)_vehicleConf.getZPos());
             Vector2D orientationToAlignTo = _vehicleConf.getOrientation();

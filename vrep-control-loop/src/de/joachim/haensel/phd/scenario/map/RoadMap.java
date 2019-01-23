@@ -1,16 +1,15 @@
-package de.joachim.haensel.phd.scenario.sumo2vrep;
+package de.joachim.haensel.phd.scenario.map;
 
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Deque;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -20,11 +19,13 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import de.joachim.haensel.phd.scenario.map.sumo2vrep.OrientedPosition;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.XYMinMax;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.phd.scenario.simulator.RoadMapTracker;
 import sumobindings.EdgeType;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;
@@ -58,6 +59,11 @@ public class RoadMap
                 _orientationDelta = Vector2D.computeAngle(new Vector2D(_line), orientation);
             }
         }
+        
+        public double getDist()
+        {
+            return _dist;
+        }
 
         public double getOrientationDelta()
         {
@@ -90,6 +96,7 @@ public class RoadMap
 
     private ConcurrentMap<Position2D, LaneType> _positionToLaneMap;
     private TMatrix _transformationMatrix;
+    private Map<EdgeType, Edge> _navigableEdges;
 
 
     public RoadMap(String networkFileName)
@@ -107,46 +114,11 @@ public class RoadMap
     {
         _roadNetwork = netType;
         _navigableNetwork = new ConcurrentHashMap<>();
+        _navigableEdges = new ConcurrentHashMap<>();
         _nameToJunctionMap = new ConcurrentHashMap<>();
         _nameToLaneMap = new ConcurrentHashMap<>();
         _nameToEdgeMap = new ConcurrentHashMap<>();
         _positionToLaneMap = new ConcurrentHashMap<>(); 
-//        System.out.println("Read junctions from network");
-//        List<JunctionType> junctions = getJunctions();
-//        System.out.println("will try to parse " + junctions.size() + " junctions.");
-//        int junctionCnt = 0;
-//        for (JunctionType curJunction : junctions)
-//        {
-//            if(junctionCnt % 20 == 0)
-//            {
-//                System.out.print("|" + junctionCnt + "|");
-//            }
-//            if(!isInternal(curJunction))
-//            {
-//                _nameToJunctionMap.put(curJunction.getId(), curJunction);
-//            }
-//            junctionCnt++;
-//        }
-//        System.out.println("Junctions read, now for the edges");
-//        List<EdgeType> edges = getEdges();
-//        System.out.println("will try to parse " + edges.size() + " edges.");
-//        int edgeCnt = 0;
-//        for (EdgeType curEdge : edges)
-//        {
-//            if(edgeCnt % 20 == 0)
-//            {
-//                System.out.print("|" + edgeCnt + "|");
-//            }
-//            if(!isInternal(curEdge))
-//            {
-//                insertAllLanesFrom(curEdge);
-//                _nameToEdgeMap.put(curEdge.getId(), curEdge);
-//            }
-//            edgeCnt++;
-//        }
-////        getJunctions().stream().forEach(junction -> {if(!isInternal(junction)){_nameToJunctionMap.put(junction.getId(), junction);}});
-////        getEdges().stream().forEach(edge -> {if(!isInternal(edge)){insertAllLanesFrom(edge); _nameToEdgeMap.put(edge.getId(), edge);}});
-        int junctionCnt = 0;
         getJunctions().parallelStream().forEach(junction ->
         {
             if (!isInternal(junction))
@@ -154,7 +126,6 @@ public class RoadMap
                 _nameToJunctionMap.put(junction.getId(), junction);
             }
         });
-        int edgeCnt = 0;
         getEdges().parallelStream().forEach(edge ->
         {
             if (!isInternal(edge))
@@ -202,6 +173,7 @@ public class RoadMap
             return;
         }
         Edge navigableEdge = new Edge(edge);
+        _navigableEdges.put(edge, navigableEdge);
         
         JunctionType fromJunction = _nameToJunctionMap.get(edge.getFrom());
         JunctionType toJunction = _nameToJunctionMap.get(edge.getTo());
@@ -349,7 +321,7 @@ public class RoadMap
         Collection<EdgeType> edges = _nameToEdgeMap.values();
         for (EdgeType curEdge : edges)
         {
-            curDist = computeSmallestEdgeToPointDistance(position, curEdge);
+            curDist = edgeToPointDistance(position, curEdge);
             if(curDist < smallestDist)
             {
                 smallestDist = curDist;
@@ -369,6 +341,20 @@ public class RoadMap
      */
     public EdgeType getClosestEdgeForOrientationRestricted(Position2D position, Vector2D orientation)
     {
+        List<EdgeIntersection> aligned = getClosestAlignedEdges(position, orientation);
+        if(aligned.isEmpty())
+        {
+            return null;
+        }
+        else
+        {
+            EdgeType closestAlignedEdge = aligned.get(0).getEdge();
+            return closestAlignedEdge;
+        }
+    }
+
+    private List<EdgeIntersection> getClosestAlignedEdges(Position2D position, Vector2D orientation)
+    {
         double curDist = Double.MAX_VALUE;
         Collection<EdgeType> edges = _nameToEdgeMap.values();
         int smallestElementsBufferSize = 10;
@@ -379,7 +365,7 @@ public class RoadMap
         for (EdgeType curEdge : edges)
         {
             Line2D resultLine = new Line2D(0.0, 0.0, 0.0, 0.0);
-            curDist = computeSmallestEdgeToPointDistance(position, curEdge, resultLine);
+            curDist = edgeToPointDistance(position, curEdge, resultLine);
             if(curDist < mindDistances[mindDistances.length - 1])
             {
                 for(int distIdx = 0; distIdx < mindDistances.length; distIdx++)
@@ -409,18 +395,10 @@ public class RoadMap
         //computeOrientationDelta returns infinity for the orientation if there is a null line (as in the initialized elements)
         Arrays.asList(closestEdges).forEach(cur -> cur.computeOrientationDelta(orientation));
         List<EdgeIntersection> aligned = Arrays.asList(closestEdges).stream().filter(cur -> cur.getOrientationDelta() < Math.toRadians(120)).collect(Collectors.toList());
-        if(aligned.isEmpty())
-        {
-            return null;
-        }
-        else
-        {
-            EdgeType closestAlignedEdge = aligned.get(0).getEdge();
-            return closestAlignedEdge;
-        }
+        return aligned;
     }
 
-    private double computeSmallestEdgeToPointDistance(Position2D position, EdgeType edge, Line2D resultLine)
+    public static double edgeToPointDistance(Position2D position, EdgeType edge, Line2D resultLine)
     {
         List<LaneType> lanes = edge.getLane();
         double minDist = Double.POSITIVE_INFINITY;
@@ -440,7 +418,7 @@ public class RoadMap
         return minDist;
     }
 
-    private double computeSmallestEdgeToPointDistance(Position2D position, EdgeType edge)
+    public static double edgeToPointDistance(Position2D position, EdgeType edge)
     {
         List<LaneType> lanes = edge.getLane();
         double minDist = Double.POSITIVE_INFINITY;
@@ -498,63 +476,16 @@ public class RoadMap
         }
         result.setXY(intermediateResult);
         return result;
-
-//        JunctionType closestJunction = getClosestJunctionFor(position);
-//        Node node = _navigableNetwork.get(closestJunction);
-//        Collection<Edge> incomingEdges = node.getIncomingEdges();
-//        List<LaneType> lanes = new ArrayList<>();
-//        incomingEdges.forEach(edge -> lanes.addAll(edge.getSumoEdge().getLane()));
-//        if(lanes.isEmpty())
-//        {
-//            return new Position2D(0.0, 0.0);
-//        }
-//        Line2D closestLine = null;
-//
-//        double minimalDistance = Double.MAX_VALUE;
-//        for (LaneType curLane : lanes)
-//        {
-//            String[] coordinateList = curLane.getShape().split(" ");
-//            List<Line2D> lines = createLines(coordinateList);
-//            for (Line2D curLine : lines)
-//            {
-//                Vector2D v = new Vector2D(curLine);
-//
-//                double curDistance = v.unboundedDistance(position);
-//                if(curDistance < minimalDistance)
-//                {
-//                    minimalDistance = curDistance;
-//                    closestLine = curLine;
-//                }
-//            }
-//        }
-//        Vector2D closestLineAsVector = new Vector2D(closestLine);
-//        Position2D intersectionPoint = Vector2D.getPerpendicularIntersection(closestLineAsVector, position);
-//        if(intersectionPoint == null)
-//        {
-//            Position2D p1 = closestLine.getP1();
-//            double distP1 = position.distance(p1);
-//            Position2D p2 = closestLine.getP2();
-//            double distP2 = position.distance(p2);
-//            if(distP1 < distP2)
-//            {
-//                intersectionPoint = p1;
-//            }
-//            else
-//            {
-//                intersectionPoint = p2;
-//            }
-//        }
-//        return intersectionPoint;
     }
 
     public JunctionType getClosestJunctionFor(Position2D currentPosition)
     {
         Collection<JunctionType> junctions = _nameToJunctionMap.values();
-        Comparator<JunctionType> junctionComp = (j1, j2) -> Double.compare(junctionDist(j1, currentPosition), junctionDist(j2, currentPosition)); 
+        Comparator<JunctionType> junctionComp = (j1, j2) -> Double.compare(junctionToPointDistance(j1, currentPosition), junctionToPointDistance(j2, currentPosition)); 
         return junctions.parallelStream().min(junctionComp).get();
     }
 
-    private double junctionDist(JunctionType junction, Position2D position)
+    public static double junctionToPointDistance(JunctionType junction, Position2D position)
     {
         return position.distance(junction.getX(), junction.getY());
     }
@@ -568,7 +499,7 @@ public class RoadMap
      * @param resultLine return by value: this variable will contain the line on which the point intersects
      * @return the minimal distance between the lines in lane and the intersection point
      */
-    private double computeSmallestLaneToPointDistance(Position2D position, LaneType lane, Position2D resultIntersection, Line2D resultLine)
+    private static double computeSmallestLaneToPointDistance(Position2D position, LaneType lane, Position2D resultIntersection, Line2D resultLine)
     {
         String[] coordinateList = lane.getShape().split(" ");
         List<Line2D> lines = createLines(coordinateList);
@@ -619,7 +550,7 @@ public class RoadMap
      * @param resultIntersection return by value: this variable will contain the intersection point on the line or the closest endpoint on that line
      * @return the minimal distance between the lines in lane and the intersection point
      */
-    private double computeSmallestLaneToPointDistance(Position2D position, LaneType lane, Position2D resultIntersection)
+    private static double computeSmallestLaneToPointDistance(Position2D position, LaneType lane, Position2D resultIntersection)
     {
         Line2D resultLine = new Line2D(0.0, 0.0, 0.0, 0.0);
         return computeSmallestLaneToPointDistance(position, lane, resultIntersection, resultLine );
@@ -832,5 +763,26 @@ public class RoadMap
         float x2 = Float.parseFloat(coordinate2[0]);
         float y2 = Float.parseFloat(coordinate2[1]);
         minMax.update(x2, y2);
+    }
+
+    public RoadMapTracker createTracker(Vector2D orientedPosition)
+    {
+        IStreetSection closestSection; 
+        EdgeIntersection closestEdge = getClosestAlignedEdges(orientedPosition.getBase(), orientedPosition).get(0);
+        JunctionType closestJunction = getClosestJunctionFor(orientedPosition.getBase());
+        if(closestEdge.getDist() < junctionToPointDistance(closestJunction, orientedPosition.getBase()))
+        {
+            closestSection = _navigableEdges.get(closestEdge._edge);
+        }
+        else
+        {
+            closestSection = _navigableNetwork.get(closestJunction);
+        }
+        return new RoadMapTracker(closestSection, this);
+    }
+
+    public IStreetSection getEdgeForEdgeType(EdgeType sumoEdge)
+    {
+        return _navigableEdges.get(sumoEdge);
     }
 }

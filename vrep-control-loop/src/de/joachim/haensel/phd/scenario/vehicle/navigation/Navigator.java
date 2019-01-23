@@ -2,19 +2,18 @@ package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import de.joachim.haensel.phd.scenario.map.Edge;
+import de.joachim.haensel.phd.scenario.map.IStreetSection;
+import de.joachim.haensel.phd.scenario.map.Node;
+import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.Linspace;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.sumo2vrep.Edge;
-import de.joachim.haensel.phd.scenario.sumo2vrep.Node;
-import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
-import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap.EdgeIntersection;
-import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
+import de.joachim.haensel.phd.scenario.vehicle.IRouteBuildingListener;
 import sumobindings.EdgeType;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;
@@ -23,14 +22,14 @@ public class Navigator
 {
     private static final double U_TURN_RADIUS = 10.0;
     private RoadMap _roadMap;
-    private List<ISegmentBuildingListener> _segmentBuildingListeners;
+    private List<IRouteBuildingListener> _routeBuildingListeners;
     private Position2D _sourcePosition;
     private Position2D _targetPosition;
 
     public Navigator(RoadMap roadMap)
     {
         _roadMap = roadMap;
-        _segmentBuildingListeners = new ArrayList<>();
+        _routeBuildingListeners = new ArrayList<>();
     }
     
     public List<Line2D> getRoute(Position2D currentPosition, Position2D targetPosition)
@@ -64,14 +63,25 @@ public class Navigator
         shortestPathSolver.setSource(startJunction);
         shortestPathSolver.setTarget(targetJunction);
         List<Node> path = shortestPathSolver.getPath();
+        notifyListeners(path, startEdge, targetEdge);
         List<Line2D> result = createLinesFromPath(path, startEdge, targetEdge, orientation);
         notifyListeners(result);
         return result;
     }
-    
+
+    private void notifyListeners(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
+    {
+        List<IStreetSection> completePath = new ArrayList<>();
+        completePath.add(_roadMap.getEdgeForEdgeType(startEdge));
+        completePath.addAll(path);
+        completePath.add(_roadMap.getEdgeForEdgeType(targetEdge));
+        
+        _routeBuildingListeners.forEach(listener -> listener.notifyNewRouteStreetSections(completePath));
+    }
+
     private void notifyListeners(List<Line2D> result)
     {
-        _segmentBuildingListeners.forEach(listener -> listener.notifyNewRoute(result));
+        _routeBuildingListeners.forEach(listener -> listener.notifyNewRoute(result));
     }
 
     private List<Line2D> createLinesFromPath(List<Node> path, EdgeType startEdge, EdgeType targetEdge, Vector2D orientation)
@@ -163,52 +173,6 @@ public class Navigator
         }
     }
 
-    private void addTurnaroundCircle(List<Line2D> result, List<Line2D> addedLines, EdgeType nextEdge)
-    {
-        Line2D lastLine = addedLines.get(addedLines.size() - 1);
-        Position2D p1 = lastLine.getP2();
-        
-        List<LaneType> lanes = nextEdge.getLane();
-        String shape = lanes.get(0).getShape();
-        Line2D nextLine = Line2D.createLines(shape).get(0);
-        Position2D p2 = nextLine.getP1();
-        
-        Vector2D vP1P2 = new Vector2D(p1, p2);
-        Vector2D vP1P2Perpendicular = vP1P2.getMiddlePerpendicularClockwise();
-        double p1P2HalfLength = vP1P2.getLength() / 2.0;
-        double perpendicularLength = Math.sqrt(sqr(p1P2HalfLength) + sqr(U_TURN_RADIUS));
-        vP1P2Perpendicular.setLength(perpendicularLength);
-        
-        Position2D center = vP1P2Perpendicular.getTip();
-
-        Position2D aNC = p1;
-        Position2D bNC = p2;
-        Position2D a = Position2D.minus(aNC, center);
-        Position2D b = Position2D.minus(bNC, center);
-        double angle1 = Math.atan2(a.getY(), a.getX());
-        double angle2 = Math.atan2(b.getY(), b.getX());
-
-        List<Double> thetaRange = new ArrayList<>();
-        if(!(angle1 < 0 && angle2 > 0))
-        {
-            angle2 = angle2 + 2.0 * Math.PI;
-        }
-        thetaRange = Linspace.linspace(angle1, angle2, 10);
-        List<Position2D> points = thetaRange.stream().map(theta -> new Position2D(center.getX() + Math.cos(theta) * U_TURN_RADIUS, center.getY() + Math.sin(theta) * U_TURN_RADIUS)).collect(Collectors.toList());
-        
-        Position2D last = null;
-        for(int idx = 0; idx < points.size(); idx++)
-        {
-            Position2D current = points.get(idx);
-            if(last != null)
-            {
-                result.add(new Line2D(last, current));
-            }
-            last = current;
-        }
-    }
-
-
     private double sqr(double x)
     {
         return x * x;
@@ -223,16 +187,6 @@ public class Navigator
         return linesToAdd;
     }
     
-    private boolean is180DegreeTurn(EdgeType e1, EdgeType e2)
-    {
-        String e1ID = e1.getId();
-        String e2ID = e2.getId();
-        e1ID = e1ID.replace("-", "");
-        e2ID = e2ID.replace("-", "");
-        
-        return e1ID.equals(e2ID);
-    }
-
     private List<Line2D> cutStartLaneShapes(List<Line2D> result, Vector2D orientation)
     {
         Position2D position = _sourcePosition;
@@ -334,8 +288,8 @@ public class Navigator
         return edgeToNext.getSumoEdge();
     }
 
-    public void addSegmentBuildingListeners(List<ISegmentBuildingListener> segmentBuildingListeners)
+    public void addRouteBuildingListeners(List<IRouteBuildingListener> segmentBuildingListeners)
     {
-        _segmentBuildingListeners = segmentBuildingListeners;
+        _routeBuildingListeners = segmentBuildingListeners;
     }
 }

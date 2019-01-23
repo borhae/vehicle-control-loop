@@ -4,7 +4,7 @@ import java.util.Deque;
 import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
+import de.joachim.haensel.phd.scenario.vehicle.IRouteBuildingListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.ISegmentationAlgorithm;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterBinarySearch;
 import de.joachim.haensel.streamextensions.IndexAdder;
@@ -18,7 +18,7 @@ import de.joachim.haensel.streamextensions.IndexAdder;
 public class SegmenterBezier implements ISegmentationAlgorithm
 {
     private Spline2D _traversableSpline;
-    private List<ISegmentBuildingListener> _segmentBuildingListeners;
+    private List<IRouteBuildingListener> _segmentBuildingListeners;
 
     public Spline2D getTraversableSpline()
     {
@@ -42,7 +42,7 @@ public class SegmenterBezier implements ISegmentationAlgorithm
     }
 
     @Override
-    public void setSegmentBuildingListeners(List<ISegmentBuildingListener> segmentBuildingListeners)
+    public void setSegmentBuildingListeners(List<IRouteBuildingListener> segmentBuildingListeners)
     {
         _segmentBuildingListeners = segmentBuildingListeners;
     }

@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.sumo2vrep;
+package de.joachim.haensel.phd.scenario.map.sumo2vrep;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -19,12 +19,13 @@ import coppelia.StringWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.map.RoadMap;
+import de.joachim.haensel.phd.scenario.map.sumo2vrep.triangulation.Earcut;
 import de.joachim.haensel.phd.scenario.math.XYMinMax;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Point3D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.sumo2vrep.triangulation.Earcut;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import de.joachim.haensel.vrepshapecreation.shapes.EVRepShapes;
 import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;

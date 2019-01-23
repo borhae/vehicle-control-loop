@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
+import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
-import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
+import de.joachim.haensel.phd.scenario.vehicle.IRouteBuildingListener;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.Trajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.ISegmenterFactory;
@@ -18,7 +18,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segme
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.BasicVelocityAssigner;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.IVelocityAssignerFactory;
 
-public class DefaultNavigationController implements IUpperLayerControl
+public class DefaultNavigationController implements IUpperLayerControl 
 {
     private static final double MAX_LONGITUDINAL_DECCELERATION = 8.0;
     private static final double MAX_LONGITUDINAL_ACCELERATION = 2.0;
@@ -27,7 +27,7 @@ public class DefaultNavigationController implements IUpperLayerControl
     private IActuatingSensing _sensorsActuators;
     private SegmentBuffer _segmentBuffer;
     private double _segmentSize;
-    private List<ISegmentBuildingListener> _segmentBuildingListeners;
+    private List<IRouteBuildingListener> _routeBuildingListeners;
     private DebugParams _debuggingParameters;
     private double _maxVelocity;
     private double _maxLateralAcceleration;
@@ -38,7 +38,7 @@ public class DefaultNavigationController implements IUpperLayerControl
     public DefaultNavigationController(double segmentSize, double maxVelocity)
     {
         _segmentSize = segmentSize;
-        _segmentBuildingListeners = new ArrayList<ISegmentBuildingListener>();
+        _routeBuildingListeners = new ArrayList<IRouteBuildingListener>();
         _maxVelocity = maxVelocity;
         _debuggingParameters = new DebugParams();
         _maxLateralAcceleration = MAX_LATERAL_ACCELERATION;
@@ -70,12 +70,12 @@ public class DefaultNavigationController implements IUpperLayerControl
         Position2D currentPosition = _sensorsActuators.getNonDynamicPosition();
         Vector2D orientation = _sensorsActuators.getOrientation();
         Navigator navigator = new Navigator(_roadMap);
-        navigator.addSegmentBuildingListeners(_segmentBuildingListeners);
+        navigator.addRouteBuildingListeners(_routeBuildingListeners);
         List<Line2D> routeBasis = navigator.getRouteWithInitialOrientation(currentPosition, targetPosition, orientation);
         _debuggingParameters.notifyNavigationListenersRouteChanged(routeBasis);
         ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
         ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, _velocityAssignerFactory , _segmentSize);
-        trajectorizer.addSegmentBuildingListeners(_segmentBuildingListeners);
+        trajectorizer.addSegmentBuildingListeners(_routeBuildingListeners);
         List<TrajectoryElement> allSegments = trajectorizer.createTrajectory(routeBasis);
         _segmentBuffer.fillBuffer(allSegments);
         _debuggingParameters.notifyNavigationListenersSegmentsChanged(allSegments);
@@ -97,9 +97,10 @@ public class DefaultNavigationController implements IUpperLayerControl
         return _segmentBuffer.getSize();
     }
         
-    public void addSegmentBuilderListener(ISegmentBuildingListener listener)
+    @Override
+    public void addRouteBuilderListener(IRouteBuildingListener listener)
     {
-        _segmentBuildingListeners.add(listener);
+        _routeBuildingListeners.add(listener);
     }
 
     @Override

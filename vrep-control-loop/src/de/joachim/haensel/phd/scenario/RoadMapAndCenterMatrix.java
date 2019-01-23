@@ -1,7 +1,7 @@
 package de.joachim.haensel.phd.scenario;
 
+import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
-import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 
 public class RoadMapAndCenterMatrix
 {

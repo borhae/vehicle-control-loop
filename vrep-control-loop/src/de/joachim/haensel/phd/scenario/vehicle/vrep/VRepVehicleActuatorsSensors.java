@@ -3,7 +3,10 @@ package de.joachim.haensel.phd.scenario.vehicle.vrep;
 import static org.junit.Assert.fail;
 
 import java.awt.Color;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import coppelia.FloatWA;
@@ -11,9 +14,14 @@ import coppelia.IntWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
+import de.joachim.haensel.phd.scenario.map.IStreetSection;
+import de.joachim.haensel.phd.scenario.map.Node;
+import de.joachim.haensel.phd.scenario.map.RoadMap;
+import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.simulator.ISimulatorData;
+import de.joachim.haensel.phd.scenario.simulator.RoadMapTracker;
 import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorData;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleHandles;
@@ -21,6 +29,7 @@ import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingObject;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
+import sumobindings.EdgeType;
 
 public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
 {
@@ -37,8 +46,10 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     private VRepObjectCreation _vRepObjectCreator;
     private double _wheelDiameter;
     private float _timeStamp; //current Simulation times
+    private RoadMapTracker _mapTracker;
+    private RoadMap _roadMap;
     
-    public VRepVehicleActuatorsSensors(IVehicleHandles vehicleHandles, ISimulatorData simulatorData)
+    public VRepVehicleActuatorsSensors(IVehicleHandles vehicleHandles, ISimulatorData simulatorData, RoadMap roadMap)
     {
         _vehicleHandles = vehicleHandles;
         _curPosition = new Position2D(0, 0);
@@ -54,6 +65,7 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
         _clientID = vrepData.getClientID();
         _vRepObjectCreator = vrepData.getVRepObjectCreator();
         _wheelDiameter = INVALID_WHEEL_DIAMETER;
+        _roadMap = roadMap;
     }
 
     @Override
@@ -89,8 +101,7 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
         try
         {
             FloatWA returnValF = new FloatWA(10);
-            _vrep.simxCallScriptFunction(_clientID, _vehicleScriptParentName, remoteApi.sim_scripttype_childscript, "sense", 
-                    null, null, null, null, null, returnValF, null, null, remoteApi.simx_opmode_blocking);
+            _vrep.simxCallScriptFunction(_clientID, _vehicleScriptParentName, remoteApi.sim_scripttype_childscript, "sense",  null, null, null, null, null, returnValF, null, null, remoteApi.simx_opmode_blocking);
             float[] vals = returnValF.getArray();
             if(vals == null || vals.length == 0 || (Double.isNaN(vals[0]) || Double.isNaN(vals[1])))
             {
@@ -182,6 +193,10 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
         }
         catch (VRepException exc)
         {
+            if(exc.getRetVal() == 1)
+            {
+                System.out.println("Warning: Input doesn't contain the specified command. Ok when this happens only once (during startup)");
+            }
             exc.printStackTrace();
         }
     }
@@ -501,5 +516,47 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     {
         // Vrep gives us seconds with up to 2 digits behind the decimal point. 
         return (long)(_timeStamp * 1000.0f);
+    }
+
+    @Override
+    public List<IStreetSection> getViewAhead()
+    {
+        if(_mapTracker == null)
+        {
+            _mapTracker = _roadMap.createTracker(new Vector2D(_rearWheelCenterPosition, _frontWheelCenterPosition));
+        }
+        return _mapTracker.getViewAhead(50.0, _curPosition, getLockedOrientation());
+    }
+
+    @Override
+    public void notifyNewRoute(List<Line2D> route)
+    {
+    }
+
+    @Override
+    public void notifyStartOriginalTrajectory(LinkedList<Vector2D> emptyRoute)
+    {
+    }
+
+    @Override
+    public void notifyStartOverlayTrajectory(Deque<Vector2D> emptyOverlay)
+    {
+    }
+
+    @Override
+    public void updateTrajectory(Vector2D newVector, Deque<Vector2D> updatedList)
+    {
+    }
+
+    @Override
+    public void notifyNewRouteStreetSections(List<IStreetSection> path)
+    {
+        if(_mapTracker == null)
+        {
+            IStreetSection firstStreetSection = path.get(0);
+            Vector2D startPosition = firstStreetSection.getAPosition();
+            _mapTracker = _roadMap.createTracker(startPosition);
+        }
+        _mapTracker.notifyNewRoute(path);
     }
 }

@@ -2,7 +2,7 @@ package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
 import java.util.List;
 
-import de.joachim.haensel.phd.scenario.sumo2vrep.Node;
+import de.joachim.haensel.phd.scenario.map.Node;
 import sumobindings.JunctionType;
 
 public interface IShortestPathAlgorithm

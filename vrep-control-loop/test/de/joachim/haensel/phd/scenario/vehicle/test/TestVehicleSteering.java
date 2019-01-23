@@ -13,11 +13,12 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
+import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
-import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
+import de.joachim.haensel.phd.scenario.vehicle.IRouteBuildingListener;
 import de.joachim.haensel.phd.scenario.vehicle.ITrajectoryProvider;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
@@ -110,6 +111,11 @@ public class TestVehicleSteering
                 public void deactivateDebugging()
                 {
                 }
+
+                @Override
+                public void addRouteBuilderListener(IRouteBuildingListener listener)
+                {
+                }
             };
         };
         TestJustSteeringController llControl = new TestJustSteeringController();
@@ -192,6 +198,11 @@ public class TestVehicleSteering
 
                 @Override
                 public void deactivateDebugging()
+                {
+                }
+
+                @Override
+                public void addRouteBuilderListener(IRouteBuildingListener listener)
                 {
                 }
             };

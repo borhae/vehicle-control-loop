@@ -5,12 +5,13 @@ import java.util.Timer;
 
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
+import de.joachim.haensel.phd.scenario.map.RoadMap;
+import de.joachim.haensel.phd.scenario.map.sumo2vrep.OrientedPosition;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.simulator.ISimulatorData;
-import de.joachim.haensel.phd.scenario.sumo2vrep.OrientedPosition;
-import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
+import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepActuatingSensingFactory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleActuatorsSensors;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import sumobindings.JunctionType;
@@ -34,17 +35,17 @@ public class Vehicle implements IVehicle
     private boolean _stopped;
 
 
-    public Vehicle(ISimulatorData simulatorData, IVehicleHandles vehicleHandles, RoadMap roadMap, IUpperLayerFactory upperLayerFactory, ILowerLayerFactory lowerLayerFactory)
+    public Vehicle(ISimulatorData simulatorData, IVehicleHandles vehicleHandles, RoadMap roadMap, IUpperLayerFactory upperLayerFactory, ILowerLayerFactory lowerLayerFactory, IActuatingSensingFactory actuatingSensingFactory)
     {
         _simulatorData = simulatorData;
         _vehicleHandles = vehicleHandles;
         _upperControlLayer = upperLayerFactory.create();
-        _actuatingSensing = new VRepVehicleActuatorsSensors(vehicleHandles, simulatorData);
+        _actuatingSensing = actuatingSensingFactory.create();
         _actuatingSensing.initialize();
         _upperControlLayer.initController(_actuatingSensing, roadMap);
+        _upperControlLayer.addRouteBuilderListener(_actuatingSensing);
         _lowerControlLayer = lowerLayerFactory.create();
         _lowerControlLayer.initController(_actuatingSensing, _upperControlLayer);
-        
         _controlEventGenerator = new LowLevelEventGenerator();
         _controlEventGenerator.addEventListener(_lowerControlLayer);
         _timer = new Timer();

@@ -5,9 +5,9 @@ import java.util.List;
 
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.converters.UnitConverter;
+import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
@@ -89,7 +89,10 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
     public IVehicleConfiguration createMercedesLikeConfiguration(RoadMap roadMap, Position2D startPosition, Vector2D orientation, double placementHeight)
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
-        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(5.0, UnitConverter.kilometersPerHourToMetersPerSecond(_maxVelocity), _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);};
+        IUpperLayerFactory upperFact = () -> 
+        {
+            return new DefaultNavigationController(5.0, UnitConverter.kilometersPerHourToMetersPerSecond(_maxVelocity), _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
+        };
         ILowerLayerFactory lowerFact = null;
         if(_lowerLayerFactory != null)
         {

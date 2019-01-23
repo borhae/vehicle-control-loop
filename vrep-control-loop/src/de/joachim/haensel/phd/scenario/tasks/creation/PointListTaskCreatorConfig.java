@@ -6,9 +6,9 @@ import java.util.List;
 
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.debug.INavigationListener;
+import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.sumo2vrep.RoadMap;
 import de.joachim.haensel.phd.scenario.tasks.AdditionalLowerControlLayerInitTask;
 import de.joachim.haensel.phd.scenario.tasks.DriveAtoBTask;
 import de.joachim.haensel.phd.scenario.tasks.ITask;

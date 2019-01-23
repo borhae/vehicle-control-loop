@@ -8,13 +8,13 @@ import java.util.List;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.vehicle.ISegmentBuildingListener;
+import de.joachim.haensel.phd.scenario.vehicle.IRouteBuildingListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class OverlaySegmenter implements ISegmenter
 {
     protected double _stepSize;
-    protected List<ISegmentBuildingListener> _segmentBuildingListeners;
+    protected List<IRouteBuildingListener> _segmentBuildingListeners;
     private ISegmentationAlgorithm _algorithm;
    
     public OverlaySegmenter(double stepSize, ISegmentationAlgorithm algorithm)
@@ -26,7 +26,7 @@ public class OverlaySegmenter implements ISegmenter
     }
 
     @Override
-    public void addSegmentBuildingListeners(List<ISegmentBuildingListener> segmentBuildingListeners)
+    public void addSegmentBuildingListeners(List<IRouteBuildingListener> segmentBuildingListeners)
     {
         _segmentBuildingListeners = segmentBuildingListeners;
     }
