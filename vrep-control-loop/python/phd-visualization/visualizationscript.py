@@ -116,6 +116,7 @@ class ZoomPanAnimate:
         #return the function
         return onMotion
 
+
 def arc_patch(center, radius, theta1, theta2, dir, idx, resolution=50, **kwargs):
     # generate the points
     # print("theta1: {}, theta2: {}, dir: {}, idx: {}".format(theta1, theta2, dir, idx))
@@ -127,15 +128,17 @@ def arc_patch(center, radius, theta1, theta2, dir, idx, resolution=50, **kwargs)
     elif (dir=="right"):
         if(theta1 < 0 and theta2 > 0):
             theta1 = 2 * math.pi + theta1
-        theta = np.linspace(theta2, theta1, resolution)   
-    points = np.vstack((radius*np.cos(theta) + center[0], 
+        theta = np.linspace(theta2, theta1, resolution)
+    points = np.vstack((radius*np.cos(theta) + center[0],
                         radius*np.sin(theta) + center[1]))
     # build the polygon and add it to the axes
     poly = Polygon(points.T, closed=False, **kwargs)
     return poly
 
+
 def paint_function(content, ax, fig):
     return lambda idx : paint_panda_row(idx, len(content.index), content.iloc[idx], ax, fig)
+
 
 def paint_panda_row(idx, len, data, ax, fig):
         ax.cla()
@@ -150,9 +153,11 @@ def paint_panda_row(idx, len, data, ax, fig):
         plotFrameContent(segs, arcs, arc_points, points, lines, ax, idx)
         fig.canvas.draw()
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", nargs="+", action="append")
+    parser.add_argument("-R", nargs="+", action="append")
     parser.add_argument("path", nargs="*")
     args = parser.parse_args()
 
@@ -164,7 +169,7 @@ def main():
         print("file list for slideshow")
         pathlists = crawlDir(args.v[0])
         path_pairs = DataFrame(data=pathlists).transpose()
-        
+
         data_in = []
         for idx, path_pair in path_pairs.iterrows():
             segs = []
@@ -174,6 +179,38 @@ def main():
             lines = []
             for path in path_pair:
                 if(path):
+                    readFrameContent(path, segs, arcs, arc_points, points, lines, idx)
+            data_in.append([segs, arcs, arc_points, points, lines, idx])
+        all_content = DataFrame(data=data_in, columns=["segs", "arcs", "arc_points", "points", "lines", "idx"])
+        figure = pyplot.figure()
+        ax = figure.add_subplot(1, 1, 1)
+        zoom_pan_animate = ZoomPanAnimate()
+        my_painter = paint_function(all_content, ax, figure)
+
+        animate = zoom_pan_animate.animate_factory(ax, len(path_pairs), my_painter)
+        figZoom = zoom_pan_animate.zoom_factory(ax, base_scale=1.1)
+        figPan = zoom_pan_animate.pan_factory(ax)
+        ax.autoscale(True)
+        pyplot.gca().set_aspect("equal", adjustable="datalim")
+
+        pyplot.show()
+    elif args.R:
+        print("fileList from regex")
+        reg_paths = []
+        for cur_reg in args.R[0]:
+            paths = glob.glob(cur_reg)
+            reg_paths.append(paths)
+        path_pairs = DataFrame(data=reg_paths).transpose()
+
+        data_in = []
+        for idx, path_pair in path_pairs.iterrows():
+            segs = []
+            arcs = []
+            arc_points = []
+            points = []
+            lines = []
+            for path in path_pair:
+                if (path):
                     readFrameContent(path, segs, arcs, arc_points, points, lines, idx)
             data_in.append([segs, arcs, arc_points, points, lines, idx])
         all_content = DataFrame(data=data_in, columns=["segs", "arcs", "arc_points", "points", "lines", "idx"])
@@ -215,6 +252,7 @@ def main():
         pyplot.gca().set_aspect("equal", adjustable="datalim")
         pyplot.show()
 
+
 def crawlDir(paths):
     print("crawling")
     print(paths)
@@ -233,10 +271,11 @@ def crawlDir(paths):
         pathlists.append(cur_series_list)
     return pathlists
 
+
 def plotFrameContent(segs, arcs, arc_points, points, lines, ax, frame_idx):
     # format for segments: "seg x1 y1 x2 y2"
     # format for arcs: "arc center_x center_y radius start_angle end_angle"
-    # for debugging reasons we store arc_points as well 
+    # for debugging reasons we store arc_points as well
     # (following fields are attached to the end of an arc entry: "x0, y0, xn, yn, xc, yc" with 0 first point, n last point, c center point)
     # format for points: point x y
     for cur_seg in segs:
@@ -249,6 +288,7 @@ def plotFrameContent(segs, arcs, arc_points, points, lines, ax, frame_idx):
         ax.add_patch(cur_point)
     for cur_line in lines:
         ax.add_patch(cur_line)
+
 
 def readFrameContent(path, segs, arcs, arc_points, points, lines, idx):
     with open(path) as csvfile:
@@ -307,9 +347,18 @@ def readFrameContent(path, segs, arcs, arc_points, points, lines, idx):
                     last_line_tip_x = float(row[1])
                     last_line_tip_y = float(row[2])
                     first_line_point_pass = False
+            elif row[0] == "polyline":
+                poly_color = row[1]
+                should_close = row[2]
+                flat_xy = np.array(row[2:len(row) - 1])
+                xy = np.reshape(flat_xy, (-1, 2))
+                print(xy)
+                print(path)
+                lines.append(Polygon(xy, closed=should_close, fill=False, linestyle="-", alpha=0.5, color=poly_color))
             else:
                 print("what? unknown found")
                 print(row)
+
 
 if __name__ == '__main__':
     main()

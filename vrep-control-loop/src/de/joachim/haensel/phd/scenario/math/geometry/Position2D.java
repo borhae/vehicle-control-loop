@@ -6,6 +6,7 @@ import java.util.stream.Stream;
 
 import coppelia.FloatWA;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
+import de.joachim.haensel.phd.scenario.random.MersenneTwister;
 
 public class Position2D
 {
@@ -310,4 +311,14 @@ public class Position2D
             _y = _y / length;
         }
     }
- }
+    
+    public Position2D plus(Position2D other)
+    {
+        return new Position2D(_x + other._x,  _y + other._y);
+    }
+
+    public static Position2D random(double maxXY, MersenneTwister randomGen)
+    {
+        return new Position2D(randomGen.nextDouble() * maxXY, randomGen.nextDouble() * maxXY);
+    }
+}

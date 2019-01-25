@@ -861,7 +861,7 @@ public class Vector2D
         return dotProduct(a, b) == 1.0;
     }
 
-    public void transform(TMatrix transformationMatrix)
+    public Vector2D transform(TMatrix transformationMatrix)
     {
         Position2D base = getBase();
         base.transform(transformationMatrix);
@@ -873,6 +873,7 @@ public class Vector2D
         _dX = dir.getX();
         _dY = dir.getY();
         updateNormVector();
+        return this;
     }
 
     public Line2D toLine()
