@@ -19,5 +19,8 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/jackson-annotations-2.9.8.jar" sourcepath="lib/jackson-annotations-2.9.8-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-core-2.9.8.jar" sourcepath="lib/jackson-core-2.9.8-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-databind-2.9.8.jar" sourcepath="lib/jackson-databind-2.9.8-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

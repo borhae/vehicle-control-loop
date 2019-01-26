@@ -193,8 +193,8 @@ public class TestProfileClassBuilding
                     configurations.put(new Long(timestamp), newTrajectories);
                 };
                 purePursuitControllerVariableLookahead.addTrajectoryRequestListener(requestListener);
-                ITrajectoryReportListener reportListener = (rearWheelCP, frontWheelCP, velocity, viewAhead, timeStamp) -> {
-                    observations.put(new Long(timeStamp), new ObservationTuple(rearWheelCP, frontWheelCP, velocity, viewAhead, timeStamp));
+                ITrajectoryReportListener reportListener = (rearWheelCP, frontWheelCP, velocity, timeStamp) -> {
+                    observations.put(new Long(timeStamp), new ObservationTuple(rearWheelCP, frontWheelCP, velocity, timeStamp));
                 };
                 purePursuitControllerVariableLookahead.addTrajectoryReportListener(reportListener);
                 return purePursuitControllerVariableLookahead;
@@ -213,7 +213,6 @@ public class TestProfileClassBuilding
         writeConfiguration(configurations, _testID + "_T_");
         writeObservation(observations, _testID + "_T_");
         CountTreeNode root = ConfigurationObservationTreeCounter.count(configurations, observations);
-        
     }
 
     private void writeObservation(final Map<Long, ObservationTuple> observations, Object marker)

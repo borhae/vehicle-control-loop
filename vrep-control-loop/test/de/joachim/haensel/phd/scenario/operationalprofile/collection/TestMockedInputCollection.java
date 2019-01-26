@@ -65,9 +65,10 @@ public class TestMockedInputCollection
         CountTreeNode root = ConfigurationObservationTreeCounter.count(configs, obs);
         int numOfPaths = root.countPaths();
         System.out.println("testend and got: " + numOfPaths + " paths. Input was: " + configs.size() + " configs/observations");
-        List<Integer> nodesPerLevel = new ArrayList<>();
-        NodesPerLevelCounter perLevelCounter = new NodesPerLevelCounter();
-        perLevelCounter.count(root, nodesPerLevel);
+        List<Integer> nodesPerLevel = NodesPerLevelCounter.count(root);
+        List<List<String>> nodesPerLevelString = NodesPerLevelPrinter.print(root);
+        System.out.println(nodesPerLevel);
+        System.out.println(nodesPerLevelString);
     }
 
     private ObservationTuple createObservation(List<TrajectoryElement> trajectory, MersenneTwister randomGen, long idx)
@@ -75,7 +76,7 @@ public class TestMockedInputCollection
         Position2D rearWheelCenterPosition = trajectory.get(0).getVector().getBase().plus(Position2D.random(1.5, randomGen));
         Position2D frontWheelCenterPosition = trajectory.get(0).getVector().getBase().plus(Position2D.random(1.5, randomGen));
         double[] velocity = new double[]{randomGen.nextDouble() * 6.0, randomGen.nextDouble() * 6.0};
-        return new ObservationTuple(rearWheelCenterPosition, frontWheelCenterPosition, velocity, null, idx);
+        return new ObservationTuple(rearWheelCenterPosition, frontWheelCenterPosition, velocity, idx);
     }
 
     private List<List<TrajectoryElement>> createSlidingWindows(List<TrajectoryElement> allDataPoints, int windowSize)

@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.operationalprofile.collection;
 
+import de.joachim.haensel.phd.converters.UnitConverter;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 
 public class VelocityNode implements ICountListElem, ClassificationConstants
@@ -45,6 +46,6 @@ public class VelocityNode implements ICountListElem, ClassificationConstants
     @Override
     public String toString()
     {
-        return String.format("|Velo: %.2f|", _velocity);
+        return String.format("|Velo: %.2f|", UnitConverter.meterPerSecondToKilometerPerHour(_velocity));
     }
 }

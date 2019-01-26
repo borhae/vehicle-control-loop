@@ -3,9 +3,12 @@ package de.joachim.haensel.phd.scenario.math.geometry;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.joachim.haensel.phd.scenario.math.TMatrix;
-import sun.print.DocumentPropertiesUI;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
+import de.joachim.haensel.phd.scenario.math.TMatrix;
+
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class Vector2D
 {
     private double _bX; //baseX
@@ -55,6 +58,10 @@ public class Vector2D
         updateLength();
     }
 
+    public Vector2D()
+    {
+    }
+    
     public Vector2D(double baseX, double baseY, double dirX, double dirY)
     {
         _bX = baseX;

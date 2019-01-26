@@ -1,8 +1,12 @@
 package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class TrajectoryElement
 {
     public enum VelocityEdgeType
@@ -19,6 +23,10 @@ public class TrajectoryElement
     private double _kappa;
     private int _index;
 
+    public TrajectoryElement()
+    {
+    }
+    
     public TrajectoryElement(Vector2D vector)
     {
         _vector = vector;

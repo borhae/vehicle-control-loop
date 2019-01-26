@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
 import de.joachim.haensel.phd.scenario.map.Edge;
 import de.joachim.haensel.phd.scenario.map.IStreetSection;
 import de.joachim.haensel.phd.scenario.map.Node;
@@ -15,23 +18,41 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import sumobindings.EdgeType;
 
+/**
+ * TODO: view ahead is not saved
+ * @author dummy
+ *
+ */
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class ObservationTuple
 {
     private Position2D _rearWheelCP;
     private Position2D _frontWheelCP;
 
     private double[] _velocity;
-    private List<IStreetSection> _viewAhead;
+//    private List<IStreetSection> _viewAhead;
     private long _timeStamp;
 
-    public ObservationTuple(Position2D rearWheelCP, Position2D frontWheelCP, double[] velocity, List<IStreetSection> viewAhead, long timeStamp)
+    public ObservationTuple()
+    {
+    }
+    
+    public ObservationTuple(Position2D rearWheelCP, Position2D frontWheelCP, double[] velocity, long timeStamp)
     {
         _rearWheelCP = rearWheelCP;
         _frontWheelCP = frontWheelCP;
         _velocity = velocity;
-        _viewAhead = viewAhead;
         _timeStamp = timeStamp;
     }
+    
+//    public ObservationTuple(Position2D rearWheelCP, Position2D frontWheelCP, double[] velocity, List<IStreetSection> viewAhead, long timeStamp)
+//    {
+//        _rearWheelCP = rearWheelCP;
+//        _frontWheelCP = frontWheelCP;
+//        _velocity = velocity;
+//        _viewAhead = viewAhead;
+//        _timeStamp = timeStamp;
+//    }
 
     public List<String> toPyplotString()
     {
@@ -39,7 +60,7 @@ public class ObservationTuple
         result.add(new Line2D(_rearWheelCP, _frontWheelCP).toPyplotString("magenta"));
         Position2D vehicleCenter = new Position2D(Position2D.between(_rearWheelCP, _frontWheelCP));
         result.add(new Vector2D(vehicleCenter.getX(), vehicleCenter.getY(), _velocity[0], _velocity[1]).toLine().toPyplotString("red"));
-        result.addAll(viewAheadToString(_viewAhead));
+//        result.addAll(viewAheadToString(_viewAhead));
         return result;
     }
     
@@ -106,10 +127,10 @@ public class ObservationTuple
         return _velocity;
     }
 
-    public List<IStreetSection> getViewAhead()
-    {
-        return _viewAhead;
-    }
+//    public List<IStreetSection> getViewAhead()
+//    {
+//        return _viewAhead;
+//    }
 
     public long getTimeStamp()
     {

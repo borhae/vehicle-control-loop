@@ -474,7 +474,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
             {
                 long timeStamp = _actuatorsSensors.getTimeStamp();
                 notifyTrajectoryRequestListeners(_segmentBuffer, timeStamp);
-                notifyTrajectoryReportListeners(_actuatorsSensors.getRearWheelCenterPosition(), _actuatorsSensors.getFrontWheelCenterPosition(), _actuatorsSensors.getVehicleVelocity(), _actuatorsSensors.getViewAhead(), timeStamp);
+                notifyTrajectoryReportListeners(_actuatorsSensors.getRearWheelCenterPosition(), _actuatorsSensors.getFrontWheelCenterPosition(), _actuatorsSensors.getVehicleVelocity(), timeStamp);
                 if(_routeEnding)
                 {
                     _lastRouteReported = true;
@@ -483,13 +483,21 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         }
     }
 
-    private void notifyTrajectoryReportListeners(Position2D rearWheelCenterPosition, Position2D frontWheelCenterPosition, double[] vehicleVelocity, List<IStreetSection> viewAhead, long timeStamp)
+    private void notifyTrajectoryReportListeners(Position2D rearWheelCenterPosition, Position2D frontWheelCenterPosition, double[] vehicleVelocity, long timeStamp)
     {
         Position2D rWCP = new Position2D(rearWheelCenterPosition);
         Position2D fWCP = new Position2D(frontWheelCenterPosition);
         double[] vel = Arrays.copyOf(vehicleVelocity, vehicleVelocity.length);
-        _trajectoryReportListeners.forEach(listener -> listener.notifyEnvironmentState(rWCP, fWCP, vel, viewAhead, timeStamp));
+        _trajectoryReportListeners.forEach(listener -> listener.notifyEnvironmentState(rWCP, fWCP, vel, timeStamp));
     }
+
+//    private void notifyTrajectoryReportListeners(Position2D rearWheelCenterPosition, Position2D frontWheelCenterPosition, double[] vehicleVelocity, List<IStreetSection> viewAhead, long timeStamp)
+//    {
+//        Position2D rWCP = new Position2D(rearWheelCenterPosition);
+//        Position2D fWCP = new Position2D(frontWheelCenterPosition);
+//        double[] vel = Arrays.copyOf(vehicleVelocity, vehicleVelocity.length);
+//        _trajectoryReportListeners.forEach(listener -> listener.notifyEnvironmentState(rWCP, fWCP, vel, viewAhead, timeStamp));
+//    }
 
     private void notifyTrajectoryRequestListeners(List<TrajectoryElement> trajectories, long timeStamp)
     {

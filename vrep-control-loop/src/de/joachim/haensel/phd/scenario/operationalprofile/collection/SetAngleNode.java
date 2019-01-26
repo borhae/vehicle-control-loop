@@ -39,6 +39,6 @@ public class SetAngleNode implements ICountListElem, ClassificationConstants
     @Override
     public String toString()
     {
-        return String.format("|SAngle: %.2f|", _angle);
+        return String.format("|SAngle: %.2f|", Math.toDegrees(_angle));
     }
 }

@@ -1,5 +1,7 @@
 package de.joachim.haensel.phd.scenario.operationalprofile.collection;
 
+import de.joachim.haensel.phd.converters.UnitConverter;
+
 public class SetVelocityNode implements ICountListElem, ClassificationConstants
 {
     private double _velocity;
@@ -37,6 +39,6 @@ public class SetVelocityNode implements ICountListElem, ClassificationConstants
     @Override
     public String toString()
     {
-        return String.format("|SVelo: %.2f|", _velocity);
+        return String.format("|SVelo: %.2f|", UnitConverter.meterPerSecondToKilometerPerHour(_velocity));
     }
 }

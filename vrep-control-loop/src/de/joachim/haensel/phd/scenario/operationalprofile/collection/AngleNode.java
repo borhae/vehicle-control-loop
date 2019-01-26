@@ -45,6 +45,6 @@ public class AngleNode implements ICountListElem, ClassificationConstants
     @Override
     public String toString()
     {
-        return String.format("|Angle: %.2f|", _angle);
+        return String.format("|Angle: %.2f|", Math.toDegrees(_angle));
     }
 }

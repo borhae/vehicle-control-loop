@@ -4,14 +4,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
 import coppelia.FloatWA;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.random.MersenneTwister;
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class Position2D
 {
     private double _x;
     private double _y;
+    
+    public Position2D()
+    {
+    }
 
     public Position2D(double x, double y)
     {

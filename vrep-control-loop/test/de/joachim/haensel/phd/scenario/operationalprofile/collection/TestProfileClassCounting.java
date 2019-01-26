@@ -123,19 +123,19 @@ public class TestProfileClassCounting
 //         {"luebeck_medium", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(4112.28,7084.47), new Position2D(6196.74,5289.38), new Position2D(10161.11,3555.67), new Position2D(3430.39,581.66), new Position2D(7252.29,1130.89)), "luebeck-roads.net.xml", "blue"},
 //           {"luebeck_mini_routing_challenge", 15, 120, 4.0, 4.3, 1.0, Arrays.asList(new Position2D(7882.64,4664.21), new Position2D(7797.34,4539.80), new Position2D(7894.70,4608.56), new Position2D(8051.17,5536.44), new Position2D(8039.89,5485.08)), "luebeck-roads.net.xml", "blue"},
 //           {"luebeck_supermini_routing_challenge", 15, 120, 4.0, 4.3, 1.0, Arrays.asList(new Position2D(7894.70,4608.56), new Position2D(8051.17,5536.44), new Position2D(8039.89,5485.08)), "luebeck-roads.net.xml", "blue"},
-         {"luebeck_extramini_routing_challenge", 15, 120, 4.0, 4.3, 1.0, Arrays.asList(new Position2D(7882.64,4664.21), new Position2D(7797.34,4539.80)), "luebeck-roads.net.xml", "blue"},
+//         {"luebeck_extramini_routing_challenge", 15, 120, 4.0, 4.3, 1.0, Arrays.asList(new Position2D(7882.64,4664.21), new Position2D(7797.34,4539.80)), "luebeck-roads.net.xml", "blue"},
 
-//           {"luebeck_7_routing_challenge", 15, 120, 4.0, 4.0, 1.0, 
-//               Arrays.asList
-//               (
-//                   new Position2D(3934.06,6377.25), 
-//                   new Position2D(4209.93,7074.07), 
-//                   new Position2D(5552.48,4469.20), 
-//                   new Position2D(2285.37,3416.74), 
-//                   new Position2D(6375.30,3695.19),
-//                   new Position2D(10112.64,1288.27),
-//                   new Position2D(8031.39,6647.76)
-//               ), "luebeck-roads.net.xml", "blue"},
+           {"luebeck_7_routing_challenge", 15, 120, 4.0, 4.0, 1.0, 
+               Arrays.asList
+               (
+                   new Position2D(3934.06,6377.25), 
+                   new Position2D(4209.93,7074.07), 
+                   new Position2D(5552.48,4469.20), 
+                   new Position2D(2285.37,3416.74), 
+                   new Position2D(6375.30,3695.19),
+                   new Position2D(10112.64,1288.27),
+                   new Position2D(8031.39,6647.76)
+               ), "luebeck-roads.net.xml", "blue"},
        });
    }
 
@@ -193,8 +193,8 @@ public class TestProfileClassCounting
                     configurations.put(new Long(timestamp), newTrajectories);
                 };
                 purePursuitControllerVariableLookahead.addTrajectoryRequestListener(requestListener);
-                ITrajectoryReportListener reportListener = (rearWheelCP, frontWheelCP, velocity, viewAhead, timeStamp) -> {
-                    observations.put(new Long(timeStamp), new ObservationTuple(rearWheelCP, frontWheelCP, velocity, viewAhead, timeStamp));
+                ITrajectoryReportListener reportListener = (rearWheelCP, frontWheelCP, velocity, timeStamp) -> {
+                    observations.put(new Long(timeStamp), new ObservationTuple(rearWheelCP, frontWheelCP, velocity, timeStamp));
                 };
                 purePursuitControllerVariableLookahead.addTrajectoryReportListener(reportListener);
                 return purePursuitControllerVariableLookahead;
@@ -214,7 +214,12 @@ public class TestProfileClassCounting
         writeObservation(observations, _testID + "_T_");
         CountTreeNode root = ConfigurationObservationTreeCounter.count(configurations, observations);
         int numOfPaths = root.countPaths();
-        System.out.println(numOfPaths);
+        
+        System.out.println("testend and got: " + numOfPaths + " paths. Input was: " + configurations.size() + " configs/observations");
+        List<Integer> nodesPerLevel = NodesPerLevelCounter.count(root);
+        List<List<String>> nodesPerLevelString = NodesPerLevelPrinter.print(root);
+        System.out.println(nodesPerLevel);
+        System.out.println(nodesPerLevelString);
     }
 
     private void writeObservation(final Map<Long, ObservationTuple> observations, Object marker)

@@ -197,8 +197,8 @@ public class TestProfileCollectionObserving
                     configurationBuffers.put(new Long(timestamp), newTrajectories);
                 };
                 purePursuitControllerVariableLookahead.addTrajectoryRequestListener(requestListener);
-                ITrajectoryReportListener reportListener = (rearWheelCP, frontWheelCP, velocity, viewAhead, timeStamp) -> {
-                    observations.put(new Long(timeStamp), new ObservationTuple(rearWheelCP, frontWheelCP, velocity, viewAhead, timeStamp));
+                ITrajectoryReportListener reportListener = (rearWheelCP, frontWheelCP, velocity, timeStamp) -> {
+                    observations.put(new Long(timeStamp), new ObservationTuple(rearWheelCP, frontWheelCP, velocity, timeStamp));
                 };
                 purePursuitControllerVariableLookahead.addTrajectoryReportListener(reportListener);
                 return purePursuitControllerVariableLookahead;

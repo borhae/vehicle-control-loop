@@ -237,9 +237,11 @@ def main():
         ax = figure.add_subplot(1, 1, 1)
 
         reg_paths = []
+        print("resolving regex")
         for cur_reg in args.path:
             paths = glob.glob(cur_reg)
             reg_paths.append(paths)
+        print(reg_paths)
         for paths in reg_paths:
             for path in paths:
                 readFrameContent(path, segs, arcs, arc_points, points, lines, 0)
