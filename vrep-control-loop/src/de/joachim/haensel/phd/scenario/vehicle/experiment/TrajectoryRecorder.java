@@ -1,8 +1,6 @@
 package de.joachim.haensel.phd.scenario.vehicle.experiment;
 
 import java.util.ArrayList;
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,7 +8,6 @@ import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.debug.INavigationListener;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
-import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ITrajectoryProvider;
@@ -22,9 +19,8 @@ import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 
 public class TrajectoryRecorder implements ILowerLayerControl, INavigationListener
 {
-
     private IActuatingSensing _actuatorsSensors;
-    private List<Position2D> _trajectoryRecord;
+    private List<RecordedTrajectoryElement> _trajectoryRecord;
     private List<Position2D> _plannedTrajectory;
 
     public TrajectoryRecorder()
@@ -36,7 +32,9 @@ public class TrajectoryRecorder implements ILowerLayerControl, INavigationListen
     @Override
     public void controlEvent()
     {
-        _trajectoryRecord.add(new Position2D(_actuatorsSensors.getPosition()));
+        RecordedTrajectoryElement trajectoryElement = 
+                new RecordedTrajectoryElement(new Position2D(_actuatorsSensors.getPosition()), _actuatorsSensors.getTimeStamp(), System.currentTimeMillis());
+        _trajectoryRecord.add(trajectoryElement);
     }
 
     @Override
@@ -110,7 +108,7 @@ public class TrajectoryRecorder implements ILowerLayerControl, INavigationListen
 
     }
 
-    public List<Position2D> getTrajectory()
+    public List<RecordedTrajectoryElement> getTrajectory()
     {
         return _trajectoryRecord;
     }

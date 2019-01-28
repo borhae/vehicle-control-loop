@@ -1,7 +1,11 @@
-package de.joachim.haensel.phd.scenario.operationalprofile.collection;
+package de.joachim.haensel.phd.scenario.operationalprofile.collection.nodetypes;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.ClassificationConstants;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.ICountListElem;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.OCStats;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.ObservationTuple;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class DisplacementNode implements ICountListElem, ClassificationConstants
@@ -51,5 +55,19 @@ public class DisplacementNode implements ICountListElem, ClassificationConstants
     public String toString()
     {
         return String.format("|Displ.: %.2f|", _displacement);
+    }
+
+
+    @Override
+    public double getNormyValue()
+    {
+        return _displacement;
+    }
+
+
+    @Override
+    public void accept(OCStats stats)
+    {
+        stats.visit(this);
     }
 }

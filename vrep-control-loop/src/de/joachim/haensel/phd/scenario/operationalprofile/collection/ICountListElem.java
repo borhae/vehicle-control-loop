@@ -6,4 +6,6 @@ public interface ICountListElem
     public ICountListElem next();
     public int getHashRangeIdx();
     public double getNumericalValue();
+    public double getNormyValue(); // km/h instead of m/s and degrees instead of radians :)
+    public void accept(OCStats stats);
 }

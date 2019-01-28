@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.nodetypes.LeafNode;
+
 /**
  * @author dummy
  *
@@ -15,19 +17,23 @@ public class CountTreeNode
 {
     private Map<Integer, CountTreeNode> _children;
     private List<ICountListElem> _content;
+    private int _level;
+    private CountTreeNode _parent;
 
-    public CountTreeNode()
+    public CountTreeNode(CountTreeNode parent)
     {
         _children = new HashMap<>();
+        _level = 0;
+        _parent = parent;
     }
     
     public void enter(StateAt curState)
     {
         ICountListElem root = curState.getRoot();
-        enter(root);
+        enter(root, 1);
     }
 
-    private void enter(ICountListElem elem)
+    private void enter(ICountListElem elem, int level)
     {
         if(elem == null)
         {
@@ -36,20 +42,31 @@ public class CountTreeNode
         //TODO make this proper by using the visitor pattern
         if(elem instanceof LeafNode)
         {
-            CountTreeNode leafNode = new CountTreeNode();
-            _children.put(0, leafNode);
+            CountTreeNode leafNode = _children.get(0);
+            if(leafNode == null)
+            {
+                leafNode = new CountTreeNode(this);
+                _children.put(0, leafNode);
+            }
             leafNode.addContent(elem);
             return;
         }
         int hashRangeIdx = elem.getHashRangeIdx();
-        CountTreeNode nodeForHash = _children.get(hashRangeIdx);
-        if(nodeForHash == null)
+        CountTreeNode childForHash = _children.get(hashRangeIdx);
+        if(childForHash == null)
         {
-            nodeForHash = new CountTreeNode();
-            _children.put(hashRangeIdx, nodeForHash);
+            childForHash = new CountTreeNode(this);
+            _children.put(hashRangeIdx, childForHash);
         }
-        nodeForHash.addContent(elem);
-        nodeForHash.enter(elem.next());
+        childForHash.addContent(elem);
+        childForHash.setLevel(level);
+        childForHash.enter(elem.next(), level + 1);
+        
+    }
+
+    private void setLevel(int level)
+    {
+        _level = level;
     }
 
     private void addContent(ICountListElem content)
@@ -88,6 +105,33 @@ public class CountTreeNode
             }
         }
         return String.format("[Count: %d, Range: %.4f - %.4f, Type: %s]", elemCnt, min, max, type);
+    }
+    
+    public String toSmallString()
+    {
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        String type = "unknown";
+        if(_content != null)
+        {
+            for (ICountListElem curelem : _content)
+            {
+                double value = curelem.getNormyValue();
+                if(value < min)
+                {
+                    min = value;
+                }
+                if(value > max)
+                {
+                    max = value;
+                }
+            }
+            if(!_content.isEmpty())
+            {
+                type = _content.get(0).getClass().getSimpleName();
+            }
+        }
+        return String.format("%.2f/%.2f\n%s", min, max, type.replaceAll("Node", "").substring(0, 4));
     }
 
     public int countPaths()
@@ -138,5 +182,10 @@ public class CountTreeNode
     public Collection<CountTreeNode> getChildren()
     {
         return _children.values();
+    }
+
+    public List<ICountListElem> getContent()
+    {
+        return _content;
     }
 }

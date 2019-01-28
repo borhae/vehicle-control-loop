@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SegmentBuffer
@@ -19,7 +20,12 @@ public class SegmentBuffer
         int higherIdx = Math.min(lowerIdx + requestSize, _segments.size());
         int advance = higherIdx - lowerIdx;
         _currentIdx += advance;
-        return _segments.subList(lowerIdx, higherIdx);
+        List<TrajectoryElement> result = new ArrayList<>();
+        for( int idx = lowerIdx; idx < higherIdx; idx++)
+        {
+            result.add(_segments.get(idx));
+        }
+        return result;
     }
 
     public TrajectoryElement peek()

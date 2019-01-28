@@ -164,7 +164,7 @@ public class ParameterizedTestHazard
             executor.execute(tasks);
             System.out.println("bla");
             
-            List<String> actualTrajectory = trajectoryRecorder.getTrajectory().stream().filter(p -> p.getX() != 0 && p.getY() != 0.0).map(pos -> pos.toPyPlotString(_color)).collect(Collectors.toList());
+            List<String> actualTrajectory = trajectoryRecorder.getTrajectory().stream().map(te -> te.getPos()).filter(p -> p.getX() != 0 && p.getY() != 0.0).map(pos -> pos.toPyPlotString(_color)).collect(Collectors.toList());
             List<String> plannedTrajectory = trajectoryRecorder.getPlannedTrajectory().stream().map(pos -> pos.toPyPlotString("black")).collect(Collectors.toList());
             try
             {

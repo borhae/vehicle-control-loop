@@ -1,7 +1,10 @@
-package de.joachim.haensel.phd.scenario.operationalprofile.collection;
+package de.joachim.haensel.phd.scenario.operationalprofile.collection.nodetypes;
 
 import java.util.List;
 
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.ICountListElem;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.OCStats;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.ObservationTuple;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class LeafNode implements ICountListElem
@@ -44,5 +47,17 @@ public class LeafNode implements ICountListElem
     public String toString()
     {
         return "Leaf";
+    }
+
+    @Override
+    public double getNormyValue()
+    {
+        return 0.0;
+    }
+
+    @Override
+    public void accept(OCStats stats)
+    {
+        stats.visit(this);
     }
 }

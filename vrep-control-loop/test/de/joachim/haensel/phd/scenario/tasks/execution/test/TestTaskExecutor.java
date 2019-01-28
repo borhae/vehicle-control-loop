@@ -3,7 +3,10 @@ package de.joachim.haensel.phd.scenario.tasks.execution.test;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -16,12 +19,21 @@ import de.joachim.haensel.phd.scenario.SimulationSetupConvenienceMethods;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.ObservationTuple;
 import de.joachim.haensel.phd.scenario.tasks.ITask;
 import de.joachim.haensel.phd.scenario.tasks.creation.AllSameAToBDrivingTaskCreatorConfig;
 import de.joachim.haensel.phd.scenario.tasks.creation.FixedSourceTargetContinuousRouteTaskCreatorConfig;
 import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig;
 import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
+import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
+import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
+import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
+import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookahead;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
+import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class TestTaskExecutor
@@ -224,5 +236,56 @@ public class TestTaskExecutor
         {
             fail(exc.toString());
         }
+    }
+    
+    @Test
+    public void testMultiplePointsOnLargeMapNoDebug() throws VRepException
+    {
+        RoadMapAndCenterMatrix mapAndCenterMatrix = 
+                SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/luebeck-roads.net.xml");
+        RoadMap map = mapAndCenterMatrix.getRoadMap();
+        
+        List<Position2D> targetPoints = Arrays.asList(new Position2D(4112.28,7084.47), new Position2D(6196.74,5289.38), new Position2D(10161.11,3555.67), new Position2D(3430.39,581.66), new Position2D(7252.29,1130.89));
+        
+        targetPoints = targetPoints.stream().map(point -> point.transform(mapAndCenterMatrix.getCenterMatrix())).collect(Collectors.toList());
+        final Map<Long, List<TrajectoryElement>> configurations = new HashMap<>();
+        final Map<Long, ObservationTuple> observations = new HashMap<>();
+
+        TaskCreator taskCreator = new TaskCreator();
+        PointListTaskCreatorConfig taskConfiguration = new PointListTaskCreatorConfig();
+        int lookahead = 15;
+        taskConfiguration.setControlParams(lookahead, 120, 4.0, 4.3, 1.0);
+        taskConfiguration.setDebug(false);
+        taskConfiguration.setMap(map);
+        taskConfiguration.configSimulator(_vrep, _clientID, _objectCreator);
+        TrajectoryRecorder trajectoryRecorder = new TrajectoryRecorder();
+        taskConfiguration.addLowerLayerControl(trajectoryRecorder);
+        taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisualsBrakeScript.ttm");
+
+        taskConfiguration.setTargetPoints(targetPoints);
+        taskConfiguration.addNavigationListener(trajectoryRecorder);
+        taskConfiguration.setLowerLayerController(new ILowerLayerFactory() {
+            @Override
+            public ILowerLayerControl create()
+            {
+                PurePursuitControllerVariableLookahead purePursuitControllerVariableLookahead = new PurePursuitControllerVariableLookahead();
+                purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(lookahead, 0.0));
+                ITrajectoryRequestListener requestListener = (newTrajectories, timestamp) ->
+                {
+                    configurations.put(new Long(timestamp), newTrajectories);
+                };
+                purePursuitControllerVariableLookahead.addTrajectoryRequestListener(requestListener);
+                ITrajectoryReportListener reportListener = (rearWheelCP, frontWheelCP, velocity, timeStamp) -> {
+                    observations.put(new Long(timeStamp), new ObservationTuple(rearWheelCP, frontWheelCP, velocity, timeStamp));
+                };
+                purePursuitControllerVariableLookahead.addTrajectoryReportListener(reportListener);
+                return purePursuitControllerVariableLookahead;
+            }
+        });
+        taskCreator.configure(taskConfiguration);
+        List<ITask> tasks = taskCreator.createTasks();
+
+        TaskExecutor executor = new TaskExecutor();
+        executor.execute(tasks);
     }
 }

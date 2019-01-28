@@ -1,7 +1,11 @@
-package de.joachim.haensel.phd.scenario.operationalprofile.collection;
+package de.joachim.haensel.phd.scenario.operationalprofile.collection.nodetypes;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.ClassificationConstants;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.ICountListElem;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.OCStats;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.ObservationTuple;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class AngleNode implements ICountListElem, ClassificationConstants
@@ -46,5 +50,17 @@ public class AngleNode implements ICountListElem, ClassificationConstants
     public String toString()
     {
         return String.format("|Angle: %.2f|", Math.toDegrees(_angle));
+    }
+
+    @Override
+    public double getNormyValue()
+    {
+        return Math.toDegrees(_angle);
+    }
+
+    @Override
+    public void accept(OCStats stats)
+    {
+        stats.visit(this);
     }
 }

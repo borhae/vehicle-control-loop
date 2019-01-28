@@ -1,6 +1,9 @@
-package de.joachim.haensel.phd.scenario.operationalprofile.collection;
+package de.joachim.haensel.phd.scenario.operationalprofile.collection.nodetypes;
 
 import de.joachim.haensel.phd.converters.UnitConverter;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.ClassificationConstants;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.ICountListElem;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.OCStats;
 
 public class SetVelocityNode implements ICountListElem, ClassificationConstants
 {
@@ -40,5 +43,17 @@ public class SetVelocityNode implements ICountListElem, ClassificationConstants
     public String toString()
     {
         return String.format("|SVelo: %.2f|", UnitConverter.meterPerSecondToKilometerPerHour(_velocity));
+    }
+
+    @Override
+    public double getNormyValue()
+    {
+        return UnitConverter.meterPerSecondToKilometerPerHour(_velocity);
+    }
+
+    @Override
+    public void accept(OCStats stats)
+    {
+        stats.visit(this);
     }
 }

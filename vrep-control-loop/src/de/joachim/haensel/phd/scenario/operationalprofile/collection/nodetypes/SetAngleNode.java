@@ -1,6 +1,9 @@
-package de.joachim.haensel.phd.scenario.operationalprofile.collection;
+package de.joachim.haensel.phd.scenario.operationalprofile.collection.nodetypes;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.ClassificationConstants;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.ICountListElem;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.OCStats;
 
 public class SetAngleNode implements ICountListElem, ClassificationConstants
 {
@@ -40,5 +43,17 @@ public class SetAngleNode implements ICountListElem, ClassificationConstants
     public String toString()
     {
         return String.format("|SAngle: %.2f|", Math.toDegrees(_angle));
+    }
+
+    @Override
+    public double getNormyValue()
+    {
+        return Math.toDegrees(_angle);
+    }
+
+    @Override
+    public void accept(OCStats stats)
+    {
+        stats.visit(this);
     }
 }

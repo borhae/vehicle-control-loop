@@ -225,7 +225,7 @@ public class ParameterizedTestHazardVariableLookahead
         TaskExecutor executor = new TaskExecutor();
         executor.execute(tasks);
         
-        List<String> actualTrajectory = trajectoryRecorder.getTrajectory().stream().filter(p -> p.getX() != 0 && p.getY() != 0.0).map(pos -> pos.toPyPlotString(_color, "point")).collect(Collectors.toList());
+        List<String> actualTrajectory = trajectoryRecorder.getTrajectory().stream().map(te -> te.getPos()).filter(p -> p.getX() != 0 && p.getY() != 0.0).map(pos -> pos.toPyPlotString(_color, "point")).collect(Collectors.toList());
         List<Position2D> plannedTrajectoryPre = trajectoryRecorder.getPlannedTrajectory();
         List<Line2D> lines = new ArrayList<>();
         for(int idx = 0; idx < plannedTrajectoryPre.size() - 1; idx++)

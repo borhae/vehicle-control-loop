@@ -2,8 +2,20 @@ package de.joachim.haensel.phd.scenario.operationalprofile.collection;
 
 import java.util.List;
 
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.nodetypes.AngleNode;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.nodetypes.DisplacementNode;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.nodetypes.LeafNode;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.nodetypes.SetAngleNode;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.nodetypes.SetVelocityNode;
+import de.joachim.haensel.phd.scenario.operationalprofile.collection.nodetypes.VelocityNode;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
+/**
+ * Produces linked list with the following elements:
+ * VelocityNode, AngleNode, DisplacementNode, [SetVelocity, SetAngle, ..., SetVelocity], LeafNode 
+ * @author dummy
+ *
+ */
 public class StateAt
 {
     private Long _curTimeStamp;
@@ -22,21 +34,20 @@ public class StateAt
         _root.setNext(angleTreeNode);
         DisplacementNode displacementElem = new DisplacementNode(observationTuple, trajectory.get(0));
         angleTreeNode.setNext(displacementElem);
-        TrajectoryElement previousElem = trajectory.get(0);
 
-        SetVelocityNode setVelocityNode = new SetVelocityNode(previousElem.getVelocity());
+        SetVelocityNode setVelocityNode = new SetVelocityNode(trajectory.get(0).getVelocity());
         displacementElem.setNext(setVelocityNode);
         
-        for (TrajectoryElement curElem : trajectory)
+        for(int idx = 1; idx < trajectory.size(); idx++)
         {
-
+            TrajectoryElement curElem = trajectory.get(idx);
+            TrajectoryElement previousElem = trajectory.get(idx -1);
+            
             SetAngleNode setAngleNode = new SetAngleNode(previousElem.getVector(), curElem.getVector());
             setVelocityNode.setNext(setAngleNode);
             
             setVelocityNode = new SetVelocityNode(curElem.getVelocity());
             setAngleNode.setNext(setVelocityNode);
-            
-            previousElem = curElem;
         }
         LeafNode leafNode = new LeafNode(trajectory, observationTuple);
         setVelocityNode.setNext(leafNode);

@@ -364,7 +364,12 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
             }
             if (minDistIdx != 0 && minDist != Integer.MAX_VALUE)
             {
-                _segmentBuffer = _segmentBuffer.subList(minDistIdx, _segmentBuffer.size());
+                List<TrajectoryElement> tmp = new ArrayList<>();
+                for(int idx = minDistIdx; idx < _segmentBuffer.size(); idx++)
+                {
+                    tmp.add(_segmentBuffer.get(idx));
+                }
+                _segmentBuffer = tmp;
             }
         }
         return result;
@@ -387,7 +392,12 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         Collections.reverse(closeElements);
         int maxSurround = Math.min(10, closeElements.size());
         TrajectoryElement closestElement = closeElements.get(0);
-        closeElements = closeElements.subList(0, maxSurround);
+        List<TrajectoryElement> tmp = new ArrayList<>();
+        for(int idx = 0; idx < maxSurround; idx++)
+        {
+            tmp.add(closeElements.get(idx));
+        }
+        closeElements = tmp;
         
         TrajectoryElement rightDegreeElement = null;
         if(!closeElements.isEmpty())
