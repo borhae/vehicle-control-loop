@@ -7,11 +7,13 @@ public interface ClassificationConstants
     public static int setAngleHashValue(double angle)
     {
         return (int)(Math.toDegrees(angle)/10);
+//        return (int)(Math.log(angle)/10);
     }
     
     public static int angleHashValue(double angle)
     {
         return (int)(Math.toDegrees(angle)/10);
+//        return (int)(Math.log(angle)/10);
     }
     
     public static int displacementHashValue(double displacement)
@@ -21,11 +23,11 @@ public interface ClassificationConstants
     
     public static int setVelocityHashValue(double velocity)
     {
-        return (int)(Math.sqrt(UnitConverter.meterPerSecondToKilometerPerHour(velocity))/2);
+        return (int)(UnitConverter.meterPerSecondToKilometerPerHour(velocity)/12);
     }
     
     public static int velocityHashValue(double velocity)
     {
-        return (int)(Math.sqrt(UnitConverter.meterPerSecondToKilometerPerHour(velocity))/2);
+        return (int)(UnitConverter.meterPerSecondToKilometerPerHour(velocity)/12);
     }
 }

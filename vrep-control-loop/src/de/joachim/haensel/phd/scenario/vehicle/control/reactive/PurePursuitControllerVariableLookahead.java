@@ -231,15 +231,19 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     {
         System.out.println("pure pursuit arrived");
         _actuatorsSensors.drive(0.0f, 0.0f);
+        System.out.println("set velocity and steering to 0");
         Position2D position = _actuatorsSensors.getFrontWheelCenterPosition();
 //        Hopefully I don't get a concurrent modification exception if the list is copied to an array first
 //        weird though... TODO rethink this when I have the time
 //        _arrivedListeners.forEach(listener -> listener.arrived(position));
+        System.out.println("copying arrived listeners to have no concurrent situation");
         IArrivedListener[] array = _arrivedListeners.toArray(new IArrivedListener[0]);
+        System.out.println("arrived listeners copied, now calling each of the " + array.length);
         for (int idx = 0; idx < array.length; idx++)
         {
             array[idx].arrived(position);
         }
+        System.out.println("all listeners called, clearing the list");
         _arrivedListeners.clear();
     }
     

@@ -16,7 +16,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
  * @author dummy
  *
  */
-public class StateAt
+public class EquivalenClassEntry
 {
     private Long _curTimeStamp;
     private List<TrajectoryElement> _trajectory;
@@ -24,7 +24,7 @@ public class StateAt
     private VelocityNode _root;
     
 
-    public StateAt(Long curTimeStamp, List<TrajectoryElement> trajectory, ObservationTuple observationTuple)
+    public EquivalenClassEntry(Long curTimeStamp, List<TrajectoryElement> trajectory, ObservationTuple observationTuple)
     {
         _curTimeStamp = curTimeStamp;
         _trajectory = trajectory;

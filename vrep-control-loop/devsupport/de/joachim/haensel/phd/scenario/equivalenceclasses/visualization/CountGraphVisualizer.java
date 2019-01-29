@@ -1,5 +1,7 @@
 package de.joachim.haensel.phd.scenario.equivalenceclasses.visualization;
 
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,7 +54,7 @@ public class CountGraphVisualizer extends JFrame
             mxCompactTreeLayout layout = new mxCompactTreeLayout(graph, false);
             layout.setUseBoundingBox(false);
             layout.setEdgeRouting(false);
-            layout.setLevelDistance(20);
+            layout.setLevelDistance(50);
             layout.setNodeDistance(3);
     
             Object parent = graph.getDefaultParent();
@@ -79,6 +81,22 @@ public class CountGraphVisualizer extends JFrame
             });
     
             mxGraphComponent graphComponent = new mxGraphComponent(graph);
+            MouseWheelListener wheelListener = new MouseWheelListener() {
+                
+                @Override
+                public void mouseWheelMoved(MouseWheelEvent e)
+                {
+                    if(e.getWheelRotation() < 0)
+                    {
+                        graphComponent.zoomIn();
+                    }
+                    else
+                    {
+                        graphComponent.zoomOut();
+                    }
+                }
+            };
+            graphComponent.addMouseWheelListener(wheelListener);
             getContentPane().add(graphComponent);
         }
         catch (JsonParseException exc)
@@ -115,13 +133,15 @@ public class CountGraphVisualizer extends JFrame
 
     public static void main(String[] args)
     {
-        CountGraphVisualizer luebeckFrame = new CountGraphVisualizer("luebeck_10_targets15.000000_120.000000_4.00_4.00_1.00_.json");
+//        CountGraphVisualizer luebeckFrame = new CountGraphVisualizer("luebeck_10_targets15.000000_120.000000_4.00_4.00_1.00_.json");
+        CountGraphVisualizer luebeckFrame = new CountGraphVisualizer("luebeck_20_targets15.000000_120.000000_4.00_4.00_1.00_.json");
         luebeckFrame.init();
         luebeckFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         luebeckFrame.setSize(400, 320);
         luebeckFrame.setVisible(true);
 
-        CountGraphVisualizer chandigarhFrame = new CountGraphVisualizer("chandigarh_10_targets15.000000_120.000000_4.00_4.00_1.00_.json");
+//        CountGraphVisualizer chandigarhFrame = new CountGraphVisualizer("chandigarh_10_targets15.000000_120.000000_4.00_4.00_1.00_.json");
+        CountGraphVisualizer chandigarhFrame = new CountGraphVisualizer("chandigarh_20_targets15.000000_120.000000_4.00_4.00_1.00_.json");
         chandigarhFrame.init();
         chandigarhFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         chandigarhFrame.setSize(400, 320);

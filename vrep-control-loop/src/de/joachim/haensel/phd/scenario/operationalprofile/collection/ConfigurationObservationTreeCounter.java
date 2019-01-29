@@ -13,15 +13,15 @@ public class ConfigurationObservationTreeCounter
 {
     public static CountTreeNode count(Map<Long, List<TrajectoryElement>> configurations, Map<Long, ObservationTuple> observations)
     {
-        List<StateAt> states = new ArrayList<>();
+        List<EquivalenClassEntry> states = new ArrayList<>();
         Set<Long> timeStamps = configurations.keySet();
         for(Long curTimeStamp : timeStamps)
         {
-            StateAt curStateAt = new StateAt(curTimeStamp, configurations.get(curTimeStamp), observations.get(curTimeStamp));
-            states.add(curStateAt);
+            EquivalenClassEntry equivalenceClassEntry = new EquivalenClassEntry(curTimeStamp, configurations.get(curTimeStamp), observations.get(curTimeStamp));
+            states.add(equivalenceClassEntry);
         }
         CountTreeNode root = new CountTreeNode(null);
-        for (StateAt curState : states)
+        for (EquivalenClassEntry curState : states)
         {
             root.enter(curState);
         }

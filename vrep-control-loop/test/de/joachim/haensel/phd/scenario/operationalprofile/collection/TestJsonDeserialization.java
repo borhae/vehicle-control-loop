@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,9 +29,11 @@ public class TestJsonDeserialization
     {
         return Arrays.asList(new Object[][]
         {
-          {"luebeck_mini_routing_challenge", 15, 120, 4.0, 4.3, 1.0},
+//          {"luebeck_mini_routing_challenge", 15, 120, 4.0, 4.3, 1.0},
 //          {"luebeck_10_targets", 15, 120, 4.0, 4.0, 1.0},
-//          {"chandigarh_10_targets", 15, 120, 4.0, 4.0, 1.0}, 
+//          {"chandigarh_10_targets", 15, 120, 4.0, 4.0, 1.0},
+            {"chandigarh_20_targets", 15, 120, 4.0, 4.0, 1.0},
+            {"luebeck_20_targets", 15, 120, 4.0, 4.0, 1.0},
         });
     }
 
@@ -48,13 +49,13 @@ public class TestJsonDeserialization
         try
         {
             Map<Long, ObservationTuple> observations = 
-                    mapper.readValue(new File("./res/operationalprofiletest/serializedruns/minirouting/Ob" + _testID + ".json"),new TypeReference<Map<Long, ObservationTuple>>() {});
+                    mapper.readValue(new File("./res/operationalprofiletest/serializedruns/Ob" + _testID + ".json"),new TypeReference<Map<Long, ObservationTuple>>() {});
             Map<Long, List<TrajectoryElement>> configurations = 
-                    mapper.readValue(new File("./res/operationalprofiletest/serializedruns/minirouting/Co" + _testID + ".json"),new TypeReference<Map<Long, List<TrajectoryElement>>>() {});
+                    mapper.readValue(new File("./res/operationalprofiletest/serializedruns/Co" + _testID + ".json"),new TypeReference<Map<Long, List<TrajectoryElement>>>() {});
             List<RecordedTrajectoryElement> trajectoryRecordings = 
-                    mapper.readValue(new File("./res/operationalprofiletest/serializedruns/minirouting/TrRe" + _testID + ".json"), new TypeReference<List<RecordedTrajectoryElement>>() {});
+                    mapper.readValue(new File("./res/operationalprofiletest/serializedruns/TrRe" + _testID + ".json"), new TypeReference<List<RecordedTrajectoryElement>>() {});
             List<Position2D> plannedPath = 
-                    mapper.readValue(new File("./res/operationalprofiletest/serializedruns/minirouting/Plan" + _testID + ".json"), new TypeReference<List<Position2D>>() {});
+                    mapper.readValue(new File("./res/operationalprofiletest/serializedruns/Plan" + _testID + ".json"), new TypeReference<List<Position2D>>() {});
             RecordedTrajectoryElement firstRecord = trajectoryRecordings.get(0);
             RecordedTrajectoryElement lastRecord = trajectoryRecordings.get(trajectoryRecordings.size() - 1);
             long sysTimeSpanMillis = lastRecord.getSysTime() - firstRecord.getSysTime();

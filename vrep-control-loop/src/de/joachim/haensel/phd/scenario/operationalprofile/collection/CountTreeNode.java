@@ -27,7 +27,7 @@ public class CountTreeNode
         _parent = parent;
     }
     
-    public void enter(StateAt curState)
+    public void enter(EquivalenClassEntry curState)
     {
         ICountListElem root = curState.getRoot();
         enter(root, 1);
