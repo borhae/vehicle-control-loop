@@ -63,4 +63,29 @@ public class AngleNode implements ICountListElem, ClassificationConstants
     {
         stats.visit(this);
     }
+
+    @Override
+    public int compareTo(ICountListElem o)
+    {
+        if(o instanceof AngleNode)
+        {
+            double comparison = getNumericalValue() - o.getNumericalValue();
+            if(Math.abs(comparison) <  EPSILON)
+            {
+                if(_next != null && o.next() != null)
+                {
+                    return _next.compareTo(o.next());
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            return (int) comparison;
+        }
+        else
+        {
+            return Integer.MAX_VALUE;
+        }
+    }
 }

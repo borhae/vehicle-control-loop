@@ -60,4 +60,17 @@ public class LeafNode implements ICountListElem
     {
         stats.visit(this);
     }
+
+    @Override
+    public int compareTo(ICountListElem o)
+    {
+        if(o instanceof LeafNode)
+        {
+            return 0;
+        }
+        else
+        {
+            return Integer.MAX_VALUE;
+        }
+    }
 }

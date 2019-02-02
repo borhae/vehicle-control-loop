@@ -1,7 +1,9 @@
 package de.joachim.haensel.phd.scenario.operationalprofile.collection;
 
-public interface ICountListElem
+public interface ICountListElem extends Comparable<ICountListElem>
 {
+    public static double EPSILON = 0.0000000000000000001;
+
     public void setNext(ICountListElem elem);
     public ICountListElem next();
     public int getHashRangeIdx();

@@ -24,7 +24,7 @@ import sumobindings.EdgeType;
  *
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class ObservationTuple
+public class ObservationTuple implements Comparable<ObservationTuple>
 {
     private Position2D _rearWheelCP;
     private Position2D _frontWheelCP;
@@ -32,6 +32,7 @@ public class ObservationTuple
     private double[] _velocity;
 //    private List<IStreetSection> _viewAhead;
     private long _timeStamp;
+    private Vector2D _orientation;
 
     public ObservationTuple()
     {
@@ -135,5 +136,45 @@ public class ObservationTuple
     public long getTimeStamp()
     {
         return _timeStamp;
+    }
+
+    @Override
+    public int compareTo(ObservationTuple other)
+    {
+        int orXComp = Double.compare(getOrientation().getNormX(), other.getOrientation().getNormX());
+        if(orXComp == 0)
+        {
+            int orYComp = Double.compare(getOrientation().getNormY(), other.getOrientation().getbY());
+            if(orYComp == 0)
+            {
+                int velXComp = Double.compare(_velocity[0], other._velocity[0]);
+                if(velXComp == 0)
+                {
+                    int velYComp = Double.compare(_velocity[1], other._velocity[1]);
+                    return velYComp;
+                }
+                else
+                {
+                    return velXComp;
+                }
+            }
+            else
+            {
+                return orYComp;
+            }
+        }
+        else
+        {
+            return orXComp;
+        }
+    }
+
+    private Vector2D getOrientation()
+    {
+        if(_orientation == null)
+        {
+            _orientation = new Vector2D(_rearWheelCP, _frontWheelCP);
+        }
+        return _orientation;
     }
 }

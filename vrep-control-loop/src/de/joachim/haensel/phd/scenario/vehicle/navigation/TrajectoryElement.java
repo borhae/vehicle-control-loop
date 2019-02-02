@@ -4,10 +4,11 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 import de.joachim.haensel.phd.scenario.math.TMatrix;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class TrajectoryElement
+public class TrajectoryElement implements Comparable<TrajectoryElement>
 {
     public enum VelocityEdgeType
     {
@@ -137,5 +138,49 @@ public class TrajectoryElement
         copy._velocity = _velocity;
         copy._velocityEdgeType = _velocityEdgeType;
         return copy;
+    }
+
+    @Override
+    public int compareTo(TrajectoryElement other)
+    {
+        int velComp = Double.compare(_velocity, other.getVelocity());
+        if(velComp == 0)
+        {
+            Vector2D otherVec = other.getVector();
+            Position2D otherBase = otherVec.getBase();
+            Position2D thisBase = _vector.getBase();
+            int basXComp = Double.compare(thisBase.getX(), otherBase.getX());
+            if(basXComp == 0)
+            {
+                int basYComp = Double.compare(thisBase.getY(), otherBase.getY());
+                if(basYComp == 0)
+                {
+                    Position2D thisTip = _vector.getTip();
+                    Position2D otherTip = otherVec.getTip();
+                    int tipXComp = Double.compare(thisTip.getX(), otherTip.getX());
+                    if(tipXComp == 0)
+                    {
+                        int tipYComp = Double.compare(thisTip.getY(), otherTip.getY());
+                        return tipYComp;
+                    }
+                    else
+                    {
+                        return tipXComp;
+                    }
+                }
+                else
+                {
+                    return basYComp;
+                }
+            }
+            else
+            {
+                return basXComp;
+            }
+        }
+        else
+        {
+            return velComp;
+        }
     }
 }

@@ -26,6 +26,11 @@ public class Position2D
         init(x, y);
     }
 
+    public Position2D(double[] pos)
+    {
+        this(pos[0], pos[1]);
+    }
+
     private void init(double x, double y)
     {
         if(Double.isNaN(x) || Double.isNaN(y))

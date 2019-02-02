@@ -16,7 +16,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
  * @author dummy
  *
  */
-public class EquivalenClassEntry
+public class EquivalenClassEntry 
 {
     private Long _curTimeStamp;
     private List<TrajectoryElement> _trajectory;
