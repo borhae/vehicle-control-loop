@@ -1,14 +1,13 @@
 package de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity;
 
-import static java.lang.Math.*;
+import static java.lang.Math.min;
+import static java.lang.Math.sqrt;
 
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.sun.xml.internal.bind.marshaller.NioEscapeHandler;
 
 import de.joachim.haensel.phd.converters.UnitConverter;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;

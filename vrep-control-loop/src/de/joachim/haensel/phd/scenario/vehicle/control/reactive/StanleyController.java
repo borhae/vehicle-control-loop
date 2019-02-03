@@ -2,15 +2,11 @@ package de.joachim.haensel.phd.scenario.vehicle.control.reactive;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Formatter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import com.sun.javafx.binding.StringFormatter;
-
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
-import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
@@ -25,7 +21,6 @@ import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
 import de.joachim.haensel.statemachine.Guard;
 import de.joachim.haensel.statemachine.States;
-import javafx.beans.binding.StringExpression;
 
 /**
  * First go at the stanley controller. Does not work at all. Get back when I'll have the time for it (wildly oscillating).
