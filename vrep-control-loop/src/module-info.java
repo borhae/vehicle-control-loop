@@ -16,10 +16,10 @@ module vrepvehicle
     
     requires transitive coppelialib;
     requires java.xml;
-    requires transitive java.xml.bind;
+    requires java.xml.bind;
     requires org.junit.jupiter.api;
     requires org.junit.jupiter.params;
     requires org.hamcrest;
     requires java.desktop;
-	requires transitive com.fasterxml.jackson.core;
+	requires com.fasterxml.jackson.core;
 }
