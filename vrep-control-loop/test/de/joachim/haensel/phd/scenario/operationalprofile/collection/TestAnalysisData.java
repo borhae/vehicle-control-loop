@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,19 +27,16 @@ public class TestAnalysisData
 {
     static Stream<Arguments> idAndSystemParameterProvider()
     {
-    	return Stream.of(
-//    	          {"luebeck_mini_routing_challenge", 15, 120, 4.0, 4.3, 1.0},
-//    	          {"luebeck_10_targets", 15, 120, 4.0, 4.0, 1.0},
-//    	          {"chandigarh_10_targets", 15, 120, 4.0, 4.0, 1.0},
-    	            Arguments.of("chandigarh_20_targets", 15, 120, 4.0, 4.0, 1.0),
-    	            Arguments.of("luebeck_20_targets", 15, 120, 4.0, 4.0, 1.0)
-    	        );
-    }
-//    
-//    public TestAnalysisData(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration)
-//    {
-//        _testID = testID + String.format("%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
-//    }
+    	Collection<Object[]> result = Arrays.asList(new Object[][]
+		{
+			{"luebeck_mini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
+			{"luebeck_10_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
+			{"chandigarh_10_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
+			{"chandigarh_20_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
+			{"luebeck_20_targets", 15.0, 120.0, 4.0, 4.0, 1.0}
+    	});
+    	return result.stream().map(params -> Arguments.of(params));
+	}
 
     @ParameterizedTest
     @MethodSource("idAndSystemParameterProvider")
