@@ -8,30 +8,32 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
-@RunWith(Parameterized.class)
+/**
+ * TODO reintroduce parameterized
+ * @author dummy
+ *
+ */
 public class TestGroundTruthCounting
 {
     private String _testID;
 
-    @Parameterized.Parameters
+    
     public static Collection<Object[]> parameters()
     {
         return Arrays.asList(new Object[][]
         {
-//          {"luebeck_mini_routing_challenge", 15, 120, 4.0, 4.3, 1.0},
+          {"luebeck_mini_routing_challenge", 15, 120, 4.0, 4.3, 1.0},
 //          {"luebeck_10_targets", 15, 120, 4.0, 4.0, 1.0},
 //          {"chandigarh_10_targets", 15, 120, 4.0, 4.0, 1.0},
-            {"chandigarh_20_targets", 15, 120, 4.0, 4.0, 1.0},
-            {"luebeck_20_targets", 15, 120, 4.0, 4.0, 1.0},
+//            {"chandigarh_20_targets", 15, 120, 4.0, 4.0, 1.0},
+//            {"luebeck_20_targets", 15, 120, 4.0, 4.0, 1.0},
         });
     }
 

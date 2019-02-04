@@ -1,8 +1,8 @@
 package de.joachim.haensel.phd.scenario.map.sumo2vrep.test;
 
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,10 +10,10 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import coppelia.FloatWA;
 import coppelia.IntW;
@@ -41,7 +41,7 @@ public class MapCreationTest implements TestConstants
     private static int _clientID;
     private static VRepObjectCreation _objectCreator;
 
-    @BeforeClass
+    @BeforeAll
     public static void setupVrep() throws VRepException
     {
         _vrep = VRepRemoteAPI.INSTANCE;
@@ -49,13 +49,13 @@ public class MapCreationTest implements TestConstants
         _objectCreator = new VRepObjectCreation(_vrep, _clientID);
     }
     
-    @AfterClass
+    @AfterAll
     public static void tearDownVrep() 
     {
         _vrep.simxFinish(_clientID);
     }
     
-    @After
+    @AfterEach
     public void cleanUpObjects() throws VRepException
     {
         _objectCreator.deleteAll();
@@ -138,7 +138,7 @@ public class MapCreationTest implements TestConstants
         _vrep.simxGetObjectPosition(_clientID, vrepLaneHandle.getValue(), -1, vrep3dPosition, remoteApi.simx_opmode_blocking);
         Position2D actual = new Position2D(vrep3dPosition);
         
-        assertTrue("Broken model references", Position2D.equals(expected, actual, 0.0001f));
+        assertTrue(Position2D.equals(expected, actual, 0.0001f), "Broken model references");
     }
 
     private Position2D computeCenter(LaneType lane)

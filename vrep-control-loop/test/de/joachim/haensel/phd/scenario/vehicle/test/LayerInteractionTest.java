@@ -1,15 +1,16 @@
 package de.joachim.haensel.phd.scenario.vehicle.test;
 
+
 import java.awt.Color;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import coppelia.IntWA;
 import coppelia.remoteApi;
@@ -47,7 +48,7 @@ public class LayerInteractionTest implements TestConstants
     private static int _clientID;
     private static VRepObjectCreation _objectCreator;
 
-    @BeforeClass
+    @BeforeEach
     public static void setupVrep() throws VRepException
     {
         _vrep = VRepRemoteAPI.INSTANCE;
@@ -55,7 +56,7 @@ public class LayerInteractionTest implements TestConstants
         _objectCreator = new VRepObjectCreation(_vrep, _clientID);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownVrep() throws VRepException 
     {
         waitForRunningSimulationToStop();
@@ -80,7 +81,7 @@ public class LayerInteractionTest implements TestConstants
         }
     }
 
-    @After
+    @AfterEach
     public void cleanUpObjects() throws VRepException
     {
         _objectCreator.deleteAll();

@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.operationalprofile.collection;
 
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -13,7 +14,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.joachim.haensel.phd.scenario.equivalenceclasses.TrajectoryNormalizer;
 import de.joachim.haensel.phd.scenario.map.RoadMap;

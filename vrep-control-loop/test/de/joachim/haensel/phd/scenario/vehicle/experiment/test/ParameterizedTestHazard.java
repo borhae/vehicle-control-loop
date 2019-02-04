@@ -1,6 +1,7 @@
 package de.joachim.haensel.phd.scenario.vehicle.experiment.test;
 
-import static org.junit.Assert.fail;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,12 +12,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import coppelia.IntWA;
 import coppelia.remoteApi;
@@ -35,7 +34,12 @@ import de.joachim.haensel.phd.scenario.vehicle.experiment.TireBlowOutAtPositionE
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
-@RunWith(Parameterized.class)
+/**
+ * TODO parameterized! fix it
+ * @author dummy
+ *
+ */
+//@RunWith(Parameterized.class)
 public class ParameterizedTestHazard
 {
     private static VRepRemoteAPI _vrep;
@@ -54,7 +58,7 @@ public class ParameterizedTestHazard
     private String _color;
     private boolean[] _tiresToBlow;
     
-    @Parameterized.Parameters
+//    @Parameterized.Parameters
     public static Collection<Object[]> parameters()
     {
         return Arrays.asList(new Object[][]
@@ -91,13 +95,13 @@ public class ParameterizedTestHazard
         }
         catch (VRepException exc)
         {
-            fail();
+            fail(exc);
         }
         _paramID = paramID;
         _color = color;
     }
     
-    @BeforeClass
+    @BeforeAll
     public static void setupVrep() throws VRepException
     {
         _vrep = VRepRemoteAPI.INSTANCE;
@@ -105,7 +109,7 @@ public class ParameterizedTestHazard
         _objectCreator = new VRepObjectCreation(_vrep, _clientID);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownVrep() throws VRepException 
     {
         waitForRunningSimulationToStop();
@@ -130,7 +134,7 @@ public class ParameterizedTestHazard
         }
     }
 
-    @After
+    @AfterEach
     public void cleanUpObjects() throws VRepException
     {
         _objectCreator.deleteAll();

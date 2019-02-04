@@ -1,7 +1,6 @@
 package de.joachim.haensel.phd.scenario.vehicle.test;
 
 
-import static org.junit.Assert.assertEquals;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -12,7 +11,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.TMatrix;

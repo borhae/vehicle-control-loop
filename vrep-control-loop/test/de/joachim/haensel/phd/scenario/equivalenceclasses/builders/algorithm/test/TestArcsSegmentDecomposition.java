@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.test;
 
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.io.File;
@@ -17,7 +18,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsSegmentContainerElement;
 import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.ArcSegmentDecompositionAlgorithmByNgoEtAl;

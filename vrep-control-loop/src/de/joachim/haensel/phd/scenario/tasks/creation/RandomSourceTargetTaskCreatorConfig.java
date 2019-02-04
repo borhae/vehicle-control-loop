@@ -1,5 +1,7 @@
 package de.joachim.haensel.phd.scenario.tasks.creation;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import de.joachim.haensel.phd.scenario.math.XYMinMax;
 import de.joachim.haensel.phd.scenario.random.MersenneTwister;
 import de.joachim.haensel.phd.scenario.tasks.DriveAtoBTask;
@@ -48,13 +50,13 @@ public class RandomSourceTargetTaskCreatorConfig implements ITaskCreatorConfig
         {
             return false;
         }
-        org.junit.Assert.fail();
+        fail("Randoms Source target doesn't provide next elements");
         return false;
     }
 
     @Override
     public void init()
     {
-        org.junit.Assert.fail();
+    	fail("No initialization should be done on this object");
     }
 }

@@ -1,11 +1,12 @@
 package de.joachim.haensel.phd.scenario.vehicle.test;
 
 
+
 import static de.joachim.haensel.phd.scenario.vehicle.test.IsANumber.isANumber;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.junit.jupiter.api.Assertions.*;
+
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.*;
 
 import java.awt.Color;
 import java.util.Deque;
@@ -13,7 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.joachim.haensel.phd.converters.UnitConverter;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
@@ -32,9 +33,9 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segme
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterCircleIntersection;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.Segmenter;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.BasicVelocityAssigner;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.GlodererHertleVelocityAssigner;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.BasicVelocityAssigner.ICurvatureChangeListener;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.BasicVelocityAssigner.IProfileChangeListener;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.GlodererHertleVelocityAssigner;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.IVelocityAssignerFactory;
 
 public class SpeedProfileTest
@@ -78,7 +79,8 @@ public class SpeedProfileTest
         {
             TrajectoryElement curTrajectory = trajectories.get(idx);
             double actualVelocity = curTrajectory.getVelocity();
-            assertThat("velocity should be a number (index: " + idx + ").", actualVelocity, isANumber());
+//            assertThat("velocity should be a number (index: " + idx + ").", actualVelocity, isANumber());
+            assertThat("velocity should be a number(index: " + idx + ").", actualVelocity, isANumber());
         }
         Deque<Vector2D> vectorSegments = trajectories.stream().map(t -> t.getVector()).collect(Collectors.toCollection(() -> new LinkedList<>()));
         frame.addVectorSet(vectorSegments, Color.BLACK, 1.0, 0.15);
@@ -270,7 +272,7 @@ public class SpeedProfileTest
             double actualLateralVelocity = 0.0;
             if(radius == 0.0)
             {
-                assertThat("radius is zero, infinite acceleration (index: " + idx + ").", false);
+            	fail("radius is zero, infinite acceleration (index: " + idx + ").");
             }
             if(!Double.isNaN(radius))
             {

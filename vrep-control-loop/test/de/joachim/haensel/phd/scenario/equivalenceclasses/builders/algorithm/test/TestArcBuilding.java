@@ -1,16 +1,18 @@
 package de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.test;
 
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;import java.util.stream.Collector;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.Arc;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;

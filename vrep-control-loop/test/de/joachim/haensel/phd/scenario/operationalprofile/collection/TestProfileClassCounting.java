@@ -1,6 +1,5 @@
 package de.joachim.haensel.phd.scenario.operationalprofile.collection;
 
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,12 +15,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import coppelia.IntWA;
 import coppelia.remoteApi;
@@ -50,9 +47,11 @@ import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParam
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
-import junit.framework.AssertionFailedError;
 
-@RunWith(Parameterized.class)
+/**
+ * TODO handle parameterized test
+ */
+//@RunWith(Parameterized.class)
 public class TestProfileClassCounting
 {
     private static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
@@ -71,7 +70,7 @@ public class TestProfileClassCounting
 
     private String _testID;
 
-   @BeforeClass
+   @BeforeAll
    public static void setupVrep() throws VRepException
    {
        _vrep = VRepRemoteAPI.INSTANCE;
@@ -79,7 +78,7 @@ public class TestProfileClassCounting
        _objectCreator = new VRepObjectCreation(_vrep, _clientID);
    }
 
-   @AfterClass
+   @AfterAll
    public static void tearDownVrep() throws VRepException 
    {
        waitForRunningSimulationToStop();
@@ -104,13 +103,12 @@ public class TestProfileClassCounting
        }
    }
 
-   @After
+   @AfterEach
    public void cleanUpObjects() throws VRepException
    {
        _objectCreator.deleteAll();
    }
 
-   @Parameterized.Parameters
    public static Collection<Object[]> parameters()
    {
        return Arrays.asList(new Object[][]

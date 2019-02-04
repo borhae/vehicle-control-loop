@@ -1,12 +1,13 @@
 package de.joachim.haensel.phd.scenario.vehicle.test;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
@@ -40,7 +41,7 @@ public class VehicleCreationTest implements TestConstants
     private static VRepObjectCreation _objectCreator;
     private static List<IVehicle> _vehicles;
     
-    @BeforeClass
+    @BeforeAll
     public static void setupVrep() throws VRepException
     {
         _vrep = VRepRemoteAPI.INSTANCE;
@@ -49,13 +50,13 @@ public class VehicleCreationTest implements TestConstants
         _vehicles = new ArrayList<IVehicle>();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownVrep() 
     {
         _vrep.simxFinish(_clientID);
     }
     
-    @After
+    @AfterEach
     public void cleanUpObjects() throws VRepException
     {
         _objectCreator.deleteAll();

@@ -1,16 +1,14 @@
 package de.joachim.haensel.phd.scenario.parcourgenerator;
 
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import coppelia.IntWA;
 import coppelia.remoteApi;
@@ -46,7 +44,7 @@ public class TestParcourGeneration
     private static VRepObjectCreation _objectCreator;
     
     
-    @BeforeClass
+    @BeforeAll 
     public static void setupVrep() throws VRepException
     {
         _vrep = VRepRemoteAPI.INSTANCE;
@@ -54,7 +52,7 @@ public class TestParcourGeneration
         _objectCreator = new VRepObjectCreation(_vrep, _clientID);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownVrep() throws VRepException 
     {
         waitForRunningSimulationToStop();
@@ -79,7 +77,7 @@ public class TestParcourGeneration
         }
     }
 
-    @After
+    @AfterEach
     public void cleanUpObjects() throws VRepException
     {
         _objectCreator.deleteAll();

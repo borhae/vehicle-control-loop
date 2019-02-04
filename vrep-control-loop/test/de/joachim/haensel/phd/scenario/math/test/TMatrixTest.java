@@ -1,10 +1,9 @@
 package de.joachim.haensel.phd.scenario.math.test;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
+import org.junit.jupiter.api.Test;
 
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;

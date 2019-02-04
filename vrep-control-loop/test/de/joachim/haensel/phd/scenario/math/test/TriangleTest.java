@@ -1,8 +1,9 @@
 package de.joachim.haensel.phd.scenario.math.test;
 
-import static org.junit.Assert.*;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
 
 import de.joachim.haensel.phd.scenario.math.Triangle;
 import de.joachim.haensel.phd.scenario.math.TriangleError;

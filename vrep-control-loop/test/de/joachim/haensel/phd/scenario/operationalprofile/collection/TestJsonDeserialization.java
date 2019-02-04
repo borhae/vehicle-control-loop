@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.operationalprofile.collection;
 
+
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
@@ -8,9 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,12 +18,16 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.RecordedTrajectoryElement;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
-@RunWith(Parameterized.class)
+/**
+ * TODO handle parameterized tests 
+ * @author dummy
+ *
+ */
+//@RunWith(Parameterized.class)
 public class TestJsonDeserialization
 {
     private String _testID;
 
-    @Parameterized.Parameters
     public static Collection<Object[]> parameters()
     {
         return Arrays.asList(new Object[][]

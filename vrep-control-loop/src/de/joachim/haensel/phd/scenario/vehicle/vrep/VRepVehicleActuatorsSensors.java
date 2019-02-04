@@ -1,6 +1,7 @@
 package de.joachim.haensel.phd.scenario.vehicle.vrep;
 
-import static org.junit.Assert.fail;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.awt.Color;
 import java.util.Deque;
@@ -353,7 +354,7 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
         }
         catch (VRepException exc)
         {
-            fail();
+            fail(exc);
             exc.printStackTrace();
         }
     }

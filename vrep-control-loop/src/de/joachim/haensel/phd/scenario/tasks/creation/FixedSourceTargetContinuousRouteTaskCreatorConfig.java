@@ -1,5 +1,7 @@
 package de.joachim.haensel.phd.scenario.tasks.creation;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
 
 import de.joachim.haensel.phd.scenario.map.RoadMap;
@@ -74,14 +76,13 @@ public class FixedSourceTargetContinuousRouteTaskCreatorConfig implements ITaskC
     @Override
     public boolean hasNext()
     {
-        org.junit.Assert.fail();
+    	fail("no further element available");
         return false;
     }
 
     @Override
     public void init()
     {
-        org.junit.Assert.fail();
-        // TODO Auto-generated method stub
+    	fail("no init for FixedSourceTargetContinuousRouteTaskCreatorConfig");
     }
 }

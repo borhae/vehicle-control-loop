@@ -1,6 +1,7 @@
 package de.joachim.haensel.phd.scenario.tasks.execution.test;
 
-import static org.junit.Assert.fail;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -8,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
@@ -42,7 +43,7 @@ public class TestTaskExecutor
     private static int _clientID;
     private static VRepObjectCreation _objectCreator;
 
-    @BeforeClass
+    @BeforeAll
     public static void setupVrep() throws VRepException
     {
         _vrep = VRepRemoteAPI.INSTANCE;
@@ -50,7 +51,7 @@ public class TestTaskExecutor
         _objectCreator = new VRepObjectCreation(_vrep, _clientID);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownVrep() throws VRepException 
     {
         _objectCreator.deleteAll();
@@ -76,7 +77,7 @@ public class TestTaskExecutor
         }
         catch (VRepException exc)
         {
-            fail(exc.toString());
+            fail(exc);
         }
     }
     
@@ -103,7 +104,7 @@ public class TestTaskExecutor
         }
         catch (VRepException exc)
         {
-            fail(exc.toString());
+            fail(exc);
         }
     }
     
@@ -134,7 +135,7 @@ public class TestTaskExecutor
         }
         catch (VRepException exc)
         {
-            fail(exc.toString());
+            fail(exc);
         }
     }
     
@@ -166,7 +167,7 @@ public class TestTaskExecutor
         }
         catch (VRepException exc)
         {
-            fail(exc.toString());
+            fail(exc);
         }
     }
 
@@ -201,7 +202,7 @@ public class TestTaskExecutor
         }
         catch (VRepException exc)
         {
-            fail(exc.toString());
+            fail(exc);
         }
     }
 
@@ -234,7 +235,7 @@ public class TestTaskExecutor
         }
         catch (VRepException exc)
         {
-            fail(exc.toString());
+            fail(exc);
         }
     }
     

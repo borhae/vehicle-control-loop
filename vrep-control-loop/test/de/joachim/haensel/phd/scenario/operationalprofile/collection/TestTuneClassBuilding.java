@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.operationalprofile.collection;
 
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -11,9 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -22,12 +21,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
-@RunWith(Parameterized.class)
+/**
+ * TODO handle parameterized test
+ * @author dummy
+ *
+ */
+//@RunWith(Parameterized.class)
 public class TestTuneClassBuilding
 {
     private String _experimentName;
 
-    @Parameterized.Parameters
     public static Collection<Object[]> parameters()
     {
         return Arrays.asList(new Object[][]

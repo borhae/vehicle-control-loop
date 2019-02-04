@@ -1,12 +1,13 @@
 package de.joachim.haensel.phd.scenario.map.sumo2vrep.test;
 
+
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
@@ -39,7 +40,7 @@ public class SubScenarioCreationTest implements TestConstants
     private static int _clientID;
     private static VRepObjectCreation _objectCreator;
 
-    @BeforeClass
+    @BeforeAll
     public static void setupVrep() throws VRepException
     {
         _vrep = VRepRemoteAPI.INSTANCE;
@@ -47,13 +48,13 @@ public class SubScenarioCreationTest implements TestConstants
         _objectCreator = new VRepObjectCreation(_vrep, _clientID);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownVrep() throws VRepException 
     {
         _vrep.simxFinish(_clientID);
     }
 
-    @After
+    @AfterEach
     public void cleanUpObjects() throws VRepException
     {
         _objectCreator.deleteAll();

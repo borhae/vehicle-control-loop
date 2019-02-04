@@ -1,6 +1,5 @@
 package de.joachim.haensel.phd.scenario.operationalprofile.collection;
 
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,12 +15,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import coppelia.IntWA;
 import coppelia.remoteApi;
@@ -30,9 +27,6 @@ import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.RoadMapAndCenterMatrix;
 import de.joachim.haensel.phd.scenario.SimulationSetupConvenienceMethods;
 import de.joachim.haensel.phd.scenario.equivalenceclasses.TrajectoryNormalizer;
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsSegmentContainerElement;
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.ArcSegmentDecompositionAlgorithmByNgoEtAl;
-import de.joachim.haensel.phd.scenario.map.IStreetSection;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
@@ -50,9 +44,13 @@ import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParam
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
-import junit.framework.AssertionFailedError;
 
-@RunWith(Parameterized.class)
+/**
+ * TODO parameterized test, fix it
+ * @author dummy
+ *
+ */
+//@RunWith(Parameterized.class)
 public class TestProfileClassBuilding
 {
     private static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
@@ -71,7 +69,7 @@ public class TestProfileClassBuilding
 
     private String _testID;
 
-   @BeforeClass
+   @BeforeAll
    public static void setupVrep() throws VRepException
    {
        _vrep = VRepRemoteAPI.INSTANCE;
@@ -79,7 +77,7 @@ public class TestProfileClassBuilding
        _objectCreator = new VRepObjectCreation(_vrep, _clientID);
    }
 
-   @AfterClass
+   @AfterAll
    public static void tearDownVrep() throws VRepException 
    {
        waitForRunningSimulationToStop();
@@ -104,13 +102,13 @@ public class TestProfileClassBuilding
        }
    }
 
-   @After
+   @AfterEach
    public void cleanUpObjects() throws VRepException
    {
        _objectCreator.deleteAll();
    }
 
-   @Parameterized.Parameters
+//   @Parameterized.Parameters
    public static Collection<Object[]> parameters()
    {
        return Arrays.asList(new Object[][]

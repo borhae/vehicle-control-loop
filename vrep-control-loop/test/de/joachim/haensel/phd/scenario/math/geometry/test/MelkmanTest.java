@@ -3,8 +3,9 @@ package de.joachim.haensel.phd.scenario.math.geometry.test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 import de.joachim.haensel.phd.scenario.math.geometry.MelkmanHull;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;

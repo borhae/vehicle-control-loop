@@ -1,13 +1,13 @@
 package de.joachim.haensel.phd.scenario.lua.test;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.awt.Color;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import coppelia.FloatWA;
 import coppelia.IntWA;
@@ -25,7 +25,7 @@ public class TestRemoteLuaDrawingFunctions
     private static VRepObjectCreation _objectCreator;
     private static final String VREP_LOADING_SCRIPT_PARENT_OBJECT = "ScriptLoader";
 
-    @BeforeClass
+    @BeforeAll
     public static void setupVrep() throws VRepException
     {
         _vrep = VRepRemoteAPI.INSTANCE;
@@ -33,13 +33,13 @@ public class TestRemoteLuaDrawingFunctions
         _objectCreator = new VRepObjectCreation(_vrep, _clientID);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownVrep() 
     {
         _vrep.simxFinish(_clientID);
     }
     
-    @After
+    @AfterEach
     public void cleanUpObjects() throws VRepException
     {
         _objectCreator.deleteAll();
@@ -84,7 +84,7 @@ public class TestRemoteLuaDrawingFunctions
         }
         catch (VRepException exc)
         {
-            fail();
+            fail(exc);
             exc.printStackTrace();
         }
     }
@@ -130,7 +130,7 @@ public class TestRemoteLuaDrawingFunctions
         }
         catch (VRepException exc)
         {
-            fail();
+            fail(exc);
             exc.printStackTrace();
         }
     }
@@ -168,7 +168,7 @@ public class TestRemoteLuaDrawingFunctions
         }
         catch (VRepException exc)
         {
-            fail();
+            fail(exc);
             exc.printStackTrace();
         }
     }
@@ -207,7 +207,7 @@ public class TestRemoteLuaDrawingFunctions
         }
         catch (VRepException exc)
         {
-            fail();
+            fail(exc);
             exc.printStackTrace();
         }
     }
@@ -261,7 +261,7 @@ public class TestRemoteLuaDrawingFunctions
         }
         catch (VRepException exc)
         {
-            fail();
+            fail(exc);
             exc.printStackTrace();
         }
     }

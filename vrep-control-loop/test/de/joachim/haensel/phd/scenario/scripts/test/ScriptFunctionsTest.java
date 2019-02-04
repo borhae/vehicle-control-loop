@@ -1,9 +1,10 @@
 package de.joachim.haensel.phd.scenario.scripts.test;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import coppelia.FloatWA;
 import coppelia.IntWA;
@@ -36,7 +37,7 @@ public class ScriptFunctionsTest
     private static int _clientID;
     private static VRepObjectCreation _objectCreator;
 
-    @BeforeClass
+    @BeforeAll
     public static void setupVrep() throws VRepException
     {
         _vrep = VRepRemoteAPI.INSTANCE;
@@ -44,7 +45,7 @@ public class ScriptFunctionsTest
         _objectCreator = new VRepObjectCreation(_vrep, _clientID);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownVrep() throws VRepException 
     {
         waitForRunningSimulationToStop();
@@ -69,7 +70,7 @@ public class ScriptFunctionsTest
         }
     }
 
-    @After
+    @AfterEach
     public void cleanUpObjects() throws VRepException
     {
         _objectCreator.deleteAll();

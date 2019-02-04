@@ -1,20 +1,22 @@
 package de.joachim.haensel.phd.scenario.operationalprofile.collection;
 
+
+
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.provider.Arguments;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,34 +44,23 @@ import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
-@RunWith(Parameterized.class)
 public class TestJsonSerialization
 {
-    private static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
+	private static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
 
-    private static VRepRemoteAPI _vrep;
-    private static int _clientID;
-    private static VRepObjectCreation _objectCreator;
-    
-    private double _lookahead;
-    private double _maxVelocity;
-    private double _maxLongitudinalAcceleration;
-    private double _maxLongitudinalDecceleration;
-    private double _maxLateralAcceleration;
-    private List<Position2D> _targetPoints;
-    private RoadMap _map;
+	private static VRepRemoteAPI _vrep;
+	private static int _clientID;
+	private static VRepObjectCreation _objectCreator;
 
-    private String _testID;
+	@BeforeAll
+	public static void setupVrep() throws VRepException 
+	{
+		_vrep = VRepRemoteAPI.INSTANCE;
+		_clientID = _vrep.simxStart("127.0.0.1", 19999, true, true, 5000, 5);
+		_objectCreator = new VRepObjectCreation(_vrep, _clientID);
+	}
 
-   @BeforeClass
-   public static void setupVrep() throws VRepException
-   {
-       _vrep = VRepRemoteAPI.INSTANCE;
-       _clientID = _vrep.simxStart("127.0.0.1", 19999, true, true, 5000, 5);
-       _objectCreator = new VRepObjectCreation(_vrep, _clientID);
-   }
-
-   @AfterClass
+   @AfterAll
    public static void tearDownVrep() throws VRepException 
    {
        waitForRunningSimulationToStop();
@@ -94,19 +85,17 @@ public class TestJsonSerialization
        }
    }
 
-   @After
+   @AfterEach
    public void cleanUpObjects() throws VRepException
    {
        _objectCreator.deleteAll();
    }
 
-    @Parameterized.Parameters
-    public static Collection<Object[]> parameters()
+    static Stream<Arguments> idsTargetsDriveParams()
     {
-        return Arrays.asList(new Object[][]
-        {
-            {"luebeck_small", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(5579.18,3023.38), new Position2D(6375.32,3687.02)), "luebeck-roads.net.xml", "blue"},
-          {"luebeck_mini_routing_challenge", 15, 120, 4.0, 4.3, 1.0, Arrays.asList(new Position2D(7882.64,4664.21), new Position2D(7797.34,4539.80), new Position2D(7894.70,4608.56), new Position2D(8051.17,5536.44), new Position2D(8039.89,5485.08)), "luebeck-roads.net.xml", "blue"},
+    	return Stream.of(
+            Arguments.of("luebeck_small", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(5579.18,3023.38), new Position2D(6375.32,3687.02)), "luebeck-roads.net.xml", "blue")
+//            Arguments.of("luebeck_mini_routing_challenge", 15, 120, 4.0, 4.3, 1.0, Arrays.asList(new Position2D(7882.64,4664.21), new Position2D(7797.34,4539.80), new Position2D(7894.70,4608.56), new Position2D(8051.17,5536.44), new Position2D(8039.89,5485.08)), "luebeck-roads.net.xml", "blue")
 
 //            {"luebeck_10_targets", 15, 120, 4.0, 4.0, 1.0, 
 //                Arrays.asList
@@ -190,58 +179,92 @@ public class TestJsonSerialization
 //                    new Position2D(5805.44,9043.60)
 //                ),
 //                "chandigarh-roads.net.xml", "blue"},
-        });
+        );
     }
 
-    public TestJsonSerialization(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color)
-    {
-        _lookahead = lookahead;
-        _maxVelocity = maxVelocity;
-        _maxLongitudinalAcceleration = maxLongitudinalAcceleration;
-        _maxLongitudinalDecceleration = maxLongitudinalDecceleration;
-        _maxLateralAcceleration = maxLateralAcceleration;
-        RoadMapAndCenterMatrix mapAndCenterMatrix = null;
-         try
-         {
-             mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, RES_ROADNETWORKS_DIRECTORY + mapFilenName);
-         }
-         catch (VRepException exc)
-         {
-             exc.printStackTrace();
-         }
-        if(mapAndCenterMatrix != null)
-        {
-            _map = mapAndCenterMatrix.getRoadMap();
-            TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
-            _targetPoints = targetPoints.stream().map(point -> point.transform(centerMatrix)).collect(Collectors.toList());
-            _testID = testID + String.format("%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
-        }
-    }
+//    public TestJsonSerialization(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color)
+//    {
+//        _lookahead = lookahead;
+//        _maxVelocity = maxVelocity;
+//        _maxLongitudinalAcceleration = maxLongitudinalAcceleration;
+//        _maxLongitudinalDecceleration = maxLongitudinalDecceleration;
+//        _maxLateralAcceleration = maxLateralAcceleration;
+//        RoadMapAndCenterMatrix mapAndCenterMatrix = null;
+//         try
+//         {
+//             mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, RES_ROADNETWORKS_DIRECTORY + mapFilenName);
+//         }
+//         catch (VRepException exc)
+//         {
+//             exc.printStackTrace();
+//         }
+//        if(mapAndCenterMatrix != null)
+//        {
+//            _map = mapAndCenterMatrix.getRoadMap();
+//            TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+//            _targetPoints = targetPoints.stream().map(point -> point.transform(centerMatrix)).collect(Collectors.toList());
+//            _testID = testID + String.format("%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
+//        }
+//    }
+//    
+//    @ParameterizedTest
+//    @MethodSource("idsTargetsDriveParams()")
+//    public void testSerialize(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color) throws VRepException
     
     @Test
     public void testSerialize() throws VRepException
     {
+    	String testID = "luebeck_small";
+    	double lookahead = 15;
+    	double maxVelocity = 120;
+    	double maxLongitudinalAcceleration = 4.0;
+    	double maxLongitudinalDecceleration = 4.3;
+    	double maxLateralAcceleration = 0.8;
+    	List<Position2D> targetPoints = Arrays.asList(new Position2D(5579.18,3023.38), new Position2D(6375.32,3687.02));
+    	String mapFilenName = "luebeck-roads.net.xml";
+    	String color = "blue";
+    			
+		RoadMapAndCenterMatrix mapAndCenterMatrix = null;
+		RoadMap map = null;
+		List<Position2D> targetPointsMapped = null;
+		try 
+		{
+			mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, RES_ROADNETWORKS_DIRECTORY + mapFilenName);
+		} 
+		catch (VRepException exc) 
+		{
+			exc.printStackTrace();
+		}
+		if (mapAndCenterMatrix != null) 
+		{
+			map = mapAndCenterMatrix.getRoadMap();
+			TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+			targetPointsMapped = targetPoints.stream().map(point -> point.transform(centerMatrix))
+					.collect(Collectors.toList());
+			testID = testID + String.format("%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity,
+					maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
+		}
         final Map<Long, List<TrajectoryElement>> configurations = new HashMap<>();
         final Map<Long, ObservationTuple> observations = new HashMap<>();
 
         TaskCreator taskCreator = new TaskCreator();
         PointListTaskCreatorConfig taskConfiguration = new PointListTaskCreatorConfig();
-        taskConfiguration.setControlParams(_lookahead, _maxVelocity, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
+        taskConfiguration.setControlParams(lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
         taskConfiguration.setDebug(true);
-        taskConfiguration.setMap(_map);
+        taskConfiguration.setMap(map);
         taskConfiguration.configSimulator(_vrep, _clientID, _objectCreator);
         TrajectoryRecorder trajectoryRecorder = new TrajectoryRecorder();
         taskConfiguration.addLowerLayerControl(trajectoryRecorder);
         taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisualsBrakeScript.ttm");
 
-        taskConfiguration.setTargetPoints(_targetPoints);
+        taskConfiguration.setTargetPoints(targetPointsMapped);
         taskConfiguration.addNavigationListener(trajectoryRecorder);
         taskConfiguration.setLowerLayerController(new ILowerLayerFactory() {
             @Override
             public ILowerLayerControl create()
             {
                 PurePursuitControllerVariableLookahead purePursuitControllerVariableLookahead = new PurePursuitControllerVariableLookahead();
-                purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(_lookahead, 0.0));
+                purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(lookahead, 0.0));
                 ITrajectoryRequestListener requestListener = (newTrajectories, timestamp) ->
                 {
                     configurations.put(new Long(timestamp), newTrajectories);
@@ -265,10 +288,10 @@ public class TestJsonSerialization
         trajectoryRecorder.getTrajectory();
         try
         {
-            mapper.writeValue(new File("./res/operationalprofiletest/serializedruns/Co" + _testID + ".json"), configurations);
-            mapper.writeValue(new File("./res/operationalprofiletest/serializedruns/Ob" + _testID + ".json"), observations);
-            mapper.writeValue(new File("./res/operationalprofiletest/serializedruns/TrRe" + _testID + ".json"), trajectoryRecorder.getTrajectory());
-            mapper.writeValue(new File("./res/operationalprofiletest/serializedruns/Plan" + _testID + ".json"), trajectoryRecorder.getPlannedTrajectory());
+            mapper.writeValue(new File("./res/operationalprofiletest/serializedruns/Co" + testID + ".json"), configurations);
+            mapper.writeValue(new File("./res/operationalprofiletest/serializedruns/Ob" + testID + ".json"), observations);
+            mapper.writeValue(new File("./res/operationalprofiletest/serializedruns/TrRe" + testID + ".json"), trajectoryRecorder.getTrajectory());
+            mapper.writeValue(new File("./res/operationalprofiletest/serializedruns/Plan" + testID + ".json"), trajectoryRecorder.getPlannedTrajectory());
         }
         catch (JsonProcessingException exc)
         {
