@@ -13,6 +13,10 @@ module vrepvehicle
     exports sumobindings;
 
     opens sumobindings to java.xml.bind;
+    opens de.joachim.haensel.phd.scenario.vehicle.navigation to com.fasterxml.jackson.databind;
+    opens de.joachim.haensel.phd.scenario.math.geometry to com.fasterxml.jackson.databind;
+    opens de.joachim.haensel.phd.scenario.operationalprofile.collection to com.fasterxml.jackson.databind;
+    opens de.joachim.haensel.phd.scenario.vehicle.experiment to com.fasterxml.jackson.databind;
     
     requires transitive coppelialib;
     requires java.xml;

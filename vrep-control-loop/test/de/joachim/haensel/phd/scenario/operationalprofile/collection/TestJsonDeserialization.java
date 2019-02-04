@@ -5,11 +5,13 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,47 +20,38 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.RecordedTrajectoryElement;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
-/**
- * TODO handle parameterized tests 
- * @author dummy
- *
- */
-//@RunWith(Parameterized.class)
 public class TestJsonDeserialization
 {
-    private String _testID;
-
-    public static Collection<Object[]> parameters()
+    public static Stream<Arguments> parameters()
     {
         return Arrays.asList(new Object[][]
         {
-//          {"luebeck_mini_routing_challenge", 15, 120, 4.0, 4.3, 1.0},
-//          {"luebeck_10_targets", 15, 120, 4.0, 4.0, 1.0},
-//          {"chandigarh_10_targets", 15, 120, 4.0, 4.0, 1.0},
-            {"chandigarh_20_targets", 15, 120, 4.0, 4.0, 1.0},
-            {"luebeck_20_targets", 15, 120, 4.0, 4.0, 1.0},
-        });
+            {"luebeck_extramini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
+//            {"luebeck_small", 15.0, 120.0, 4.0, 4.3, 1.0},
+//          {"luebeck_mini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
+//          {"luebeck_10_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
+//          {"chandigarh_10_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
+//            {"chandigarh_20_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
+//            {"luebeck_20_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
+        }).stream().map(params -> Arguments.of(params));
     }
 
-    public TestJsonDeserialization(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration)
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void testReadSimulationRun(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration)
     {
-            _testID = testID + String.format("%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
-    }
-
-    @Test
-    public void testReadSimulationRun()
-    {
+        String localTestID = testID + String.format("%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration); 
         ObjectMapper mapper = new ObjectMapper();
         try
         {
             Map<Long, ObservationTuple> observations = 
-                    mapper.readValue(new File("./res/operationalprofiletest/serializedruns/Ob" + _testID + ".json"),new TypeReference<Map<Long, ObservationTuple>>() {});
+                    mapper.readValue(new File("./res/operationalprofiletest/serializedruns/Ob" + localTestID + ".json"),new TypeReference<Map<Long, ObservationTuple>>() {});
             Map<Long, List<TrajectoryElement>> configurations = 
-                    mapper.readValue(new File("./res/operationalprofiletest/serializedruns/Co" + _testID + ".json"),new TypeReference<Map<Long, List<TrajectoryElement>>>() {});
+                    mapper.readValue(new File("./res/operationalprofiletest/serializedruns/Co" + localTestID + ".json"),new TypeReference<Map<Long, List<TrajectoryElement>>>() {});
             List<RecordedTrajectoryElement> trajectoryRecordings = 
-                    mapper.readValue(new File("./res/operationalprofiletest/serializedruns/TrRe" + _testID + ".json"), new TypeReference<List<RecordedTrajectoryElement>>() {});
+                    mapper.readValue(new File("./res/operationalprofiletest/serializedruns/TrRe" + localTestID + ".json"), new TypeReference<List<RecordedTrajectoryElement>>() {});
             List<Position2D> plannedPath = 
-                    mapper.readValue(new File("./res/operationalprofiletest/serializedruns/Plan" + _testID + ".json"), new TypeReference<List<Position2D>>() {});
+                    mapper.readValue(new File("./res/operationalprofiletest/serializedruns/Plan" + localTestID + ".json"), new TypeReference<List<Position2D>>() {});
             RecordedTrajectoryElement firstRecord = trajectoryRecordings.get(0);
             RecordedTrajectoryElement lastRecord = trajectoryRecordings.get(trajectoryRecordings.size() - 1);
             long sysTimeSpanMillis = lastRecord.getSysTime() - firstRecord.getSysTime();

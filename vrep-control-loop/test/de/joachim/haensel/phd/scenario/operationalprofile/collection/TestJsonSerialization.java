@@ -94,11 +94,15 @@ public class TestJsonSerialization
    {
 	   Collection<Object[]> oldArrayList = Arrays.asList(new Object[][]
 	   {
-		   	{"luebeck_small", 15.0, 120.0, 4.0, 4.3, 0.8, Arrays.asList
-		   		(
-   				new Position2D(5579.18,3023.38), 
-   				new Position2D(6375.32,3687.02)
-   				), "luebeck-roads.net.xml", "blue"},
+	       {"luebeck_extramini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0, Arrays.asList
+	           (
+               new Position2D(7882.64,4664.21), 
+               new Position2D(7797.34,4539.80)), "luebeck-roads.net.xml", "blue"},		   	
+//	       {"luebeck_small", 15.0, 120.0, 4.0, 4.3, 0.8, Arrays.asList
+//		   		(
+//   				new Position2D(5579.18,3023.38), 
+//   				new Position2D(6375.32,3687.02)
+//   				), "luebeck-roads.net.xml", "blue"},
 //			{"luebeck_10_targets", 15, 120, 4.0, 4.0, 1.0, Arrays.asList
 //				(
 //				 new Position2D(3934.06,6377.25), 

@@ -8,18 +8,20 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import coppelia.IntWA;
 import coppelia.remoteApi;
@@ -47,12 +49,6 @@ import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
-/**
- * TODO handle parameterized test
- * @author dummy
- *
- */
-//@RunWith(Parameterized.class)
 public class TestProfileCollectionPlanning
 {
     private static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
@@ -61,18 +57,6 @@ public class TestProfileCollectionPlanning
     private static int _clientID;
     private static VRepObjectCreation _objectCreator;
     
-    private double _lookahead;
-    private double _maxVelocity;
-    private double _maxLongitudinalAcceleration;
-    private double _maxLongitudinalDecceleration;
-    private double _maxLateralAcceleration;
-    private List<Position2D> _targetPoints;
-    private String _mapFileName;
-    private RoadMap _map;
-    private String _color;
-
-    private String _testID;
-
    @BeforeAll
    public static void setupVrep() throws VRepException
    {
@@ -112,52 +96,45 @@ public class TestProfileCollectionPlanning
        _objectCreator.deleteAll();
    }
 
-   public static Collection<Object[]> parameters()
+   public static Stream<Arguments> parameters()
    {
        return Arrays.asList(new Object[][]
        {
-//           {"luebeck_small", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(5579.18,3023.38), new Position2D(6375.32,3687.02)), "luebeck-roads.net.xml", "blue"},
-//           {"chandigarh_small", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(8564.44,9559.52), new Position2D(7998.74,8151.80)), "chandigarh-roads.net.xml", "blue"},
-//           {"chandigarh_mini", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(6394.91,7882.57), new Position2D(6497.73,7852.91)), "chandigarh-roads.net.xml", "blue"},
-//           {"chandigarh_medium", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(8564.44,9559.52), new Position2D(7998.74,8151.80), new Position2D(7596.09,7264.80), new Position2D(8158.54,3236.11), new Position2D(11286.49,5458.54)), "chandigarh-roads.net.xml", "blue"},
-//           {"chandigarh_medium", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(7596.09,7264.80), new Position2D(8256.48,3253.43), new Position2D(8135.55,3218.77), new Position2D(8139.54,3115.05), new Position2D(11286.49,5458.54)), "chandigarh-roads.net.xml", "blue"},
-//         {"luebeck_medium", 15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(4112.28,7084.47), new Position2D(6196.74,5289.38), new Position2D(10161.11,3555.67), new Position2D(3430.39,581.66), new Position2D(7252.29,1130.89)), "luebeck-roads.net.xml", "blue"},
-           {"luebeck_mini_routing_challenge", 15, 120, 4.0, 4.3, 3.0, Arrays.asList(new Position2D(7882.64,4664.21), new Position2D(7797.34,4539.80), new Position2D(7894.70,4608.56), new Position2D(8051.17,5536.44), new Position2D(8039.89,5485.08)), "luebeck-roads.net.xml", "blue"},
-       });
+//           {"luebeck_small", 15.0, 120.0, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(5579.18,3023.38), new Position2D(6375.32,3687.02)), "luebeck-roads.net.xml", "blue"},
+//           {"chandigarh_small", 15.0, 120.0, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(8564.44,9559.52), new Position2D(7998.74,8151.80)), "chandigarh-roads.net.xml", "blue"},
+//           {"chandigarh_mini", 15.0, 120.0, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(6394.91,7882.57), new Position2D(6497.73,7852.91)), "chandigarh-roads.net.xml", "blue"},
+//           {"chandigarh_medium", 15.0, 120.0, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(8564.44,9559.52), new Position2D(7998.74,8151.80), new Position2D(7596.09,7264.80), new Position2D(8158.54,3236.11), new Position2D(11286.49,5458.54)), "chandigarh-roads.net.xml", "blue"},
+//           {"chandigarh_medium", 15.0, 120.0, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(7596.09,7264.80), new Position2D(8256.48,3253.43), new Position2D(8135.55,3218.77), new Position2D(8139.54,3115.05), new Position2D(11286.49,5458.54)), "chandigarh-roads.net.xml", "blue"},
+//         {"luebeck_medium", 15.0, 120.0, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(4112.28,7084.47), new Position2D(6196.74,5289.38), new Position2D(10161.11,3555.67), new Position2D(3430.39,581.66), new Position2D(7252.29,1130.89)), "luebeck-roads.net.xml", "blue"},
+           {"luebeck_mini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 3.0, Arrays.asList(new Position2D(7882.64,4664.21), new Position2D(7797.34,4539.80), new Position2D(7894.70,4608.56), new Position2D(8051.17,5536.44), new Position2D(8039.89,5485.08)), "luebeck-roads.net.xml", "blue"},
+       }).stream().map(parameters -> Arguments.of(parameters));
    }
 
-   public TestProfileCollectionPlanning(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color)
-   {
-       _lookahead = lookahead;
-       _maxVelocity = maxVelocity;
-       _maxLongitudinalAcceleration = maxLongitudinalAcceleration;
-       _maxLongitudinalDecceleration = maxLongitudinalDecceleration;
-       _maxLateralAcceleration = maxLateralAcceleration;
-       RoadMapAndCenterMatrix mapAndCenterMatrix;
-       try
-       {
-           mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, RES_ROADNETWORKS_DIRECTORY + mapFilenName);
-           _mapFileName = mapFilenName;
-           _map = mapAndCenterMatrix.getRoadMap();
-           TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
-           _targetPoints = targetPoints.stream().map(point -> point.transform(centerMatrix)).collect(Collectors.toList());
-       }
-       catch (VRepException exc)
-       {
-           fail(exc);
-       }
-       _color = color;
-       _testID = testID + String.format("%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
-   }
-
-    @Test
-    public void testProfileCollection() throws VRepException
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void testProfileCollection(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints,
+            String mapFilenName, String color) throws VRepException
     {
+        RoadMap _map = null;
+        RoadMapAndCenterMatrix mapAndCenterMatrix;
+        try
+        {
+            mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, RES_ROADNETWORKS_DIRECTORY + mapFilenName);
+            _map = mapAndCenterMatrix.getRoadMap();
+            TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+            targetPoints = targetPoints.stream().map(point -> point.transform(centerMatrix)).collect(Collectors.toList());
+        }
+        catch (VRepException exc)
+        {
+            fail(exc);
+        }
+        String localTestID = testID + String.format("%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
+
         final Map<Long, List<TrajectoryElement>> segmentBuffers = new HashMap<>();
 
         TaskCreator taskCreator = new TaskCreator();
         PointListTaskCreatorConfig config = new PointListTaskCreatorConfig();
-        config.setControlParams(_lookahead, _maxVelocity, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
+        config.setControlParams(lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
         config.setDebug(true);
         config.setMap(_map);
         config.configSimulator(_vrep, _clientID, _objectCreator);
@@ -165,14 +142,14 @@ public class TestProfileCollectionPlanning
         config.addLowerLayerControl(trajectoryRecorder);
         config.setCarModel("./res/simcarmodel/vehicleVisualsBrakeScript.ttm");
 
-        config.setTargetPoints(_targetPoints);
+        config.setTargetPoints(targetPoints);
         config.addNavigationListener(trajectoryRecorder);
         config.setLowerLayerController(new ILowerLayerFactory() {
             @Override
             public ILowerLayerControl create()
             {
                 PurePursuitControllerVariableLookahead purePursuitControllerVariableLookahead = new PurePursuitControllerVariableLookahead();
-                purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(_lookahead, 0.0));
+                purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(lookahead, 0.0));
                 ITrajectoryRequestListener requestListener = (newTrajectories, timestamp) ->
                 {
                     segmentBuffers.put(new Long(timestamp), newTrajectories);
@@ -222,7 +199,7 @@ public class TestProfileCollectionPlanning
                 if (entry.getValue() != null)
                 {
                     List<String> trajectory = entry.getValue().stream().map(element -> element.getVector().toLine().toPyplotString()).collect(Collectors.toList());
-                    String fileName = String.format("./res/operationalprofiletest/normalizedtrajectories/Trajectory%s%06d.pyplot", _testID, entry.getKey());
+                    String fileName = String.format("./res/operationalprofiletest/normalizedtrajectories/Trajectory%s%06d.pyplot", localTestID, entry.getKey());
                     Files.write(new File(fileName).toPath(), trajectory, Charset.defaultCharset());
                 }
             }
@@ -239,7 +216,7 @@ public class TestProfileCollectionPlanning
                 if (entry.getValue() != null)
                 {
                     List<String> decomposition = entry.getValue().stream().map(element -> element.toPyPlotString()).collect(Collectors.toList());
-                    String fileName = String.format("./res/operationalprofiletest/normalizedtrajectories/Decomposition%s%06d.pyplot", _testID, entry.getKey());
+                    String fileName = String.format("./res/operationalprofiletest/normalizedtrajectories/Decomposition%s%06d.pyplot", localTestID, entry.getKey());
                     Files.write(new File(fileName).toPath(), decomposition, Charset.defaultCharset());
                 }
             }
