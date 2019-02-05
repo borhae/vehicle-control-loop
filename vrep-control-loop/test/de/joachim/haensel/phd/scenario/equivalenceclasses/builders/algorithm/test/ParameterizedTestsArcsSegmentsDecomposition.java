@@ -7,15 +7,16 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsSegmentContainerElement;
 import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.ArcSegmentDecompositionAlgorithmByNgoEtAl;
@@ -31,23 +32,9 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationContr
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.streamextensions.IndexAdder;
 
-/**
- * TODO parameterized test, fix it
- * @author dummy
- *
- */
-//@RunWith(Parameterized.class)
 public class ParameterizedTestsArcsSegmentsDecomposition
 {
-    private double _thickness;
-    private double _alphaMax;
-    private double _nbCirclePoint;
-    private double _isseTol; // if bigger than 1 it favours arcs, smaller than 1 segments
-    private double _maxRadius;
-    private String _suffix;
-    
-//    @Parameterized.Parameters
-    public static Collection<Object[]> parameters()
+    public static Stream<Arguments> parameters()
     {
         return Arrays.asList(new Object[][]
         {
@@ -58,32 +45,32 @@ public class ParameterizedTestsArcsSegmentsDecomposition
 //            {0.1, Math.PI / 4.0, 3, 4.0, "5_"},
 //            {0.4, Math.PI / 4.0, 3, 2.0, "6_"},
 //            {0.2, Math.PI / 4.0, 3, 2.0, "7_"},
-//            {0.8, Math.PI / 4.0, 3, 2.0, "8_"},
-//            {0.3, Math.PI / 4.0, 3, 2.0, "9_"},
-//            {0.3, Math.PI / 4.0, 3, 1.5, "10_"},
-//            {0.3, Math.PI / 4.0, 3, 0.5, "11_"},
-//            {0.3, Math.PI / 4.0, 3, 0.05, "12_"},
-            {0.3, Math.PI / 4.0, 3, 1.0, 4.0, "13_"}, // -> best so far: don't prefer arcs over segments or the other way round, small 
-//            {0.2, Math.PI / 4.0, 3, 1.2, "14_"},
-            {0.2, Math.PI, 3, 1.2, 4.0, "15_"},
-            {0.2, Math.PI / 2.0, 3, 1.2, 4.0,  "16_"},
-            {0.2, Math.PI / 4.0, 3, 1.2, 4.0, "17_"},
-            {0.2, Math.PI / 8.0, 3, 1.2, 4.0, "18_"}
-        });
+//            {0.8, Math.PI / 4.0, 3.0, 2.0, "8_"},
+//            {0.3, Math.PI / 4.0, 3.0, 2.0, "9_"},
+//            {0.3, Math.PI / 4.0, 3.0, 1.5, "10_"},
+//            {0.3, Math.PI / 4.0, 3.0, 0.5, "11_"},
+//            {0.3, Math.PI / 4.0, 3.0, 0.05, "12_"},
+            {0.3, Math.PI / 4.0, 3.0, 1.0, 4.0, "13_"}, // -> best so far: don't prefer arcs over segments or the other way round, small 
+//            {0.2, Math.PI / 4.0, 3.0, 1.2, "14_"},
+            {0.2, Math.PI, 3.0, 1.2, 4.0, "15_"},
+            {0.2, Math.PI / 2.0, 3.0, 1.2, 4.0,  "16_"},
+            {0.2, Math.PI / 4.0, 3.0, 1.2, 4.0, "17_"},
+            {0.2, Math.PI / 8.0, 3.0, 1.2, 4.0, "18_"}
+        }).stream().map(params -> Arguments.of(params));
     }
 
-    public ParameterizedTestsArcsSegmentsDecomposition(double thickness, double alphaMax, double nbCirclePoint, double isseTol, double maxRadius, String suffix)
-    {
-        _thickness = thickness;
-        _alphaMax = alphaMax;
-        _nbCirclePoint = nbCirclePoint;
-        _isseTol = isseTol;
-        _suffix = suffix;
-        _maxRadius = maxRadius;
-    }
-    
-    @Test
-    public void testMultipleDecompositinosTrajectoryBeginningOfRoute()
+    /**
+     * 
+     * @param thickness
+     * @param alphaMax
+     * @param nbCirclePoint
+     * @param isseTol if bigger than 1 it favours arcs, smaller than 1 segments
+     * @param maxRadius
+     * @param suffix
+     */
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void testMultipleDecompositinosTrajectoryBeginningOfRoute(double thickness, double alphaMax, double nbCirclePoint, double isseTol, double maxRadius, String suffix)
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
         TMatrix centerTransformMatrix = roadMap.center(0.0, 0.0);
@@ -110,8 +97,8 @@ public class ParameterizedTestsArcsSegmentsDecomposition
         slidingWindows = slidingWindows.subList(380, 700);
         String basePath = "./res/equivalencesegmentationtest/segmentationprogression_short/";
         Consumer<? super IndexAdder<List<TrajectoryElement>>> decompose = 
-                curWindow -> decomposeWindow(curWindow.v(), curWindow.idx(), _thickness, _alphaMax, _nbCirclePoint, _isseTol, _maxRadius,
-                        basePath + "sampleWholeRoute" + _suffix, basePath + "sampleWholeRouteTangentSpace" + _suffix, basePath + "sampleWholeRouteSegmentation" + _suffix);
+                curWindow -> decomposeWindow(curWindow.v(), curWindow.idx(), thickness, alphaMax, nbCirclePoint, isseTol, maxRadius,
+                        basePath + "sampleWholeRoute" + suffix, basePath + "sampleWholeRouteTangentSpace" + suffix, basePath + "sampleWholeRouteSegmentation" + suffix);
         slidingWindows.stream().map(IndexAdder.indexed()).forEach(decompose);
     }
     

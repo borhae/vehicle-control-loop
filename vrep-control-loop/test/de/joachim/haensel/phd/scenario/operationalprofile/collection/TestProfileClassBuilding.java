@@ -14,11 +14,15 @@ import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import coppelia.IntWA;
 import coppelia.remoteApi;
@@ -45,12 +49,6 @@ import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
-/**
- * TODO parameterized test, fix it
- * @author dummy
- *
- */
-//@RunWith(Parameterized.class)
 public class TestProfileClassBuilding
 {
     private static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
@@ -59,16 +57,6 @@ public class TestProfileClassBuilding
     private static int _clientID;
     private static VRepObjectCreation _objectCreator;
     
-    private double _lookahead;
-    private double _maxVelocity;
-    private double _maxLongitudinalAcceleration;
-    private double _maxLongitudinalDecceleration;
-    private double _maxLateralAcceleration;
-    private List<Position2D> _targetPoints;
-    private RoadMap _map;
-
-    private String _testID;
-
    @BeforeAll
    public static void setupVrep() throws VRepException
    {
@@ -108,8 +96,7 @@ public class TestProfileClassBuilding
        _objectCreator.deleteAll();
    }
 
-//   @Parameterized.Parameters
-   public static Collection<Object[]> parameters()
+   public static Stream<Arguments> parameters()
    {
        return Arrays.asList(new Object[][]
        {
@@ -134,17 +121,16 @@ public class TestProfileClassBuilding
 //                   new Position2D(10112.64,1288.27),
 //                   new Position2D(8031.39,6647.76)
 //               ), "luebeck-roads.net.xml", "blue"},
-       });
+       }).stream().map(params -> Arguments.of(params));
    }
 
-   public TestProfileClassBuilding(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color)
-   {
-       _lookahead = lookahead;
-       _maxVelocity = maxVelocity;
-       _maxLongitudinalAcceleration = maxLongitudinalAcceleration;
-       _maxLongitudinalDecceleration = maxLongitudinalDecceleration;
-       _maxLateralAcceleration = maxLateralAcceleration;
-       RoadMapAndCenterMatrix mapAndCenterMatrix = null;
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void testProfileCollection(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints,
+            String mapFilenName, String color) throws VRepException
+    {
+        RoadMapAndCenterMatrix mapAndCenterMatrix = null;
+        RoadMap _map = null;
         try
         {
             mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, RES_ROADNETWORKS_DIRECTORY + mapFilenName);
@@ -153,24 +139,19 @@ public class TestProfileClassBuilding
         {
             exc.printStackTrace();
         }
-       if(mapAndCenterMatrix != null)
-       {
-           _map = mapAndCenterMatrix.getRoadMap();
-           TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
-           _targetPoints = targetPoints.stream().map(point -> point.transform(centerMatrix)).collect(Collectors.toList());
-           _testID = testID + String.format("%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
-       }
-   }
-
-    @Test
-    public void testProfileCollection() throws VRepException
-    {
+        if (mapAndCenterMatrix != null)
+        {
+            _map = mapAndCenterMatrix.getRoadMap();
+            TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+            targetPoints = targetPoints.stream().map(point -> point.transform(centerMatrix)).collect(Collectors.toList());
+            testID = testID + String.format("%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
+        }
         final Map<Long, List<TrajectoryElement>> configurations = new HashMap<>();
         final Map<Long, ObservationTuple> observations = new HashMap<>();
 
         TaskCreator taskCreator = new TaskCreator();
         PointListTaskCreatorConfig taskConfiguration = new PointListTaskCreatorConfig();
-        taskConfiguration.setControlParams(_lookahead, _maxVelocity, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
+        taskConfiguration.setControlParams(lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
         taskConfiguration.setDebug(true);
         taskConfiguration.setMap(_map);
         taskConfiguration.configSimulator(_vrep, _clientID, _objectCreator);
@@ -178,21 +159,22 @@ public class TestProfileClassBuilding
         taskConfiguration.addLowerLayerControl(trajectoryRecorder);
         taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisualsBrakeScript.ttm");
 
-        taskConfiguration.setTargetPoints(_targetPoints);
+        taskConfiguration.setTargetPoints(targetPoints);
         taskConfiguration.addNavigationListener(trajectoryRecorder);
         taskConfiguration.setLowerLayerController(new ILowerLayerFactory() {
             @Override
             public ILowerLayerControl create()
             {
                 PurePursuitControllerVariableLookahead purePursuitControllerVariableLookahead = new PurePursuitControllerVariableLookahead();
-                purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(_lookahead, 0.0));
+                purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(lookahead, 0.0));
                 ITrajectoryRequestListener requestListener = (newTrajectories, timestamp) ->
                 {
-                    configurations.put(new Long(timestamp), newTrajectories);
+                    configurations.put(Long.valueOf(timestamp), newTrajectories);
                 };
                 purePursuitControllerVariableLookahead.addTrajectoryRequestListener(requestListener);
-                ITrajectoryReportListener reportListener = (rearWheelCP, frontWheelCP, velocity, timeStamp) -> {
-                    observations.put(new Long(timeStamp), new ObservationTuple(rearWheelCP, frontWheelCP, velocity, timeStamp));
+                ITrajectoryReportListener reportListener = (rearWheelCP, frontWheelCP, velocity, timeStamp) ->
+                {
+                    observations.put(Long.valueOf(timeStamp), new ObservationTuple(rearWheelCP, frontWheelCP, velocity, timeStamp));
                 };
                 purePursuitControllerVariableLookahead.addTrajectoryReportListener(reportListener);
                 return purePursuitControllerVariableLookahead;
@@ -203,13 +185,13 @@ public class TestProfileClassBuilding
 
         TaskExecutor executor = new TaskExecutor();
         executor.execute(tasks);
-        
+
         System.out.println("Executed all tasks, now collecting data");
-        writeConfiguration(configurations, _testID + "_NT_");
-        writeObservation(observations, _testID + "_NT_");
+        writeConfiguration(configurations, testID + "_NT_");
+        writeObservation(observations, testID + "_NT_");
         TrajectoryNormalizer.normalizeConfigurationsAndObservations(configurations, observations);
-        writeConfiguration(configurations, _testID + "_T_");
-        writeObservation(observations, _testID + "_T_");
+        writeConfiguration(configurations, testID + "_T_");
+        writeObservation(observations, testID + "_T_");
         CountTreeNode root = ConfigurationObservationTreeCounter.count(configurations, observations);
     }
 

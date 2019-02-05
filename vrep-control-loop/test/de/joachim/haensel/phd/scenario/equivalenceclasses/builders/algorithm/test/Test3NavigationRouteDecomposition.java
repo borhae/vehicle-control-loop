@@ -7,15 +7,17 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsSegmentContainerElement;
 import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.ArcSegmentDecompositionAlgorithmByNgoEtAl;
@@ -31,56 +33,39 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationContr
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.streamextensions.IndexAdder;
 
-/**
- * TODO parameterized Test, fix it
- * @author dummy
- *
- */
-//@RunWith(Parameterized.class)
 public class Test3NavigationRouteDecomposition
 {
-    private double _thickness;
-    private double _alphaMax;
-    private double _nbCirclePoint;
-    private double _isseTol; // if bigger than 1 it favours arcs, smaller than 1 segments
-    private double _maxRadius;
-
-    private String _suffix;
-    private Position2D _start;
-    private Position2D _end;
-    
-//    @Parameterized.Parameters
-    public static Collection<Object[]> parameters()
+    public static Stream<Arguments> parameters()
     {
         return Arrays.asList(new Object[][]
         {
-            {0.3, Math.PI / 4.0, 3, 1.0, 100000, new Position2D(5531.34,5485.96), new Position2D(5879.87,4886.08), "13_R1_"},
-            {0.3, Math.PI / 4.0, 3, 1.0, 100000, new Position2D(6045.44, 2991.89), new Position2D(5867.1, 4934.41), "13_R2_"}, 
-            {0.3, Math.PI / 4.0, 3, 1.0, 100000, new Position2D(2834.28, 4714.20), new Position2D(5809.49, 2938.12), "13_R3_"}, 
-        });
+            {0.3, Math.PI / 4.0, 3.0, 1.0, 100000.0, new Position2D(5531.34,5485.96), new Position2D(5879.87,4886.08), "13_R1_"},
+            {0.3, Math.PI / 4.0, 3.0, 1.0, 100000.0, new Position2D(6045.44, 2991.89), new Position2D(5867.1, 4934.41), "13_R2_"}, 
+            {0.3, Math.PI / 4.0, 3.0, 1.0, 100000.0, new Position2D(2834.28, 4714.20), new Position2D(5809.49, 2938.12), "13_R3_"}, 
+        }).stream().map(params -> Arguments.of(params));
     }
 
-    public Test3NavigationRouteDecomposition(double thickness, double alphaMax, double nbCirclePoint, double isseTol, double maxRadius, Position2D start, Position2D end, String suffix)
-    {
-        _thickness = thickness;
-        _alphaMax = alphaMax;
-        _nbCirclePoint = nbCirclePoint;
-        _isseTol = isseTol;
-        _maxRadius = maxRadius;
-        _start = start;
-        _end = end;
-        _suffix = suffix;
-    }
-    
-    @Test
-    public void testARoute()
+    /**
+     * 
+     * @param thickness
+     * @param alphaMax
+     * @param nbCirclePoint
+     * @param isseTol if bigger than 1 it favours arcs, smaller than 1 segments
+     * @param maxRadius
+     * @param start
+     * @param end
+     * @param suffix
+     */
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void testARoute(double thickness, double alphaMax, double nbCirclePoint, double isseTol, double maxRadius, Position2D start, Position2D end, String suffix)
     {
         RoadMap roadMap = new RoadMap("./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
         TMatrix centerTransformMatrix = roadMap.center(0.0, 0.0);
 
         //uncentered positions measured by sumo net-edit tool
-        Position2D startPosition = _start;
-        Position2D destinationPosition = _end;
+        Position2D startPosition = start;
+        Position2D destinationPosition = end;
         
         startPosition.transform(centerTransformMatrix);
         destinationPosition.transform(centerTransformMatrix);
@@ -110,7 +95,7 @@ public class Test3NavigationRouteDecomposition
         
         try
         {
-            Files.write(new File(basePath + "sampleWholeRoute" + _suffix + ".pyplot").toPath(), routeAsString, Charset.defaultCharset());
+            Files.write(new File(basePath + "sampleWholeRoute" + suffix + ".pyplot").toPath(), routeAsString, Charset.defaultCharset());
         }
         catch (IOException exc)
         {
@@ -120,8 +105,8 @@ public class Test3NavigationRouteDecomposition
  
         
         Consumer<? super IndexAdder<List<TrajectoryElement>>> decompose = 
-                curWindow -> decomposeWindow(curWindow.v(), curWindow.idx(), _thickness, _alphaMax, _nbCirclePoint, _isseTol, _maxRadius,
-                        basePath + "sampleWholeRoute" + _suffix, basePath + "sampleWholeRouteTangentSpace" + _suffix, basePath + "sampleWholeRouteSegmentation" + _suffix);
+                curWindow -> decomposeWindow(curWindow.v(), curWindow.idx(), thickness, alphaMax, nbCirclePoint, isseTol, maxRadius,
+                        basePath + "sampleWholeRoute" + suffix, basePath + "sampleWholeRouteTangentSpace" + suffix, basePath + "sampleWholeRouteSegmentation" + suffix);
         slidingWindows.stream().map(IndexAdder.indexed()).forEach(decompose);
     }
     

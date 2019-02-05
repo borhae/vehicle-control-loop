@@ -12,6 +12,7 @@ public class Positioner extends NullBehaviorActuatingSensing
     public Positioner(Position2D position)
     {
         _position = position;
+        _orientation = new Vector2D(0.0, 0.0, 1.0, 0.0);
     }
     
     public Positioner(Position2D position, Position2D orientation)

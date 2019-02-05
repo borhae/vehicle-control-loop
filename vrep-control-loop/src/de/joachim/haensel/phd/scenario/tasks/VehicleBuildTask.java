@@ -78,15 +78,39 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
 
     private IVehicle createVehicle(RoadMap map, Position2D vehiclePosition, Vector2D orientation)
     {
-        _carmodel = _carmodel == null ? "./res/simcarmodel/cvehicleAllAnglesCleanedUpNoScript.ttm" : _carmodel;
+        IVehicleConfiguration vehicleConf = null;
+        if(_carmodel == null)
+        {
+            _carmodel = "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm";
+            vehicleConf = createVehicleConfiguration(map, vehiclePosition, orientation, 1.5);
+        }
+        else if (_carmodel.contentEquals("carvisuals") || _carmodel.contentEquals("vehicleVisualsBrakeScript") || _carmodel.contentEquals("vehicleVisualsTorque5000"))
+        {
+            vehicleConf = createMercedesLikeConfiguration(map, vehiclePosition, orientation, 1.5);
+        }
         IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, _carmodel, 1.0f);
-        IVehicleConfiguration vehicleConf = createMercedesLikeConfiguration(map, vehiclePosition, orientation, 1.5);
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();
         return vehicle;
     }
     
-    public IVehicleConfiguration createMercedesLikeConfiguration(RoadMap roadMap, Position2D startPosition, Vector2D orientation, double placementHeight)
+    private IVehicleConfiguration createMercedesLikeConfiguration(RoadMap roadMap, Position2D startPosition, Vector2D orientation, double placementHeight)
+    {
+        IVehicleConfiguration vehicleConf = createVehicleConfiguration(roadMap, startPosition, orientation, placementHeight);
+        
+        List<String> autoBodyNames = new ArrayList<>();
+        autoBodyNames.add(MercedesVisualsNames.AUTO_BODY_NAME);
+        autoBodyNames.add(MercedesVisualsNames.REAR_LEFT_VISUAL);
+        autoBodyNames.add(MercedesVisualsNames.REAR_RIGHT_VISUAL);
+        autoBodyNames.add(MercedesVisualsNames.FRONT_LEFT_VISUAL);
+        autoBodyNames.add(MercedesVisualsNames.FRONT_RIGHT_VISUAL);
+        
+        vehicleConf.setAutoBodyNames(autoBodyNames );
+
+        return vehicleConf;
+    }
+
+    private IVehicleConfiguration createVehicleConfiguration(RoadMap roadMap, Position2D startPosition, Vector2D orientation, double placementHeight)
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
         IUpperLayerFactory upperFact = () -> 
@@ -115,16 +139,6 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
 
         vehicleConf.setOrientation(orientation);
         vehicleConf.setRoadMap(roadMap);
-        
-        List<String> autoBodyNames = new ArrayList<>();
-        autoBodyNames.add(MercedesVisualsNames.AUTO_BODY_NAME);
-        autoBodyNames.add(MercedesVisualsNames.REAR_LEFT_VISUAL);
-        autoBodyNames.add(MercedesVisualsNames.REAR_RIGHT_VISUAL);
-        autoBodyNames.add(MercedesVisualsNames.FRONT_LEFT_VISUAL);
-        autoBodyNames.add(MercedesVisualsNames.FRONT_RIGHT_VISUAL);
-        
-        vehicleConf.setAutoBodyNames(autoBodyNames );
-
         return vehicleConf;
     }
 

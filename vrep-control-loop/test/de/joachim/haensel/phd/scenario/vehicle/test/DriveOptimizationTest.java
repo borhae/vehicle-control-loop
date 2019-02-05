@@ -1,19 +1,18 @@
 package de.joachim.haensel.phd.scenario.vehicle.test;
 
-
-
-
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import coppelia.IntWA;
 import coppelia.remoteApi;
@@ -35,60 +34,20 @@ import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParam
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
-/**
- * TODO parameterized test, fix it
- * @author dummy
- *
- */
-//@RunWith(Parameterized.class)
 public class DriveOptimizationTest
 {
     private static VRepRemoteAPI _vrep;
     private static int _clientID;
     private static VRepObjectCreation _objectCreator;
 
-    
     private static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
-    private double _lookahead;
-    private double _maxVelocity;
-    private double _maxLongitudinalAcceleration;
-    private double _maxLongitudinalDecceleration;
-    private double _maxLateralAcceleration;
-    private List<Position2D> _targetPoints;
-    private RoadMap _map;
-    private String _color;
-    private String _mapFileName;
     
-//    @Parameterized.Parameters
-    public static Collection<Object[]> parameters()
+    public static Stream<Arguments> parameters()
     {
         return Arrays.asList(new Object[][]
         {
-            {15, 120, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(8226.83,3530.29), new Position2D(8477.42,3220.79)), "chandigarh-roads.net.xml", "blue"},
-        });
-    }
-
-    public DriveOptimizationTest(double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color)
-    {
-        _lookahead = lookahead;
-        _maxVelocity = maxVelocity;
-        _maxLongitudinalAcceleration = maxLongitudinalAcceleration;
-        _maxLongitudinalDecceleration = maxLongitudinalDecceleration;
-        _maxLateralAcceleration = maxLateralAcceleration;
-        RoadMapAndCenterMatrix mapAndCenterMatrix;
-        try
-        {
-            mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, RES_ROADNETWORKS_DIRECTORY + mapFilenName);
-            _mapFileName = mapFilenName;
-            _map = mapAndCenterMatrix.getRoadMap();
-            TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
-            _targetPoints = targetPoints.stream().map(point -> point.transform(centerMatrix)).collect(Collectors.toList());
-        }
-        catch (VRepException exc)
-        {
-            fail(exc);
-        }
-        _color = color;
+            {15.0, 120.0, 4.0, 4.3, 0.8, Arrays.asList(new Position2D(8226.83,3530.29), new Position2D(8477.42,3220.79)), "chandigarh-roads.net.xml", "blue"},
+        }).stream().map(params -> Arguments.of(params));
     }
 
     @BeforeAll
@@ -131,12 +90,26 @@ public class DriveOptimizationTest
     }
 
 
-    @Test
-    public void testSharpCurve() throws VRepException
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void testSharpCurve(double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color) throws VRepException
     {
+        RoadMapAndCenterMatrix mapAndCenterMatrix;
+        RoadMap _map = null;
+        try
+        {
+            mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, RES_ROADNETWORKS_DIRECTORY + mapFilenName);
+            _map = mapAndCenterMatrix.getRoadMap();
+            TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+            targetPoints = targetPoints.stream().map(point -> point.transform(centerMatrix)).collect(Collectors.toList());
+        }
+        catch (VRepException exc)
+        {
+            fail(exc);
+        }
         TaskCreator taskCreator = new TaskCreator();
         PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(true);
-        config.setControlParams(_lookahead, _maxVelocity, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
+        config.setControlParams(lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
 
         config.setMap(_map);
         config.setCarModel("./res/simcarmodel/vehicleVisualsBrakeScript.ttm");
@@ -144,7 +117,7 @@ public class DriveOptimizationTest
         TrajectoryRecorder trajectoryRecorder = new TrajectoryRecorder();
         config.addLowerLayerControl(trajectoryRecorder);
 
-        config.setTargetPoints(_targetPoints);
+        config.setTargetPoints(targetPoints);
         config.addNavigationListener(trajectoryRecorder);
         config.setLowerLayerController(new ILowerLayerFactory() {
 
@@ -152,7 +125,7 @@ public class DriveOptimizationTest
             public ILowerLayerControl create()
             {
                 PurePursuitControllerVariableLookahead purePursuitControllerVariableLookahead = new PurePursuitControllerVariableLookahead();
-                purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(_lookahead, 0.0));
+                purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(lookahead, 0.0));
                 return purePursuitControllerVariableLookahead;
             }
         });
