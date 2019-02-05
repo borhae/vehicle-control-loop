@@ -84,7 +84,7 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
             _carmodel = "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm";
             vehicleConf = createVehicleConfiguration(map, vehiclePosition, orientation, 1.5);
         }
-        else if (_carmodel.contentEquals("carvisuals") || _carmodel.contentEquals("vehicleVisualsBrakeScript") || _carmodel.contentEquals("vehicleVisualsTorque5000"))
+        else if (_carmodel.endsWith("carvisuals.ttm") || _carmodel.endsWith("vehicleVisualsBrakeScript.ttm") || _carmodel.endsWith("vehicleVisualsTorque5000.ttm"))
         {
             vehicleConf = createMercedesLikeConfiguration(map, vehiclePosition, orientation, 1.5);
         }

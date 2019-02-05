@@ -230,11 +230,11 @@ public class TestJsonSerialization
                purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(lookahead, 0.0));
                ITrajectoryRequestListener requestListener = (newTrajectories, timestamp) ->
                {
-                   configurations.put(new Long(timestamp), newTrajectories);
+                   configurations.put(Long.valueOf(timestamp), newTrajectories);
                };
                purePursuitControllerVariableLookahead.addTrajectoryRequestListener(requestListener);
                ITrajectoryReportListener reportListener = (rearWheelCP, frontWheelCP, velocity, timeStamp) -> {
-                   observations.put(new Long(timeStamp), new ObservationTuple(rearWheelCP, frontWheelCP, velocity, timeStamp));
+                   observations.put(Long.valueOf(timeStamp), new ObservationTuple(rearWheelCP, frontWheelCP, velocity, timeStamp));
                };
                purePursuitControllerVariableLookahead.addTrajectoryReportListener(reportListener);
                return purePursuitControllerVariableLookahead;
