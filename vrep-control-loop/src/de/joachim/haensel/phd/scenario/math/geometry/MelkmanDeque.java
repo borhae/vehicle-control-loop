@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * A list implementation that translates the terms used in Melkmans hull algorithm into 
  * the ones used in the internal java linked list  
- * @author Joachim Hänsel
+ * @author Joachim HÃ¤nsel
  *
  * @param <T>
  */
