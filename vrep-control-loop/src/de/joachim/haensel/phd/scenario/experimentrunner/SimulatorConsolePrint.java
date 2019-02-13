@@ -1,10 +1,9 @@
 package de.joachim.haensel.phd.scenario.experimentrunner;
 
-public class RunExperiment
+public class SimulatorConsolePrint
 {
-
     public static void main(String[] args)
     {
-        System.out.println("hello world");
+        
     }
 }

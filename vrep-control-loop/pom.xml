@@ -33,7 +33,7 @@
 			<archive>
 				<manifest>
 					<mainClass>
-						de.joachim.haensel.phd.scenario.experimentrunner.RunExperiment
+						de.joachim.haensel.phd.scenario.experimentrunner.ExperimentRunner
 					</mainClass>
 				</manifest>
 			</archive>
