@@ -55,7 +55,7 @@ public class TestJsonSerialization
 	public static void setupVrep() throws VRepException 
 	{
 		_vrep = VRepRemoteAPI.INSTANCE;
-		_clientID = _vrep.simxStart("127.0.0.1", 19999, true, true, 5000, 5);
+		_clientID = _vrep.simxStart("127.0.0.1", 19997, true, true, 5000, 5);
 		_objectCreator = new VRepObjectCreation(_vrep, _clientID);
 	}
 
@@ -63,6 +63,7 @@ public class TestJsonSerialization
    public static void tearDownVrep() throws VRepException 
    {
        waitForRunningSimulationToStop();
+       _objectCreator.removeScriptloader();
        _vrep.simxFinish(_clientID);
    }
 
@@ -218,7 +219,7 @@ public class TestJsonSerialization
        taskConfiguration.configSimulator(_vrep, _clientID, _objectCreator);
        TrajectoryRecorder trajectoryRecorder = new TrajectoryRecorder();
        taskConfiguration.addLowerLayerControl(trajectoryRecorder);
-       taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisualsBrakeScript.ttm");
+       taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisuals.ttm");
 
        taskConfiguration.setTargetPoints(targetPointsMapped);
        taskConfiguration.addNavigationListener(trajectoryRecorder);

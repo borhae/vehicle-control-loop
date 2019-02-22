@@ -26,6 +26,7 @@ import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
 
 public class VRepObjectCreation
 {
+    private static final String SCRIPT_LOADING_SCRIPT_ATTACHED_TO_MODEL_FILE_NAME = "./res/simscene/script_loading_script_attached_to_model.ttm";
     private static final String SCRIPT_LOADING_LUA_FUNCTION = "loadCode";
     private static final String OBJECT_CREATION_SCRIPT_FILE_NAME = "./lua/VRepObjectCreation.lua";
     private static final String SPRING_DAMPER_SCRIPT_FILE_NAME = "./lua/SpringDamperControlScript.lua";
@@ -39,14 +40,46 @@ public class VRepObjectCreation
     private String _springDamperScript;
     private String _steeringScript;
     private String _visualizationScript;
+    private int _scriptLoaderHandle;
 
     public VRepObjectCreation(VRepRemoteAPI vrep, int clientID)
     {
         _vrep = vrep;
         _clientID = clientID;
+        _scriptLoaderHandle = -1;
+        loadModelWithAttachedScriptThatLoadsScripts(vrep, clientID);
         loadFunctions(vrep, clientID);
     }
 
+    private void loadModelWithAttachedScriptThatLoadsScripts(VRepRemoteAPI vrep, int clientID)
+    {
+        IntW scriptLoaderHandle = new IntW(0);
+        try
+        {
+            vrep.simxLoadModel(_clientID, SCRIPT_LOADING_SCRIPT_ATTACHED_TO_MODEL_FILE_NAME, 1, scriptLoaderHandle, remoteApi.simx_opmode_blocking);
+            _scriptLoaderHandle = scriptLoaderHandle.getValue();
+        }
+        catch (VRepException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void removeScriptloader()
+    {
+        if(_scriptLoaderHandle != -1)
+        {
+            try
+            {
+                _vrep.simxRemoveModel(_clientID, _scriptLoaderHandle, remoteApi.simx_opmode_blocking);
+            }
+            catch (VRepException exc)
+            {
+                exc.printStackTrace();
+            }
+        }
+    }
+    
     /**
      * 
      * Creates a primitive object in vrep.

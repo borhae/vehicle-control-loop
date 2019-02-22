@@ -394,7 +394,7 @@ setFloatParameter = function(inInts, inFloats, inStrings, inBuffer)
 end 
 
 addAndAttachScript = function(inInts, inFloats, inStrings, inBuffer)
---  sim.addStatusbarMessage("about to attach script")
+  sim.addStatusbarMessage("about to attach script")
 
   local objectHandle = inInts[1]
   local scriptType = inInts[2]
@@ -402,8 +402,9 @@ addAndAttachScript = function(inInts, inFloats, inStrings, inBuffer)
   
   local scriptHandle = sim.addScript(scriptType + sim_scripttype_threaded)
   
-  sim.setScriptText(scriptHandle, scriptContent)
-  
+  errVal = sim.setScriptText(scriptHandle, scriptContent)
+  sim.addStatusbarMessage("call to sim.setScriptText returned")
+  sim.addStatusbarMessage(errVal)
   sim.associateScriptWithObject(scriptHandle, objectHandle)
   
   return {scriptHandle}, {}, {}, "" 
