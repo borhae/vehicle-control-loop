@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import de.joachim.haensel.phd.scenario.math.Linspace;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
@@ -13,6 +15,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class Segmenter implements ISegmenter
 {
+    private static final double U_TURN_RADIUS = 10.0;
     private double _stepSize;
     private List<IRouteBuildingListener>_segmentBuildingListeners;
     private ISegmentationAlgorithm _algorithm;
@@ -34,6 +37,7 @@ public class Segmenter implements ISegmenter
         LinkedList<Vector2D> segmentList = new LinkedList<>();
         notifyOriginalTrajectory(segmentList);
         _algorithm.quantize(srcRoute, segmentList, _stepSize);
+        segmentList = remove180Turns(segmentList);
         int elementsToAdd = segmentList.size();
         int addCnt = 0;
         while(addCnt < elementsToAdd)
@@ -51,6 +55,92 @@ public class Segmenter implements ISegmenter
         return result;
     }
 
+    private LinkedList<Vector2D> remove180Turns(List<Vector2D> segmentList)
+    {
+        LinkedList<Vector2D> result = new LinkedList<>();
+        for(int idx = 0; idx < segmentList.size(); idx++)
+        {	
+        	Vector2D curLine = segmentList.get(idx);
+            result.add(curLine);
+            if(idx + 1 < segmentList.size())
+            {
+            	Vector2D nextLine = segmentList.get(idx + 1);
+                Vector2D curLineV = new Vector2D(curLine);
+                Vector2D nextLineVN = new Vector2D(nextLine);
+                double angle = Math.toDegrees(Vector2D.computeAngle(curLineV, nextLineVN));
+                if(angle > 120) //TODO add the other direction too
+                {
+                    replace180TurnWithThreePointTurn(result, curLine, nextLine, angle);
+                }
+            }
+        }
+        return result;
+    }
+
+    //add 3 angle/3 * U_TURN_RADIUS turns (first and last forward, second backwards) 
+    private void replace180TurnWithThreePointTurn(LinkedList<Vector2D> result, Vector2D curLine, Vector2D nextLine, double angle)
+    {
+        double turnAngle = angle / 3.0;
+
+        //first turn
+        result.addAll(vectorsFromTurn(turnAngle, curLine.getBase(), curLine.getNorm(), U_TURN_RADIUS));
+        
+        //backwards turn
+        LinkedList<Vector2D> backwardsList = vectorsFromTurn(turnAngle, result.getLast().getBase(), result.getLast().getNorm(), U_TURN_RADIUS);
+        //TODO: handling for backwards driving
+        result.addAll(backwardsList);
+        
+        //final turn
+        result.addAll(vectorsFromTurn(turnAngle, result.getLast().getBase(), result.getLast().getNorm(), U_TURN_RADIUS));
+        
+        //add a vector from the last point of turn to the next line
+        Position2D lastPoint = result.getLast().getBase().plus(result.getLast().getDir());
+        Vector2D connection = new Vector2D(lastPoint, nextLine.getBase());
+        result.add(connection);
+    }
+    
+    //creates a linked list of vectors for a given turn
+    private LinkedList<Vector2D> vectorsFromTurn(double angle, Position2D startPoint, Position2D normDirection, double radius){
+    	 LinkedList<Vector2D> result = new LinkedList<>();
+    	 
+    	 Position2D perpDir = new Position2D(normDirection.getY(), -normDirection.getX());
+    	 
+    	 Position2D center = startPoint.plus(perpDir.mul(radius));
+    	 Vector2D center2Start = new Vector2D(center, startPoint);
+    	 
+         Position2D a = Position2D.minus(startPoint, center);
+         double startAngle = Math.atan2(a.getY(), a.getX());
+         double targetAngle = startAngle - angle;
+    	 
+    	 
+    	 List<Double> thetaRange = new ArrayList<>();
+         if(!(startAngle < 0 && targetAngle > 0))
+         {
+        	 targetAngle = targetAngle + 2.0 * Math.PI;
+         }
+         thetaRange = Linspace.linspace(startAngle, targetAngle, 10);
+         List<Position2D> points = thetaRange.stream().map(theta -> new Position2D(center.getX() + Math.cos(theta) * U_TURN_RADIUS, center.getY() + Math.sin(theta) * U_TURN_RADIUS)).collect(Collectors.toList());
+
+         Position2D last = null;
+         for(int idx1 = 0; idx1 < points.size(); idx1++)
+         {
+             Position2D current = points.get(idx1);
+             if(last != null)
+             {
+                 result.add(new Vector2D(last, current));
+             }
+             last = current;
+         }
+
+    	 
+    	 return result;
+    }
+
+    private double sqr(double x)
+    {
+        return x * x;
+    }
+    
     public LinkedList<Vector2D> patchHolesInRoute(LinkedList<Vector2D> unevenVectorRoute)
     {
         LinkedList<Vector2D> patchedList = new LinkedList<>();

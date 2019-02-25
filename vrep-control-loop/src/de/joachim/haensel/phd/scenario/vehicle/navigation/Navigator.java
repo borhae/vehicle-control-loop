@@ -20,7 +20,6 @@ import sumobindings.LaneType;
 
 public class Navigator
 {
-    private static final double U_TURN_RADIUS = 10.0;
     private RoadMap _roadMap;
     private List<IRouteBuildingListener> _routeBuildingListeners;
     private Position2D _sourcePosition;
@@ -107,75 +106,7 @@ public class Navigator
         result = cutEndLaneShapes(result);
         result.get(0).setP1(_sourcePosition);
         result.get(result.size() - 1).setP2(_targetPosition);
-        result = remove180Turns(result);
         return result;
-    }
-    
-    private List<Line2D> remove180Turns(List<Line2D> rawResult)
-    {
-        List<Line2D> result = new ArrayList<>();
-        for(int idx = 0; idx < rawResult.size(); idx++)
-        {
-            Line2D curLine = rawResult.get(idx);
-            result.add(curLine);
-            if(idx + 1 < rawResult.size())
-            {
-                Line2D nextLine = rawResult.get(idx + 1);
-                Vector2D curLineV = new Vector2D(curLine);
-                Vector2D nextLineVN = new Vector2D(nextLine);
-                double angle = Math.toDegrees(Vector2D.computeAngle(curLineV, nextLineVN));
-                if(angle > 120) //TODO add the other direction too
-                {
-                    addTurnAroundCircle(result, curLine, nextLine);
-                }
-            }
-        }
-        return result;
-    }
-
-    private void addTurnAroundCircle(List<Line2D> result, Line2D curLine, Line2D nextLine)
-    {
-        Position2D p1 = curLine.getP2();
-        Position2D p2 = nextLine.getP1();
-        
-        Vector2D vP1P2 = new Vector2D(p1, p2);
-        Vector2D vP1P2Perpendicular = vP1P2.getMiddlePerpendicularClockwise();
-        double p1P2HalfLength = vP1P2.getLength() / 2.0;
-        double perpendicularLength = Math.sqrt(sqr(p1P2HalfLength) + sqr(U_TURN_RADIUS));
-        vP1P2Perpendicular.setLength(perpendicularLength);
-        
-        Position2D center = vP1P2Perpendicular.getTip();
-
-        Position2D aNC = p1;
-        Position2D bNC = p2;
-        Position2D a = Position2D.minus(aNC, center);
-        Position2D b = Position2D.minus(bNC, center);
-        double angle1 = Math.atan2(a.getY(), a.getX());
-        double angle2 = Math.atan2(b.getY(), b.getX());
-
-        List<Double> thetaRange = new ArrayList<>();
-        if(!(angle1 < 0 && angle2 > 0))
-        {
-            angle2 = angle2 + 2.0 * Math.PI;
-        }
-        thetaRange = Linspace.linspace(angle1, angle2, 10);
-        List<Position2D> points = thetaRange.stream().map(theta -> new Position2D(center.getX() + Math.cos(theta) * U_TURN_RADIUS, center.getY() + Math.sin(theta) * U_TURN_RADIUS)).collect(Collectors.toList());
-        
-        Position2D last = null;
-        for(int idx1 = 0; idx1 < points.size(); idx1++)
-        {
-            Position2D current = points.get(idx1);
-            if(last != null)
-            {
-                result.add(new Line2D(last, current));
-            }
-            last = current;
-        }
-    }
-
-    private double sqr(double x)
-    {
-        return x * x;
     }
 
     private List<Line2D> regularLineAdd(List<Line2D> result, EdgeType curEdge)
