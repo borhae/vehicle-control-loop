@@ -93,7 +93,7 @@ public class TurtleHash
         double dy = vector.getdY();
         if(Math.abs(dx) == 0) // line is vertical, will not cover more than one pixel
         {
-            int[] yRange = rangeRising(y0, y1);
+            int[] yRange = range(y0, y1);
             result = new int[yRange.length][2];
             for(int idx = 0; idx < yRange.length; idx++)
             {
@@ -108,7 +108,7 @@ public class TurtleHash
             double b = y0 - m * x0;
             if(m <= 1 && m >= -1)
             {
-                int[] xRange = rangeRising(x0, x1);
+                int[] xRange = range(x0, x1);
                 result = new int[xRange.length][2];
                 for(int idx = 0; idx < xRange.length; idx++)
                 {
@@ -119,7 +119,7 @@ public class TurtleHash
             }
             else
             {
-                int[] yRange = rangeRising(y0, y1);
+                int[] yRange = range(y0, y1);
                 result = new int[yRange.length][2];
                 for(int idx = 0; idx < yRange.length; idx++)
                 {
@@ -138,18 +138,24 @@ public class TurtleHash
         result[idx][1] = _offsetY + y;
     }
 
-    private int[] rangeRising(double i0, double i1)
+    private int[] range(double i0, double i1)
     {
-        if(i1 < i0)
-        {
-            double tmp = i0;
-            i0 = i1;
-            i1 = tmp;
-        }
         int start = (int) Math.round(i0);
         int end = (int) Math.round(i1);
-        int[] result = IntStream.rangeClosed(start, end).toArray();
-        System.out.println("range: " + result.length);
+        boolean increase = start <= end;
+        int size = Math.abs(start - end);
+        int[] result = new int[size];
+        for(int idx = 0; idx < result.length; idx++)
+        {
+            if(increase)
+            {
+                result[idx] = start + idx;
+            }
+            else
+            {
+                result[idx] = start - idx;
+            }
+        }
         return result;
     }
 

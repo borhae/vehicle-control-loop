@@ -161,13 +161,13 @@ public class TestTurtleHashing
                 cP = new int[][]{cPS[5], cPS[4], cPS[3]};
                 break;
             case NW:
-                cP = new int[][]{cPS[7], cPS[6], cPS[5]};
+                cP = new int[][]{cPS[5], cPS[6], cPS[7]};
                 break;
             case SE:
                 cP = new int[][]{cPS[1], cPS[2], cPS[3]};
                 break;
             case SW:
-                cP = new int[][]{cPS[7], cPS[3], cPS[0]};
+                cP = new int[][]{cPS[7], cPS[0], cPS[1]};
                 break;
             default:
                 cP = new int[][]{cPS[7], cPS[1], cPS[3]};
@@ -179,7 +179,7 @@ public class TestTurtleHashing
         }
         else
         {
-            int factor = 2;
+            int factor = 4;
             int x0 = cP[0][0] * factor + p[0];
             int y0 = cP[0][1] * factor + p[1];
             int x1 = cP[1][0] * factor + p[0];
