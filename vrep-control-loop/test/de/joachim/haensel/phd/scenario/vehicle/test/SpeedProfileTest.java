@@ -655,7 +655,7 @@ public class SpeedProfileTest
 
     private Integer visualize(List<TrajectoryElement> profile, Vector2DVisualizer frame, Integer id)
     {
-        Deque<Vector2D> speedVectors = profile.stream().map(t -> (new Vector2D(t.getVector().getMiddlePerpendicular()).scale(t.getVelocity()))).collect(Collectors.toCollection(() -> new LinkedList<>()));
+        Deque<Vector2D> speedVectors = profile.stream().map(t -> (new Vector2D(t.getVector().getMiddlePerpendicular()).scaleNormTo(t.getVelocity()))).collect(Collectors.toCollection(() -> new LinkedList<>()));
         if(id == null)
         {
             id = frame.addVectorSet(speedVectors, Color.BLUE, 0.5, 0.05);

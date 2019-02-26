@@ -183,4 +183,9 @@ public class TrajectoryElement implements Comparable<TrajectoryElement>
             return velComp;
         }
     }
+
+    public void setVector(Vector2D v)
+    {
+        _vector = v;
+    }
 }

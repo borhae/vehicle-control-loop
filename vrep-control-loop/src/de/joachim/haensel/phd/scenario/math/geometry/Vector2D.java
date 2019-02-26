@@ -757,7 +757,7 @@ public class Vector2D
         return unrangedOnFirstIntersect(vP, v);
     }
     
-    public Vector2D scale(double s)
+    public Vector2D scaleNormTo(double s)
     {
         _dX = _normX * s;
         _dY = _normY * s;
@@ -888,12 +888,28 @@ public class Vector2D
         return new Line2D(getBase(), getTip());
     }
 
-    public void rotateDir(double angle)
+    public Vector2D rotateDir(double angle)
     {
         TMatrix rotationMatrix = TMatrix.rotationMatrix(angle);
         Position2D dir = getDir();
         dir.transform(rotationMatrix);
         _dX = dir.getX();
         _dY = dir.getY();
+        return this;
+    }
+
+    public Vector2D scale(double scaleFactor)
+    {
+        Position2D base = getBase();
+        base.mul(scaleFactor);
+        _bX = base.getX();
+        _bY = base.getY();
+        Position2D dir = getDir();
+        dir.mul(scaleFactor);
+        _dX = dir.getX();
+        _dY = dir.getY();
+        updateLength();
+        updateNormVector();
+        return this;
     }
 }

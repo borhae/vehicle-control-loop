@@ -192,7 +192,6 @@ public class BasicVelocityAssigner implements IVelocityAssigner
 
     private void computeCurvatures(List<TrajectoryElement> trajectory)
     {
-        Deque<Vector2D> curvatures = new LinkedList<>();
         for(int idx = 0; idx < trajectory.size() - 1; idx++)
         {
             TrajectoryElement t1 = trajectory.get(idx);
@@ -201,10 +200,7 @@ public class BasicVelocityAssigner implements IVelocityAssigner
             double kappa = 1 / radius;
             t1.setRadius(radius);
             t1.setKappa(kappa);
-            // just for debugging in graphical representation
-            curvatures.addLast(t2.getVector().getMiddlePerpendicular().scale(- kappa * 10.0));
         }
-        notifyCurvatureListeners(curvatures);
     }
 
     private void curvatureLimitedPass(List<TrajectoryElement> trajectories)
