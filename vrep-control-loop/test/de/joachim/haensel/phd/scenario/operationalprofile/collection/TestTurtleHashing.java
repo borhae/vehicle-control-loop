@@ -1,12 +1,12 @@
 package de.joachim.haensel.phd.scenario.operationalprofile.collection;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
@@ -29,7 +29,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.RecordedTrajectoryElement;
@@ -42,7 +41,7 @@ public class TestTurtleHashing
     {
         return Arrays.asList(new Object[][]
         {
-            {"luebeck_extramini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
+//            {"luebeck_extramini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
 //            {"luebeck_small", 15.0, 120.0, 4.0, 4.3, 1.0},
 //          {"luebeck_mini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
 //          {"luebeck_10_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
@@ -69,14 +68,14 @@ public class TestTurtleHashing
             List<Position2D> plannedPath = 
                     mapper.readValue(new File("./res/operationalprofiletest/serializedruns/Plan" + localTestID + ".json"), new TypeReference<List<Position2D>>() {});
             timeDistanceSimpleStats(trajectoryRecordings, plannedPath);
-            TurtleHash hasher = new TurtleHash(1, 5.0, 20);
+            TurtleHash hasher = new TurtleHash(8, 5.0, 20);
             TreeMap<Long, List<TrajectoryElement>> configsSorted = new TreeMap<Long, List<TrajectoryElement>>(configurations);
             for (Entry<Long, List<TrajectoryElement>> curPlan : configsSorted.entrySet())
             {
                 List<int[]> pixels = hasher.pixelate(curPlan.getValue());
                 List<StepDirection> steps = hasher.createSteps(pixels);
                 
-                JFrame pixelFrame = new JFrame("pixel");
+                JFrame pixelFrame = new JFrame("pixels");
                 pixelFrame.add(new JLabel(new ImageIcon(createImage(pixels))));
                 pixelFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 pixelFrame.pack();
@@ -87,6 +86,20 @@ public class TestTurtleHashing
                 arrowFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 arrowFrame.pack();
                 arrowFrame.setVisible(true);
+                for(int idx = 0; idx < pixels.size() - 1; idx++)
+                {
+                    int[] cur = pixels.get(idx);
+                    int[] nxt = pixels.get(idx + 1);
+                    System.out.format("p1(%d, %d), p2(%d, %d)\n", cur[0], cur[1], nxt[0], nxt[1]);
+                    boolean differentPoints = !TurtleHash.same(cur, nxt);
+                    boolean connectedPoints = TurtleHash.connected(cur, nxt);
+                    if(!differentPoints || !connectedPoints)
+                    {
+                        System.out.println("breakpoint here");
+                    }
+                    assertThat(String.format("Detected overlap in adjacent elements p1(%d, %d), p2(%d, %d)", cur[0], cur[1], nxt[0], nxt[1]), differentPoints);
+                    assertThat(String.format("Adjacent elements should be connected p1(%d, %d), p2(%d, %d)", cur[0], cur[1], nxt[0], nxt[1]), connectedPoints);
+                }
                 System.out.println("stop");
             }
         }
@@ -191,67 +204,6 @@ public class TestTurtleHashing
         }
     }
 
-    private void garbage(Graphics2D g2, int[] p, StepDirection stepDir)
-    {
-        int xD = 0;
-        int yD = 0;
-        switch (stepDir)
-        {
-            case N:
-                xD = 1;
-                break;
-            case S:
-                xD = -1;
-                break;
-            case E:
-                yD = 1;
-                break;
-            case W:
-                yD = -1;
-                break;
-            case NE:
-                xD = 1;
-                yD = 1;
-                break;
-            case NW:
-                xD = 1;
-                yD = -1;
-                break;
-            case SE:
-                xD = -1;
-                yD = 1;
-                break;
-            case SW:
-                xD = -1;
-                yD = -1;
-                break;
-            default:
-                break;
-        }
-        if(stepDir == StepDirection.C)
-        {
-            g2.drawRect(p[0] - 4, p[1] - 4, 8, 8);
-        }
-        else
-        {
-            int size = 8; 
-            int xB = p[0] - xD * size;
-            int yB = p[1] - yD * size;
-            int xT = p[0] + xD * size;
-            int yT = p[1] + yD * size;
-            
-            Position2D norm = new Position2D(xT - xB, yT - yB);
-            norm.normalize();
-            
-            double tipSize = 4.0;
-            
-            Position2D leftWing = norm.copy().transform(new TMatrix(tipSize, 0.0, 0.0, 1.25 * Math.PI));
-            Position2D rightWing = norm.copy().transform(new TMatrix(tipSize, 0.0, 0.0, 0.75 * Math.PI));
-            g2.drawLine((int)xT, (int)yT, (int)(xT + leftWing.getX()), (int)(yT + leftWing.getY()));
-            g2.drawLine((int)xT, (int)yT, (int)(xT + rightWing.getX()), (int)(yT + rightWing.getY()));
-        }
-    }
-    
     private void draw(Graphics2D g, IndexAdder<int[]> elem)
     {
         int[] pixel = elem.v();

@@ -2,6 +2,7 @@ package de.joachim.haensel.phd.scenario.operationalprofile.collection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import de.joachim.haensel.phd.scenario.equivalenceclasses.TrajectoryNormalizer;
@@ -18,7 +19,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
  */
 public class TurtleHash
 {
-    private int _gridSize;
+    private double _gridSize;
     private int _elementLength;
     private int _numOfElems;
     private int _gridWidth;
@@ -26,7 +27,7 @@ public class TurtleHash
     private int _offsetX;
     private int _offsetY;
 
-    public TurtleHash(int gridSize, double elementLength, int numOfElems)
+    public TurtleHash(double gridSize, double elementLength, int numOfElems)
     {
         _gridSize = gridSize;
         _elementLength = (int)Math.round(elementLength);
@@ -41,14 +42,45 @@ public class TurtleHash
     {
         List<TrajectoryElement> centeredTrj = TrajectoryNormalizer.normalize(trajectory);
         centeredTrj.stream().forEach(trajE -> trajE.setVector(trajE.getVector().scale(1.0/(double)_gridSize)));
-        List<Vector2D> cleanedVectors = cleanOutConnections(centeredTrj);
+        List<Vector2D> cleanedVectors = centeredTrj.stream().map(t -> t.getVector()).collect(Collectors.toList());
         List<int[]> pixels = new ArrayList<int[]>();
         for(int trajIdx = 0; trajIdx < cleanedVectors.size(); trajIdx++)
         {
             Vector2D curV = cleanedVectors.get(trajIdx);
             int[][] rasterizedV = rasterizeVector(curV);
+            if(rasterizedV.length <= 0)
+            {
+                continue;
+            }
             int rasterIdx = 0;
-            if(!pixels.isEmpty() && same(pixels.get(pixels.size() - 1), rasterizedV[0]))
+            int[] pLast = lastPixelOffsetRemoved(pixels);
+            int[] pNext = rasterizedV[0];
+            if(!pixels.isEmpty() && !connected(pLast, pNext))
+            {
+                int filler[][] = rasterizeVector(new Vector2D(new Position2D(asDouble(pLast)), new Position2D(asDouble(pNext))));
+                int[][] tmp = new int[rasterizedV.length + filler.length][2];
+                for(int idx = 0; idx < tmp.length; idx++)
+                {
+                    if(idx == filler.length)
+                    {
+                        if(same(tmp[idx - 1], rasterizedV[idx - filler.length]))
+                        {
+                            continue;
+                        }
+                    }
+                    if(idx < filler.length)
+                    {
+                        tmp[idx] = filler[idx];
+                    }
+                    else
+                    {
+                        tmp[idx] = rasterizedV[idx - filler.length];
+                    }
+                }
+                rasterizedV = tmp;
+            }
+            pNext = rasterizedV[0];
+            if(!pixels.isEmpty() && same(pLast, pNext))
             {
                 rasterIdx = 1;
             }
@@ -56,28 +88,45 @@ public class TurtleHash
             for(; rasterIdx < rasterizedV.length; rasterIdx++)
             {
                 int[] curPoint = rasterizedV[rasterIdx];
+                curPoint[0] += _offsetX;
+                curPoint[1] += _offsetY;
                 pixels.add(curPoint);
             }
         }
         return pixels;
     }
 
-    private boolean same(int[] p1, int[] p2)
+    private int[] lastPixelOffsetRemoved(List<int[]> pixels)
     {
-        return p1[0] == p2[0] && p1[1] == p2[1];
+        if(pixels.isEmpty())
+        {
+            return null;
+        }
+        else
+        {
+            int[] base = pixels.get(pixels.size() - 1);
+            int[] result = new int[2];
+            result[0] = base[0] - _offsetX;
+            result[1] = base[1] - _offsetY;
+            return result;
+        }
     }
 
-    private List<Vector2D> cleanOutConnections(List<TrajectoryElement> trajectory)
+    private double[] asDouble(int[] p)
     {
-        List<Vector2D> result = new ArrayList<Vector2D>();
-        for(int idx = 0; idx < trajectory.size() - 1; idx++)
-        {
-            Vector2D curV = trajectory.get(idx).getVector();
-            Vector2D nexV = trajectory.get(idx + 1).getVector();
-            result.add(new Vector2D(curV.getBase(), nexV.getBase()));
-        }
-        result.add(trajectory.get(trajectory.size() - 1).getVector()); // add the last directly since we have no next base...
-        return result;
+        return new double[] {(double) p[0], (double) p[1]};
+    }
+
+    public static boolean connected(int[] p1, int[] p2)
+    {
+        int dx = Math.abs(p2[0] - p1[0]);
+        int dy = Math.abs(p2[1] - p1[1]);
+        return dx <= 1 && dy <= 1;
+    }
+
+    public static boolean same(int[] p1, int[] p2)
+    {
+        return p1[0] == p2[0] && p1[1] == p2[1];
     }
 
     public int[][] rasterizeVector(Vector2D vector)
@@ -134,8 +183,8 @@ public class TurtleHash
 
     private void enterPixel(int[][] result, int idx, int y, int x)
     {
-        result[idx][0] = _offsetX + x;
-        result[idx][1] = _offsetY + y;
+        result[idx][0] = x;
+        result[idx][1] = y;
     }
 
     private int[] range(double i0, double i1)
