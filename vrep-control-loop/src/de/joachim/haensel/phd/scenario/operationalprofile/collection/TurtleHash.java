@@ -42,42 +42,46 @@ public class TurtleHash
     {
         List<TrajectoryElement> centeredTrj = TrajectoryNormalizer.normalize(trajectory);
         centeredTrj.stream().forEach(trajE -> trajE.setVector(trajE.getVector().scale(1.0/(double)_gridSize)));
-        List<Vector2D> cleanedVectors = centeredTrj.stream().map(t -> t.getVector()).collect(Collectors.toList());
+        List<Vector2D> cleanedVectors = cleanVectors(centeredTrj);
         List<int[]> pixels = new ArrayList<int[]>();
+        int[][] lastRasterizedVec = null;
+        Vector2D lastVector = null;
         for(int trajIdx = 0; trajIdx < cleanedVectors.size(); trajIdx++)
         {
             Vector2D curV = cleanedVectors.get(trajIdx);
-            int[][] rasterizedV = rasterizeVector(curV);
+            int[][] rasterizedV = rasterizeVectorBresenham(curV);
+            validateVector(rasterizedV);
             if(rasterizedV.length <= 0)
             {
                 continue;
             }
             int rasterIdx = 0;
-            int[] pLast = lastPixelOffsetRemoved(pixels);
+            int[] pLast = pixels.isEmpty() ? null : pixels.get(pixels.size() - 1);
             int[] pNext = rasterizedV[0];
             if(!pixels.isEmpty() && !connected(pLast, pNext))
             {
-                int filler[][] = rasterizeVector(new Vector2D(new Position2D(asDouble(pLast)), new Position2D(asDouble(pNext))));
-                int[][] tmp = new int[rasterizedV.length + filler.length][2];
-                for(int idx = 0; idx < tmp.length; idx++)
+                int filler[][] = rasterizeVectorBresenham(new Vector2D(new Position2D(asDouble(pLast)), new Position2D(asDouble(pNext))));
+                int size = rasterizedV.length + filler.length;
+                List<int[]> tmp = new ArrayList<int[]>(size);
+                for(int idx = 0; idx < size; idx++)
                 {
                     if(idx == filler.length)
                     {
-                        if(same(tmp[idx - 1], rasterizedV[idx - filler.length]))
+                        if((idx > 0) && same(tmp.get(idx - 1), rasterizedV[idx - filler.length]))
                         {
                             continue;
                         }
                     }
                     if(idx < filler.length)
                     {
-                        tmp[idx] = filler[idx];
+                        tmp.add(filler[idx]);
                     }
                     else
                     {
-                        tmp[idx] = rasterizedV[idx - filler.length];
+                        tmp.add(rasterizedV[idx - filler.length]);
                     }
                 }
-                rasterizedV = tmp;
+                rasterizedV = tmp.toArray(new int[0][0]);
             }
             pNext = rasterizedV[0];
             if(!pixels.isEmpty() && same(pLast, pNext))
@@ -87,12 +91,94 @@ public class TurtleHash
             for(; rasterIdx < rasterizedV.length; rasterIdx++)
             {
                 int[] curPoint = rasterizedV[rasterIdx];
-                curPoint[0] += _offsetX;
-                curPoint[1] += _offsetY;
                 pixels.add(curPoint);
             }
+            validateVector(pixels.toArray(new int[0][0]));
+            lastVector = curV;
+            lastRasterizedVec = rasterizedV;
         }
+        pixels.parallelStream().forEach(p -> {p[0] += _offsetX; p[1] += _offsetY;});
         return pixels;
+    }
+
+    private List<Vector2D> cleanVectors(List<TrajectoryElement> centeredTrj)
+    {
+        List<Vector2D> vectors = centeredTrj.stream().map(t -> t.getVector()).collect(Collectors.toList());
+        List<Vector2D> result = new ArrayList<Vector2D>();
+        for(int idx = 0; idx < vectors.size() - 1; idx++)
+        {
+            Position2D b1 = vectors.get(idx).getBase();
+            Position2D b2 = vectors.get(idx + 1).getBase();
+            result.add(new Vector2D(b1, b2));
+        }
+        result.add(vectors.get(vectors.size() - 1));
+        return result;
+    }
+    
+    public int[][] rasterizeVectorBresenham(Vector2D vector)
+    {
+        Position2D p1 = vector.getBase();
+        Position2D p2 = vector.getTip();
+        double x0 = p1.getX();
+        double y0 = p1.getY();
+        double x1 = p2.getX();
+        double y1 = p2.getY();
+        double dx = Math.abs(vector.getdX());
+        double dy = Math.abs(vector.getdY());
+        
+        int xInc = x0 < x1 ? 1 : -1;
+        int yInc = y0 < y1 ? 1 : -1;
+        
+        int x = (int)Math.round(x0);
+        int y = (int)Math.round(y0);
+        
+        double error = 0.0;
+        
+        List<int[]> result = new ArrayList<int[]>();
+        if(dx >= dy)
+        {
+            error = dx / 2.0;
+            while(x != Math.round(x1))
+            {
+                result.add(new int[] {x, y});
+                x += xInc;
+                error -= dy;;
+                if(error < 0.0)
+                {
+                    y += yInc;
+                    error += dx;
+                }
+            }
+        }
+        else
+        {
+            error = dy / 2.0;
+            while(y != Math.round(y1))
+            {
+                result.add(new int[] {x, y});
+                y += yInc;
+                error -= dx;
+                if(error < 0.0)
+                {
+                    x += xInc;
+                    error += dy;
+                }
+            }
+        }
+        return result.toArray(new int[0][0]);
+    }
+
+    private void validateVector(int[][] rasterizedV)
+    {
+        for(int idx = 0; idx < rasterizedV.length - 1; idx++)
+        {
+            int[] p1 = rasterizedV[idx];
+            int[] p2 = rasterizedV[idx + 1];
+            if(!connected(p1, p2) || same(p1, p2))
+            {
+                System.out.println("shit");
+            }
+        }
     }
 
     private int[] lastPixelOffsetRemoved(List<int[]> pixels)
@@ -127,8 +213,82 @@ public class TurtleHash
     {
         return p1[0] == p2[0] && p1[1] == p2[1];
     }
+    
+    public int[][] rasterizeVectorAmanatidesWoo(Vector2D vector)
+    {
+        Position2D p1 = vector.getBase();
+        Position2D p2 = vector.getTip();
+        double x0 = fix(p1.getX());
+        double y0 = fix(p1.getY());
+        double x1 = fix(p2.getX());
+        double y1 = fix(p2.getY());
+        int x = (int) x0;
+        int y = (int) y0;
+        int endX = (int) x1;
+        int endY = (int) y1;
+        double gridCellWidth = 1.0;
+        double gridCellHeight = 1.0;
 
-    public int[][] rasterizeVector(Vector2D vector)
+        // deltaX and deltaY is how far we have to move in ray direction until we find a new cell in x or y direction 
+        // y = u + t * v, where u=(x1,x2) and v=(stepX,stepY) is the direction vector 
+        double deltaX = gridCellWidth / Math.abs(x1 - x0);
+        int stepX = (int) Math.signum(x1 - x0);
+        double maxX = deltaX * (1.0 - (frac(x0 / gridCellWidth)));
+        
+        double deltaY = gridCellHeight / Math.abs(y1 - y0);
+        int stepY = (int) Math.signum(y1 - y0);
+        double maxY = deltaY * (1.0 - (frac(y0 / gridCellHeight)));
+        
+        boolean reachedX = false;
+        boolean reachedY = false;
+        
+        List<int[]> result = new ArrayList<int[]>();
+        result.add(new int[] {x, y});
+        while(!(reachedX && reachedY))
+        {
+            if((maxX < maxY) && !reachedX)
+            {
+                maxX += deltaX;
+                x += stepX;
+            }
+            else
+            {
+                maxY += deltaY;
+                y += stepY;
+            }
+            result.add(new int[]{x, y});
+            if(stepX > 0.0)
+            {
+                reachedX = x >= endX;
+            }
+            else if (x <= endX)
+            {
+                reachedX = true;
+            }
+            if(stepY > 0.0)
+            {
+                reachedY = y >= endY;
+            }
+            else if(y <= endY)
+            {
+                reachedY = true;
+            }
+        }
+        return result.toArray(new int[0][0]);
+    }
+    
+    static final double fix(double val) 
+    { 
+        //why not val % 1 == 0 ? val + 0.1 : val;
+        return frac(val) == 0 ? val + 0.1 : val; 
+    } 
+ 
+    static final double frac(double val) 
+    { 
+        return val - (int)val; 
+    }
+
+    public int[][] rasterizeVectorSimple(Vector2D vector)
     {
         int[][] result = null;
         Position2D p1 = vector.getBase();

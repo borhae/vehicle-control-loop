@@ -8,7 +8,6 @@ public enum StepDirection
     //W     C     E
     //  SW     SE
     //      S  
-
     public static StepDirection get(int[] p1, int[] p2)
     {
         int x0 = p1[0];

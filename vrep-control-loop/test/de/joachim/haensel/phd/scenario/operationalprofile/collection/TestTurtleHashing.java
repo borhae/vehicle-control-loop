@@ -44,8 +44,8 @@ public class TestTurtleHashing
     {
         return Arrays.asList(new Object[][]
         {
-            {"luebeck_extramini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
-//            {"luebeck_40_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
+//            {"luebeck_extramini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
+            {"luebeck_40_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
 //            {"luebeck_small", 15.0, 120.0, 4.0, 4.3, 1.0},
 //          {"luebeck_mini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
 //          {"luebeck_10_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
@@ -73,7 +73,7 @@ public class TestTurtleHashing
             List<Position2D> plannedPath = 
                     mapper.readValue(new File("./res/operationalprofiletest/serializedruns/Plan" + localTestID + ".json"), new TypeReference<List<Position2D>>() {});
             timeDistanceSimpleStats(trajectoryRecordings, plannedPath);
-            TurtleHash hasher = new TurtleHash(5.1, 5.0, 20);
+            TurtleHash hasher = new TurtleHash(3, 5.0, 20);
             TreeMap<Long, List<TrajectoryElement>> configsSorted = new TreeMap<Long, List<TrajectoryElement>>(configurations);
             TreeMap<String, List<Long>> configsHashed = new TreeMap<String, List<Long>>();
             for (Entry<Long, List<TrajectoryElement>> curPlan : configsSorted.entrySet())
@@ -99,6 +99,10 @@ public class TestTurtleHashing
 //                    System.out.format("p1(%d, %d), p2(%d, %d)\n", cur[0], cur[1], nxt[0], nxt[1]);
                     boolean differentPoints = !TurtleHash.same(cur, nxt);
                     boolean connectedPoints = TurtleHash.connected(cur, nxt);
+                    if(!differentPoints || !connectedPoints)
+                    {
+                        System.out.println("stop here");
+                    }
                     assertThat(String.format("Detected overlap in adjacent pixels p1(%d, %d), p2(%d, %d)", cur[0], cur[1], nxt[0], nxt[1]), differentPoints);
                     assertThat(String.format("Adjacent pixels should be connected p1(%d, %d), p2(%d, %d)", cur[0], cur[1], nxt[0], nxt[1]), connectedPoints);
                 }
@@ -227,7 +231,7 @@ public class TestTurtleHashing
     {
         Vector2D v = new Vector2D(0.0, 0.0, 5.0, 5.0);
         TurtleHash hasher = new TurtleHash(1, 5.0, 25);
-        int[][] actual = hasher.rasterizeVector(v);
+        int[][] actual = hasher.rasterizeVectorSimple(v);
         int[][] expected = new int[][] {
             {0, 0},
             {1, 1},
@@ -239,27 +243,11 @@ public class TestTurtleHashing
     }
     
     @Test
-    public void testSingleVectorHorizontalLine()
-    {
-        Vector2D v = new Vector2D(0.0, 0.0, 5.0, 0.0);
-        TurtleHash hasher = new TurtleHash(1, 5.0, 25);
-        int[][] actual = hasher.rasterizeVector(v);
-        int[][] expected = new int[][] {
-            {0, 0},
-            {1, 0},
-            {2, 0},
-            {3, 0},
-            {4, 0}
-      };
-        assertArrayEquals(expected, actual, "arrays differ");
-    }
-
-    @Test
     public void testSingleVectorVerticalLine()
     {
         Vector2D v = new Vector2D(0.0, 0.0, 0.0, 5.0);
         TurtleHash hasher = new TurtleHash(1, 5.0, 25);
-        int[][] actual = hasher.rasterizeVector(v);
+        int[][] actual = hasher.rasterizeVectorSimple(v);
         int[][] expected = new int[][] {
             {0, 0},
             {0, 1},
@@ -269,10 +257,129 @@ public class TestTurtleHashing
         };
         assertArrayEquals(expected, actual, "arrays differ");
     }
+    
+    @Test
+    public void testSingleVectorHorizontalLine()
+    {
+        Vector2D v = new Vector2D(0.0, 0.0, 5.0, 0.0);
+        TurtleHash hasher = new TurtleHash(1, 5.0, 25);
+        int[][] actual = hasher.rasterizeVectorSimple(v);
+        int[][] expected = new int[][] {
+            {0, 0},
+            {1, 0},
+            {2, 0},
+            {3, 0},
+            {4, 0}
+        };
+        assertArrayEquals(expected, actual, "arrays differ");
+    }
+    
+    @Test
+    public void testSingleVectorHash45DegreeBresenham()
+    {
+        Vector2D v = new Vector2D(0.0, 0.0, 5.0, 5.0);
+        TurtleHash hasher = new TurtleHash(1, 5.0, 25);
+        int[][] actual = hasher.rasterizeVectorBresenham(v);
+        int[][] expected = new int[][] {
+            {0, 0},
+            {1, 1},
+            {2, 2},
+            {3, 3},
+            {4, 4},
+        };
+        assertArrayEquals(expected, actual, "arrays differ");
+    }
+    
+    @Test
+    public void testSingleVectorVerticalLineBresenham()
+    {
+        Vector2D v = new Vector2D(0.0, 0.0, 0.0, 5.0);
+        TurtleHash hasher = new TurtleHash(1, 5.0, 25);
+        int[][] actual = hasher.rasterizeVectorBresenham(v);
+        int[][] expected = new int[][] {
+            {0, 0},
+            {0, 1},
+            {0, 2},
+            {0, 3},
+            {0, 4},
+        };
+        assertArrayEquals(expected, actual, "arrays differ");
+    }
+    
+    @Test
+    public void testSingleVectorHorizontalLineBresenham()
+    {
+        Vector2D v = new Vector2D(0.0, 0.0, 5.0, 0.0);
+        TurtleHash hasher = new TurtleHash(1, 5.0, 25);
+        int[][] actual = hasher.rasterizeVectorBresenham(v);
+        int[][] expected = new int[][] {
+            {0, 0},
+            {1, 0},
+            {2, 0},
+            {3, 0},
+            {4, 0},
+        };
+        assertArrayEquals(expected, actual, "arrays differ");
+    }
+    
+    @Test
+    public void testSingleVectorHash45DegreeAmanatidesWoo()
+    {
+        Vector2D v = new Vector2D(0.0, 0.0, 5.0, 5.0);
+        TurtleHash hasher = new TurtleHash(1, 5.0, 20);
+        int[][] actual = hasher.rasterizeVectorAmanatidesWoo(v);
+        int[][] expected = new int[][] {
+            {0, 0}, 
+            {0, 1}, 
+            {1, 1}, 
+            {1, 2}, 
+            {2, 2}, 
+            {2, 3}, 
+            {3, 3}, 
+            {3, 4}, 
+            {4, 4}, 
+            {4, 5}, 
+            {5, 5}
+        };
+        assertArrayEquals(expected, actual, "arrays differ");
+    }
+    
+    @Test
+    public void testSingleVectorVerticalLineAmanatidesWoo()
+    {
+        Vector2D v = new Vector2D(0.0, 0.0, 0.0, 5.0);
+        TurtleHash hasher = new TurtleHash(1, 5.0, 20);
+        int[][] actual = hasher.rasterizeVectorAmanatidesWoo(v);
+        int[][] expected = new int[][] {
+            {0, 0},
+            {0, 1},
+            {0, 2},
+            {0, 3},
+            {0, 4},
+            {0, 5}
+        };
+        assertArrayEquals(expected, actual, "arrays differ");
+    }
+    
+    @Test
+    public void testSingleVectorHorizontalLineAmanatidesWoo()
+    {
+        Vector2D v = new Vector2D(0.0, 0.0, 5.0, 0.0);
+        TurtleHash hasher = new TurtleHash(1, 5.0, 20);
+        int[][] actual = hasher.rasterizeVectorAmanatidesWoo(v);
+        int[][] expected = new int[][] {
+            {0, 0},
+            {1, 0},
+            {2, 0},
+            {3, 0},
+            {4, 0},
+            {5, 0}
+        };
+        assertArrayEquals(expected, actual, "arrays differ");
+    }
 
     private void timeDistanceSimpleStats(List<RecordedTrajectoryElement> trajectoryRecordings, List<Position2D> plannedPath)
     {
-        
         RecordedTrajectoryElement firstRecord = trajectoryRecordings.get(0);
         RecordedTrajectoryElement lastRecord = trajectoryRecordings.get(trajectoryRecordings.size() - 1);
         long sysTimeSpanMillis = lastRecord.getSysTime() - firstRecord.getSysTime();
