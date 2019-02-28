@@ -84,7 +84,6 @@ public class TurtleHash
             {
                 rasterIdx = 1;
             }
-            System.out.println("");
             for(; rasterIdx < rasterizedV.length; rasterIdx++)
             {
                 int[] curPoint = rasterizedV[rasterIdx];

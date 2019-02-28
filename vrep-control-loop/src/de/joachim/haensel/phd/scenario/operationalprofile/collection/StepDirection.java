@@ -40,4 +40,31 @@ public enum StepDirection
         }
         return result;
     }
+
+    public String toCode()
+    {
+        switch(this)
+        {
+            case N:
+                return "0";
+            case NE:
+                return "1";
+            case E:
+                return "2";
+            case SE:
+                return "3";
+            case S:
+                return "4";
+            case SW:
+                return "5";
+            case W:
+                return "6";
+            case NW:
+                return "7";
+            case C:
+                return "8";
+            default:
+                return "U";
+        }
+    }
 }

@@ -10,11 +10,14 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.swing.ImageIcon;
@@ -41,13 +44,15 @@ public class TestTurtleHashing
     {
         return Arrays.asList(new Object[][]
         {
-//            {"luebeck_extramini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
+            {"luebeck_extramini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
+//            {"luebeck_40_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
 //            {"luebeck_small", 15.0, 120.0, 4.0, 4.3, 1.0},
 //          {"luebeck_mini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
 //          {"luebeck_10_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
 //          {"chandigarh_10_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
 //            {"chandigarh_20_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
 //            {"luebeck_20_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
+            
         }).stream().map(params -> Arguments.of(params));
     }
 
@@ -55,7 +60,7 @@ public class TestTurtleHashing
     @MethodSource("parameters")
     public void testReadSimulationRun(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration)
     {
-        String localTestID = testID + String.format("%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration); 
+        String localTestID = testID + String.format(Locale.US, "%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration); 
         ObjectMapper mapper = new ObjectMapper();
         try
         {
@@ -68,40 +73,47 @@ public class TestTurtleHashing
             List<Position2D> plannedPath = 
                     mapper.readValue(new File("./res/operationalprofiletest/serializedruns/Plan" + localTestID + ".json"), new TypeReference<List<Position2D>>() {});
             timeDistanceSimpleStats(trajectoryRecordings, plannedPath);
-            TurtleHash hasher = new TurtleHash(8, 5.0, 20);
+            TurtleHash hasher = new TurtleHash(5.1, 5.0, 20);
             TreeMap<Long, List<TrajectoryElement>> configsSorted = new TreeMap<Long, List<TrajectoryElement>>(configurations);
+            TreeMap<String, List<Long>> configsHashed = new TreeMap<String, List<Long>>();
             for (Entry<Long, List<TrajectoryElement>> curPlan : configsSorted.entrySet())
             {
                 List<int[]> pixels = hasher.pixelate(curPlan.getValue());
                 List<StepDirection> steps = hasher.createSteps(pixels);
                 
-                JFrame pixelFrame = new JFrame("pixels");
-                pixelFrame.add(new JLabel(new ImageIcon(createImage(pixels))));
-                pixelFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                pixelFrame.pack();
-                pixelFrame.setVisible(true);
-
-                JFrame arrowFrame = new JFrame("directions");
-                arrowFrame.add(new JLabel(new ImageIcon(createImage(pixels, steps))));
-                arrowFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                arrowFrame.pack();
-                arrowFrame.setVisible(true);
+//                JFrame pixelFrame = new JFrame("pixels");
+//                pixelFrame.add(new JLabel(new ImageIcon(createImage(pixels))));
+//                pixelFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//                pixelFrame.pack();
+//                pixelFrame.setVisible(true);
+//
+//                JFrame arrowFrame = new JFrame("directions");
+//                arrowFrame.add(new JLabel(new ImageIcon(createImage(pixels, steps))));
+//                arrowFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//                arrowFrame.pack();
+//                arrowFrame.setVisible(true);
                 for(int idx = 0; idx < pixels.size() - 1; idx++)
                 {
                     int[] cur = pixels.get(idx);
                     int[] nxt = pixels.get(idx + 1);
-                    System.out.format("p1(%d, %d), p2(%d, %d)\n", cur[0], cur[1], nxt[0], nxt[1]);
+//                    System.out.format("p1(%d, %d), p2(%d, %d)\n", cur[0], cur[1], nxt[0], nxt[1]);
                     boolean differentPoints = !TurtleHash.same(cur, nxt);
                     boolean connectedPoints = TurtleHash.connected(cur, nxt);
-                    if(!differentPoints || !connectedPoints)
-                    {
-                        System.out.println("breakpoint here");
-                    }
-                    assertThat(String.format("Detected overlap in adjacent elements p1(%d, %d), p2(%d, %d)", cur[0], cur[1], nxt[0], nxt[1]), differentPoints);
-                    assertThat(String.format("Adjacent elements should be connected p1(%d, %d), p2(%d, %d)", cur[0], cur[1], nxt[0], nxt[1]), connectedPoints);
+                    assertThat(String.format("Detected overlap in adjacent pixels p1(%d, %d), p2(%d, %d)", cur[0], cur[1], nxt[0], nxt[1]), differentPoints);
+                    assertThat(String.format("Adjacent pixels should be connected p1(%d, %d), p2(%d, %d)", cur[0], cur[1], nxt[0], nxt[1]), connectedPoints);
                 }
-                System.out.println("stop");
+                String hashVal = steps.stream().map(d -> d.toCode()).collect(Collectors.joining());
+                System.out.println(hashVal);
+                System.out.format("Number of trajectory elements: %d, number of pixels: %d\n", curPlan.getValue().size(), pixels.size());
+                List<Long> bucket = configsHashed.get(hashVal);
+                if(bucket == null)
+                {
+                    bucket = new ArrayList<Long>();
+                    configsHashed.put(hashVal, bucket);
+                }
+                bucket.add(curPlan.getKey());
             }
+            System.out.println(String.format("Number of trajectories: %d, number of buckets: %d", configsSorted.size(), configsHashed.size()));
         }
         catch (IOException exc)
         {
@@ -217,12 +229,11 @@ public class TestTurtleHashing
         TurtleHash hasher = new TurtleHash(1, 5.0, 25);
         int[][] actual = hasher.rasterizeVector(v);
         int[][] expected = new int[][] {
-            {125, 125},
-            {126, 126},
-            {127, 127},
-            {128, 128},
-            {129, 129},
-            {130, 130},
+            {0, 0},
+            {1, 1},
+            {2, 2},
+            {3, 3},
+            {4, 4}
         };
         assertArrayEquals(expected, actual, "arrays differ");
     }
@@ -234,13 +245,12 @@ public class TestTurtleHashing
         TurtleHash hasher = new TurtleHash(1, 5.0, 25);
         int[][] actual = hasher.rasterizeVector(v);
         int[][] expected = new int[][] {
-            {125, 125},
-            {126, 125},
-            {127, 125},
-            {128, 125},
-            {129, 125},
-            {130, 125},
-        };
+            {0, 0},
+            {1, 0},
+            {2, 0},
+            {3, 0},
+            {4, 0}
+      };
         assertArrayEquals(expected, actual, "arrays differ");
     }
 
@@ -251,12 +261,11 @@ public class TestTurtleHashing
         TurtleHash hasher = new TurtleHash(1, 5.0, 25);
         int[][] actual = hasher.rasterizeVector(v);
         int[][] expected = new int[][] {
-            {125, 125},
-            {125, 126},
-            {125, 127},
-            {125, 128},
-            {125, 129},
-            {125, 130},
+            {0, 0},
+            {0, 1},
+            {0, 2},
+            {0, 3},
+            {0, 4}
         };
         assertArrayEquals(expected, actual, "arrays differ");
     }
