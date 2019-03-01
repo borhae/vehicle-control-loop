@@ -3,9 +3,9 @@ package de.joachim.haensel.phd.scenario.operationalprofile.collection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import de.joachim.haensel.phd.scenario.equivalenceclasses.TrajectoryNormalizer;
+import de.joachim.haensel.phd.scenario.math.geometry.Point3D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
@@ -39,6 +39,190 @@ public class TurtleHash
     }
 
     public List<int[]> pixelate(List<TrajectoryElement> trajectory)
+    {
+        List<TrajectoryElement> centeredTrj = TrajectoryNormalizer.normalize(trajectory);
+        centeredTrj.stream().forEach(trajE -> {trajE.setVector(trajE.getVector().scale(1.0/_gridSize)); trajE.setVelocity(trajE.getVelocity()/_gridSize);});
+        List<int[]> pixels = new ArrayList<int[]>();
+        int[][] lastRasterizedVec = null;
+        TrajectoryElement lastTrjE = null;
+        for(int trajIdx = 0; trajIdx < centeredTrj.size(); trajIdx++)
+        {
+            TrajectoryElement curTrjE = centeredTrj.get(trajIdx);
+            double lastVelocity = 0.0;
+            if(trajIdx == 0)
+            {
+                lastVelocity = curTrjE.getVelocity();
+            }
+            else
+            {
+                lastVelocity = centeredTrj.get(trajIdx - 1).getVelocity();
+            }
+            Vector2D curVec = curTrjE.getVector();
+            Point3D p1 = new Point3D(curVec.getBase());
+            p1.setZ(lastVelocity);
+            Point3D p2 = new Point3D(curVec.getTip());
+            p2.setZ(curTrjE.getVelocity());
+            int[][] rasterizedV = rasterizeVectorBresenham3D(p1, p2);
+//            validateVector(rasterizedV);
+            if(rasterizedV.length <= 0)
+            {
+                continue;
+            }
+            int rasterIdx = 0;
+            int[] pLast = pixels.isEmpty() ? null : pixels.get(pixels.size() - 1);
+            int[] pNext = rasterizedV[0];
+            if(!pixels.isEmpty() && !connected3D(pLast, pNext))
+            {
+                int filler[][] = rasterizeVectorBresenham3D(new Point3D(pLast), new Point3D(pNext));
+                int size = rasterizedV.length + filler.length;
+                List<int[]> tmp = new ArrayList<int[]>(size);
+                for(int idx = 0; idx < size; idx++)
+                {
+                    if(idx == filler.length)
+                    {
+                        if((idx > 0) && same3D(tmp.get(idx - 1), rasterizedV[idx - filler.length]))
+                        {
+                            continue;
+                        }
+                    }
+                    if(idx < filler.length)
+                    {
+                        tmp.add(filler[idx]);
+                    }
+                    else
+                    {
+                        tmp.add(rasterizedV[idx - filler.length]);
+                    }
+                }
+                rasterizedV = tmp.toArray(new int[0][0]);
+            }
+            pNext = rasterizedV[0];
+            if(!pixels.isEmpty() && same3D(pLast, pNext))
+            {
+                rasterIdx = 1;
+            }
+            for(; rasterIdx < rasterizedV.length; rasterIdx++)
+            {
+                int[] curPoint = rasterizedV[rasterIdx];
+                pixels.add(curPoint);
+            }
+//            validateVector(pixels.toArray(new int[0][0]));
+            lastTrjE = curTrjE;
+            lastRasterizedVec = rasterizedV;
+        }
+        pixels.parallelStream().forEach(p -> {p[0] += _offsetX; p[1] += _offsetY;});
+        return pixels;
+    }
+
+    public boolean same3D(int[] p1, int[] p2)
+    {
+        return p1[0] == p2[0] && p1[1] == p2[1] && p1[2] == p2[2];
+    }
+
+    public boolean connected3D(int[] p1, int[] p2)
+    {
+        int dx = Math.abs(p2[0] - p1[0]);
+        int dy = Math.abs(p2[1] - p1[1]);
+        int dz = Math.abs(p2[2] - p1[2]);
+        return dx <= 1 && dy <= 1 && dz <= 1;
+    }
+
+    public int[][] rasterizeVectorBresenham3D(Point3D p1, Point3D p2)
+    {
+        double x0 = p1.getX();
+        double y0 = p1.getY();
+        double z0 = p1.getZ();
+        
+        double x1 = p2.getX();
+        double y1 = p2.getY();
+        double z1 = p2.getZ();
+
+        double dx = Math.abs(x1 - x0);
+        double dy = Math.abs(y1 - y0);
+        double dz = Math.abs(z1 - z0);
+        
+        int xInc = x0 < x1 ? 1 : -1;
+        int yInc = y0 < y1 ? 1 : -1;
+        int zInc = z0 < z1 ? 1 : -1;
+        
+        int x = (int)Math.round(x0);
+        int y = (int)Math.round(y0);
+        int z = (int)Math.round(z0);
+        
+        double error1 = 0.0;
+        double error2 = 0.0;
+        
+        List<int[]> result = new ArrayList<int[]>();
+        if(dx >= dy && dx >= dz)
+        {
+            error1 = 2.0 * dy - dx;
+            error2 = 2.0 * dz - dx;
+            while(x != Math.round(x1))
+            {
+                result.add(new int[] {x, y, z});
+                x += xInc;
+                if(error1 >= 0.0)
+                {
+                    y += yInc;
+                    error1 -= 2.0 * dx;
+                }
+                if(error2 >= 0.0)
+                {
+                    z += zInc;
+                    error2 -= 2.0 * dx;
+                }
+                error1 += 2 * dy;
+                error2 += 2 * dz;
+            }
+        }
+        else if(dy >= dx && dy >= dz)
+        {
+            error1 = 2.0 * dx - dy;
+            error2 = 2.0 * dz - dy;
+            while(y != Math.round(y1))
+            {
+                result.add(new int[] {x, y, z});
+                y += yInc;
+                if(error1 >= 0.0)
+                {
+                    x += xInc;
+                    error1 -= 2.0 * dy;
+                }
+                if(error2 >= 0.0)
+                {
+                    z += zInc;
+                    error2 -= 2.0 * dy;
+                }
+                error1 += 2 * dx;
+                error2 += 2 * dz;
+            }
+        }
+        else
+        {
+            error1 = 2.0 * dx - dz;
+            error2 = 2.0 * dy - dz;
+            while(z != Math.round(z1))
+            {
+                result.add(new int[] {x, y, z});
+                z += zInc;
+                if(error1 >= 0.0)
+                {
+                    x += xInc;
+                    error1 -= 2.0 * dz;
+                }
+                if(error2 >= 0.0)
+                {
+                    y += zInc;
+                    error2 -= 2.0 * dz;
+                }
+                error1 += 2 * dx;
+                error2 += 2 * dy;
+            }
+        }
+        return result.toArray(new int[0][0]);
+    }
+
+    private List<int[]> pixelate2D(List<TrajectoryElement> trajectory)
     {
         List<TrajectoryElement> centeredTrj = TrajectoryNormalizer.normalize(trajectory);
         centeredTrj.stream().forEach(trajE -> trajE.setVector(trajE.getVector().scale(1.0/(double)_gridSize)));
@@ -178,22 +362,6 @@ public class TurtleHash
             {
                 System.out.println("shit");
             }
-        }
-    }
-
-    private int[] lastPixelOffsetRemoved(List<int[]> pixels)
-    {
-        if(pixels.isEmpty())
-        {
-            return null;
-        }
-        else
-        {
-            int[] base = pixels.get(pixels.size() - 1);
-            int[] result = new int[2];
-            result[0] = base[0] - _offsetX;
-            result[1] = base[1] - _offsetY;
-            return result;
         }
     }
 

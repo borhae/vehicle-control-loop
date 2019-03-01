@@ -32,6 +32,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.joachim.haensel.phd.scenario.math.geometry.Point3D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.RecordedTrajectoryElement;
@@ -44,8 +45,8 @@ public class TestTurtleHashing
     {
         return Arrays.asList(new Object[][]
         {
-//            {"luebeck_extramini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
-            {"luebeck_40_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
+            {"luebeck_extramini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
+//            {"luebeck_40_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
 //            {"luebeck_small", 15.0, 120.0, 4.0, 4.3, 1.0},
 //          {"luebeck_mini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
 //          {"luebeck_10_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
@@ -79,7 +80,7 @@ public class TestTurtleHashing
             for (Entry<Long, List<TrajectoryElement>> curPlan : configsSorted.entrySet())
             {
                 List<int[]> pixels = hasher.pixelate(curPlan.getValue());
-                List<StepDirection> steps = hasher.createSteps(pixels);
+//                List<StepDirection> steps = hasher.createSteps(pixels);
                 
 //                JFrame pixelFrame = new JFrame("pixels");
 //                pixelFrame.add(new JLabel(new ImageIcon(createImage(pixels))));
@@ -106,16 +107,19 @@ public class TestTurtleHashing
                     assertThat(String.format("Detected overlap in adjacent pixels p1(%d, %d), p2(%d, %d)", cur[0], cur[1], nxt[0], nxt[1]), differentPoints);
                     assertThat(String.format("Adjacent pixels should be connected p1(%d, %d), p2(%d, %d)", cur[0], cur[1], nxt[0], nxt[1]), connectedPoints);
                 }
-                String hashVal = steps.stream().map(d -> d.toCode()).collect(Collectors.joining());
-                System.out.println(hashVal);
+                String jsonVoxel = 
+                        pixels.stream().map(p -> String.format("[%d, %d, %d, 4278190335]", p[0], p[1], p[2])).collect(Collectors.joining(", ", "[", "]"));
+                System.out.format("{\"creator\": \"Zoxel Version 0.6.2\", \"height\": 100, \"width\": 100, \"depth\": 120, \"version\": 1, \"frames\": 1, \"frame1\": %s}", jsonVoxel);
+//                String hashVal = steps.stream().map(d -> d.toCode()).collect(Collectors.joining());
+//                System.out.println(hashVal);
                 System.out.format("Number of trajectory elements: %d, number of pixels: %d\n", curPlan.getValue().size(), pixels.size());
-                List<Long> bucket = configsHashed.get(hashVal);
-                if(bucket == null)
-                {
-                    bucket = new ArrayList<Long>();
-                    configsHashed.put(hashVal, bucket);
-                }
-                bucket.add(curPlan.getKey());
+//                List<Long> bucket = configsHashed.get(hashVal);
+//                if(bucket == null)
+//                {
+//                    bucket = new ArrayList<Long>();
+//                    configsHashed.put(hashVal, bucket);
+//                }
+//                bucket.add(curPlan.getKey());
             }
             System.out.println(String.format("Number of trajectories: %d, number of buckets: %d", configsSorted.size(), configsHashed.size()));
         }
@@ -270,6 +274,25 @@ public class TestTurtleHashing
             {2, 0},
             {3, 0},
             {4, 0}
+        };
+        assertArrayEquals(expected, actual, "arrays differ");
+    }
+    
+    @Test
+    public void testSingleVectorRasterizeDegreeBresenham3D()
+    {
+        Point3D p1 = new Point3D(-1.0, 1.0, 1.0);
+        Point3D p2 = new Point3D(5.0, 3.0, -1.0);
+        TurtleHash hasher = new TurtleHash(1, 5.0, 25);
+        int[][] actual = hasher.rasterizeVectorBresenham3D(p1, p2);
+        int[][] expected = new int[][] {
+            {-1, 1, 1}, 
+            {0, 1, 1}, 
+            {1, 2, 0},
+            {2, 2, 0}, 
+            {3, 2, 0}, 
+            {4, 3, -1}, 
+            {5, 3, -1}
         };
         assertArrayEquals(expected, actual, "arrays differ");
     }
