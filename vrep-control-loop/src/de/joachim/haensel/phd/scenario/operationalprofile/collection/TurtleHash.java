@@ -63,7 +63,7 @@ public class TurtleHash
             Point3D p2 = new Point3D(curVec.getTip());
             p2.setZ(curTrjE.getVelocity());
             int[][] rasterizedV = rasterizeVectorBresenham3D(p1, p2);
-//            validateVector(rasterizedV);
+            validateVector3D(rasterizedV);
             if(rasterizedV.length <= 0)
             {
                 continue;
@@ -106,25 +106,12 @@ public class TurtleHash
                 int[] curPoint = rasterizedV[rasterIdx];
                 pixels.add(curPoint);
             }
-//            validateVector(pixels.toArray(new int[0][0]));
+            validateVector3D(pixels.toArray(new int[0][0]));
             lastTrjE = curTrjE;
             lastRasterizedVec = rasterizedV;
         }
         pixels.parallelStream().forEach(p -> {p[0] += _offsetX; p[1] += _offsetY;});
         return pixels;
-    }
-
-    public boolean same3D(int[] p1, int[] p2)
-    {
-        return p1[0] == p2[0] && p1[1] == p2[1] && p1[2] == p2[2];
-    }
-
-    public boolean connected3D(int[] p1, int[] p2)
-    {
-        int dx = Math.abs(p2[0] - p1[0]);
-        int dy = Math.abs(p2[1] - p1[1]);
-        int dz = Math.abs(p2[2] - p1[2]);
-        return dx <= 1 && dy <= 1 && dz <= 1;
     }
 
     public int[][] rasterizeVectorBresenham3D(Point3D p1, Point3D p2)
@@ -212,7 +199,7 @@ public class TurtleHash
                 }
                 if(error2 >= 0.0)
                 {
-                    y += zInc;
+                    y += yInc;
                     error2 -= 2.0 * dz;
                 }
                 error1 += 2 * dx;
@@ -352,6 +339,19 @@ public class TurtleHash
         return result.toArray(new int[0][0]);
     }
 
+    private void validateVector3D(int[][] rasterizedV)
+    {
+        for(int idx = 0; idx < rasterizedV.length - 1; idx++)
+        {
+            int[] p1 = rasterizedV[idx];
+            int[] p2 = rasterizedV[idx + 1];
+            if(!connected3D(p1, p2) || same3D(p1, p2))
+            {
+                System.out.println("shit");
+            }
+        }
+    }
+
     private void validateVector(int[][] rasterizedV)
     {
         for(int idx = 0; idx < rasterizedV.length - 1; idx++)
@@ -382,6 +382,19 @@ public class TurtleHash
         return p1[0] == p2[0] && p1[1] == p2[1];
     }
     
+    public static boolean same3D(int[] p1, int[] p2)
+    {
+        return p1[0] == p2[0] && p1[1] == p2[1] && p1[2] == p2[2];
+    }
+
+    public static boolean connected3D(int[] p1, int[] p2)
+    {
+        int dx = Math.abs(p2[0] - p1[0]);
+        int dy = Math.abs(p2[1] - p1[1]);
+        int dz = Math.abs(p2[2] - p1[2]);
+        return dx <= 1 && dy <= 1 && dz <= 1;
+    }
+
     public int[][] rasterizeVectorAmanatidesWoo(Vector2D vector)
     {
         Position2D p1 = vector.getBase();
@@ -540,5 +553,116 @@ public class TurtleHash
         List<StepDirection> result = new ArrayList<StepDirection>();
         pixels.stream().reduce((p1, p2) -> {result.add(StepDirection.get(p1, p2)); return p2;});
         return result;
+    }
+    
+    public List<Integer> createSteps3D(List<int[]> pixels)
+    {
+        List<Integer> result = new ArrayList<Integer>();
+        pixels.stream().reduce((p1, p2) -> {int direction = computeDir(p1, p2); result.add(direction); return p2;});
+        return result;
+    }
+
+    /**
+     * Assign a number to every direction we can go in 3d.
+     * p1 and p2 must differ, -1 will otherwise result as the illegal direction
+     * @param p1
+     * @param p2
+     * @return
+     */
+    private int computeDir(int[] p1, int[] p2)
+    {
+        int dx = p2[0] - p1[0] + 1;
+        int dy = p2[1] - p1[1] + 1;
+        int dz = p2[2] - p1[2] + 1;
+        return (dx + 3 * dy + 9 * dz);
+    }
+
+    public static String toBase26(Integer i)
+    {
+        String r = null;
+        switch(i)
+        {
+            case 0:
+                r = "0";
+                break;
+            case 1:
+                r = "1";
+                break;
+            case 2:
+                r = "2";
+                break;
+            case 3:
+                r = "3";
+                break;
+            case 4:
+                r = "4";
+                break;
+            case 5:
+                r = "5";
+                break;
+            case 6:
+                r = "6";
+                break;
+            case 7:
+                r = "7";
+                break;
+            case 8:
+                r = "8";
+                break;
+            case 9:
+                r = "9";
+                break;
+            case 10:
+                r = "a";
+                break;
+            case 11:
+                r = "b";
+                break;
+            case 12:
+                r = "c";
+                break;
+            case 13:
+                r = "d";
+                break;
+            case 14:
+                r = "e";
+                break;
+            case 15:
+                r = "f";
+                break;
+            case 16:
+                r = "g";
+                break;
+            case 17:
+                r = "h";
+                break;
+            case 18:
+                r = "i";
+                break;
+            case 19:
+                r = "j";
+                break;
+            case 20:
+                r = "k";
+                break;
+            case 21:
+                r = "l";
+                break;
+            case 22:
+                r = "m";
+                break;
+            case 23:
+                r = "n";
+                break;
+            case 24:
+                r = "o";
+                break;
+            case 25:
+                r = "p";
+                break;
+            default:
+                r = "-1";    
+        }
+        return r;
     }
 }

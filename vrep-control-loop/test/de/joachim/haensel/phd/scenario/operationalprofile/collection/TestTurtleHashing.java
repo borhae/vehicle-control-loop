@@ -9,6 +9,8 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,8 +47,8 @@ public class TestTurtleHashing
     {
         return Arrays.asList(new Object[][]
         {
-            {"luebeck_extramini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
-//            {"luebeck_40_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
+//            {"luebeck_extramini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
+            {"luebeck_40_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
 //            {"luebeck_small", 15.0, 120.0, 4.0, 4.3, 1.0},
 //          {"luebeck_mini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0},
 //          {"luebeck_10_targets", 15.0, 120.0, 4.0, 4.0, 1.0},
@@ -74,12 +76,15 @@ public class TestTurtleHashing
             List<Position2D> plannedPath = 
                     mapper.readValue(new File("./res/operationalprofiletest/serializedruns/Plan" + localTestID + ".json"), new TypeReference<List<Position2D>>() {});
             timeDistanceSimpleStats(trajectoryRecordings, plannedPath);
-            TurtleHash hasher = new TurtleHash(3, 5.0, 20);
+            TurtleHash hasher = new TurtleHash(6, 5.0, 20);
             TreeMap<Long, List<TrajectoryElement>> configsSorted = new TreeMap<Long, List<TrajectoryElement>>(configurations);
             TreeMap<String, List<Long>> configsHashed = new TreeMap<String, List<Long>>();
+            int trjIdx = 0;
             for (Entry<Long, List<TrajectoryElement>> curPlan : configsSorted.entrySet())
             {
+                trjIdx++;
                 List<int[]> pixels = hasher.pixelate(curPlan.getValue());
+                List<Integer> steps = hasher.createSteps3D(pixels);
 //                List<StepDirection> steps = hasher.createSteps(pixels);
                 
 //                JFrame pixelFrame = new JFrame("pixels");
@@ -98,28 +103,30 @@ public class TestTurtleHashing
                     int[] cur = pixels.get(idx);
                     int[] nxt = pixels.get(idx + 1);
 //                    System.out.format("p1(%d, %d), p2(%d, %d)\n", cur[0], cur[1], nxt[0], nxt[1]);
-                    boolean differentPoints = !TurtleHash.same(cur, nxt);
-                    boolean connectedPoints = TurtleHash.connected(cur, nxt);
+                    boolean differentPoints = !TurtleHash.same3D(cur, nxt);
+                    boolean connectedPoints = TurtleHash.connected3D(cur, nxt);
                     if(!differentPoints || !connectedPoints)
                     {
                         System.out.println("stop here");
                     }
-                    assertThat(String.format("Detected overlap in adjacent pixels p1(%d, %d), p2(%d, %d)", cur[0], cur[1], nxt[0], nxt[1]), differentPoints);
-                    assertThat(String.format("Adjacent pixels should be connected p1(%d, %d), p2(%d, %d)", cur[0], cur[1], nxt[0], nxt[1]), connectedPoints);
+                    assertThat(String.format("Detected overlap in adjacent pixels p1(%d, %d, %d), p2(%d, %d, %d)", cur[0], cur[1], cur[2], nxt[0], nxt[1], nxt[2]), differentPoints);
+                    assertThat(String.format("Adjacent pixels should be connected p1(%d, %d, %d), p2(%d, %d, %d)", cur[0], cur[1], cur[2], nxt[0], nxt[1], nxt[2]), connectedPoints);
                 }
                 String jsonVoxel = 
-                        pixels.stream().map(p -> String.format("[%d, %d, %d, 4278190335]", p[0], p[1], p[2])).collect(Collectors.joining(", ", "[", "]"));
-                System.out.format("{\"creator\": \"Zoxel Version 0.6.2\", \"height\": 100, \"width\": 100, \"depth\": 120, \"version\": 1, \"frames\": 1, \"frame1\": %s}", jsonVoxel);
+                        pixels.stream().map(p -> String.format("[%d, %d, %d, 4278190335]", p[0] - 50, p[1] - 50, p[2])).collect(Collectors.joining(", ", "[", "]"));
+                String jsonString = String.format("{\"creator\": \"Zoxel Version 0.6.2\", \"height\": 100, \"width\": 100, \"depth\": 120, \"version\": 1, \"frames\": 1, \"frame1\": %s}", jsonVoxel);
+//                writeToFile(jsonString, testID, trjIdx);
+                String hashVal = steps.stream().map(d -> TurtleHash.toBase26(d)).collect(Collectors.joining());
 //                String hashVal = steps.stream().map(d -> d.toCode()).collect(Collectors.joining());
-//                System.out.println(hashVal);
+                System.out.println(hashVal);
                 System.out.format("Number of trajectory elements: %d, number of pixels: %d\n", curPlan.getValue().size(), pixels.size());
-//                List<Long> bucket = configsHashed.get(hashVal);
-//                if(bucket == null)
-//                {
-//                    bucket = new ArrayList<Long>();
-//                    configsHashed.put(hashVal, bucket);
-//                }
-//                bucket.add(curPlan.getKey());
+                List<Long> bucket = configsHashed.get(hashVal);
+                if(bucket == null)
+                {
+                    bucket = new ArrayList<Long>();
+                    configsHashed.put(hashVal, bucket);
+                }
+                bucket.add(curPlan.getKey());
             }
             System.out.println(String.format("Number of trajectories: %d, number of buckets: %d", configsSorted.size(), configsHashed.size()));
         }
@@ -129,6 +136,20 @@ public class TestTurtleHashing
         }
     }
     
+    private void writeToFile(String jsonString, String testID, int trjIdx)
+    {
+        List<String> out = new ArrayList<String>();
+        out.add(jsonString);
+        try
+        {
+            Files.write(new File("./res/operationalprofiletest/serializedruns/voxel/Zoxel" + testID + trjIdx + ".zox").toPath(), out, Charset.defaultCharset());
+        }
+        catch (IOException exc)
+        {
+            exc.printStackTrace();
+        }
+    }
+
     private Image createImage(List<int[]> pixels)
     {
         BufferedImage image = new BufferedImage(1200, 1200, BufferedImage.TYPE_INT_ARGB);
@@ -292,7 +313,6 @@ public class TestTurtleHashing
             {2, 2, 0}, 
             {3, 2, 0}, 
             {4, 3, -1}, 
-            {5, 3, -1}
         };
         assertArrayEquals(expected, actual, "arrays differ");
     }

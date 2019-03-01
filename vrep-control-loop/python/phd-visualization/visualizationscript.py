@@ -6,6 +6,7 @@ import csv
 import math
 import re
 import numpy as np 
+import json
 
 from matplotlib.patches import Circle
 from matplotlib.patches import Arrow
@@ -293,8 +294,8 @@ def plotFrameContent(segs, arcs, arc_points, points, lines, ax, frame_idx):
 
 
 def readFrameContent(path, segs, arcs, arc_points, points, lines, idx):
-    with open(path) as csvfile:
-        data = csv.reader(csvfile, delimiter=" ")
+    with open(path) as csv_file:
+        data = csv.reader(csv_file, delimiter=" ")
         last_tip_x = 0
         last_tip_y = 0
         last_line_tip_x = 0
