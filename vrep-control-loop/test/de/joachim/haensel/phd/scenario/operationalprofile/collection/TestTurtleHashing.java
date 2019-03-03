@@ -22,10 +22,6 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -34,6 +30,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.joachim.haensel.phd.scenario.equivalenceclasses.TrajectoryNormalizer;
 import de.joachim.haensel.phd.scenario.math.geometry.Point3D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
@@ -76,14 +73,24 @@ public class TestTurtleHashing
             List<Position2D> plannedPath = 
                     mapper.readValue(new File("./res/operationalprofiletest/serializedruns/Plan" + localTestID + ".json"), new TypeReference<List<Position2D>>() {});
             timeDistanceSimpleStats(trajectoryRecordings, plannedPath);
-            TurtleHash hasher = new TurtleHash(6, 5.0, 20);
+            TurtleHash hasher = new TurtleHash(15.1, 5.0, 20);
             TreeMap<Long, List<TrajectoryElement>> configsSorted = new TreeMap<Long, List<TrajectoryElement>>(configurations);
             TreeMap<String, List<Long>> configsHashed = new TreeMap<String, List<Long>>();
             int trjIdx = 0;
+            int tooShortSkipped = 0;
+            TrajectoryNormalizer.normalizeConfigurationsAndObservations(configurations, observations);
             for (Entry<Long, List<TrajectoryElement>> curPlan : configsSorted.entrySet())
             {
+                List<TrajectoryElement> curTrajectory = curPlan.getValue();
+                ObservationTuple curObservation = observations.get(curPlan.getKey());
+                if(curTrajectory.size() != 20)
+                {
+                    tooShortSkipped++;
+                    continue;
+                }
                 trjIdx++;
-                List<int[]> pixels = hasher.pixelate(curPlan.getValue());
+                
+                List<int[]> pixels = hasher.pixelate(curTrajectory);
                 List<Integer> steps = hasher.createSteps3D(pixels);
 //                List<StepDirection> steps = hasher.createSteps(pixels);
                 
@@ -98,6 +105,7 @@ public class TestTurtleHashing
 //                arrowFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 //                arrowFrame.pack();
 //                arrowFrame.setVisible(true);
+                Position2D pZero = new Position2D(0.0, 0.0);
                 for(int idx = 0; idx < pixels.size() - 1; idx++)
                 {
                     int[] cur = pixels.get(idx);
@@ -116,19 +124,37 @@ public class TestTurtleHashing
                         pixels.stream().map(p -> String.format("[%d, %d, %d, 4278190335]", p[0] - 50, p[1] - 50, p[2])).collect(Collectors.joining(", ", "[", "]"));
                 String jsonString = String.format("{\"creator\": \"Zoxel Version 0.6.2\", \"height\": 100, \"width\": 100, \"depth\": 120, \"version\": 1, \"frames\": 1, \"frame1\": %s}", jsonVoxel);
 //                writeToFile(jsonString, testID, trjIdx);
-                String hashVal = steps.stream().map(d -> TurtleHash.toBase26(d)).collect(Collectors.joining());
+                String configurationHash = steps.stream().map(d -> TurtleHash.toBase26(d)).collect(Collectors.joining());
 //                String hashVal = steps.stream().map(d -> d.toCode()).collect(Collectors.joining());
-                System.out.println(hashVal);
-                System.out.format("Number of trajectory elements: %d, number of pixels: %d\n", curPlan.getValue().size(), pixels.size());
-                List<Long> bucket = configsHashed.get(hashVal);
+                System.out.format("Number of trajectory elements: %d, number of pixels: %d\n", curTrajectory.size(), pixels.size());
+                System.out.println(configurationHash);
+                //distance_orientation_velocity
+                double distance = Position2D.distance(pZero, curObservation.getRearWheelCP());
+                double orientation = curObservation.getOrientation().getAngle();
+                double velocity = Position2D.distance(pZero, new Position2D(Arrays.copyOfRange(curObservation.getVelocity(), 0, 2)));
+                String observationHash = String.format("%02.0f%02.0f%02.0f", distance * 2.5, Math.toDegrees(orientation) / 40.0, velocity / 4.0);
+                System.out.println(observationHash);
+                String hash = configurationHash + observationHash;
+                if(hash.equals(""))
+                {
+                    System.out.println("why?");
+                }
+                List<Long> bucket = configsHashed.get(hash);
                 if(bucket == null)
                 {
                     bucket = new ArrayList<Long>();
-                    configsHashed.put(hashVal, bucket);
+                    configsHashed.put(hash, bucket);
                 }
                 bucket.add(curPlan.getKey());
             }
-            System.out.println(String.format("Number of trajectories: %d, number of buckets: %d", configsSorted.size(), configsHashed.size()));
+            ObjectMapper om = new ObjectMapper();
+            mapper.writeValue(new File("./res/operationalprofiletest/serializedruns/histogram_trjfirst" + testID + ".json"), configsHashed);
+            List<String> histogram = new ArrayList<String>();
+            histogram.add("class, amount");
+//            histogram.addAll(configsHashed.entrySet().stream().map(entry -> String.format("%-20s %d", entry.getKey(), entry.getValue().size())).collect(Collectors.toList()));
+            histogram.addAll(configsHashed.entrySet().stream().map(entry -> String.format("%s, %d", entry.getKey(), entry.getValue().size())).collect(Collectors.toList()));
+            Files.write(new File("./res/operationalprofiletest/serializedruns/histogram_trjfirst" + testID + ".txt").toPath(), histogram, Charset.defaultCharset());
+            System.out.println(String.format("Number of trajectories: %d, skipped trajectories: %d, number of buckets: %d", configsSorted.size(), tooShortSkipped, configsHashed.size()));
         }
         catch (IOException exc)
         {

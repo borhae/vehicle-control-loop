@@ -12,6 +12,7 @@ import json
 from matplotlib.patches import Circle
 from matplotlib.patches import Arrow
 from matplotlib.patches import Polygon
+from matplotlib.pyplot import cm
 from mpl_toolkits.mplot3d import Axes3D
 
 from pathlib import PurePath
@@ -20,42 +21,18 @@ from os import walk
 
 from pandas import DataFrame
 
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-v", nargs="+", action="append")
-    parser.add_argument("-R", nargs="+", action="append")
-    parser.add_argument("-a", action="append")
+    parser.add_argument("-g", action="store_true")
     parser.add_argument("path", nargs="*")
     args = parser.parse_args()
 
-    print("hallo")
     print(args.path)
-    print(args.v)
 
-    if args.v:
-        print("file list for slideshow")
-        pathlists = crawlDir(args.v[0])
-        path_pairs = DataFrame(data=pathlists).transpose()
-
-        data_in = []
-        for idx, path_pair in path_pairs.iterrows():
-            for path in path_pair:
-                if(path):
-                    plot_trajectory_json(path, idx, args.a)
-
-    elif args.R:
-        print("fileList from regex")
-        reg_paths = []
-        for cur_reg in args.R[0]:
-            paths = glob.glob(cur_reg)
-            reg_paths.append(paths)
-        path_pairs = DataFrame(data=reg_paths).transpose()
-
-        data_in = []
-        for idx, path_pair in path_pairs.iterrows():
-            for path in path_pair:
-                if (path):
-                    plot_trajectory_json(path, idx, args.a)
+    if args.g:
+        print("with histogram")
+        plot_trajectory_via_histogram(args.path[0], args.path[1])
     else:
         reg_paths = []
         print("resolving regex")
@@ -65,7 +42,7 @@ def main():
         print(reg_paths)
         for paths in reg_paths:
             for path in paths:
-                plot_trajectory_json(path, 0, args.a)
+                plot_trajectory_json(path)
 
 
 def crawlDir(paths):
@@ -102,7 +79,50 @@ def as_int(s):
         return sys.maxint, number
 
 
-def plot_trajectory_json(path, idx, align):
+def plot_trajectory_via_histogram(path_trajectory, path_histogram):
+    with open(path_histogram) as histogram_file:
+        histogram = json.load(histogram_file)
+        plot_data = []
+        with open(path_trajectory) as trajectories_file:
+            trajectories = json.load(trajectories_file)
+            sorted_histogram = histogram  # sorted(histogram.items(), key=as_int)
+            color_list = cm.hsv(np.linspace(0, 1, len(sorted_histogram)))
+            colors = iter(color_list)
+            print(len(sorted_histogram))
+            print(len(color_list))
+            for equivalence_class_id in sorted_histogram:
+                line_color = next(colors)
+                for trajectory_id in histogram[equivalence_class_id]:
+                    trajectory = trajectories[str(trajectory_id)]
+                    x = []
+                    y = []
+                    z = []
+                    first_trj_elem = next(iter(trajectory), None)
+                    xB0 = first_trj_elem['_vector']['_bX']
+                    yB0 = first_trj_elem['_vector']['_bY']
+                    xD0 = first_trj_elem['_vector']['_dX']
+                    yD0 = first_trj_elem['_vector']['_dY']
+                    angle = math.atan2(yD0, xD0)
+                    for list_item in trajectory:
+                        x_i = list_item['_vector']['_bX'] - xB0
+                        y_i = list_item['_vector']['_bY'] - yB0
+                        x_i, y_i = rotate_origin_only(x_i, y_i, angle)
+                        x.append(x_i)
+                        y.append(y_i)
+                        z.append(list_item['_velocity'])
+                    plot_data.append((x, y, z, line_color))
+
+        mpl.rcParams['legend.fontsize'] = 10
+
+        fig = pyplot.figure()
+        ax = fig.gca(projection='3d')
+        for cur_series in plot_data:
+            x_ser, y_ser, z_ser, series_color = cur_series
+            ax.plot(x_ser, y_ser, z_ser, label='trajectory', alpha=0.2, color=series_color)
+        pyplot.show()
+
+
+def plot_trajectory_json(path):
     pure_path = PurePath(path)
     print(pure_path.suffix)
     if pure_path.suffix == '.json':
@@ -137,7 +157,7 @@ def plot_trajectory_json(path, idx, align):
         ax = fig.gca(projection='3d')
         for cur_series in plot_data:
             X, Y, Z = cur_series
-            ax.plot(X, Y, Z, label='trajectory')
+            ax.plot(X, Y, Z, label='trajectory', alpha=0.2)
         pyplot.show()
     else:
         print("this is not a json file!")

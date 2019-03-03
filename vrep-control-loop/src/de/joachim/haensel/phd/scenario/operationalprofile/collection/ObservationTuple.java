@@ -169,7 +169,7 @@ public class ObservationTuple implements Comparable<ObservationTuple>
         }
     }
 
-    private Vector2D getOrientation()
+    public Vector2D getOrientation()
     {
         if(_orientation == null)
         {

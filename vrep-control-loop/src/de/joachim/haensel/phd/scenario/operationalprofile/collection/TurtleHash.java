@@ -40,14 +40,13 @@ public class TurtleHash
 
     public List<int[]> pixelate(List<TrajectoryElement> trajectory)
     {
-        List<TrajectoryElement> centeredTrj = TrajectoryNormalizer.normalize(trajectory);
-        centeredTrj.stream().forEach(trajE -> {trajE.setVector(trajE.getVector().scale(1.0/_gridSize)); trajE.setVelocity(trajE.getVelocity()/_gridSize);});
+        trajectory.stream().forEach(trajE -> {trajE.setVector(trajE.getVector().scale(1.0/_gridSize)); trajE.setVelocity(trajE.getVelocity()/_gridSize);});
         List<int[]> pixels = new ArrayList<int[]>();
         int[][] lastRasterizedVec = null;
         TrajectoryElement lastTrjE = null;
-        for(int trajIdx = 0; trajIdx < centeredTrj.size(); trajIdx++)
+        for(int trajIdx = 0; trajIdx < trajectory.size(); trajIdx++)
         {
-            TrajectoryElement curTrjE = centeredTrj.get(trajIdx);
+            TrajectoryElement curTrjE = trajectory.get(trajIdx);
             double lastVelocity = 0.0;
             if(trajIdx == 0)
             {
@@ -55,7 +54,7 @@ public class TurtleHash
             }
             else
             {
-                lastVelocity = centeredTrj.get(trajIdx - 1).getVelocity();
+                lastVelocity = trajectory.get(trajIdx - 1).getVelocity();
             }
             Vector2D curVec = curTrjE.getVector();
             Point3D p1 = new Point3D(curVec.getBase());
@@ -660,8 +659,11 @@ public class TurtleHash
             case 25:
                 r = "p";
                 break;
+            case 26:
+                r = "q";
+                break;
             default:
-                r = "-1";    
+                r = "z";
         }
         return r;
     }

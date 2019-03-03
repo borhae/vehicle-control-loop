@@ -324,7 +324,7 @@ def readFrameContent(path, segs, arcs, arc_points, points, lines, idx):
                 if(not first_point_pass):
                     new_tip_x = float(row[1])
                     new_tip_y = float(row[2])
-                    points.append(Arrow(last_tip_x, last_tip_y, new_tip_x - last_tip_x, new_tip_y - last_tip_y, width=1, fill=False, linestyle="-", alpha=0.5, color=arrow_color))
+                    points.append(Arrow(last_tip_x, last_tip_y, new_tip_x - last_tip_x, new_tip_y - last_tip_y, width=100, fill=True, linestyle="-", alpha=0.5, color=arrow_color))
                     last_tip_x = new_tip_x
                     last_tip_y = new_tip_y
                 else:
