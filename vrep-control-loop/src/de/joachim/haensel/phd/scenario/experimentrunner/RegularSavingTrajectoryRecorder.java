@@ -68,7 +68,7 @@ public class RegularSavingTrajectoryRecorder implements ILowerLayerControl, INav
             {
                 try
                 {
-                    _trajectoryRecordMapper.writeValue(new File(baseOutputDirectory + "/TrRe" + _testID + "part" + _controlCnt + ".json"), _trajectoryIntervalToSaveCopy);
+                    _trajectoryRecordMapper.writeValue(new File(baseOutputDirectory + "TrRe" + _testID + "part" + _controlCnt + ".json"), _trajectoryIntervalToSaveCopy);
                 }
                 catch (IOException exc)
                 {
@@ -82,7 +82,7 @@ public class RegularSavingTrajectoryRecorder implements ILowerLayerControl, INav
             {
                 try
                 {
-                    _planMapper.writeValue(new File(baseOutputDirectory + "TrRe" + _testID + "part" + _planCnt + ".json"), _plannedTrajectoryToSaveCopy);
+                    _planMapper.writeValue(new File(baseOutputDirectory + "Plan" + _testID + "part" + _planCnt + ".json"), _plannedTrajectoryToSaveCopy);
                 }
                 catch (IOException exc)
                 {
