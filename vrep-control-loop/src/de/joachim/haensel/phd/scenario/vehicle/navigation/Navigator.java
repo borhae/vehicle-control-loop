@@ -2,6 +2,7 @@ package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -124,7 +125,7 @@ public class Navigator
                 Vector2D curLineV = new Vector2D(curLine);
                 Vector2D nextLineVN = new Vector2D(nextLine);
                 double angle = Math.toDegrees(Vector2D.computeAngle(curLineV, nextLineVN));
-                if(angle > 120) //TODO add the other direction too
+                if(angle > 110) 
                 {
                     addTurnAroundCircle(result, curLine, nextLine);
                 }
@@ -139,7 +140,16 @@ public class Navigator
         Position2D p2 = nextLine.getP1();
         
         Vector2D vP1P2 = new Vector2D(p1, p2);
-        Vector2D vP1P2Perpendicular = vP1P2.getMiddlePerpendicularClockwise();
+        Vector2D vP1P2Perpendicular;
+        boolean p2IsToTheLeft = curLine.side(p2) >= 0;
+        if(p2IsToTheLeft)
+        {
+            vP1P2Perpendicular = vP1P2.getMiddlePerpendicularClockwise();
+        }
+        else
+        {
+            vP1P2Perpendicular = vP1P2.getMiddlePerpendicularCounterclockwise();
+        }
         double p1P2HalfLength = vP1P2.getLength() / 2.0;
         double perpendicularLength = Math.sqrt(sqr(p1P2HalfLength) + sqr(U_TURN_RADIUS));
         vP1P2Perpendicular.setLength(perpendicularLength);
@@ -150,9 +160,18 @@ public class Navigator
         Position2D bNC = p2;
         Position2D a = Position2D.minus(aNC, center);
         Position2D b = Position2D.minus(bNC, center);
-        double angle1 = Math.atan2(a.getY(), a.getX());
-        double angle2 = Math.atan2(b.getY(), b.getX());
-
+        double angle1 = 0.0;
+        double angle2 = 0.0;
+        if(p2IsToTheLeft)
+        {
+            angle1 = Math.atan2(a.getY(), a.getX());
+            angle2 = Math.atan2(b.getY(), b.getX());
+        }
+        else
+        {
+            angle1 = Math.atan2(b.getY(), b.getX());
+            angle2 = Math.atan2(a.getY(), a.getX());
+        }
         List<Double> thetaRange = new ArrayList<>();
         if(!(angle1 < 0 && angle2 > 0))
         {
@@ -160,6 +179,10 @@ public class Navigator
         }
         thetaRange = Linspace.linspace(angle1, angle2, 10);
         List<Position2D> points = thetaRange.stream().map(theta -> new Position2D(center.getX() + Math.cos(theta) * U_TURN_RADIUS, center.getY() + Math.sin(theta) * U_TURN_RADIUS)).collect(Collectors.toList());
+        if(!p2IsToTheLeft)
+        {
+            Collections.reverse(points);
+        }
         
         Position2D last = null;
         for(int idx1 = 0; idx1 < points.size(); idx1++)

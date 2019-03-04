@@ -77,6 +77,32 @@ public class Vector2DTest
     }
     
     @Test
+    public void test2VectorAngle3()
+    {
+        Vector2D v1 = new Vector2D(0.0, 0.0, 5.0, 0.0);
+        Vector2D v2 = new Vector2D(0.0, 0.0, -5.0, 5.0);
+        double actual = Math.toDegrees(Vector2D.computeAngle(v1, v2));
+        
+        double expected = 135;
+        
+        assertEquals(expected, actual, Math.ulp(0.0));
+        System.out.println("actual: " + actual);
+    }
+    
+    @Test
+    public void test2VectorAngle4()
+    {
+        Vector2D v1 = new Vector2D(0.0, 0.0, 5.0, 0.0);
+        Vector2D v2 = new Vector2D(0.0, 0.0, -5.0, -5.0);
+        double actual = Math.toDegrees(Vector2D.computeAngle(v1, v2));
+        
+        double expected = 135;
+        
+        assertEquals(expected, actual, Math.ulp(0.0));
+        System.out.println("actual: " + actual);
+    }
+    
+    @Test
     public void testSideOf()
     {
         Vector2D base = new Vector2D(0.0, 0.0, 1.0, 0.0);

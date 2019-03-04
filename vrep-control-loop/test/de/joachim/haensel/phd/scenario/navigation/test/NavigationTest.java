@@ -34,13 +34,14 @@ public class NavigationTest implements TestConstants
     public static void setupVrep() throws VRepException
     {
         _vrep = VRepRemoteAPI.INSTANCE;
-        _clientID = _vrep.simxStart("127.0.0.1", 19999, true, true, 5000, 5);
+        _clientID = _vrep.simxStart("127.0.0.1", 19997, true, true, 5000, 5);
         _objectCreator = new VRepObjectCreation(_vrep, _clientID);
     }
     
     @AfterAll
     public static void tearDownVrep() 
     {
+        _objectCreator.removeScriptloader();
         _vrep.simxFinish(_clientID);
     }
     
@@ -262,6 +263,26 @@ public class NavigationTest implements TestConstants
         Position2D destination4 = new Position2D(2410.41,2928.67).transform(centerMatrix);
         List<Line2D> route4 = navigator.getRoute(start4, destination4);
         drawRoute(route4, _objectCreator, "route4_");
+        System.out.println("wait here");
+    }
+    
+    @Test
+    public void test180DegreeTurnToTheRight() throws VRepException
+    {
+        RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/luebeck-roads.net.xml");
+        TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+        
+        Navigator navigator = new Navigator(mapAndCenterMatrix.getRoadMap());
+
+        Position2D start1 = new Position2D(7094.17,8024.64).transform(centerMatrix);
+        Position2D destination1 = new Position2D(7107.43,8043.50).transform(centerMatrix);
+        List<Line2D> route1 = navigator.getRoute(start1, destination1);
+        drawRoute(route1, _objectCreator, "route1_");
+        
+        Position2D start2 = new Position2D(7110.54,8046.09).transform(centerMatrix);
+        Position2D destination2 = new Position2D(7090.23,8024.75).transform(centerMatrix);
+        List<Line2D> route2 = navigator.getRoute(start2, destination2);
+        drawRoute(route2, _objectCreator, "route2_");
         System.out.println("wait here");
     }
     

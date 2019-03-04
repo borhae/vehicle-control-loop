@@ -229,6 +229,7 @@ public class Vector2D
 
     /**
      * Angle between two vectors, taking care of similarly directed vectors like in the apache library 
+     * Returns only values between 0 and pi / 2.0, you need to figure out yourself to which side (use method side ;) )
      * @param a
      * @param b
      * @return
@@ -459,6 +460,17 @@ public class Vector2D
         Position2D b = getTip();
         Position2D m = other.getTip(); 
         return Line2D.side(a, b, m);
+    }
+    
+    /**
+     * Computes on which side the point is in relation to this vector
+     * @param p point for which the side should be computed
+     * @return values smaller than 0 indicate on the right side, greater 0 on the left side and 0 means 
+     * collinear (point on this vector without bounds)
+     */
+    public double side(Position2D p)
+    {
+        return Line2D.side(getBase(), getTip(), p);
     }
 
     public double getLength()
