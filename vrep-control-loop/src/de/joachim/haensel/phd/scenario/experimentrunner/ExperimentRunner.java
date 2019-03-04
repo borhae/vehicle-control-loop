@@ -2,14 +2,10 @@ package de.joachim.haensel.phd.scenario.experimentrunner;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import coppelia.IntWA;
 import coppelia.remoteApi;
@@ -20,19 +16,14 @@ import de.joachim.haensel.phd.scenario.SimulationSetupConvenienceMethods;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
-import de.joachim.haensel.phd.scenario.operationalprofile.collection.ObservationTuple;
 import de.joachim.haensel.phd.scenario.tasks.ITask;
 import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig;
 import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
-import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
-import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookahead;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
-import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class ExperimentRunner
@@ -74,72 +65,56 @@ public class ExperimentRunner
        {
            exc.printStackTrace();
        }
+       String finalTestID;
        if (mapAndCenterMatrix != null) 
        {
-           map = mapAndCenterMatrix.getRoadMap();
-           TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
-           targetPointsMapped = targetPoints.stream().map(point -> point.transform(centerMatrix))
+          map = mapAndCenterMatrix.getRoadMap();
+          TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+          targetPointsMapped = targetPoints.stream().map(point -> point.transform(centerMatrix))
                    .collect(Collectors.toList());
-           testID = testID + String.format("%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity,
+          finalTestID = testID + String.format("%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity,
                    maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
-       }
-      final Map<Long, List<TrajectoryElement>> configurations = new HashMap<>();
-      final Map<Long, ObservationTuple> observations = new HashMap<>();
 
-      TaskCreator taskCreator = new TaskCreator();
-      PointListTaskCreatorConfig taskConfiguration = new PointListTaskCreatorConfig();
-      taskConfiguration.setControlParams(lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
-      taskConfiguration.setDebug(true);
-      taskConfiguration.setMap(map);
-      taskConfiguration.configSimulator(_vrep, _clientID, _objectCreator);
-      TrajectoryRecorder trajectoryRecorder = new TrajectoryRecorder();
-      taskConfiguration.addLowerLayerControl(trajectoryRecorder);
-      taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisualsBrakeScript.ttm");
+          TaskCreator taskCreator = new TaskCreator();
+          PointListTaskCreatorConfig taskConfiguration = new PointListTaskCreatorConfig();
+          taskConfiguration.setControlParams(lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
+          taskConfiguration.setDebug(true);
+          taskConfiguration.setMap(map);
+          taskConfiguration.configSimulator(_vrep, _clientID, _objectCreator);
+         
+          String baseOutputDirectory = "./res/operationalprofiletest/serializedruns/";
+          RegularSavingTrajectoryRecorder trajectoryRecorder = new RegularSavingTrajectoryRecorder(50, 100, baseOutputDirectory, finalTestID);
+          RegularSavingReportListener reportListener = new RegularSavingReportListener(100, baseOutputDirectory, finalTestID);
+          RegularSavingRequestListener requestListener = new RegularSavingRequestListener(100, baseOutputDirectory, finalTestID);
 
-      taskConfiguration.setTargetPoints(targetPointsMapped);
-      taskConfiguration.addNavigationListener(trajectoryRecorder);
-      taskConfiguration.setLowerLayerController(new ILowerLayerFactory() {
-          @Override
-          public ILowerLayerControl create()
-          {
-              PurePursuitControllerVariableLookahead purePursuitControllerVariableLookahead = new PurePursuitControllerVariableLookahead();
-              purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(lookahead, 0.0));
-              ITrajectoryRequestListener requestListener = (newTrajectories, timestamp) ->
+          taskConfiguration.addLowerLayerControl(trajectoryRecorder);
+          taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisualsBrakeScript.ttm");
+    
+          taskConfiguration.setTargetPoints(targetPointsMapped);
+          taskConfiguration.addNavigationListener(trajectoryRecorder);
+          taskConfiguration.setLowerLayerController(new ILowerLayerFactory() {
+              @Override
+              public ILowerLayerControl create()
               {
-                  configurations.put(Long.valueOf(timestamp), newTrajectories);
-              };
-              purePursuitControllerVariableLookahead.addTrajectoryRequestListener(requestListener);
-              ITrajectoryReportListener reportListener = (rearWheelCP, frontWheelCP, velocity, timeStamp) -> {
-                  observations.put(Long.valueOf(timeStamp), new ObservationTuple(rearWheelCP, frontWheelCP, velocity, timeStamp));
-              };
-              purePursuitControllerVariableLookahead.addTrajectoryReportListener(reportListener);
-              return purePursuitControllerVariableLookahead;
-          }
-      });
-      taskCreator.configure(taskConfiguration);
-      List<ITask> tasks = taskCreator.createTasks();
 
-      TaskExecutor executor = new TaskExecutor();
-      executor.execute(tasks);
-      
-      System.out.println("Executed all tasks, now serializing results");
-      ObjectMapper mapper = new ObjectMapper();
-      trajectoryRecorder.getTrajectory();
-      try
-      {
-          mapper.writeValue(new File("./res/operationalprofiletest/serializedruns/Co" + testID + ".json"), configurations);
-          mapper.writeValue(new File("./res/operationalprofiletest/serializedruns/Ob" + testID + ".json"), observations);
-          mapper.writeValue(new File("./res/operationalprofiletest/serializedruns/TrRe" + testID + ".json"), trajectoryRecorder.getTrajectory());
-          mapper.writeValue(new File("./res/operationalprofiletest/serializedruns/Plan" + testID + ".json"), trajectoryRecorder.getPlannedTrajectory());
-      }
-      catch (JsonProcessingException exc)
-      {
-          exc.printStackTrace();
-      }
-      catch (IOException exc)
-      {
-          exc.printStackTrace();
-      }
+                  PurePursuitControllerVariableLookahead controller = new PurePursuitControllerVariableLookahead();
+                  controller.setParameters(new PurePursuitParameters(lookahead, 0.0));
+                  controller.addTrajectoryRequestListener(requestListener);
+                  controller.addTrajectoryReportListener(reportListener);
+                  return controller;
+              }
+          });
+          taskCreator.configure(taskConfiguration);
+          List<ITask> tasks = taskCreator.createTasks();
+    
+          TaskExecutor executor = new TaskExecutor();
+          executor.execute(tasks);
+          
+          System.out.println("Executed all tasks, now final serialization of results");
+          trajectoryRecorder.savePermanently();
+          reportListener.savePermanently();
+          requestListener.savePermanently();
+       }
    }
 
     public static void main(String[] args)
@@ -148,16 +123,25 @@ public class ExperimentRunner
         try
         {
             _vrep = VRepRemoteAPI.INSTANCE;
-            _clientID = _vrep.simxStart("127.0.0.1", 19999, true, true, 5000, 5);
+            _clientID = _vrep.simxStart("127.0.0.1", 19997, true, true, 5000, 5);
             _objectCreator = new VRepObjectCreation(_vrep, _clientID);
             ExperimentRunner runner = new ExperimentRunner();
-            runner.run("luebeck_extramini_routing_challenge", 15.0, 120.0, 4.0, 4.3, 1.0, Arrays.asList
-                    (
-                            new Position2D(7882.64,4664.21), 
-                            new Position2D(7797.34,4539.80)), "luebeck-roads.net.xml", "blue");
-            _objectCreator.deleteAll();            
-            waitForRunningSimulationToStop();
-            _vrep.simxFinish(_clientID);
+            try
+            {
+                List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread.txt").toPath());
+                List<Position2D> positions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());
+                // List<Position2D> points =
+                runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 4.0, 4.3, 1.0, positions, "luebeck-roads.net.xml", "blue");
+                _objectCreator.deleteAll();
+                waitForRunningSimulationToStop();
+                _objectCreator.removeScriptloader();
+                _vrep.simxFinish(_clientID);
+            }
+            catch (IOException exc)
+            {
+                // TODO Auto-generated catch block
+                exc.printStackTrace();
+            }
         }
         catch (VRepException exc)
         {
