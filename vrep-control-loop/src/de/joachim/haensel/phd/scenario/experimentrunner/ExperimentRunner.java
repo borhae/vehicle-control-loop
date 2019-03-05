@@ -28,7 +28,7 @@ import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class ExperimentRunner
 {
-    private static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
+    public static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
 
     private static VRepRemoteAPI _vrep;
     private static int _clientID;
@@ -52,7 +52,7 @@ public class ExperimentRunner
        }
    }
 
-   private void run(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color) throws VRepException
+   public void run(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color) throws VRepException
    {
        RoadMapAndCenterMatrix mapAndCenterMatrix = null;
        RoadMap map = null;
@@ -116,30 +116,38 @@ public class ExperimentRunner
           requestListener.savePermanently();
        }
    }
+   
+   public void initialize() throws VRepException
+   {
+       _vrep = VRepRemoteAPI.INSTANCE;
+       _clientID = _vrep.simxStart("127.0.0.1", 19997, true, true, 5000, 5);
+       _objectCreator = new VRepObjectCreation(_vrep, _clientID);
+   }
+   
+   public void tearDown() throws VRepException
+   {
+       _objectCreator.deleteAll();
+       waitForRunningSimulationToStop();
+       _objectCreator.removeScriptloader();
+       _vrep.simxFinish(_clientID);
+   }
 
     public static void main(String[] args)
     {
-        System.out.println("hello world");
+        System.out.println("running");
         try
         {
-            _vrep = VRepRemoteAPI.INSTANCE;
-            _clientID = _vrep.simxStart("127.0.0.1", 19997, true, true, 5000, 5);
-            _objectCreator = new VRepObjectCreation(_vrep, _clientID);
             ExperimentRunner runner = new ExperimentRunner();
+            runner.initialize();
             try
             {
                 List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread.txt").toPath());
                 List<Position2D> positions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());
-                // List<Position2D> points =
                 runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 4.0, 4.3, 1.0, positions, "luebeck-roads.net.xml", "blue");
-                _objectCreator.deleteAll();
-                waitForRunningSimulationToStop();
-                _objectCreator.removeScriptloader();
-                _vrep.simxFinish(_clientID);
+                runner.tearDown();
             }
             catch (IOException exc)
             {
-                // TODO Auto-generated catch block
                 exc.printStackTrace();
             }
         }
