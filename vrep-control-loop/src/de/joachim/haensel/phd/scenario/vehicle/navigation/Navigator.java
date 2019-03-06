@@ -64,10 +64,18 @@ public class Navigator
         shortestPathSolver.setSource(startJunction);
         shortestPathSolver.setTarget(targetJunction);
         List<Node> path = shortestPathSolver.getPath();
-        notifyListeners(path, startEdge, targetEdge);
-        List<Line2D> result = createLinesFromPath(path, startEdge, targetEdge, orientation);
-        notifyListeners(result);
-        return result;
+        if(path != null)
+        {
+            notifyListeners(path, startEdge, targetEdge);
+            List<Line2D> result = createLinesFromPath(path, startEdge, targetEdge, orientation);
+            notifyListeners(result);
+            return result;
+        }
+        else
+        {
+            //no path found
+            return null;
+        }
     }
 
     private void notifyListeners(List<Node> path, EdgeType startEdge, EdgeType targetEdge)

@@ -45,6 +45,7 @@ public class DijkstraAlgo implements IShortestPathAlgorithm
         _distances.put(_source, 0.0f);
         int neighbourCnt = 0;
         int size = _unvisitedNodes.size();
+        boolean foundTarget = false;
         while(!_unvisitedNodes.isEmpty())
         {
             Node u = minimumDistance(_unvisitedNodes);
@@ -53,6 +54,7 @@ public class DijkstraAlgo implements IShortestPathAlgorithm
             size--;
             if(u.equals(_target))
             {
+                foundTarget = true;
                 break;
             }
             Collection<Node> neighbors = neighbors(u);
@@ -70,11 +72,18 @@ public class DijkstraAlgo implements IShortestPathAlgorithm
             }
             if(size % 100 == 0)
             {
-                System.out.format("size: %d, neighbours looked at: %d %n", size, neighbourCnt);
+//                System.out.format("size: %d, neighbours looked at: %d %n", size, neighbourCnt);
                 neighbourCnt = 0;
             }
         }
-        return toPath(_previousNodesOptimalPath, _target);
+        if(foundTarget) 
+        {
+            return toPath(_previousNodesOptimalPath, _target);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     private List<Node> toPath(HashMap<Node, Node> previousNodesOptimalPath, Node target)
