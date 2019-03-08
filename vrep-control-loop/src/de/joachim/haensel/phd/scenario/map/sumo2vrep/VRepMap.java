@@ -336,8 +336,8 @@ public class VRepMap
         shapeParameters.setName(_elementNameCreator.createPlaneID());
         shapeParameters.setOrientation(0.0f, 0.0f, 0.0f);
         shapeParameters.setRespondableMask(ShapeParameters.GLOBAL_AND_LOCAL_RESPONDABLE_MASK);
-        float sizeX = (float) minMax.distX();
-        float sizeY = (float) minMax.distY();
+        float sizeX = (float) (minMax.distX() + 100.0); // an extra 100 meter so it does not fall of
+        float sizeY = (float) (minMax.distY() + 100.0); // an extra 100 meter so it does not fall of
         float sizeZ = 20.0f;
         shapeParameters.setSize(sizeX, sizeY, sizeZ);
         float posX =  (float) (minMax.minX() + minMax.distX()/2.0);
