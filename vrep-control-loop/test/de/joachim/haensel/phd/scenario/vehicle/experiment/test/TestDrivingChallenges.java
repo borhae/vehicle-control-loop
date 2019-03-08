@@ -29,4 +29,80 @@ public class TestDrivingChallenges
         }
         System.out.println("contemplate");
     }
+    
+    @Test
+    public void testCloseToMapeEdgeBottom()
+    {
+        System.out.println("running");
+        try
+        {
+            ExperimentRunner runner = new ExperimentRunner();
+            runner.initialize();
+            List<Position2D> positions = Arrays.asList(new Position2D[] {new Position2D(4558.70,57.26), new Position2D(4552.75,68.69)});
+            runner.run("luebeck_challengingcurve", 15.0, 120.0, 4.0, 4.3, 1.0, positions, "luebeck-roads.net.xml", "blue");
+            runner.tearDown();
+        }
+        catch (VRepException exc)
+        {
+            exc.printStackTrace();
+        }
+        System.out.println("contemplate");
+    }
+    
+    @Test
+    public void testCloseToMapeEdgeTop()
+    {
+        System.out.println("running");
+        try
+        {
+            ExperimentRunner runner = new ExperimentRunner();
+            runner.initialize();
+            List<Position2D> positions = Arrays.asList(new Position2D[] {new Position2D(7700.91,9414.94), new Position2D(7696.58,9415.95)});
+            runner.run("luebeck_challengingcurve", 15.0, 120.0, 4.0, 4.3, 1.0, positions, "luebeck-roads.net.xml", "blue");
+            runner.tearDown();
+        }
+        catch (VRepException exc)
+        {
+            exc.printStackTrace();
+        }
+        System.out.println("contemplate");
+    }
+    
+    @Test
+    public void testCloseToMapeEdgeLeft()
+    {
+        System.out.println("running");
+        try
+        {
+            ExperimentRunner runner = new ExperimentRunner();
+            runner.initialize();
+            List<Position2D> positions = Arrays.asList(new Position2D[] {new Position2D(112.38,1246.60), new Position2D(118.11,1234.28)});
+            runner.run("luebeck_challengingcurve", 15.0, 120.0, 4.0, 4.3, 1.0, positions, "luebeck-roads.net.xml", "blue");
+            runner.tearDown();
+        }
+        catch (VRepException exc)
+        {
+            exc.printStackTrace();
+        }
+        System.out.println("contemplate");
+    }
+    
+    @Test
+    public void testCloseToMapeEdgeRight()
+    {
+        System.out.println("running");
+        try
+        {
+            ExperimentRunner runner = new ExperimentRunner();
+            runner.initialize();
+            List<Position2D> positions = Arrays.asList(new Position2D[] {new Position2D(10771.03,1414.03), new Position2D(10769.45,1420.05)});
+            runner.run("luebeck_challengingcurve", 15.0, 120.0, 4.0, 4.3, 1.0, positions, "luebeck-roads.net.xml", "blue");
+            runner.tearDown();
+        }
+        catch (VRepException exc)
+        {
+            exc.printStackTrace();
+        }
+        System.out.println("contemplate");
+    }
 }
