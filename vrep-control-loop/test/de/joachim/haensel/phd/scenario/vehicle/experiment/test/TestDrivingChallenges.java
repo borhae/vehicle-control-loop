@@ -6,7 +6,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import de.hpi.giese.coppeliawrapper.VRepException;
-import de.joachim.haensel.phd.scenario.experimentrunner.ExperimentRunner;
+import de.joachim.haensel.phd.scenario.experiment.runner.ExperimentRunner;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 
 public class TestDrivingChallenges
