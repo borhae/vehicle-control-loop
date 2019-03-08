@@ -57,7 +57,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
 
     public class ReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
-        private static final double DISTANCE_TO_TARGET_THRESHOLD = 5.0;
+        private static final double DISTANCE_TO_TARGET_THRESHOLD = 2.5;
 
         public ReactiveControllerStateMachine()
         {
@@ -108,7 +108,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
 
         private boolean arrivedAtTarget()
         {
-            Position2D curPos = _actuatorsSensors.getPosition();
+            Position2D curPos = _actuatorsSensors.getFrontWheelCenterPosition();
             double distance = Position2D.distance(curPos, _expectedTarget);
             boolean arrived = distance < DISTANCE_TO_TARGET_THRESHOLD;
             return arrived;
