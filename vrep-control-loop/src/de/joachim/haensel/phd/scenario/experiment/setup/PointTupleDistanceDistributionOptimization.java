@@ -18,7 +18,7 @@ public class PointTupleDistanceDistributionOptimization
 {
     public static void main(String[] args)
     {
-        try (Stream<String> stream = Files.lines(Paths.get("./res/roadnetworks/Luebeckpoints.txt"))) 
+        try (Stream<String> stream = Files.lines(Paths.get("./res/roadnetworks/Chandigarhpoints.txt"))) 
         {  
             MersenneTwister randomGenerator = new MersenneTwister(4009l);
             List<Position2D> mapPositions = stream.map(curLine -> new Position2D(curLine)).collect(Collectors.toList());
@@ -45,7 +45,7 @@ public class PointTupleDistanceDistributionOptimization
                 nrOfSwaps -= steps;
             }
             List<String> outContent = mapPositions.stream().map(curPos -> String.format(Locale.ENGLISH, "%.2f, %.2f", curPos.getX(), curPos.getY())).collect(Collectors.toList());
-            Files.write(new File("./res/roadnetworks/Luebeckpoints_spread.txt").toPath(), outContent, Charset.defaultCharset());
+            Files.write(new File("./res/roadnetworks/Chandigarhpoints_spread.txt").toPath(), outContent, Charset.defaultCharset());
             System.out.println(steps);
             System.out.println(String.format("final fitness: %f, amount of iterations: %d, successfull mutations: %d", fitness, iterationCnt, successfulSwaps));
         }

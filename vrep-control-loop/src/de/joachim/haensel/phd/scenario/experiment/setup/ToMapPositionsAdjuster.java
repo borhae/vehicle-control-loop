@@ -14,8 +14,8 @@ public class ToMapPositionsAdjuster
 {
 	public static void main(String[] args) 
 	{
-		RoadMap map = new RoadMap("./res/roadnetworks/luebeck-roads.net.xml");
-		try (Stream<String> stream = Files.lines(Paths.get("./res/roadnetworks/Luebeckpoints_raw.txt"))) 
+		RoadMap map = new RoadMap("./res/roadnetworks/chandigarh-roads.net.xml");
+		try (Stream<String> stream = Files.lines(Paths.get("./res/roadnetworks/Chandigarhpoints_raw.txt"))) 
 		{
 			List<Position2D> positions = stream.map(stringPos -> new Position2D(stringPos)).collect(Collectors.toList());
 			List<Position2D> adjustedPositions = 
@@ -31,7 +31,7 @@ public class ToMapPositionsAdjuster
 				}
 			}
 			List<String> lines = adjustedPositions.stream().map(pos -> String.format("%.2f,%.2f", pos.getX(), pos.getY())).collect(Collectors.toList());
-			Files.write(Paths.get("./res/roadnetworks/Luebeckpoints.txt"), lines);
+			Files.write(Paths.get("./res/roadnetworks/Chandigarhpoints.txt"), lines);
 		}
 		catch (IOException e) 
 		{
