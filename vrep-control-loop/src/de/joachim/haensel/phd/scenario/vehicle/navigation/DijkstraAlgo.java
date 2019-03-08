@@ -41,6 +41,7 @@ public class DijkstraAlgo implements IShortestPathAlgorithm
 
     public List<Node> getPath()
     {
+        System.out.println("finding path");
         init();
         _distances.put(_source, 0.0f);
         int neighbourCnt = 0;
@@ -73,9 +74,11 @@ public class DijkstraAlgo implements IShortestPathAlgorithm
             if(size % 100 == 0)
             {
 //                System.out.format("size: %d, neighbours looked at: %d %n", size, neighbourCnt);
+                System.out.println(".");
                 neighbourCnt = 0;
             }
         }
+        System.out.println("path found");
         if(foundTarget) 
         {
             return toPath(_previousNodesOptimalPath, _target);
