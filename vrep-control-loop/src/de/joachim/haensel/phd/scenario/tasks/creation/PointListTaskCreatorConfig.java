@@ -123,8 +123,10 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
         for(int idx = 0; idx < _targetPoints.size() - 1; idx++)
         {
             Position2D newTarget = _targetPoints.get(idx + 1);
-            int timeOutSec = ITaskCreatorConfig.estimateTimeout(lastTarget, newTarget );
-            _tasks.add(new DriveAtoBTask(lastTarget, newTarget, timeOutSec , vehicleBuildTask, _map));
+            
+//            int timeOutSec = ITaskCreatorConfig.estimateTimeout(lastTarget, newTarget );
+            // if we don't make a route in one hour, there is seriously something wrong
+            _tasks.add(new DriveAtoBTask(lastTarget, newTarget, 3600, vehicleBuildTask, _map));
         }
         if(_debug)
         {
