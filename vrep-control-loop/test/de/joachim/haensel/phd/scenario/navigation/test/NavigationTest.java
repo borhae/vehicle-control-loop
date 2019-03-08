@@ -286,6 +286,32 @@ public class NavigationTest implements TestConstants
         System.out.println("wait here");
     }
     
+    @Test
+    public void testChandigarhProblems() throws VRepException
+    {
+        RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/chandigarh-roads.net.xml");
+        TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+        
+        Navigator navigator = new Navigator(mapAndCenterMatrix.getRoadMap());
+        //was ok
+        Position2D start1 = new Position2D(7064.25, 5628.49).transform(centerMatrix);
+        Position2D destination1 = new Position2D(220.73, 3817.32).transform(centerMatrix);
+        List<Line2D> route1 = navigator.getRoute(start1, destination1);
+        drawRoute(route1, _objectCreator, "route1_");
+        //was ok
+        Position2D start2 = new Position2D(220.73, 3817.32).transform(centerMatrix);
+        Position2D destination2 = new Position2D(7508.53, 6937.68).transform(centerMatrix);
+        List<Line2D> route2 = navigator.getRoute(start2, destination2);
+        drawRoute(route2, _objectCreator, "route2_");
+        //needs fix
+        Position2D start3 = new Position2D(6170.84, 4890.12).transform(centerMatrix);
+        Position2D destination3 = new Position2D(13642.32, 5685.41).transform(centerMatrix);
+        List<Line2D> route3 = navigator.getRoute(start3, destination3);
+        drawRoute(route3, _objectCreator, "route3_");
+
+        System.out.println("wait here");
+    }
+    
     private void drawPosition(Position2D position, Color orange, VRepObjectCreation objectCreator, String name) throws VRepException
     {
         ShapeParameters shapeParams = new ShapeParameters();
