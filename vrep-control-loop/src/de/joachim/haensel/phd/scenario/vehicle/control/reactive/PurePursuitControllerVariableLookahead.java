@@ -100,6 +100,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
 
         private boolean isBackOnTrack()
         {
+            System.out.println("back on track");
             Position2D curPos = _actuatorsSensors.getPosition();
             double distance = Position2D.distance(curPos, _currentLookaheadSegment.getVector().getTip());
             boolean arrived = distance < DISTANCE_TO_TARGET_THRESHOLD;
@@ -128,6 +129,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         {
             if(!_lostTrack)
             {
+                System.out.println("lost track");
                 transition(ControllerMsg.CONTROL_EVENT, controller);
             }
             else
