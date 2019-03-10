@@ -63,6 +63,11 @@ public class BasicVelocityAssigner implements IVelocityAssigner
         _accelerationMaxLongitudinal = maxLongAcc;
         _decelerationMaxLongitudinal = maxLongDec;
     }
+    
+    public void setInitialVelocity(double initialVelocity)
+    {
+        _initialVelocity = initialVelocity;
+    }
 
     @Override
     public void addVelocities(List<TrajectoryElement> trajectories)

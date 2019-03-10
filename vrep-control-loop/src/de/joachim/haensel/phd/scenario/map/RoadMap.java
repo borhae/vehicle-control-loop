@@ -566,6 +566,11 @@ public class RoadMap
         return result;
     }
 
+    public Collection<Edge> getNavigableEdges()
+    {
+        return _navigableEdges.values();
+    }
+
     public Collection<Node> getNodes()
     {
         return _navigableNetwork.values();

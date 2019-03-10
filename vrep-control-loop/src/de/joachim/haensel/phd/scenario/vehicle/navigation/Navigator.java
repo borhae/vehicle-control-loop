@@ -119,6 +119,28 @@ public class Navigator
         result = remove180Turns(result);
         return result;
     }
+
+    public List<Line2D> createLinesFromPath(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
+    {
+        List<Line2D> result = new ArrayList<>();
+        List<EdgeType> edges = new ArrayList<>();
+        for(int idx = 0; idx < path.size() - 1; idx++)
+        {
+            Node cur = path.get(idx);
+            Node next = path.get(idx + 1);
+            EdgeType sumoEdge = getEdgeBetween(cur, next);
+            edges.add(sumoEdge);
+        }
+        edges.add(0, startEdge);
+        edges.add(targetEdge);
+        for(int idx = 0; idx < edges.size(); idx++)
+        {
+            EdgeType curEdge = edges.get(idx);
+            regularLineAdd(result, curEdge);
+        }
+        result = remove180Turns(result);
+        return result;
+    }
     
     private List<Line2D> remove180Turns(List<Line2D> rawResult)
     {
