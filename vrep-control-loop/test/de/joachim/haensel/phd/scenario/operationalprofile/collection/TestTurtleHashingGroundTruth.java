@@ -30,6 +30,7 @@ public class TestTurtleHashingGroundTruth
         return Arrays.asList(new Object[][]
         {
             {"GroundTruthColuebeck-roads.net.xml", "GroundTruthColuebeck", 10.1},
+            {"Coluebeck_40_targets15.000000_120.000000_4.00_4.00_1.00_", "40TargetsColuebeck", 10.1},
         }).stream().map(params -> Arguments.of(params));
     }
 
@@ -84,7 +85,7 @@ public class TestTurtleHashingGroundTruth
             List<String> histogram = new ArrayList<String>();
             histogram.add("class, amount");
             histogram.addAll(configsHashed.entrySet().stream().map(entry -> String.format("%s, %d", entry.getKey(), entry.getValue().size())).collect(Collectors.toList()));
-            Files.write(new File("./res/operationalprofiletest/serializedruns/" + histogramFileName + ".txt").toPath(), histogram, Charset.defaultCharset());
+            Files.write(new File("./res/operationalprofiletest/serializedruns/" + histogramFileName + "" + hashPixelSize + ".txt").toPath(), histogram, Charset.defaultCharset());
             System.out.println(String.format("Number of trajectories: %d, skipped trajectories: %d, number of buckets: %d", configsSorted.size(), tooShortSkipped, configsHashed.size()));
         }
         catch (IOException exc)
