@@ -143,10 +143,11 @@ public class ExperimentRunner
             try
             {
 //                List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread.txt").toPath());
-            	List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread.txt").toPath());
-                List<Position2D> positions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());
-//                runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 4.0, 4.3, 1.0, positions, "luebeck-roads.net.xml", "blue");
-                runner.run("chandigarh_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "chandigarh-roads.net.xml", "blue");
+//            	List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread_from63.txt").toPath());
+//            	List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread_from83.txt").toPath());
+            	List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread_from153.txt").toPath());
+                List<Position2D> positions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());//                runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "luebeck-roads.net.xml", "blue");
+                runner.run("chandigarh_183_max_scattered_targets_from153", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "chandigarh-roads-lefthand.net.xml", "blue");
                 runner.tearDown();
             }
             catch (IOException exc)

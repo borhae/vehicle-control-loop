@@ -314,7 +314,10 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         {
             _debugParams.getSpeedometer().updateWheelRotationSpeed(targetWheelRotation);
             _debugParams.getSpeedometer().updateCurrentSegment(_currentLookaheadSegment);
-            _debugParams.getSpeedometer().updateVelocities(_actuatorsSensors.getVehicleVelocity(), _actuatorsSensors.getLockedOrientation(), closestSegment.getVelocity());
+            if(closestSegment != null)
+            {
+            	_debugParams.getSpeedometer().updateVelocities(_actuatorsSensors.getVehicleVelocity(), _actuatorsSensors.getLockedOrientation(), closestSegment.getVelocity());
+            }
             _debugParams.getSpeedometer().repaint();
         }
         
@@ -454,7 +457,11 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
             {
                 if(!_routeEnding)
                 {
+                	boolean segmentsLeft = _segmentProvider.segmentsLeft();
                     System.out.println("Warning: No matching trajectory element found, waiting for next buffer read");
+                    System.out.println("Buffersize: " + _segmentBuffer.size());
+                    String info = segmentsLeft ? "yep" : "nope";
+                    System.out.println("Segmentprovider has segments? " + info);
                     _lostTrack = true;
                 }
                 //otherwise nothing needs to be done since it's the last trajectory element of the route

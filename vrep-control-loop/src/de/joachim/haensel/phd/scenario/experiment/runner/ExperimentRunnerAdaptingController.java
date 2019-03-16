@@ -28,7 +28,7 @@ import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookahead;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.AdaptiveNavigationController;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.LinearChangeAdaptiveNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
@@ -95,7 +95,7 @@ public class ExperimentRunnerAdaptingController
           taskConfiguration.setMap(map);
           taskConfiguration.configSimulator(_vrep, _clientID, _objectCreator);
          
-          String baseOutputDirectory = "./res/operationalprofiletest/serializedruns/adapted/";
+          String baseOutputDirectory = "./res/operationalprofiletest/serializedruns/luebeck_adapted_182_1to76_interrupted/";
           RegularSavingTrajectoryRecorder trajectoryRecorder = new RegularSavingTrajectoryRecorder(50, 100, baseOutputDirectory, finalTestID);
           RegularSavingReportListener reportListener = new RegularSavingReportListener(100, baseOutputDirectory, finalTestID);
           RegularSavingRequestListener requestListener = new RegularSavingRequestListener(100, baseOutputDirectory, finalTestID);
@@ -142,7 +142,11 @@ public class ExperimentRunnerAdaptingController
                 {
                     double segmentSize = 5;
                     double maxVel = UnitConverter.kilometersPerHourToMetersPerSecond(maxVelocity);
-                    AdaptiveNavigationController controller = new AdaptiveNavigationController(segmentSize, maxVel, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
+                    int amountOfRoutes = targetPoints.size();
+                    LinearChangeAdaptiveNavigationController controller = 
+                            //was 0.4 to 1.3, 0.77 for starting from 76
+                            //was 0.4 to 1.3, 1.322 for starting from 134
+                            new LinearChangeAdaptiveNavigationController(amountOfRoutes, 1.322, 1.3, segmentSize, maxVel, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
                     return controller;
                 }
           });
@@ -199,9 +203,9 @@ public class ExperimentRunnerAdaptingController
             runner.initialize();
             try
             {
-                List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread.txt").toPath());
+                List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread_135"+ ".txt").toPath());
                 List<Position2D> positions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());
-                runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 4.0, 4.3, 1.0, positions, "luebeck-roads.net.xml", "blue");
+                runner.run("luebeck_183_max_scattered_targets_adapting_135to", 15.0, 120.0, 4.0, 4.3, 1.0, positions, "luebeck-roads.net.xml", "blue");
                 runner.tearDown();
             }
             catch (IOException exc)
