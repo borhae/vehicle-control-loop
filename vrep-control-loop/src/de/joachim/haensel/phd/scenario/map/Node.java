@@ -25,6 +25,11 @@ public class Node implements IStreetSection
         _incomming = new HashMap<>();
     }
 
+    public boolean isValid()
+    {
+        return _baseJunction != null;
+    }
+    
     public void addIncomming(Edge edge, Node sourceJunction)
     {
         _incomming.put(sourceJunction, edge);
@@ -39,10 +44,19 @@ public class Node implements IStreetSection
     {
         return _outgoing.keySet();
     }
+    
+    public Collection<Node> getIncomingNodes()
+    {
+        return _incomming.keySet();
+    }
 
     public Float distance(Node v)
     {
         Edge edgeToNode = _outgoing.get(v);
+        if(edgeToNode == null)
+        {
+            edgeToNode = _incomming.get(v);
+        }
         return edgeToNode.getLength();
     }
     
