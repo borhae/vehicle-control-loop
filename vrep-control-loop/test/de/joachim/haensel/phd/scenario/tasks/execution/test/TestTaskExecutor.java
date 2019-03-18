@@ -289,4 +289,37 @@ public class TestTaskExecutor
         TaskExecutor executor = new TaskExecutor();
         executor.execute(tasks);
     }
+    
+
+    @Test
+    public void testExecute180Route()
+    {
+        try
+        {
+            RoadMapAndCenterMatrix mapAndCenterMatrix = 
+                    SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+            RoadMap map = mapAndCenterMatrix.getRoadMap();
+            TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+            TaskCreator taskCreator = new TaskCreator();
+            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(true);
+            
+            Position2D p2 = new Position2D(5903.65,3029.49).transform(centerMatrix);
+            Position2D p3 = new Position2D(6394.25,3208.92).transform(centerMatrix);
+            Position2D p4 = new Position2D(6034.56,3079.70).transform(centerMatrix);
+           
+            config.setMap(map);
+            config.configSimulator(_vrep, _clientID, _objectCreator);
+
+            config.setTargetPoints(Arrays.asList(new Position2D[]{p2, p3, p4}));
+            taskCreator.configure(config);
+            List<ITask> tasks = taskCreator.createTasks();
+
+            TaskExecutor executor = new TaskExecutor();
+            executor.execute(tasks);
+        }
+        catch (VRepException exc)
+        {
+            fail(exc);
+        }
+    }
 }
