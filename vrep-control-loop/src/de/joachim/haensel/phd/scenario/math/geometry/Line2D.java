@@ -182,7 +182,7 @@ public class Line2D
     }
 
     /**
-     * Computes on which side the other vector is in relation to this one
+     * Computes on which side the the point is in relation to a line a to b
      * Left and right means that you're looking from a into the direction of b  
      * and then this result will tell you whether you'll find m to your right or left side
 
@@ -194,6 +194,23 @@ public class Line2D
     public static double side(Position2D a, Position2D b, Position2D m)
     {
         double determinant = (b.getX() - a.getX()) * (m.getY() - a.getY()) - (b.getY() - a.getY()) * (m.getX() - a.getX());
+        return Math.signum(determinant);
+    }
+
+
+    /**
+     * Computes on which side point m is in relation to this line.
+     * Left and right means that you're looking from a into the direction of b  
+     * and then this result will tell you whether you'll find m to your right or left side
+
+     * @param a first point of line
+     * @param b second point of line
+     * @param m point where we want to know where it is with respect to the line
+     * @return side decoded as: -1 to the right, 0 collinear, 1 to the left
+     */
+    public double side(Position2D m)
+    {
+        double determinant = (_x2 - _x1) * (m.getY() - _y1) - (_y2 - _y1) * (m.getX() - _x1);
         return Math.signum(determinant);
     }
 

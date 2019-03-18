@@ -28,8 +28,7 @@ public class IndexAdder<T>
     
     public static <T> Function<T, IndexAdder<T>> indexed()
     {
-        Function<T, IndexAdder<T>> result = 
-                new Function<T, IndexAdder<T>>() 
+        Function<T, IndexAdder<T>> result = new Function<T, IndexAdder<T>>() 
         {
             AtomicInteger idxGenerator = new AtomicInteger(0);
             

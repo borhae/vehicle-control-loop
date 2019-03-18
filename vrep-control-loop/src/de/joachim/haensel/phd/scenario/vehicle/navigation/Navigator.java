@@ -2,6 +2,7 @@ package de.joachim.haensel.phd.scenario.vehicle.navigation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,10 +63,18 @@ public class Navigator
         shortestPathSolver.setSource(startJunction);
         shortestPathSolver.setTarget(targetJunction);
         List<Node> path = shortestPathSolver.getPath();
-        notifyListeners(path, startEdge, targetEdge);
-        List<Line2D> result = createLinesFromPath(path, startEdge, targetEdge, orientation);
-        notifyListeners(result);
-        return result;
+        if(path != null)
+        {
+            notifyListeners(path, startEdge, targetEdge);
+            List<Line2D> result = createLinesFromPath(path, startEdge, targetEdge);
+            notifyListeners(result);
+            return result;
+        }
+        else
+        {
+            //no path found
+            return null;
+        }
     }
 
     private void notifyListeners(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
@@ -83,7 +92,7 @@ public class Navigator
         _routeBuildingListeners.forEach(listener -> listener.notifyNewRoute(result));
     }
 
-    private List<Line2D> createLinesFromPath(List<Node> path, EdgeType startEdge, EdgeType targetEdge, Vector2D orientation)
+    public List<Line2D> createLinesFromPath(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
     {
         List<Line2D> result = new ArrayList<>();
         List<EdgeType> edges = new ArrayList<>();
@@ -101,11 +110,6 @@ public class Navigator
             EdgeType curEdge = edges.get(idx);
             regularLineAdd(result, curEdge);
         }
-        // TODO start and end-points could also be literally on a crossing, I did not took care for that yet
-        result = cutStartLaneShapes(result, orientation);
-        result = cutEndLaneShapes(result);
-        result.get(0).setP1(_sourcePosition);
-        result.get(result.size() - 1).setP2(_targetPosition);
         return result;
     }
 

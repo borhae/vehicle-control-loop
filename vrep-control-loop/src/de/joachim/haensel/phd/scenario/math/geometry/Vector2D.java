@@ -229,6 +229,7 @@ public class Vector2D
 
     /**
      * Angle between two vectors, taking care of similarly directed vectors like in the apache library 
+     * Returns only values between 0 and pi / 2.0, you need to figure out yourself to which side (use method side ;) )
      * @param a
      * @param b
      * @return
@@ -459,6 +460,17 @@ public class Vector2D
         Position2D b = getTip();
         Position2D m = other.getTip(); 
         return Line2D.side(a, b, m);
+    }
+    
+    /**
+     * Computes on which side the point is in relation to this vector
+     * @param p point for which the side should be computed
+     * @return values smaller than 0 indicate on the right side, greater 0 on the left side and 0 means 
+     * collinear (point on this vector without bounds)
+     */
+    public double side(Position2D p)
+    {
+        return Line2D.side(getBase(), getTip(), p);
     }
 
     public double getLength()
@@ -757,7 +769,7 @@ public class Vector2D
         return unrangedOnFirstIntersect(vP, v);
     }
     
-    public Vector2D scale(double s)
+    public Vector2D scaleNormTo(double s)
     {
         _dX = _normX * s;
         _dY = _normY * s;
@@ -888,12 +900,28 @@ public class Vector2D
         return new Line2D(getBase(), getTip());
     }
 
-    public void rotateDir(double angle)
+    public Vector2D rotateDir(double angle)
     {
         TMatrix rotationMatrix = TMatrix.rotationMatrix(angle);
         Position2D dir = getDir();
         dir.transform(rotationMatrix);
         _dX = dir.getX();
         _dY = dir.getY();
+        return this;
+    }
+
+    public Vector2D scale(double scaleFactor)
+    {
+        Position2D base = getBase();
+        base.mul(scaleFactor);
+        _bX = base.getX();
+        _bY = base.getY();
+        Position2D dir = getDir();
+        dir.mul(scaleFactor);
+        _dX = dir.getX();
+        _dY = dir.getY();
+        updateLength();
+        updateNormVector();
+        return this;
     }
 }

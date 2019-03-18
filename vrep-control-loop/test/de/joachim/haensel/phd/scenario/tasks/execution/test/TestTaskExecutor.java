@@ -47,7 +47,7 @@ public class TestTaskExecutor
     public static void setupVrep() throws VRepException
     {
         _vrep = VRepRemoteAPI.INSTANCE;
-        _clientID = _vrep.simxStart("127.0.0.1", 19999, true, true, 5000, 5);
+        _clientID = _vrep.simxStart("127.0.0.1", 19997, true, true, 5000, 5);
         _objectCreator = new VRepObjectCreation(_vrep, _clientID);
     }
 

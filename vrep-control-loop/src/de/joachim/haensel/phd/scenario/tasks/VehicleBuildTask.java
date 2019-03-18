@@ -43,6 +43,8 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
 
     private String _carmodel;
 
+    private IUpperLayerFactory _upperLayerFactory;
+
     public VehicleBuildTask(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator, RoadMap map, Position2D position, Vector2D orientation, String carmodel)
     {
         _vrep = vrep;
@@ -113,10 +115,18 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
     private IVehicleConfiguration createVehicleConfiguration(RoadMap roadMap, Position2D startPosition, Vector2D orientation, double placementHeight)
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
-        IUpperLayerFactory upperFact = () -> 
+        IUpperLayerFactory upperFact;
+        if(_upperLayerFactory != null)
         {
-            return new DefaultNavigationController(5.0, UnitConverter.kilometersPerHourToMetersPerSecond(_maxVelocity), _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
-        };
+            upperFact = _upperLayerFactory;
+        }
+        else
+        {
+            upperFact = () -> 
+            {
+                return new DefaultNavigationController(5.0, UnitConverter.kilometersPerHourToMetersPerSecond(_maxVelocity), _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
+            };
+        }
         ILowerLayerFactory lowerFact = null;
         if(_lowerLayerFactory != null)
         {
@@ -151,5 +161,10 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
     public void setLowerLayerFactory(ILowerLayerFactory lowerLayerFactory)
     {
         _lowerLayerFactory = lowerLayerFactory;
+    }
+
+    public void setUpperLayerFactory(IUpperLayerFactory upperLayerFactory)
+    {
+        _upperLayerFactory = upperLayerFactory;
     }
 }

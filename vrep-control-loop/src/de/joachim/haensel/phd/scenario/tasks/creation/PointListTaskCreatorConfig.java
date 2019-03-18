@@ -21,6 +21,7 @@ import de.joachim.haensel.phd.scenario.tasks.VehicleStartTask;
 import de.joachim.haensel.phd.scenario.tasks.VehicleStopTask;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
+import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingTask
@@ -42,6 +43,7 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
     protected double _maxLongitudinalDecceleration;
     protected double _maxLateralAcceleration;
     private ILowerLayerFactory _lowerLayerFactory;
+    private IUpperLayerFactory _upperLayerFactory;
     private String _carmodel;
 
     public PointListTaskCreatorConfig(boolean debug)
@@ -52,6 +54,8 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
 
     public PointListTaskCreatorConfig()
     {
+        _lowerLayerFactory = null;
+        _upperLayerFactory = null;
         _targetPoints = new ArrayList<>();
         _lowerLayerControls = new ArrayList<>();
         _lookahead = DEFAULT_PURE_PURSUIT_LOOKAHEAD;
@@ -95,6 +99,10 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
         {
             vehicleBuildTask.setLowerLayerFactory(_lowerLayerFactory);
         }
+        if(_upperLayerFactory != null)
+        {
+            vehicleBuildTask.setUpperLayerFactory(_upperLayerFactory);
+        }
         _tasks.add(vehicleBuildTask);
         if(!_lowerLayerControls.isEmpty())
         {
@@ -115,8 +123,10 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
         for(int idx = 0; idx < _targetPoints.size() - 1; idx++)
         {
             Position2D newTarget = _targetPoints.get(idx + 1);
-            int timeOutSec = ITaskCreatorConfig.estimateTimeout(lastTarget, newTarget );
-            _tasks.add(new DriveAtoBTask(lastTarget, newTarget, timeOutSec , vehicleBuildTask, _map));
+            
+//            int timeOutSec = ITaskCreatorConfig.estimateTimeout(lastTarget, newTarget );
+            // if we don't make a route in one hour, there is seriously something wrong
+            _tasks.add(new DriveAtoBTask(lastTarget, newTarget, 3600, vehicleBuildTask, _map));
         }
         if(_debug)
         {
@@ -166,6 +176,11 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
     public void setLowerLayerController(ILowerLayerFactory lowerLayerFactory)
     {
         _lowerLayerFactory = lowerLayerFactory;
+    }
+    
+    public void setUpperLayerController(IUpperLayerFactory upperLayerFactory)
+    {
+        _upperLayerFactory = upperLayerFactory;
     }
 
     public void setCarModel(String carModel)

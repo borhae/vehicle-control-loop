@@ -24,7 +24,7 @@ public class TrajectoryNormalizer
         return normalized;
     }
 
-    private static List<TrajectoryElement> normalize(List<TrajectoryElement> trajectory)
+    public static List<TrajectoryElement> normalize(List<TrajectoryElement> trajectory)
     {
         if(trajectory != null && trajectory.size() > 1)
         {

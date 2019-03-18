@@ -49,8 +49,18 @@ public class InterpolationSegmenterCircleIntersection implements ISegmentationAl
                 }
                 else
                 {
-                    Vector2D intersectionOnNextVector = Vector2D.circleIntersection(nextVector, curBase, stepSize).get(0);
-                    Position2D newElemTip = intersectionOnNextVector.getTip();
+                    List<Vector2D> circleIntersections = Vector2D.circleIntersection(nextVector, curBase, stepSize);
+                    Position2D newElemTip = null;
+                    if(circleIntersections.isEmpty())
+                    {
+                        //old one was to short but doesn't reach the new base :(
+                        newElemTip = nextVector.getBase();
+                    }
+                    else
+                    {
+                        Vector2D intersectionOnNextVector = circleIntersections.get(0);
+                        newElemTip = intersectionOnNextVector.getTip();
+                    }
                     Vector2D newElem = new Vector2D(curBase, newElemTip);
                     result.add(newElem);
                     

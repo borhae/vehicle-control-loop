@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -13,7 +12,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
-import de.joachim.haensel.phd.scenario.map.IStreetSection;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
@@ -59,7 +57,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
 
     public class ReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
-        private static final double DISTANCE_TO_TARGET_THRESHOLD = 5.0;
+        private static final double DISTANCE_TO_TARGET_THRESHOLD = 2.5;
 
         public ReactiveControllerStateMachine()
         {
@@ -102,6 +100,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
 
         private boolean isBackOnTrack()
         {
+            System.out.println("back on track");
             Position2D curPos = _actuatorsSensors.getPosition();
             double distance = Position2D.distance(curPos, _currentLookaheadSegment.getVector().getTip());
             boolean arrived = distance < DISTANCE_TO_TARGET_THRESHOLD;
@@ -110,7 +109,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
 
         private boolean arrivedAtTarget()
         {
-            Position2D curPos = _actuatorsSensors.getPosition();
+            Position2D curPos = _actuatorsSensors.getFrontWheelCenterPosition();
             double distance = Position2D.distance(curPos, _expectedTarget);
             boolean arrived = distance < DISTANCE_TO_TARGET_THRESHOLD;
             return arrived;
@@ -130,6 +129,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         {
             if(!_lostTrack)
             {
+                System.out.println("lost track");
                 transition(ControllerMsg.CONTROL_EVENT, controller);
             }
             else
@@ -316,7 +316,10 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         {
             _debugParams.getSpeedometer().updateWheelRotationSpeed(targetWheelRotation);
             _debugParams.getSpeedometer().updateCurrentSegment(_currentLookaheadSegment);
-            _debugParams.getSpeedometer().updateVelocities(_actuatorsSensors.getVehicleVelocity(), _actuatorsSensors.getLockedOrientation(), closestSegment.getVelocity());
+            if(closestSegment != null)
+            {
+            	_debugParams.getSpeedometer().updateVelocities(_actuatorsSensors.getVehicleVelocity(), _actuatorsSensors.getLockedOrientation(), closestSegment.getVelocity());
+            }
             _debugParams.getSpeedometer().repaint();
         }
         
@@ -456,7 +459,11 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
             {
                 if(!_routeEnding)
                 {
+                	boolean segmentsLeft = _segmentProvider.segmentsLeft();
                     System.out.println("Warning: No matching trajectory element found, waiting for next buffer read");
+                    System.out.println("Buffersize: " + _segmentBuffer.size());
+                    String info = segmentsLeft ? "yep" : "nope";
+                    System.out.println("Segmentprovider has segments? " + info);
                     _lostTrack = true;
                 }
                 //otherwise nothing needs to be done since it's the last trajectory element of the route

@@ -116,6 +116,11 @@ public class TestVehicleSteering
                 public void addRouteBuilderListener(IRouteBuildingListener listener)
                 {
                 }
+
+				@Override
+				public boolean segmentsLeft() {
+					return false;
+				}
             };
         };
         TestJustSteeringController llControl = new TestJustSteeringController();
@@ -205,6 +210,12 @@ public class TestVehicleSteering
                 public void addRouteBuilderListener(IRouteBuildingListener listener)
                 {
                 }
+
+				@Override
+				public boolean segmentsLeft() 
+				{
+					return false;
+				}
             };
         };
         Position2D requiredCenter = new Position2D(0.0f, 0.0f);

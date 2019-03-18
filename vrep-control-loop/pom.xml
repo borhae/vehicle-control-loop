@@ -129,11 +129,6 @@
   		<artifactId>jgraphx</artifactId>
   		<version>3.9.8.1</version>
   	</dependency>
-  	<dependency>
-  		<groupId>de.hpi.sam</groupId>
-  		<artifactId>coppelialib</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>
-  	</dependency>
   </dependencies>
   <repositories>
     <repository>

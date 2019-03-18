@@ -96,8 +96,14 @@ public class DefaultNavigationController implements IUpperLayerControl
     {
         return _segmentBuffer.getSize();
     }
-        
+    
     @Override
+	public boolean segmentsLeft() 
+    {
+		return _segmentBuffer.getSize() > 0;
+	}
+
+	@Override
     public void addRouteBuilderListener(IRouteBuildingListener listener)
     {
         _routeBuildingListeners.add(listener);
