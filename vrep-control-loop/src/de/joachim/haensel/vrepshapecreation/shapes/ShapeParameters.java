@@ -26,7 +26,7 @@ public class ShapeParameters extends Parameters
         _sizeY = 0.0f;
         _sizeZ = 0.0f;
         _mass = 0.0f;
-        _type = EVRepShapes.CONE;
+        _type = EVRepShapes.CUBOID;
         _isRespondable = false;
         _isDynamic = false;
         _respondableMask = 0b0;

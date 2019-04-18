@@ -86,9 +86,13 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
             _carmodel = "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm";
             vehicleConf = createVehicleConfiguration(map, vehiclePosition, orientation, 1.5);
         }
-        else if (_carmodel.endsWith("carvisuals.ttm") || _carmodel.endsWith("vehicleVisualsBrakeScript.ttm") || _carmodel.endsWith("vehicleVisualsTorque5000.ttm") || _carmodel.contains("isuals"))
+        else if (_carmodel.contains("isuals"))
         {
             vehicleConf = createMercedesLikeConfiguration(map, vehiclePosition, orientation, 1.5);
+        }
+        else
+        {
+            vehicleConf = createVehicleConfiguration(map, vehiclePosition, orientation, 1.5);
         }
         IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, _carmodel, 1.0f);
         factory.configure(vehicleConf);

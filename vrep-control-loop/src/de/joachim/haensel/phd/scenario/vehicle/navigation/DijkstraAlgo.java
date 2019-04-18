@@ -74,7 +74,7 @@ public class DijkstraAlgo implements IShortestPathAlgorithm
             if(size % 100 == 0)
             {
 //                System.out.format("size: %d, neighbours looked at: %d %n", size, neighbourCnt);
-                System.out.println(".");
+                System.out.print(".");
                 neighbourCnt = 0;
             }
         }

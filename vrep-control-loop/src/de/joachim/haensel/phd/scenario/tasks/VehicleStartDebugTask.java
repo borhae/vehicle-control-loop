@@ -1,5 +1,6 @@
 package de.joachim.haensel.phd.scenario.tasks;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
@@ -18,6 +19,7 @@ public class VehicleStartDebugTask implements ITask
     {
         _objectCreator = objectCreator;
         _vehicleProvider = vehicleProvider;
+        _navigationListeners = new ArrayList<INavigationListener>();
     }
     
     @Override

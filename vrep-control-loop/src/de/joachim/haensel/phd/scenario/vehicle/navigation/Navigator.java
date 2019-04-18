@@ -21,7 +21,7 @@ import sumobindings.LaneType;
 
 public class Navigator
 {
-    private static final double U_TURN_RADIUS = 10.0;
+    public static final double U_TURN_RADIUS = 10.0;
     private RoadMap _roadMap;
     private List<IRouteBuildingListener> _routeBuildingListeners;
     private Position2D _sourcePosition;
@@ -95,22 +95,7 @@ public class Navigator
 
     private List<Line2D> createLinesFromPath(List<Node> path, EdgeType startEdge, EdgeType targetEdge, Vector2D orientation)
     {
-        List<Line2D> result = new ArrayList<>();
-        List<EdgeType> edges = new ArrayList<>();
-        for(int idx = 0; idx < path.size() - 1; idx++)
-        {
-            Node cur = path.get(idx);
-            Node next = path.get(idx + 1);
-            EdgeType sumoEdge = getEdgeBetween(cur, next);
-            edges.add(sumoEdge);
-        }
-        edges.add(0, startEdge);
-        edges.add(targetEdge);
-        for(int idx = 0; idx < edges.size(); idx++)
-        {
-            EdgeType curEdge = edges.get(idx);
-            regularLineAdd(result, curEdge);
-        }
+        List<Line2D> result = createLinesFromPathNoSharpTurnRemoval(path, startEdge, targetEdge);
         // TODO start and end-points could also be literally on a crossing, I did not took care for that yet
         result = cutStartLaneShapes(result, orientation);
         result = cutEndLaneShapes(result);
@@ -121,6 +106,13 @@ public class Navigator
     }
 
     public List<Line2D> createLinesFromPath(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
+    {
+        List<Line2D> result = createLinesFromPathNoSharpTurnRemoval(path, startEdge, targetEdge);
+        result = remove180Turns(result);
+        return result;
+    }
+
+    public List<Line2D> createLinesFromPathNoSharpTurnRemoval(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
     {
         List<Line2D> result = new ArrayList<>();
         List<EdgeType> edges = new ArrayList<>();
@@ -138,11 +130,10 @@ public class Navigator
             EdgeType curEdge = edges.get(idx);
             regularLineAdd(result, curEdge);
         }
-        result = remove180Turns(result);
         return result;
     }
     
-    private List<Line2D> remove180Turns(List<Line2D> rawResult)
+    public List<Line2D> remove180Turns(List<Line2D> rawResult)
     {
         List<Line2D> result = new ArrayList<>();
         for(int idx = 0; idx < rawResult.size(); idx++)

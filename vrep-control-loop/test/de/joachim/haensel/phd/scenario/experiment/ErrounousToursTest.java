@@ -87,6 +87,7 @@ public class ErrounousToursTest
 	{
 		RoadMapAndCenterMatrix mapAndCenterMatrix = null;
 		RoadMap map = null;
+		
 		List<Position2D> targetPointsMapped = null;
 		String mapFilenName = "chandigarh-roads-lefthand.net.xml";
 		List<Position2D> targetPoints = Arrays.asList(new Position2D(6439.75, 8727.41), 
