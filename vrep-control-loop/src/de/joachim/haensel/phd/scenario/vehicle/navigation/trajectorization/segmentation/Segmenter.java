@@ -71,6 +71,7 @@ public class Segmenter implements ISegmenter
                 if(angle > 120) //TODO add the other direction too
                 {
                     replace180TurnWithThreePointTurn(result, curLine, nextLine, angle);
+                    idx++;
                 }
             }
         }
@@ -83,41 +84,49 @@ public class Segmenter implements ISegmenter
         double turnAngle = angle / 3.0;
 
         //first turn
-        result.addAll(vectorsFromTurn(turnAngle, curLine.getBase(), curLine.getNorm(), U_TURN_RADIUS));
+//        result.add(new Vector2D(result.getLast().getTip(), result.getLast().getTip().plus(result.getLast().getDir())));
+//        result.add(new Vector2D(result.getLast().getTip(), result.getLast().getTip().plus(result.getLast().getDir())));
+//        result.add(new Vector2D(result.getLast().getTip(), result.getLast().getTip().plus(result.getLast().getDir())));
+//        result.add(new Vector2D(result.getLast().getTip(), result.getLast().getTip().plus(result.getLast().getDir())));
+        result.addAll(vectorsFromTurn(turnAngle, curLine.getTip(), curLine.getNorm(), U_TURN_RADIUS));
         
-        //backwards turn
-        LinkedList<Vector2D> backwardsList = vectorsFromTurn(turnAngle, result.getLast().getBase(), result.getLast().getNorm(), U_TURN_RADIUS);
-        //TODO: handling for backwards driving
-        result.addAll(backwardsList);
-        
-        //final turn
-        result.addAll(vectorsFromTurn(turnAngle, result.getLast().getBase(), result.getLast().getNorm(), U_TURN_RADIUS));
-        
+//        //backwards turn
+//        LinkedList<Vector2D> backwardsList = vectorsFromTurn(turnAngle, result.getLast().getTip(), result.getLast().getNorm(), U_TURN_RADIUS);
+//        //TODO: handling for backwards driving
+//        result.addAll(backwardsList);
+//        
+//        //final turn
+//        result.addAll(vectorsFromTurn(turnAngle, result.getLast().getTip(), result.getLast().getNorm(), U_TURN_RADIUS));
+//        
         //add a vector from the last point of turn to the next line
-        Position2D lastPoint = result.getLast().getBase().plus(result.getLast().getDir());
-        Vector2D connection = new Vector2D(lastPoint, nextLine.getBase());
+        Vector2D connection = new Vector2D(result.getLast().getTip(), nextLine.getTip());
         result.add(connection);
     }
     
     //creates a linked list of vectors for a given turn
     private LinkedList<Vector2D> vectorsFromTurn(double angle, Position2D startPoint, Position2D normDirection, double radius){
+    	 angle = Math.toRadians(angle) * 2;
+        
     	 LinkedList<Vector2D> result = new LinkedList<>();
     	 
-    	 Position2D perpDir = new Position2D(normDirection.getY(), -normDirection.getX());
+    	 Position2D perpDir = new Position2D(-normDirection.getY(), normDirection.getX());
     	 
     	 Position2D center = startPoint.plus(perpDir.mul(radius));
     	 Vector2D center2Start = new Vector2D(center, startPoint);
     	 
          Position2D a = Position2D.minus(startPoint, center);
          double startAngle = Math.atan2(a.getY(), a.getX());
-         double targetAngle = startAngle - angle;
+         double targetAngle = startAngle + angle;
     	 
     	 
     	 List<Double> thetaRange = new ArrayList<>();
-         if(!(startAngle < 0 && targetAngle > 0))
-         {
-        	 targetAngle = targetAngle + 2.0 * Math.PI;
-         }
+//         if(!(startAngle < 0 && targetAngle > 0))
+//         {
+//        	 targetAngle = targetAngle + 2.0 * Math.PI;
+//         }
+         
+         System.out.println(angle + " , " + startAngle + " , " + targetAngle);
+         
          thetaRange = Linspace.linspace(startAngle, targetAngle, 10);
          List<Position2D> points = thetaRange.stream().map(theta -> new Position2D(center.getX() + Math.cos(theta) * U_TURN_RADIUS, center.getY() + Math.sin(theta) * U_TURN_RADIUS)).collect(Collectors.toList());
 

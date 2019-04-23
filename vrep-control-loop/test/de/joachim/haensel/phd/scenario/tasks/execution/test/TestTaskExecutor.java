@@ -303,9 +303,9 @@ public class TestTaskExecutor
             TaskCreator taskCreator = new TaskCreator();
             PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(true);
             
-            Position2D p2 = new Position2D(5903.65,3029.49).transform(centerMatrix);
-            Position2D p3 = new Position2D(6394.25,3208.92).transform(centerMatrix);
-            Position2D p4 = new Position2D(6034.56,3079.70).transform(centerMatrix);
+            Position2D p2 = new Position2D(5272.66,2829.71).transform(centerMatrix);
+            Position2D p3 = new Position2D(5355.22,2858.13).transform(centerMatrix);
+            Position2D p4 = new Position2D(5281.36,2829.22).transform(centerMatrix);
            
             config.setMap(map);
             config.configSimulator(_vrep, _clientID, _objectCreator);
