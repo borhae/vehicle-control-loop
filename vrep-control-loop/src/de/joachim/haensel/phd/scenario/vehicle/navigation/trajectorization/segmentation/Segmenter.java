@@ -90,14 +90,14 @@ public class Segmenter implements ISegmenter
 //        result.add(new Vector2D(result.getLast().getTip(), result.getLast().getTip().plus(result.getLast().getDir())));
         result.addAll(vectorsFromTurn(turnAngle, curLine.getTip(), curLine.getNorm(), U_TURN_RADIUS));
         
-//        //backwards turn
-//        LinkedList<Vector2D> backwardsList = vectorsFromTurn(turnAngle, result.getLast().getTip(), result.getLast().getNorm(), U_TURN_RADIUS);
-//        //TODO: handling for backwards driving
-//        result.addAll(backwardsList);
-//        
-//        //final turn
-//        result.addAll(vectorsFromTurn(turnAngle, result.getLast().getTip(), result.getLast().getNorm(), U_TURN_RADIUS));
-//        
+        //backwards turn
+        LinkedList<Vector2D> backwardsList = vectorsFromTurn(turnAngle, result.getLast().getTip(), Position2D.minus(new Position2D(0, 0),result.getLast().getNorm()), U_TURN_RADIUS);
+        //TODO: handling for backwards driving
+        result.addAll(backwardsList);
+        
+        //final turn
+        result.addAll(vectorsFromTurn(turnAngle, result.getLast().getTip(), Position2D.minus(new Position2D(0, 0),result.getLast().getNorm()), U_TURN_RADIUS));
+       
         //add a vector from the last point of turn to the next line
         Vector2D connection = new Vector2D(result.getLast().getTip(), nextLine.getTip());
         result.add(connection);
@@ -127,21 +127,25 @@ public class Segmenter implements ISegmenter
          
          System.out.println(angle + " , " + startAngle + " , " + targetAngle);
          
-         thetaRange = Linspace.linspace(startAngle, targetAngle, 10);
-         List<Position2D> points = thetaRange.stream().map(theta -> new Position2D(center.getX() + Math.cos(theta) * U_TURN_RADIUS, center.getY() + Math.sin(theta) * U_TURN_RADIUS)).collect(Collectors.toList());
+//         thetaRange = Linspace.linspace(startAngle, targetAngle, 3);
+//         List<Position2D> points = thetaRange.stream().map(theta -> new Position2D(center.getX() + Math.cos(theta) * U_TURN_RADIUS, center.getY() + Math.sin(theta) * U_TURN_RADIUS)).collect(Collectors.toList());
+//
+//         Position2D last = null;
+//         for(int idx1 = 0; idx1 < points.size(); idx1++)
+//         {
+//             Position2D current = points.get(idx1);
+//             if(last != null)
+//             {
+//                 result.add(new Vector2D(last, current));
+//             }
+//             last = current;
+//         }
 
-         Position2D last = null;
-         for(int idx1 = 0; idx1 < points.size(); idx1++)
-         {
-             Position2D current = points.get(idx1);
-             if(last != null)
-             {
-                 result.add(new Vector2D(last, current));
-             }
-             last = current;
-         }
-
+         Position2D start = new Position2D(center.getX() + Math.cos(startAngle) * U_TURN_RADIUS, center.getY() + Math.sin(startAngle) * U_TURN_RADIUS);
+         Position2D target = new Position2D(center.getX() + Math.cos(targetAngle) * U_TURN_RADIUS, center.getY() + Math.sin(targetAngle) * U_TURN_RADIUS);
     	 
+         result.add(new Vector2D(start, target));
+         
     	 return result;
     }
 
