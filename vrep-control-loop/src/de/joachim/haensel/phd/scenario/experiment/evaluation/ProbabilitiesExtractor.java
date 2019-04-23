@@ -37,10 +37,9 @@ public class ProbabilitiesExtractor
             TreeMap<String, List<Long>> configsHashed = new TreeMap<String, List<Long>>();
             createHistogram(hasher, configurations, configsSorted, configsHashed);
             
-            List<String> percentages = computePercentages(configsHashed).stream().map(value -> Double.toString(value)).collect(Collectors.toList());
-            List<String> absolutes = computeHistogram(configsHashed).stream().map(value -> Integer.toString(value)).collect(Collectors.toList());
-            Files.write(Paths.get(inFileName + "percentages.txt"), percentages, Charset.defaultCharset());
-            Files.write(Paths.get(inFileName + "absolutes.txt"), absolutes, Charset.defaultCharset());
+            
+//            List<String> percentages = computePercentages(configsHashed).stream().map(value -> Double.toString(value)).collect(Collectors.toList());
+//            List<String> absolutes = computeHistogram(configsHashed).stream().map(value -> Integer.toString(value)).collect(Collectors.toList());
         }
         catch (IOException exc)
         {

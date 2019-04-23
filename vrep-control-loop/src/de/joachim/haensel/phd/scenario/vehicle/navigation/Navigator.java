@@ -94,6 +94,12 @@ public class Navigator
 
     public List<Line2D> createLinesFromPath(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
     {
+        List<Line2D> result = createLinesFromPathNoSharpTurnRemoval(path, startEdge, targetEdge);
+        return result;
+    }
+
+    public List<Line2D> createLinesFromPathNoSharpTurnRemoval(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
+    {
         List<Line2D> result = new ArrayList<>();
         List<EdgeType> edges = new ArrayList<>();
         for(int idx = 0; idx < path.size() - 1; idx++)

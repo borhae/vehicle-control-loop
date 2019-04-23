@@ -18,6 +18,17 @@ public abstract class Parameters
     protected float _gamma;
     private String _name;
 
+    public Parameters()
+    {
+        _x = 0.0f;
+        _y = 0.0f;
+        _z = 0.0f;
+        _beta = 0.0f;
+        _alpha = 0.0f;
+        _gamma = 0.0f;
+        _name = "unnamed";
+    }
+    
     @FunctionalInterface
     public interface LoopWithIndexAndSizeConsumer<T> 
     {

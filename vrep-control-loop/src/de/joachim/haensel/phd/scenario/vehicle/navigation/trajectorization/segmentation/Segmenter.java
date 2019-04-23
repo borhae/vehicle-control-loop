@@ -15,7 +15,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class Segmenter implements ISegmenter
 {
-    private static final double U_TURN_RADIUS = 10.0;
+    public static final double U_TURN_RADIUS = 10.0;
     private double _stepSize;
     private List<IRouteBuildingListener>_segmentBuildingListeners;
     private ISegmentationAlgorithm _algorithm;

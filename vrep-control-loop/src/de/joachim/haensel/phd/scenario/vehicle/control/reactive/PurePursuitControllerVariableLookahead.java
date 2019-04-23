@@ -129,11 +129,11 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         {
             if(!_lostTrack)
             {
-                System.out.println("lost track");
                 transition(ControllerMsg.CONTROL_EVENT, controller);
             }
             else
             {
+                System.out.println("lost track");
                 lostTrack(controller);
                 _lostTrack = false;
             }
