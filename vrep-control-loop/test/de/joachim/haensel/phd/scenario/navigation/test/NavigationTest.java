@@ -404,9 +404,56 @@ public class NavigationTest implements TestConstants
     }
     
     @Test
+    public void testChandigarhProblemRoute1() throws VRepException
+    {
+        RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/chandigarh-roads-lefthand.net.xml");
+        TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+        RoadMap roadMap = mapAndCenterMatrix.getRoadMap();
+        
+        Navigator navigator = new Navigator(roadMap);
+        ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
+        IVelocityAssignerFactory velocityFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, 120.0);
+        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityFactory, 5.0);
+
+        INavigationListener navigationListener = new VRepNavigationListener(_objectCreator);
+        navigationListener.activateSegmentDebugging();
+        
+        Position2D startPos = new Position2D(12745.65, 4819.28).transform(centerMatrix);
+        Position2D endPos = new Position2D(7451.17, 8104.12).transform(centerMatrix);
+        
+        
+        EdgeType startEdge = roadMap.getClosestEdgeFor(startPos);
+        EdgeType targetEdge = roadMap.getClosestEdgeFor(endPos);
+        JunctionType startJunction = roadMap.getJunctionForName(startEdge.getTo());
+        JunctionType targetJunction = roadMap.getJunctionForName(targetEdge.getFrom());
+        List<Node> nodePath = navigator.computePath(startJunction, targetJunction);
+        navigator.setSourceTarget(startPos, endPos);
+        
+        IRouteProperyDetector sharpTurnDetector = (result, curLine, nextLine, curLineV, nextLineV) -> navigator.isSharpTurn(curLineV, nextLineV);
+
+        IRouteAdaptor sharpTurnRemover = (result, curLine, nextLine, curLineV, nextLineV) -> navigator.addTurnAroundCircle(result, curLine, nextLine);
+        List<Line2D> linesRemovedSharpTurns  = navigator.createLinesFromPath(nodePath, startEdge, targetEdge, null, sharpTurnDetector, sharpTurnRemover);
+        
+        List<Position2D> sharpTurnIntersections = new ArrayList<Position2D>();
+        IRouteAdaptor sharpTurnVisualizer = (result, curLine, nextLine, curLineV, nextLineV) -> sharpTurnIntersections.add(Position2D.between(curLine.getP2(), nextLine.getP1()));
+        navigator.createLinesFromPath(nodePath, startEdge, targetEdge, null, sharpTurnDetector, sharpTurnVisualizer);
+        
+        sharpTurnIntersections.stream().map(IndexAdder.indexed()).forEachOrdered(idxPos -> drawPosition(idxPos.v(), Color.RED, _objectCreator, "route_" + idxPos.idx()));
+        
+        List<TrajectoryElement> trajectoryElements = trajectorizer.createTrajectory(linesRemovedSharpTurns);
+        navigationListener.notifySegmentsChanged(trajectoryElements);
+
+        System.out.println("enter arbitrary stuff an then press enter");
+        Scanner scanner = new Scanner(System.in);
+        String input = scanner.next();
+        System.out.println(input);
+        scanner.close();
+    }
+    
+    @Test
     public void showChandigarh183RoutesLoops() throws VRepException
     {
-        RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/chandigarh-roads.net.xml");
+        RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/chandigarh-roads-lefthand.net.xml");
         TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
         System.out.println("Center matrix: \n" + centerMatrix.toString());
         RoadMap roadMap = mapAndCenterMatrix.getRoadMap();
@@ -456,8 +503,6 @@ public class NavigationTest implements TestConstants
                 navigationListener.activateSegmentDebugging();
                 navigationListener.notifySegmentsChanged(trajectoryElements);
             }
-
-            System.out.println("wait here");
         } 
         catch (IOException exc)
         {
