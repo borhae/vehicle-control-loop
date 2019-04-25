@@ -557,11 +557,11 @@ public class NavigationTest implements TestConstants
                 navigator.createLinesFromPath(nodePath, startEdge, targetEdge, null, sharpTurnDetector, sharpTurnCollector);
                 
                 final int routeIdx = idx;
-                List<int[]> multiloops = multiloops(sharpTurnIntersections, idx);
+                List<int[]> multiloops = multiloops(sharpTurnIntersections);
                 multiloops.forEach(loopIdxs -> 
                     {
-                        drawPosition(sharpTurnIntersections.get(loopIdxs[0]), Color.RED, _objectCreator, "route_" + routeIdx + "_" + loopIdxs[0]);
-                        drawPosition(sharpTurnIntersections.get(loopIdxs[1]), Color.RED, _objectCreator, "route_" + routeIdx + "_" + loopIdxs[1]);
+                        drawPosition(sharpTurnIntersections.get(loopIdxs[0]), Color.RED, _objectCreator, "route_" + routeIdx + "_a");
+                        drawPosition(sharpTurnIntersections.get(loopIdxs[1]), Color.RED, _objectCreator, "route_" + routeIdx + "_b");
                     });
                 
                 ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
@@ -585,60 +585,93 @@ public class NavigationTest implements TestConstants
         scanner.close();
     }
 
-    private List<Line2D> checkSingleRouteForMultiLoops(RoadMap roadMap, TMatrix centerMatrix, Navigator navigator, Position2D startPos, Position2D endPos, int routeCnt)
+    @Test
+    public void identifyChandigarh183RoutesMulitloopsParallel() throws VRepException
     {
+        RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/chandigarh-roads-lefthand.net.xml");
+        TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+        System.out.println("Center matrix: \n" + centerMatrix.toString());
+        RoadMap roadMap = mapAndCenterMatrix.getRoadMap();
+
+        try
+        {
+            List<String> positionsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread.txt").toPath());
+            List<Position2D> positions = positionsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());// runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "luebeck-roads.net.xml", "blue");
+            List<Position2D[]> routes = new ArrayList<Position2D[]>();
+            for(int idx = 0; idx < positions.size() - 1; idx++)
+            {
+                Position2D start = positions.get(idx);
+                Position2D end = positions.get(idx + 1);
+                routes.add(new Position2D[] {start, end});
+            }
+            List<MultiLoopDetectionResult> results = routes.parallelStream().map(route -> computeRouteIdentifyMultiLoop(centerMatrix, roadMap, route[0], route[1])).collect(Collectors.toList());
+            
+            results.forEach(result -> drawResultInSimulator(result));
+            
+        } 
+        catch (IOException exc)
+        {
+            exc.printStackTrace();
+        }
+        System.out.println("enter arbitrary stuff an then press enter");
+        Scanner scanner = new Scanner(System.in);
+        String input = scanner.next();
+        System.out.println(input);
+        scanner.close();
+    }
+
+    private void drawResultInSimulator(MultiLoopDetectionResult result)
+    {
+        List<int[]> multiLoops = result.getMultiLoops();
+        
+        multiLoops.stream().map(IndexAdder.indexed()).forEachOrdered(indexedLoops -> 
+        {
+            drawPosition(result.getSharpTurnIntersections().get(indexedLoops.v()[0]), Color.RED, _objectCreator, "route_" + result.getId() + "_a" + "_" + indexedLoops.idx());
+            drawPosition(result.getSharpTurnIntersections().get(indexedLoops.v()[1]), Color.RED, _objectCreator, "route_" + result.getId() + "_b" + "_" + indexedLoops.idx());
+        });
+        
+        INavigationListener navigationListener = new VRepNavigationListener(_objectCreator);
+        navigationListener.activateSegmentDebugging();
+        navigationListener.notifySegmentsChanged(result.getTrajectoryElements());
+    }
+
+    private MultiLoopDetectionResult computeRouteIdentifyMultiLoop(TMatrix centerMatrix, RoadMap roadMap, Position2D startRaw, Position2D endRaw)
+    {
+        Navigator navigator = new Navigator(roadMap);
+        Position2D startPos = startRaw.transformCopy(centerMatrix);
+        Position2D endPos = endRaw.transformCopy(centerMatrix);
+        System.out.println("raw         start: " + startRaw.toString()  + ", end: " + endRaw.toString());
+        System.out.println("transformed start: " + startPos.toString()  + ", end: " + endPos.toString());
+        
         EdgeType startEdge = roadMap.getClosestEdgeFor(startPos);
         EdgeType targetEdge = roadMap.getClosestEdgeFor(endPos);
         JunctionType startJunction = roadMap.getJunctionForName(startEdge.getTo());
         JunctionType targetJunction = roadMap.getJunctionForName(targetEdge.getFrom());
+        List<Node> nodePath = navigator.computePath(startJunction, targetJunction);
+        navigator.setSourceTarget(startPos, endPos);
+        
+        IRouteProperyDetector sharpTurnDetector = (resultLines, curLine, nextLine, curLineV, nextLineV) -> navigator.isSharpTurn(curLineV, nextLineV);
 
-        IShortestPathAlgorithm shortestPathSolver = new DijkstraAlgo(roadMap);
-        shortestPathSolver.setSource(startJunction);
-        shortestPathSolver.setTarget(targetJunction);
-        List<Node> path = shortestPathSolver.getPath();
-        assertNotNull(path);
-        List<Line2D> rawResult = navigator.createLinesFromPathNoSharpTurnRemoval(path, startEdge, targetEdge);
-        List<Line2D> result = new ArrayList<>();
-        List<Position2D> centers = new ArrayList<Position2D>();
-        for(int idx = 0; idx < rawResult.size(); idx++)
-        {
-            Line2D curLine = rawResult.get(idx);
-            result.add(curLine);
-            if(idx + 1 < rawResult.size())
-            {
-                Line2D nextLine = rawResult.get(idx + 1);
-                Vector2D curLineV = new Vector2D(curLine);
-                Vector2D nextLineVN = new Vector2D(nextLine);
-                double angle = Math.toDegrees(Vector2D.computeAngle(curLineV, nextLineVN));
-                if(angle > 110) 
-                {
-                    Position2D p1 = curLine.getP2();
-                    Position2D p2 = nextLine.getP1();
-                    
-                    Vector2D vP1P2 = new Vector2D(p1, p2);
-                    Vector2D vP1P2Perpendicular;
-                    boolean p2IsToTheLeft = curLine.side(p2) >= 0;
-                    if(p2IsToTheLeft)
-                    {
-                        vP1P2Perpendicular = vP1P2.getMiddlePerpendicularClockwise();
-                    }
-                    else
-                    {
-                        vP1P2Perpendicular = vP1P2.getMiddlePerpendicularCounterclockwise();
-                    }
-                    double p1P2HalfLength = vP1P2.getLength() / 2.0;
-                    double perpendicularLength = Math.sqrt(p1P2HalfLength * p1P2HalfLength + Navigator.U_TURN_RADIUS * Navigator.U_TURN_RADIUS);
-                    vP1P2Perpendicular.setLength(perpendicularLength);
-                    
-                    Position2D center = vP1P2Perpendicular.getTip();
-                    centers.add(center);
-                }
-            }
-        }
-        return rawResult;
+        IRouteAdaptor sharpTurnRemover = (resultLines, curLine, nextLine, curLineV, nextLineV) -> navigator.addTurnAroundCircle(resultLines, curLine, nextLine);
+        List<Line2D> linesRemovedSharpTurns  = navigator.createLinesFromPath(nodePath, startEdge, targetEdge, null, sharpTurnDetector, sharpTurnRemover);
+        
+        List<Position2D> sharpTurnIntersections = new ArrayList<Position2D>();
+        IRouteAdaptor sharpTurnCollector = (resultLines, curLine, nextLine, curLineV, nextLineV) -> sharpTurnIntersections.add(Position2D.between(curLine.getP2(), nextLine.getP1()));
+        navigator.createLinesFromPath(nodePath, startEdge, targetEdge, null, sharpTurnDetector, sharpTurnCollector);
+        
+        List<int[]> multiloops = multiloops(sharpTurnIntersections);
+        
+        ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
+        IVelocityAssignerFactory velocityFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, 120.0);
+        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityFactory, 5.0);
+        
+        List<TrajectoryElement> trajectoryElements = trajectorizer.createTrajectory(linesRemovedSharpTurns);
+        String id = startRaw.toString() + ", " + endRaw.toString();
+        MultiLoopDetectionResult result = new MultiLoopDetectionResult(multiloops, trajectoryElements, sharpTurnIntersections, id);
+        return result;
     }
-    
-    private List<int[]> multiloops(List<Position2D> centers, int routeNr)
+
+    private List<int[]> multiloops(List<Position2D> centers)
     {   
         List<int[]> result = new ArrayList<int[]>();
         int n = centers.size();
