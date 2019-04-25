@@ -165,6 +165,12 @@ public class Position2D
         return this;
     }
 
+    public Position2D transformCopy(TMatrix centerMatrix)
+    {
+        Position2D result = new Position2D(this);
+        return result.transform(centerMatrix);
+    }
+
     public String toSumoString()
     {
         return _x + "," + _y ;

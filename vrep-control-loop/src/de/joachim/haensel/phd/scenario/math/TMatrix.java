@@ -1,7 +1,13 @@
 package de.joachim.haensel.phd.scenario.math;
 
+import java.util.Locale;
+
 /**
  * For now this first scales and then adds an offset. Rotation not tested yet
+ * @author dummy
+ *
+ */
+/**
  * @author dummy
  *
  */
@@ -93,5 +99,14 @@ public class TMatrix
             {0.0,  0.0, 1.0}
         });
         return result;
+    }
+
+    @Override
+    public String toString()
+    {
+        String row1 = String.format(Locale.US, "(%2.2f, %2.2f, %2.2f)\n", _m[0][0], _m[0][1], _m[0][2]);
+        String row2 = String.format(Locale.US, "(%2.2f, %2.2f, %2.2f)\n", _m[1][0], _m[1][1], _m[1][2]);
+        String row3 = String.format(Locale.US, "(%2.2f, %2.2f, %2.2f)\n", _m[2][0], _m[2][1], _m[2][2]);
+        return row1 + row2 + row3;
     }
 }

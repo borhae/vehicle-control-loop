@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterAll;
@@ -34,6 +36,8 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.navigation.test.NavigationTest.Counter;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DijkstraAlgo;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.IRouteAdaptor;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.IRouteProperyDetector;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.IShortestPathAlgorithm;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
@@ -400,10 +404,11 @@ public class NavigationTest implements TestConstants
     }
     
     @Test
-    public void testChandigarhMultiloops() throws VRepException
+    public void showChandigarh183RoutesLoops() throws VRepException
     {
         RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/chandigarh-roads.net.xml");
         TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+        System.out.println("Center matrix: \n" + centerMatrix.toString());
         RoadMap roadMap = mapAndCenterMatrix.getRoadMap();
         
         Navigator navigator = new Navigator(mapAndCenterMatrix.getRoadMap());
@@ -415,25 +420,47 @@ public class NavigationTest implements TestConstants
             List<Position2D> positions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());// runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "luebeck-roads.net.xml", "blue");
             for(int idx = 0; idx < positions.size() - 1; idx++)
             {
-                System.out.println("Route: " + idx);
-                Position2D startPos = positions.get(idx).transform(centerMatrix);
-                Position2D endPos = positions.get(idx + 1).transform(centerMatrix);
-                List<Line2D> rawResult = checkSingleRouteForMultiLoops(roadMap, centerMatrix, navigator, startPos, endPos, idx);
+                System.out.println("\nRoute: " + idx + ". ");
+                Position2D startRaw = positions.get(idx);
+                Position2D startPos = startRaw.transformCopy(centerMatrix);
+                Position2D endRaw = positions.get(idx + 1);
+                Position2D endPos = endRaw.transformCopy(centerMatrix);
+                System.out.println("raw         start: " + startRaw.toString()  + ", end: " + endRaw.toString());
+                System.out.println("transformed start: " + startPos.toString()  + ", end: " + endPos.toString());
+                
+                EdgeType startEdge = roadMap.getClosestEdgeFor(startPos);
+                EdgeType targetEdge = roadMap.getClosestEdgeFor(endPos);
+                JunctionType startJunction = roadMap.getJunctionForName(startEdge.getTo());
+                JunctionType targetJunction = roadMap.getJunctionForName(targetEdge.getFrom());
+                List<Node> nodePath = navigator.computePath(startJunction, targetJunction);
+                navigator.setSourceTarget(startPos, endPos);
+                
+                IRouteProperyDetector sharpTurnDetector = (result, curLine, nextLine, curLineV, nextLineV) -> navigator.isSharpTurn(curLineV, nextLineV);
+
+                IRouteAdaptor sharpTurnRemover = (result, curLine, nextLine, curLineV, nextLineV) -> navigator.addTurnAroundCircle(result, curLine, nextLine);
+                List<Line2D> linesRemovedSharpTurns  = navigator.createLinesFromPath(nodePath, startEdge, targetEdge, null, sharpTurnDetector, sharpTurnRemover);
+                
+                List<Position2D> sharpTurnIntersections = new ArrayList<Position2D>();
+                IRouteAdaptor sharpTurnVisualizer = (result, curLine, nextLine, curLineV, nextLineV) -> sharpTurnIntersections.add(Position2D.between(curLine.getP2(), nextLine.getP1()));
+                navigator.createLinesFromPath(nodePath, startEdge, targetEdge, null, sharpTurnDetector, sharpTurnVisualizer);
+                
+                final int routeIdx = idx;
+                sharpTurnIntersections.stream().map(IndexAdder.indexed()).forEachOrdered(idxPos -> drawPosition(idxPos.v(), Color.RED, _objectCreator, "route_" + routeIdx + "_" + idxPos.idx()));
+                
                 ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
                 IVelocityAssignerFactory velocityFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, 120.0);
                 ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityFactory, 5.0);
                 
-                List<TrajectoryElement> trajectoryElements1 = trajectorizer.createTrajectory(rawResult);
+                List<TrajectoryElement> trajectoryElements = trajectorizer.createTrajectory(linesRemovedSharpTurns);
                 INavigationListener navigationListener = new VRepNavigationListener(_objectCreator);
                 navigationListener.activateSegmentDebugging();
-                navigationListener.notifySegmentsChanged(trajectoryElements1);
+                navigationListener.notifySegmentsChanged(trajectoryElements);
             }
 
             System.out.println("wait here");
         } 
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         System.out.println("enter arbitrary stuff an then press enter");
@@ -536,7 +563,7 @@ public class NavigationTest implements TestConstants
         return false;
     }
 
-    private void drawPosition(Position2D position, Color orange, VRepObjectCreation objectCreator, String name) throws VRepException
+    private void drawPosition(Position2D position, Color orange, VRepObjectCreation objectCreator, String name) 
     {
         ShapeParameters shapeParams = new ShapeParameters();
         shapeParams.setIsDynamic(false);
@@ -549,7 +576,15 @@ public class NavigationTest implements TestConstants
         shapeParams.setSize(3.0f, 3.0f, 3.0f);
         shapeParams.setType(EVRepShapes.SPHERE);
         shapeParams.setVisibility(true);
-        objectCreator.createPrimitive(shapeParams);
+        try
+        {
+            objectCreator.createPrimitive(shapeParams);
+        }
+        catch (VRepException exc)
+        {
+            // TODO Auto-generated catch block
+            exc.printStackTrace();
+        }
     }
 
     private void drawRoute(List<Line2D> route, VRepObjectCreation objectCreator, String routeName)

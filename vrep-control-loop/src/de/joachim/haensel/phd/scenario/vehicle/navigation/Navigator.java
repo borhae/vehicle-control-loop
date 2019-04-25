@@ -32,6 +32,12 @@ public class Navigator
         _roadMap = roadMap;
         _routeBuildingListeners = new ArrayList<>();
     }
+
+    public void setSourceTarget(Position2D source, Position2D target)
+    {
+        _sourcePosition = source;
+        _targetPosition = target;
+    }
     
     public List<Line2D> getRoute(Position2D currentPosition, Position2D targetPosition)
     {
@@ -60,14 +66,13 @@ public class Navigator
 
     public List<Line2D> getRoute(JunctionType startJunction, JunctionType targetJunction, EdgeType startEdge, EdgeType targetEdge, Vector2D orientation)
     {
-        IShortestPathAlgorithm shortestPathSolver = new DijkstraAlgo(_roadMap);
-        shortestPathSolver.setSource(startJunction);
-        shortestPathSolver.setTarget(targetJunction);
-        List<Node> path = shortestPathSolver.getPath();
+        List<Node> path = computePath(startJunction, targetJunction);
         if(path != null)
         {
             notifyListeners(path, startEdge, targetEdge);
-            List<Line2D> result = createLinesFromPath(path, startEdge, targetEdge, orientation);
+            IRouteProperyDetector sharpTurnDetector = (lambdaResult, curLine, nextLine, curLineV, nextLineV) -> isSharpTurn(curLineV, nextLineV);
+            IRouteAdaptor sharpTurnRemover = (lambdaResult, curLine, nextLine, curLineV, nextLineVN) -> addTurnAroundCircle(lambdaResult, curLine, nextLine);
+            List<Line2D> result = createLinesFromPath(path, startEdge, targetEdge, orientation, sharpTurnDetector, sharpTurnRemover);
             notifyListeners(result);
             return result;
         }
@@ -76,6 +81,16 @@ public class Navigator
             //no path found
             return null;
         }
+    }
+    
+    //TODO public only for testing
+    public List<Node> computePath(JunctionType startJunction, JunctionType targetJunction)
+    {
+        IShortestPathAlgorithm shortestPathSolver = new DijkstraAlgo(_roadMap);
+        shortestPathSolver.setSource(startJunction);
+        shortestPathSolver.setTarget(targetJunction);
+        List<Node> path = shortestPathSolver.getPath();
+        return path;
     }
 
     private void notifyListeners(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
@@ -93,7 +108,7 @@ public class Navigator
         _routeBuildingListeners.forEach(listener -> listener.notifyNewRoute(result));
     }
 
-    private List<Line2D> createLinesFromPath(List<Node> path, EdgeType startEdge, EdgeType targetEdge, Vector2D orientation)
+    public List<Line2D> createLinesFromPath(List<Node> path, EdgeType startEdge, EdgeType targetEdge, Vector2D orientation, IRouteProperyDetector routePropertyDetector, IRouteAdaptor routeAdaptor)
     {
         List<Line2D> result = createLinesFromPathNoSharpTurnRemoval(path, startEdge, targetEdge);
         // TODO start and end-points could also be literally on a crossing, I did not took care for that yet
@@ -101,17 +116,47 @@ public class Navigator
         result = cutEndLaneShapes(result);
         result.get(0).setP1(_sourcePosition);
         result.get(result.size() - 1).setP2(_targetPosition);
-        result = remove180Turns(result);
+        result = traverse(result, routeAdaptor, routePropertyDetector);
+        return result;
+    }
+
+    public boolean isSharpTurn(Vector2D curLineV, Vector2D nextLineV)
+    {
+        double angle = Math.toDegrees(Vector2D.computeAngle(curLineV, nextLineV));
+        return angle > 110; 
+    }
+
+    private List<Line2D> traverse(List<Line2D> rawResult, IRouteAdaptor adaptor, IRouteProperyDetector routeProperty)
+    {
+        List<Line2D> result = new ArrayList<>();
+        for(int idx = 0; idx < rawResult.size(); idx++)
+        {
+            Line2D curLine = rawResult.get(idx);
+            result.add(curLine);
+            if(idx + 1 < rawResult.size())
+            {
+                Line2D nextLine = rawResult.get(idx + 1);
+                Vector2D curLineV = new Vector2D(curLine);
+                Vector2D nextLineV = new Vector2D(nextLine);
+                if(routeProperty.holds(rawResult, curLine, nextLine, curLineV, nextLineV))
+                {
+                    adaptor.adapt(result, curLine, nextLine, curLineV, nextLineV);
+                }
+            }
+        }
         return result;
     }
 
     public List<Line2D> createLinesFromPath(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
     {
         List<Line2D> result = createLinesFromPathNoSharpTurnRemoval(path, startEdge, targetEdge);
-        result = remove180Turns(result);
+        IRouteProperyDetector sharpTurnDetector = (lambdaResult, curLine, nextLine, curLineV, nextLineV) -> isSharpTurn(curLineV, nextLineV);
+        IRouteAdaptor remover180ies = (lambdaResult, curLine, nextLine, curLineV, nextLineVN) -> addTurnAroundCircle(lambdaResult, curLine, nextLine);
+        result = traverse(result, remover180ies, sharpTurnDetector);
         return result;
     }
 
+    //TODO public just for testing reasons
     public List<Line2D> createLinesFromPathNoSharpTurnRemoval(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
     {
         List<Line2D> result = new ArrayList<>();
@@ -132,30 +177,8 @@ public class Navigator
         }
         return result;
     }
-    
-    public List<Line2D> remove180Turns(List<Line2D> rawResult)
-    {
-        List<Line2D> result = new ArrayList<>();
-        for(int idx = 0; idx < rawResult.size(); idx++)
-        {
-            Line2D curLine = rawResult.get(idx);
-            result.add(curLine);
-            if(idx + 1 < rawResult.size())
-            {
-                Line2D nextLine = rawResult.get(idx + 1);
-                Vector2D curLineV = new Vector2D(curLine);
-                Vector2D nextLineVN = new Vector2D(nextLine);
-                double angle = Math.toDegrees(Vector2D.computeAngle(curLineV, nextLineVN));
-                if(angle > 110) 
-                {
-                    addTurnAroundCircle(result, curLine, nextLine);
-                }
-            }
-        }
-        return result;
-    }
 
-    private void addTurnAroundCircle(List<Line2D> result, Line2D curLine, Line2D nextLine)
+    public void addTurnAroundCircle(List<Line2D> result, Line2D curLine, Line2D nextLine)
     {
         Position2D p1 = curLine.getP2();
         Position2D p2 = nextLine.getP1();
@@ -230,7 +253,7 @@ public class Navigator
         result.addAll(linesToAdd);
         return linesToAdd;
     }
-    
+
     private List<Line2D> cutStartLaneShapes(List<Line2D> result, Vector2D orientation)
     {
         Position2D position = _sourcePosition;
