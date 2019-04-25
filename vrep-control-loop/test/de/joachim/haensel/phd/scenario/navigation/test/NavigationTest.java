@@ -607,6 +607,7 @@ public class NavigationTest implements TestConstants
             List<MultiLoopDetectionResult> results = routes.parallelStream().map(route -> computeRouteIdentifyMultiLoop(centerMatrix, roadMap, route[0], route[1])).collect(Collectors.toList());
             
             results.forEach(result -> drawResultInSimulator(result));
+            results.forEach(result -> printOnStdOut(result));
             
         } 
         catch (IOException exc)
@@ -620,6 +621,15 @@ public class NavigationTest implements TestConstants
         scanner.close();
     }
 
+    private void printOnStdOut(MultiLoopDetectionResult result)
+    {
+        List<int[]> multiLoops = result.getMultiLoops();
+        if (!multiLoops.isEmpty())
+        {
+            System.out.println(String.format("There are %d loops in route %s", multiLoops.size(), result.getId()));
+        }
+    }
+
     private void drawResultInSimulator(MultiLoopDetectionResult result)
     {
         List<int[]> multiLoops = result.getMultiLoops();
@@ -629,7 +639,6 @@ public class NavigationTest implements TestConstants
             drawPosition(result.getSharpTurnIntersections().get(indexedLoops.v()[0]), Color.RED, _objectCreator, "route_" + result.getId() + "_a" + "_" + indexedLoops.idx());
             drawPosition(result.getSharpTurnIntersections().get(indexedLoops.v()[1]), Color.RED, _objectCreator, "route_" + result.getId() + "_b" + "_" + indexedLoops.idx());
         });
-        
         INavigationListener navigationListener = new VRepNavigationListener(_objectCreator);
         navigationListener.activateSegmentDebugging();
         navigationListener.notifySegmentsChanged(result.getTrajectoryElements());
@@ -679,6 +688,7 @@ public class NavigationTest implements TestConstants
         {
             for(int idxJ = 0; idxJ < n; idxJ++)
             {
+                
                 if(idxI != idxJ)
                 {
                     Position2D p1 = centers.get(idxI);
@@ -686,7 +696,13 @@ public class NavigationTest implements TestConstants
                     double distance = Position2D.distance(p1, p2);
                     if(distance < 50.0)
                     {
-                        result.add(new int[] {idxI, idxJ});
+                        final int i = idxI;
+                        final int j = idxJ;
+                        boolean alreadyInList = result.stream().map(cur -> (i == cur[1]) && (j == cur[0])).reduce((a, b) -> a || b).orElse(false);
+                        if(!alreadyInList)
+                        {
+                            result.add(new int[] {idxI, idxJ});
+                        }
                     }
                 }
             }
