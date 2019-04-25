@@ -666,7 +666,7 @@ public class NavigationTest implements TestConstants
         ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityFactory, 5.0);
         
         List<TrajectoryElement> trajectoryElements = trajectorizer.createTrajectory(linesRemovedSharpTurns);
-        String id = startRaw.toString() + ", " + endRaw.toString();
+        String id = String.format("P1_%.0f_%.0f_0f_%.0f", startRaw.getX(), startRaw.getY(), endRaw.getX(), endRaw.getY());
         MultiLoopDetectionResult result = new MultiLoopDetectionResult(multiloops, trajectoryElements, sharpTurnIntersections, id);
         return result;
     }
