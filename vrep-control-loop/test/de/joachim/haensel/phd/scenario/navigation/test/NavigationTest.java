@@ -597,14 +597,15 @@ public class NavigationTest implements TestConstants
         {
             List<String> positionsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread.txt").toPath());
             List<Position2D> positions = positionsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());// runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "luebeck-roads.net.xml", "blue");
-            List<Position2D[]> routes = new ArrayList<Position2D[]>();
+            List<NumberedRoute> routes = new ArrayList<NumberedRoute>();
             for(int idx = 0; idx < positions.size() - 1; idx++)
             {
                 Position2D start = positions.get(idx);
                 Position2D end = positions.get(idx + 1);
-                routes.add(new Position2D[] {start, end});
+                NumberedRoute newRoute = new NumberedRoute(start, end, idx);
+                routes.add(newRoute);
             }
-            List<MultiLoopDetectionResult> results = routes.parallelStream().map(route -> computeRouteIdentifyMultiLoop(centerMatrix, roadMap, route[0], route[1])).collect(Collectors.toList());
+            List<MultiLoopDetectionResult> results = routes.parallelStream().map(route -> computeRouteIdentifyMultiLoop(centerMatrix, roadMap, route)).collect(Collectors.toList());
             
             results.forEach(result -> drawResultInSimulator(result));
             results.forEach(result -> printOnStdOut(result));
@@ -644,8 +645,10 @@ public class NavigationTest implements TestConstants
         navigationListener.notifySegmentsChanged(result.getTrajectoryElements());
     }
 
-    private MultiLoopDetectionResult computeRouteIdentifyMultiLoop(TMatrix centerMatrix, RoadMap roadMap, Position2D startRaw, Position2D endRaw)
+    private MultiLoopDetectionResult computeRouteIdentifyMultiLoop(TMatrix centerMatrix, RoadMap roadMap, NumberedRoute route)
     {
+        Position2D startRaw = route.getStart();
+        Position2D endRaw = route.getEnd();
         Navigator navigator = new Navigator(roadMap);
         Position2D startPos = startRaw.transformCopy(centerMatrix);
         Position2D endPos = endRaw.transformCopy(centerMatrix);
@@ -675,7 +678,8 @@ public class NavigationTest implements TestConstants
         ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityFactory, 5.0);
         
         List<TrajectoryElement> trajectoryElements = trajectorizer.createTrajectory(linesRemovedSharpTurns);
-        String id = String.format("P1_%.0f_%.0f_%.0f_%.0f", startRaw.getX(), startRaw.getY(), endRaw.getX(), endRaw.getY());
+//        String id = String.format("P1_%.0f_%.0f_%.0f_%.0f", startRaw.getX(), startRaw.getY(), endRaw.getX(), endRaw.getY());
+        String id = Integer.toString(route.getRouteNumber());
         MultiLoopDetectionResult result = new MultiLoopDetectionResult(multiloops, trajectoryElements, sharpTurnIntersections, id);
         return result;
     }
