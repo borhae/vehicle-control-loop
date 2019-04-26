@@ -625,9 +625,17 @@ public class NavigationTest implements TestConstants
     private void printOnStdOut(MultiLoopDetectionResult result)
     {
         List<int[]> multiLoops = result.getMultiLoops();
+        List<Position2D> intersections = result.getSharpTurnIntersections();
         if (!multiLoops.isEmpty())
         {
-            System.out.println(String.format("There are %d loops in route %s", multiLoops.size(), result.getId()));
+            String numLoopsStatement = multiLoops.size() == 1 ? "is  1 multi-loop " : String.format("are %d multi-loops", multiLoops.size());
+            String positionStatement = "";
+            for(int idx = 0; idx < multiLoops.size(); idx++)
+            {
+                Position2D position = Position2D.between(intersections.get(multiLoops.get(idx)[0]), intersections.get(multiLoops.get(idx)[1]));
+                positionStatement += String.format("position (%.2f, %.2f), ", position.getX(), position.getY());
+            }
+            System.out.println(String.format("There %s in route %s at %s", numLoopsStatement, result.getId(), positionStatement));
         }
     }
 
