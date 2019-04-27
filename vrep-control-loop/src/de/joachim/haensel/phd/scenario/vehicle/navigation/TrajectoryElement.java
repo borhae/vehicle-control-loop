@@ -23,6 +23,7 @@ public class TrajectoryElement implements Comparable<TrajectoryElement>
     private double _radius;
     private double _kappa;
     private int _index;
+    private boolean _reverse;
 
     public TrajectoryElement()
     {
@@ -36,13 +37,14 @@ public class TrajectoryElement implements Comparable<TrajectoryElement>
         _velocityEdgeType = VelocityEdgeType.UNKNOWN;
         _radius = 0.0;
         _kappa = 0.0;
+        _reverse = false;
     }
 
     public Vector2D getVector()
     {
         return _vector;
     }
-
+    
     @Override
     public String toString()
     {
@@ -119,6 +121,16 @@ public class TrajectoryElement implements Comparable<TrajectoryElement>
     public int getIdx()
     {
         return _index;
+    }
+    
+    public boolean isReverse()
+    {
+        return _reverse;
+    }
+
+    public void setReverse(boolean reverse)
+    {
+        _reverse = reverse;
     }
 
     public TrajectoryElement transform(TMatrix transformationMatrix)

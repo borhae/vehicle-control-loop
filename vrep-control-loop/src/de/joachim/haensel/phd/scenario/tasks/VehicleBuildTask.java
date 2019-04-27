@@ -14,6 +14,7 @@ import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookahead;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
@@ -139,7 +140,7 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
         else
         {
             lowerFact = () -> {
-                PurePursuitController ctrl = new PurePursuitController();
+                PurePursuitControllerVariableLookahead ctrl = new PurePursuitControllerVariableLookahead();
                 PurePursuitParameters parameters = new PurePursuitParameters(_lookahead, VELOCITY_TO_WHEEL_ROTATION);
                 ctrl.setParameters(parameters);
                 return ctrl;

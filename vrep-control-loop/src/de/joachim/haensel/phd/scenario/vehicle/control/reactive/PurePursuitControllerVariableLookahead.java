@@ -436,6 +436,13 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
             }
             if(matchingElements.size() > 0)
             {
+                for(Entry<TrajectoryElement, Integer> element : matchingElements.entrySet())
+                {
+                    if(element.getKey().isReverse()) {
+                        System.out.println("Three point turn found");
+                    }
+                }
+                
                 List<Entry<TrajectoryElement, Integer>> matchingOrientation = matchingElements.entrySet().stream().filter(entry -> Math.toDegrees(Vector2D.computeAngle(entry.getKey().getVector(), orientation)) < 120).collect(Collectors.toList());
                 if(matchingOrientation.size() > 0)
                 {

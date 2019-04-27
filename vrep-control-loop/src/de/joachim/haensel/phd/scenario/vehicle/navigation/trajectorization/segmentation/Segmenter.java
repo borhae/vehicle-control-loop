@@ -37,41 +37,43 @@ public class Segmenter implements ISegmenter
         LinkedList<Vector2D> segmentList = new LinkedList<>();
         notifyOriginalTrajectory(segmentList);
         _algorithm.quantize(srcRoute, segmentList, _stepSize);
-        segmentList = remove180Turns(segmentList);
         int elementsToAdd = segmentList.size();
         int addCnt = 0;
         while(addCnt < elementsToAdd)
         {
-            if(!segmentList.isEmpty())
+            if(segmentList.isEmpty())
             {
-                Vector2D v = segmentList.pop();
-                addCnt++;
-                TrajectoryElement t = new TrajectoryElement(v);
-                t.setIsOriginal();
-                t.setIdx(addCnt);
-                result.add(t);
+                break;
             }
+            
+            Vector2D v = segmentList.pop();
+            
+            addCnt++;
+            result.add(new TrajectoryElement(v));
         }
+        
+        result = remove180Turns(result);
+        
         return result;
     }
 
-    private LinkedList<Vector2D> remove180Turns(List<Vector2D> segmentList)
+    private LinkedList<TrajectoryElement> remove180Turns(List<TrajectoryElement> segmentList)
     {
-        LinkedList<Vector2D> result = new LinkedList<>();
+        LinkedList<TrajectoryElement> result = new LinkedList<>();
         for(int idx = 0; idx < segmentList.size(); idx++)
         {	
-        	Vector2D curLine = segmentList.get(idx);
-            result.add(curLine);
-            if(idx + 1 < segmentList.size())
+        	Vector2D curLine = segmentList.get(idx).getVector();
+            result.add(new TrajectoryElement(curLine));
+            if(idx + 2 < segmentList.size())
             {
-            	Vector2D nextLine = segmentList.get(idx + 1);
+            	Vector2D nextLine = segmentList.get(idx + 1).getVector();
                 Vector2D curLineV = new Vector2D(curLine);
                 Vector2D nextLineVN = new Vector2D(nextLine);
                 double angle = Math.toDegrees(Vector2D.computeAngle(curLineV, nextLineVN));
                 if(angle > 120) //TODO add the other direction too
                 {
                     //recalculate angle based on the real next line
-                    Vector2D nextLineNotSkipped = segmentList.get(idx + 2);
+                    Vector2D nextLineNotSkipped = segmentList.get(idx + 2).getVector();
                     Vector2D nextLineNotSkippedVN = new Vector2D(nextLineNotSkipped);
                     angle = Vector2D.computeAngle(curLineV, nextLineNotSkippedVN);
                     
@@ -80,11 +82,17 @@ public class Segmenter implements ISegmenter
                 }
             }
         }
+        
+        for(int i = 0; i < result.size(); i++) {
+            result.get(i).setIdx(i);
+            result.get(i).setIsOriginal();         
+        }
+        
         return result;
     }
 
     //add 3 angle/3 * U_TURN_RADIUS turns (first and last forward, second backwards) 
-    private void replace180TurnWithThreePointTurn(LinkedList<Vector2D> result, Vector2D curLine, Vector2D nextLine, double angle)
+    private void replace180TurnWithThreePointTurn(LinkedList<TrajectoryElement> result, Vector2D curLine, Vector2D nextLine, double angle)
     {
         double turnAngle = angle / 3.0;
 
@@ -92,27 +100,29 @@ public class Segmenter implements ISegmenter
         result.addAll(vectorsFromTurn(turnAngle, curLine.getTip(), curLine.getNorm(), U_TURN_RADIUS));
         
         //backwards turn
-        LinkedList<Vector2D> backwardsList = vectorsFromTurn(turnAngle, result.getLast().getTip(), Position2D.minus(new Position2D(0, 0),result.getLast().getNorm()), U_TURN_RADIUS);
-        //TODO: handling for backwards driving
+        LinkedList<TrajectoryElement> backwardsList = vectorsFromTurn(turnAngle, result.getLast().getVector().getTip(), Position2D.minus(new Position2D(0, 0),result.getLast().getVector().getNorm()), U_TURN_RADIUS);
+        for(TrajectoryElement element : backwardsList)
+        {
+            element.setReverse(true);
+        }
         result.addAll(backwardsList);
         
         //final turn
-        result.addAll(vectorsFromTurn(turnAngle, result.getLast().getTip(), Position2D.minus(new Position2D(0, 0),result.getLast().getNorm()), U_TURN_RADIUS));
+        result.addAll(vectorsFromTurn(turnAngle, result.getLast().getVector().getTip(), Position2D.minus(new Position2D(0, 0),result.getLast().getVector().getNorm()), U_TURN_RADIUS));
        
         //add a vector from the last point of turn to the next line
-        Vector2D connection = new Vector2D(result.getLast().getTip(), nextLine.getTip());
-        result.add(connection);
+        Vector2D connection = new Vector2D(result.getLast().getVector().getTip(), nextLine.getTip());
+        result.add(new TrajectoryElement(connection));
     }
     
     //creates a linked list of vectors for a given turn
-    private LinkedList<Vector2D> vectorsFromTurn(double angle, Position2D startPoint, Position2D normDirection, double radius){
+    private LinkedList<TrajectoryElement> vectorsFromTurn(double angle, Position2D startPoint, Position2D normDirection, double radius){
         
-    	 LinkedList<Vector2D> result = new LinkedList<>();
+    	 LinkedList<TrajectoryElement> result = new LinkedList<>();
     	 
     	 Position2D perpDir = new Position2D(-normDirection.getY(), normDirection.getX());
     	 
     	 Position2D center = startPoint.plus(perpDir.mul(radius));
-    	 Vector2D center2Start = new Vector2D(center, startPoint);
     	 
          Position2D a = Position2D.minus(startPoint, center);
          double startAngle = Math.atan2(a.getY(), a.getX());
@@ -130,7 +140,7 @@ public class Segmenter implements ISegmenter
              Position2D current = points.get(idx1);
              if(last != null)
              {
-                 result.add(new Vector2D(last, current));
+                 result.add(new TrajectoryElement(new Vector2D(last, current)));
              }
              last = current;
          }
