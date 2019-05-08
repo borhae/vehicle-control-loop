@@ -784,7 +784,7 @@ public class NavigationTest implements TestConstants
                 {
                     EdgeLine edgeLineI = idxToEdgeMap.get(idxI);
                     EdgeLine edgeLineJ = idxToEdgeMap.get(idxJ);
-                    positionStatement += String.format(" between edges: %d, %d", edgeLineI.getEdge().getId(), edgeLineJ.getEdge().getId());
+                    positionStatement += String.format(" between edges: %s, %s", edgeLineI.getEdge().getId(), edgeLineJ.getEdge().getId());
                 }
                 positionStatement += " ,";
             }
