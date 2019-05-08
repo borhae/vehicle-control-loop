@@ -126,7 +126,7 @@ public class Navigator
         return angle > 110; 
     }
 
-    private List<Line2D> traverse(List<Line2D> rawResult, IRouteAdaptor adaptor, IRouteProperyDetector routeProperty)
+    public List<Line2D> traverse(List<Line2D> rawResult, IRouteAdaptor adaptor, IRouteProperyDetector routeProperty)
     {
         List<Line2D> result = new ArrayList<>();
         for(int idx = 0; idx < rawResult.size(); idx++)
@@ -156,10 +156,20 @@ public class Navigator
         return result;
     }
 
-    //TODO public just for testing reasons
     public List<Line2D> createLinesFromPathNoSharpTurnRemoval(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
     {
         List<Line2D> result = new ArrayList<>();
+        List<EdgeType> edges = transformNodePathToEdgePath(path, startEdge, targetEdge);
+        for(int idx = 0; idx < edges.size(); idx++)
+        {
+            EdgeType curEdge = edges.get(idx);
+            regularLineAdd(result, curEdge);
+        }
+        return result;
+    }
+
+    public List<EdgeType> transformNodePathToEdgePath(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
+    {
         List<EdgeType> edges = new ArrayList<>();
         for(int idx = 0; idx < path.size() - 1; idx++)
         {
@@ -170,12 +180,7 @@ public class Navigator
         }
         edges.add(0, startEdge);
         edges.add(targetEdge);
-        for(int idx = 0; idx < edges.size(); idx++)
-        {
-            EdgeType curEdge = edges.get(idx);
-            regularLineAdd(result, curEdge);
-        }
-        return result;
+        return edges;
     }
 
     public void addTurnAroundCircle(List<Line2D> result, Line2D curLine, Line2D nextLine)
