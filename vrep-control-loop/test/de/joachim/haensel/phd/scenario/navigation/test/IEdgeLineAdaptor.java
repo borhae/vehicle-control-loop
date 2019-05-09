@@ -4,5 +4,5 @@ import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 
 public interface IEdgeLineAdaptor
 {
-    public void adapt(EdgeLine curEdgeLine, EdgeLine nextEdgeLine, Line2D curLine, Line2D nextLine);
+    public void adapt(int curIdx, int nxtIdx, EdgeLine curEdgeLine, EdgeLine nextEdgeLine, Line2D curLine, Line2D nextLine);
 }

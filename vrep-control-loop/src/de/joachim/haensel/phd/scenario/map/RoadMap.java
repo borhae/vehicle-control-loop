@@ -790,4 +790,9 @@ public class RoadMap
     {
         return _navigableEdges.get(sumoEdge);
     }
+
+    public Edge getNavigableEdge(EdgeType edge)
+    {
+        return _navigableEdges.get(edge);
+    }
 }

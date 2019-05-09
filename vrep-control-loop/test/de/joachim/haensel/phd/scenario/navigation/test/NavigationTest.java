@@ -22,6 +22,8 @@ import de.joachim.haensel.phd.scenario.RoadMapAndCenterMatrix;
 import de.joachim.haensel.phd.scenario.SimulationSetupConvenienceMethods;
 import de.joachim.haensel.phd.scenario.debug.INavigationListener;
 import de.joachim.haensel.phd.scenario.debug.VRepNavigationListener;
+import de.joachim.haensel.phd.scenario.map.Edge;
+import de.joachim.haensel.phd.scenario.map.IStreetSection;
 import de.joachim.haensel.phd.scenario.map.Node;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.map.sumo2vrep.VRepMap;
@@ -682,9 +684,10 @@ public class NavigationTest implements TestConstants
         }
         // sharp turn detection and memorization
         IRouteProperyDetector sharpTurnDetector = (resultLines, curLine, nextLine, curLineV, nextLineV) -> navigator.isSharpTurn(curLineV, nextLineV);
-        IEdgeLineAdaptor sharpTurnMarker = (curEdgeLine, nextEdgeLine, curLine, nextLine) -> {                    
-            curEdgeLine.markAsPartOfSharpTurn();
-            nextEdgeLine.markAsPartOfSharpTurn();
+        IEdgeLineAdaptor sharpTurnMarker = (curIdx, nxtIdx, curEdgeLine, nextEdgeLine, curLine, nextLine) -> {                    
+            curEdgeLine.markAsStartOfSharpTurn();
+            curEdgeLine.setEndOfSharpTurnEdgeLine(nextEdgeLine);
+            nextEdgeLine.markAsEndOfSharpTurn();
             Position2D center = Position2D.between(curLine.getP2(), nextLine.getP1());
             curEdgeLine.setCenter(center);
         };
@@ -697,12 +700,12 @@ public class NavigationTest implements TestConstants
         Map<Integer, EdgeLine> idxToEdgeMap = new HashMap<Integer, EdgeLine>();
         for(int idxI = 0; idxI < n; idxI++)
         {
+            EdgeLine edgeLineI = sharpTurnEdges.get(idxI);
+            Position2D p1 = edgeLineI.getCenter();
             for(int idxJ = 0; idxJ < n; idxJ++)
             {
                 if(idxI != idxJ)
                 {
-                    EdgeLine edgeLineI = sharpTurnEdges.get(idxI);
-                    Position2D p1 = edgeLineI.getCenter();
                     EdgeLine edgeLineJ = sharpTurnEdges.get(idxJ);
                     Position2D p2 = edgeLineJ.getCenter();
                     double distance = Position2D.distance(p1, p2);
@@ -715,6 +718,8 @@ public class NavigationTest implements TestConstants
                         {
                             multiLoopIdxs.add(new int[] {idxI, idxJ});
                             edgeLineI.setMultiLoopPart();
+//                            List<EdgeLine> pathBetween = searchPathBetweenLoops(edgeLineI, edgeLineJ, edgePath);
+                            edgeLineI.setOtherMultiLoopPart(edgeLineJ);
                             edgeLineJ.setMultiLoopPart();
                             idxToEdgeMap.put(i, edgeLineI);
                             idxToEdgeMap.put(j, edgeLineJ);
@@ -740,25 +745,42 @@ public class NavigationTest implements TestConstants
         return result;
     }
 
+//    private List<EdgeLine> searchPathBetweenLoops(EdgeLine edgeLineI, EdgeLine edgeLineJ, List<EdgeType> edgePath)
+//    {
+//        boolean resultComplete = false;
+//        EdgeLine start = null;
+//        for(int idx = 0; idx < edgePath.size() && !resultComplete; idx++)
+//        {
+//            EdgeType curSumoEdge = edgePath.get(idx);
+//            if(edgeLineI.getEdge().getId().equals(curSumoEdge.getId()))
+//            {
+//                start = edgeLineI;
+//            }
+//        }
+//        return null;
+//    }
+//
     private List<EdgeLine> traverse(List<EdgeLine> rawEdgeLineResult, IEdgeLineAdaptor adaptor, IRouteProperyDetector routeProperty)
     {
         List<Line2D> rawResult = rawEdgeLineResult.stream().map(edgeLine -> edgeLine.getLine()).collect(Collectors.toList());
         List<EdgeLine> result = new ArrayList<>();
         for(int idx = 0; idx < rawEdgeLineResult.size(); idx++)
         {
-            EdgeLine curEdgeLine = rawEdgeLineResult.get(idx);
+            int curIdx = idx;
+            int nxtIdx = curIdx + 1;
+            EdgeLine curEdgeLine = rawEdgeLineResult.get(curIdx);
             Line2D curLine = curEdgeLine.getLine();
             result.add(curEdgeLine);
-            if(idx + 1 < rawEdgeLineResult.size())
+            if(nxtIdx < rawEdgeLineResult.size())
             {
-                EdgeLine nextEdgeLine = rawEdgeLineResult.get(idx + 1);
+                EdgeLine nextEdgeLine = rawEdgeLineResult.get(nxtIdx);
                 Line2D nextLine = nextEdgeLine.getLine();
                 
                 Vector2D curLineV = new Vector2D(curLine);
                 Vector2D nextLineV = new Vector2D(nextLine);
                 if(routeProperty.holds(rawResult, curLine, nextLine, curLineV, nextLineV))
                 {
-                    adaptor.adapt(curEdgeLine, nextEdgeLine, curLine, nextLine);
+                    adaptor.adapt(curIdx, nxtIdx, curEdgeLine, nextEdgeLine, curLine, nextLine);
                 }
             }
         }
@@ -782,9 +804,11 @@ public class NavigationTest implements TestConstants
                 positionStatement += String.format("position (%.2f, %.2f)", position.getX(), position.getY());
                 if(idxToEdgeMap != null)
                 {
-                    EdgeLine edgeLineI = idxToEdgeMap.get(idxI);
-                    EdgeLine edgeLineJ = idxToEdgeMap.get(idxJ);
-                    positionStatement += String.format(" between edges: %s, %s", edgeLineI.getEdge().getId(), edgeLineJ.getEdge().getId());
+                    String edgeLineIID = idxToEdgeMap.get(idxI).getEdge().getId();
+                    String edgeLineINxtID = idxToEdgeMap.get(idxI).getNextEdgeLine().getEdge().getId();
+                    String edgeLineJID = idxToEdgeMap.get(idxJ).getEdge().getId();
+                    String edgeLineJNxtID = idxToEdgeMap.get(idxJ).getNextEdgeLine().getEdge().getId();
+                    positionStatement += String.format(" between edges: (%s, %s) and (%s, %s)", edgeLineIID, edgeLineINxtID, edgeLineJID, edgeLineJNxtID);
                 }
                 positionStatement += " ,";
             }

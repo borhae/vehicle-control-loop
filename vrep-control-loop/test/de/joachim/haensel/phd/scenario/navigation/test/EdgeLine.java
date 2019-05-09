@@ -11,6 +11,10 @@ public class EdgeLine
     private boolean _sharpTurn;
     private Position2D _center;
     private boolean _isMultiLoopPart;
+    private EdgeLine _otherMultiLoopPart;
+    private boolean _startOfSharpTurn;
+    private boolean _endOfSharpTurn;
+    private EdgeLine _nextEdgeLine;
 
     public EdgeLine(Line2D line, EdgeType edge)
     {
@@ -18,6 +22,14 @@ public class EdgeLine
         _edge = edge;
         _sharpTurn = false;
         _isMultiLoopPart = false;
+        _startOfSharpTurn = false;
+        _endOfSharpTurn = false;
+        _nextEdgeLine = null;
+    }
+    
+    public EdgeLine getNextEdgeLine()
+    {
+        return _nextEdgeLine;
     }
 
     public boolean isSharpTurn()
@@ -58,5 +70,30 @@ public class EdgeLine
     public boolean isMultiLoopPart()
     {
         return _isMultiLoopPart;
+    }
+
+    public void setOtherMultiLoopPart(EdgeLine otherMultiLoopPart)
+    {
+        _otherMultiLoopPart = otherMultiLoopPart;
+    }
+
+    public EdgeLine getOtherMultiLoopPart()
+    {
+        return _otherMultiLoopPart;
+    }
+
+    public void markAsStartOfSharpTurn()
+    {
+        _startOfSharpTurn = true;
+    }
+
+    public void markAsEndOfSharpTurn()
+    {
+        _endOfSharpTurn = true;
+    }
+
+    public void setEndOfSharpTurnEdgeLine(EdgeLine nextEdgeLine)
+    {
+        _nextEdgeLine = nextEdgeLine;
     }
 }
