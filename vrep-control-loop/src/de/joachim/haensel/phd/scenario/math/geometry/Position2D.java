@@ -44,6 +44,10 @@ public class Position2D
     public Position2D(String coordinatesAsString)
     {
         String[] coordinates = coordinatesAsString.split(",");
+        if(coordinates.length != 2)
+        {
+            System.out.println("Erronous Coordinate: " + coordinatesAsString);
+        }
         init(Double.valueOf(coordinates[0]), Double.valueOf(coordinates[1]));
     }
     

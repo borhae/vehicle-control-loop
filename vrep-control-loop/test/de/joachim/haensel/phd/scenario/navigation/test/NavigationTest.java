@@ -621,7 +621,7 @@ public class NavigationTest implements TestConstants
     @Test
     public void identifyEdgesInChandigarh183RoutesMulitloopsParallel() throws VRepException
     {
-        RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/chandigarh-roads-lefthand.net.xml");
+        RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/chandigarh-roads-lefthand.removed.net.xml");
         TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
         System.out.println("Center matrix: \n" + centerMatrix.toString());
         RoadMap roadMap = mapAndCenterMatrix.getRoadMap();
@@ -639,9 +639,9 @@ public class NavigationTest implements TestConstants
                 routes.add(newRoute);
             }
             List<MultiLoopDetectionResult> results = routes.parallelStream().map(route -> computeEdgePathIdentifyMultiLoop(centerMatrix, roadMap, route)).collect(Collectors.toList());
-            
-            results.forEach(result -> drawMultiloopCenterAndRouteInSimulator(result));
+            System.out.format("printing results: %d", results.size());
             results.forEach(result -> printOnStdOut(result));
+            results.forEach(result -> drawMultiloopCenterAndRouteInSimulator(result));
         } 
         catch (IOException exc)
         {
@@ -688,6 +688,18 @@ public class NavigationTest implements TestConstants
             curEdgeLine.markAsStartOfSharpTurn();
             curEdgeLine.setEndOfSharpTurnEdgeLine(nextEdgeLine);
             nextEdgeLine.markAsEndOfSharpTurn();
+            if(curEdgeLine.getEdge() == nextEdgeLine.getEdge())
+            {
+                System.out.println("Turn on a single edge betwen lines of that turn");
+                if(curLine == nextLine)
+                {
+                    System.out.println("weird because lines are the same");
+                }
+                else
+                {
+                    System.out.print("current: " + curLine.toString() + ", next: " + nextLine.toString());
+                }
+            }
             Position2D center = Position2D.between(curLine.getP2(), nextLine.getP1());
             curEdgeLine.setCenter(center);
         };
@@ -700,12 +712,12 @@ public class NavigationTest implements TestConstants
         Map<Integer, EdgeLine> idxToEdgeMap = new HashMap<Integer, EdgeLine>();
         for(int idxI = 0; idxI < n; idxI++)
         {
-            EdgeLine edgeLineI = sharpTurnEdges.get(idxI);
-            Position2D p1 = edgeLineI.getCenter();
             for(int idxJ = 0; idxJ < n; idxJ++)
             {
                 if(idxI != idxJ)
                 {
+                    EdgeLine edgeLineI = sharpTurnEdges.get(idxI);
+                    Position2D p1 = edgeLineI.getCenter();
                     EdgeLine edgeLineJ = sharpTurnEdges.get(idxJ);
                     Position2D p2 = edgeLineJ.getCenter();
                     double distance = Position2D.distance(p1, p2);
@@ -718,7 +730,6 @@ public class NavigationTest implements TestConstants
                         {
                             multiLoopIdxs.add(new int[] {idxI, idxJ});
                             edgeLineI.setMultiLoopPart();
-//                            List<EdgeLine> pathBetween = searchPathBetweenLoops(edgeLineI, edgeLineJ, edgePath);
                             edgeLineI.setOtherMultiLoopPart(edgeLineJ);
                             edgeLineJ.setMultiLoopPart();
                             idxToEdgeMap.put(i, edgeLineI);
@@ -739,27 +750,11 @@ public class NavigationTest implements TestConstants
         
         
         List<TrajectoryElement> trajectoryElements = trajectorizer.createTrajectory(linesRemovedSharpTurns);
-//        String id = String.format("P1_%.0f_%.0f_%.0f_%.0f", startRaw.getX(), startRaw.getY(), endRaw.getX(), endRaw.getY());
         String id = Integer.toString(route.getRouteNumber());
         MultiLoopDetectionResult result = new MultiLoopDetectionResult(trajectoryElements, sharpTurnEdges, multiLoopIdxs, idxToEdgeMap, id);
         return result;
     }
 
-//    private List<EdgeLine> searchPathBetweenLoops(EdgeLine edgeLineI, EdgeLine edgeLineJ, List<EdgeType> edgePath)
-//    {
-//        boolean resultComplete = false;
-//        EdgeLine start = null;
-//        for(int idx = 0; idx < edgePath.size() && !resultComplete; idx++)
-//        {
-//            EdgeType curSumoEdge = edgePath.get(idx);
-//            if(edgeLineI.getEdge().getId().equals(curSumoEdge.getId()))
-//            {
-//                start = edgeLineI;
-//            }
-//        }
-//        return null;
-//    }
-//
     private List<EdgeLine> traverse(List<EdgeLine> rawEdgeLineResult, IEdgeLineAdaptor adaptor, IRouteProperyDetector routeProperty)
     {
         List<Line2D> rawResult = rawEdgeLineResult.stream().map(edgeLine -> edgeLine.getLine()).collect(Collectors.toList());
@@ -822,8 +817,11 @@ public class NavigationTest implements TestConstants
         
         multiLoops.stream().map(IndexAdder.indexed()).forEachOrdered(indexedLoops -> 
         {
-            drawPosition(result.getSharpTurnIntersections().get(indexedLoops.v()[0]), Color.RED, _objectCreator, "route_" + result.getId() + "_a" + "_" + indexedLoops.idx());
-            drawPosition(result.getSharpTurnIntersections().get(indexedLoops.v()[1]), Color.RED, _objectCreator, "route_" + result.getId() + "_b" + "_" + indexedLoops.idx());
+            List<Position2D> sharpTurnIntersections = result.getSharpTurnIntersections();
+            String resultID = result.getId();
+            int idx = indexedLoops.idx();
+            drawPosition(sharpTurnIntersections.get(indexedLoops.v()[0]), Color.RED, _objectCreator, "route_" + resultID + "_a" + "_" + idx);
+            drawPosition(sharpTurnIntersections.get(indexedLoops.v()[1]), Color.RED, _objectCreator, "route_" + resultID + "_b" + "_" + idx);
         });
         INavigationListener navigationListener = new VRepNavigationListener(_objectCreator);
         navigationListener.activateSegmentDebugging();

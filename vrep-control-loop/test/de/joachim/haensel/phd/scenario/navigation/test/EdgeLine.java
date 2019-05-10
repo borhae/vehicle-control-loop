@@ -34,7 +34,7 @@ public class EdgeLine
 
     public boolean isSharpTurn()
     {
-        return _sharpTurn;
+        return _startOfSharpTurn || _endOfSharpTurn || _sharpTurn;
     }
 
     public Line2D getLine()
