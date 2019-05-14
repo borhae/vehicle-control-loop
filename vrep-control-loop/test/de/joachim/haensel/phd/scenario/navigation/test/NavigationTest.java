@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -444,6 +445,55 @@ public class NavigationTest implements TestConstants
         String input = scanner.next();
         System.out.println(input);
         scanner.close();
+    }
+    
+    @Test
+    public void testChandigarhProblemRoute44() throws VRepException
+    {
+        RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/chandigarh-roads-lefthand.removed.net.xml");
+        TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+        RoadMap roadMap = mapAndCenterMatrix.getRoadMap();
+        Navigator navigator = new Navigator(roadMap);
+
+        List<String> pointsAsString;
+        try
+        {
+            pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread.txt").toPath());
+            List<Position2D> positions = pointsAsString.stream().map(string -> new Position2D(string).transform(centerMatrix)).collect(Collectors.toList());
+    
+            int lower = 43;
+            int upper = 46;
+            for(int idx = Math.max(0,  lower); (idx < Math.min(upper, positions.size() - 1)) && (lower < upper) ; idx++)
+            {
+                Position2D pos1 = positions.get(idx);
+                Position2D pos2 = positions.get(idx + 1);
+                String segName = Integer.toString(idx);
+                VRepNavigationListener navigationListener = new VRepNavigationListener(_objectCreator, () -> segName);
+                drawRoute(navigator, pos1, pos2, navigationListener);
+            }
+        } 
+        catch (IOException exc)
+        {
+            exc.printStackTrace();
+        }
+        System.out.println("enter arbitrary stuff an then press enter");
+        Scanner scanner = new Scanner(System.in);
+        String input = scanner.next();
+        System.out.println(input);
+        scanner.close();
+   }
+
+    private void drawRoute(Navigator navigator, Position2D pos1, Position2D pos2, VRepNavigationListener navigationListener)
+    {
+        List<Line2D> route = navigator.getRoute(pos1, pos2);
+        
+        ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
+        IVelocityAssignerFactory velocityFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, 120.0);
+        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityFactory, 5.0);
+        
+        List<TrajectoryElement> trajectoryElements = trajectorizer.createTrajectory(route);
+        navigationListener.activateSegmentDebugging();
+        navigationListener.notifySegmentsChanged(trajectoryElements);
     }
     
     @Test
