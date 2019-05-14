@@ -322,4 +322,36 @@ public class TestTaskExecutor
             fail(exc);
         }
     }
+    
+    @Test
+    public void testSharpTurn()
+    {
+        try
+        {
+            RoadMapAndCenterMatrix mapAndCenterMatrix = 
+                    SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/neumarkRealWorldNoTrains.net.xml");
+            RoadMap map = mapAndCenterMatrix.getRoadMap();
+            TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+            TaskCreator taskCreator = new TaskCreator();
+            PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(true);
+            
+            Position2D p2 = new Position2D(5426.46,2432.27).transform(centerMatrix);
+            Position2D p3 = new Position2D(5564.77,2446.22).transform(centerMatrix);
+            //Position2D p4 = new Position2D(5281.36,2829.22).transform(centerMatrix);
+           
+            config.setMap(map);
+            config.configSimulator(_vrep, _clientID, _objectCreator);
+
+            config.setTargetPoints(Arrays.asList(new Position2D[]{p2, p3}));
+            taskCreator.configure(config);
+            List<ITask> tasks = taskCreator.createTasks();
+
+            TaskExecutor executor = new TaskExecutor();
+            executor.execute(tasks);
+        }
+        catch (VRepException exc)
+        {
+            fail(exc);
+        }
+    }
 }
