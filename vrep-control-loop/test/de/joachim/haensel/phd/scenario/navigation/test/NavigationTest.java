@@ -23,8 +23,6 @@ import de.joachim.haensel.phd.scenario.RoadMapAndCenterMatrix;
 import de.joachim.haensel.phd.scenario.SimulationSetupConvenienceMethods;
 import de.joachim.haensel.phd.scenario.debug.INavigationListener;
 import de.joachim.haensel.phd.scenario.debug.VRepNavigationListener;
-import de.joachim.haensel.phd.scenario.map.Edge;
-import de.joachim.haensel.phd.scenario.map.IStreetSection;
 import de.joachim.haensel.phd.scenario.map.Node;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.map.sumo2vrep.VRepMap;
@@ -32,7 +30,15 @@ import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.phd.scenario.tasks.ITask;
+import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig;
+import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
+import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
+import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
+import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookahead;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.IRouteAdaptor;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.IRouteProperyDetector;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
@@ -482,6 +488,63 @@ public class NavigationTest implements TestConstants
         System.out.println(input);
         scanner.close();
    }
+    
+    @Test
+    public void testChandigarhProblemRoute54PartOnly() throws VRepException
+    {
+        RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/chandigarh-roads-lefthand.removed.net.xml");
+        TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+        RoadMap roadMap = mapAndCenterMatrix.getRoadMap();
+        Navigator navigator = new Navigator(roadMap);
+
+        List<String> pointsAsString;
+        pointsAsString = Arrays.asList(new String[] {"8620.12,7275.68", "8419.82,7559.14"});
+        List<Position2D> positions = pointsAsString.stream().map(string -> new Position2D(string).transform(centerMatrix)).collect(Collectors.toList());
+
+        for(int idx = 0; (idx < positions.size() - 1); idx++)
+        {
+            Position2D pos1 = positions.get(idx);
+            Position2D pos2 = positions.get(idx + 1);
+            String segName = Integer.toString(idx);
+            VRepNavigationListener navigationListener = new VRepNavigationListener(_objectCreator, () -> segName);
+            drawRoute(navigator, pos1, pos2, navigationListener);
+
+            System.out.println("Drawing done, now driving");
+            TaskCreator taskCreator = new TaskCreator();
+            PointListTaskCreatorConfig taskConfiguration = new PointListTaskCreatorConfig();
+            double lookahead = 15.0;
+            taskConfiguration.setControlParams(lookahead, 120.0, 3.8, 4.0, 0.8);
+            taskConfiguration.setDebug(true);
+            taskConfiguration.setMap(roadMap);
+            taskConfiguration.configSimulator(_vrep, _clientID, _objectCreator);
+            
+            taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisualsBrakeScript.ttm");
+            
+            taskConfiguration.setTargetPoints(Arrays.asList(new Position2D[] {pos1, pos2}));
+            taskConfiguration.setLowerLayerController(new ILowerLayerFactory() {
+                @Override
+                public ILowerLayerControl create()
+                {
+                    
+                    PurePursuitControllerVariableLookahead controller = new PurePursuitControllerVariableLookahead();
+                    controller.setParameters(new PurePursuitParameters(lookahead, 0.0));
+                    return controller;
+                }
+            });
+            taskCreator.configure(taskConfiguration);
+            List<ITask> tasks = taskCreator.createTasks();
+            
+            TaskExecutor executor = new TaskExecutor();
+            executor.execute(tasks);
+        }
+        
+
+        System.out.println("enter arbitrary stuff an then press enter");
+        Scanner scanner = new Scanner(System.in);
+        String input = scanner.next();
+        System.out.println(input);
+        scanner.close();
+    }
 
     private void drawRoute(Navigator navigator, Position2D pos1, Position2D pos2, VRepNavigationListener navigationListener)
     {

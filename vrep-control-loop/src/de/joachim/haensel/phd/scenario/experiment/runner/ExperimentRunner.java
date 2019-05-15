@@ -144,9 +144,11 @@ public class ExperimentRunner
 //                List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread.txt").toPath());
 //            	List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread_from63.txt").toPath());
 //            	List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread_from83.txt").toPath());
-            	List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread_from153.txt").toPath());
-                List<Position2D> positions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());//                runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "luebeck-roads.net.xml", "blue");
-                runner.run("chandigarh_183_max_scattered_targets_from153", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "chandigarh-roads-lefthand.net.xml", "blue");
+//            	List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread_17_18_19.txt").toPath());
+                List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread.txt").toPath());
+                List<Position2D> allPositions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());//                runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "luebeck-roads.net.xml", "blue");
+                List<Position2D> positions = allPositions.subList(43, allPositions.size());
+                runner.run("chandigarh_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "chandigarh-roads-lefthand.removed.net.xml", "blue");
                 runner.tearDown();
             }
             catch (IOException exc)

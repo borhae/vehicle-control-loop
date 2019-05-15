@@ -8,7 +8,7 @@ import de.joachim.haensel.statemachine.States;
  */
 public enum ControllerStates implements States
 {
-    DRIVING, IDLE, DRIVING_TO_CLOSEST_KNOWN, HALFWAY_BACK_ON_TRACK;
+    DRIVING, IDLE, DRIVING_TO_CLOSEST_KNOWN, HALFWAY_BACK_ON_TRACK, FAILED;
 
     @Override
     public String toString()
@@ -23,6 +23,8 @@ public enum ControllerStates implements States
                 return "halfway back";
             case IDLE:
                 return "idle";
+            case FAILED:
+                return "failed";
             default:
                 return "unknown state";
         }

@@ -30,8 +30,8 @@ import de.joachim.haensel.statemachine.States;
 public class PurePursuitControllerVariableLookahead implements ILowerLayerControl<PurePursuitParameters>
 {
     private static final double LOOKAHEAD_FACTOR = 2.0;
-    private static final int MIN_DYNAMIC_LOOKAHEAD = 4;
-    private static final int MAX_DYNAMIC_LOOKAHEAD = 30;
+    private static final double MIN_DYNAMIC_LOOKAHEAD = 5.1;
+    private static final double MAX_DYNAMIC_LOOKAHEAD = 30.0;
     private static final String CURRENT_SEGMENT_DEBUG_KEY = "curSeg";
     private static final int MIN_SEGMENT_BUFFER_SIZE = 18;
     private static final int SEGMENT_BUFFER_SIZE = 20;
@@ -54,6 +54,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     private boolean _lostTrack;
     private double _vehicleLength;
     private boolean _lastRouteReported;
+    private double[] _speedBuf;
 
     public class ReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
@@ -80,7 +81,8 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
             createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, notArrivedGuard, ControllerStates.DRIVING, driveAction);
             createTransition(ControllerStates.DRIVING, ControllerMsg.STOP, null, ControllerStates.IDLE, brakeAndStopAction);
        
-            createTransition(ControllerStates.DRIVING, ControllerMsg.LOST_TRACK_EVENT, trueGuard, ControllerStates.DRIVING_TO_CLOSEST_KNOWN, driveToClosestKnownAction);
+            // let's stop that car instead of going infinite and not notice the problem route: introducing state FAILED :)
+            createTransition(ControllerStates.DRIVING, ControllerMsg.LOST_TRACK_EVENT, trueGuard, ControllerStates.FAILED, brakeAndStopAction);
             
             createTransition(ControllerStates.DRIVING_TO_CLOSEST_KNOWN, ControllerMsg.CONTROL_EVENT, backOnTrack, ControllerStates.DRIVING, resumeRegularDriving);
             createTransition(ControllerStates.DRIVING_TO_CLOSEST_KNOWN, ControllerMsg.CONTROL_EVENT, stillLost, ControllerStates.DRIVING_TO_CLOSEST_KNOWN, driveToClosestKnownAction);
@@ -117,7 +119,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         
         private void lostTrack(PurePursuitControllerVariableLookahead controller)
         {
-            transition(ControllerMsg.LOST_TRACK_EVENT, controller);
+            transition(ControllerMsg.LOST_TRACK_EVENT, controller); 
         }
 
         public void driveTo(Position2D target)
@@ -151,6 +153,8 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         _arrivedListeners = new ArrayList<>();
         _trajectoryRequestListeners = new ArrayList<>();
         _trajectoryReportListeners = new ArrayList<>();
+        _speedBuf = new double[3];
+        Arrays.parallelSetAll(_speedBuf, idx -> 0.0);
     }
 
     @Override
@@ -223,7 +227,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
 
     public void brakeAndStopAction()
     {
-        System.out.println("pure pursuit stoped");
+        System.out.println("pure pursuit stopped");
         _actuatorsSensors.drive(0.0f, 0.0f);
     }
     
@@ -286,14 +290,9 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     private void driveAction()
     {
         ensureBufferSize();
-        
-        double[] vehicleVelocityXYZ = _actuatorsSensors.getVehicleVelocity();
-        double velocity = new Vector2D(0.0, 0.0, vehicleVelocityXYZ[0], vehicleVelocityXYZ[1]).getLength();
-        double k = LOOKAHEAD_FACTOR;
-        double kv = k * velocity;
-        kv = kv > MAX_DYNAMIC_LOOKAHEAD ? MAX_DYNAMIC_LOOKAHEAD : kv;
-        kv = kv < MIN_DYNAMIC_LOOKAHEAD ? MIN_DYNAMIC_LOOKAHEAD : kv;
+        double kv = computeKTimesVelocity();
         double lookahead = kv;
+        System.out.println(lookahead);
         
         chooseCurrentLookaheadSegment(_actuatorsSensors.getRearWheelCenterPosition(), _actuatorsSensors.getLockedOrientation(), lookahead);
         TrajectoryElement closestSegment = chooseClosestSegment(_actuatorsSensors.getPosition(), _actuatorsSensors.getLockedOrientation());
@@ -324,6 +323,17 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         }
         
         _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
+    }
+
+    private double computeKTimesVelocity()
+    {
+        double[] vehicleVelocityXYZ = _actuatorsSensors.getVehicleVelocity();
+        double velocity = new Vector2D(0.0, 0.0, vehicleVelocityXYZ[0], vehicleVelocityXYZ[1]).getLength();
+        double k = LOOKAHEAD_FACTOR;
+        double kv = k * velocity;
+        kv = kv > MAX_DYNAMIC_LOOKAHEAD ? MAX_DYNAMIC_LOOKAHEAD : kv;
+        kv = kv < MIN_DYNAMIC_LOOKAHEAD ? MIN_DYNAMIC_LOOKAHEAD : kv;
+        return kv;
     }
 
     private TrajectoryElement chooseClosestSegment(Position2D position, Vector2D orientation)
@@ -511,7 +521,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         double[] vel = Arrays.copyOf(vehicleVelocity, vehicleVelocity.length);
         _trajectoryReportListeners.forEach(listener -> listener.notifyEnvironmentState(rWCP, fWCP, vel, timeStamp));
     }
-
+//TODO reenable when environment view is part of the observation
 //    private void notifyTrajectoryReportListeners(Position2D rearWheelCenterPosition, Position2D frontWheelCenterPosition, double[] vehicleVelocity, List<IStreetSection> viewAhead, long timeStamp)
 //    {
 //        Position2D rWCP = new Position2D(rearWheelCenterPosition);
@@ -549,12 +559,8 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         {
             double alpha = Vector2D.computeAngle(rearWheelToLookAhead, rearWheelToFrontWheel) * rearWheelToLookAhead.side(rearWheelToFrontWheel) * -1.0;
             double L = _vehicleLength;
-            double[] vehicleVelocityXYZ = _actuatorsSensors.getVehicleVelocity();
-            double velocity = new Vector2D(0.0, 0.0, vehicleVelocityXYZ[0], vehicleVelocityXYZ[1]).getLength();
-            double k = LOOKAHEAD_FACTOR;
-            double kv = k * velocity;
-            kv = kv > MAX_DYNAMIC_LOOKAHEAD ? MAX_DYNAMIC_LOOKAHEAD : kv;
-            kv = kv < MIN_DYNAMIC_LOOKAHEAD ? MIN_DYNAMIC_LOOKAHEAD : kv;
+            double kv = computeKTimesVelocity();
+            
             double delta = Math.atan( (2.0 * L * Math.sin(alpha)) / kv);
             return (float) delta;
         }
@@ -580,13 +586,23 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     {
         if(closestSegment != null)
         {
-            double speed = closestSegment.getVelocity();
+            double setSpeed = closestSegment.getVelocity();
+            double speed = lowPassFilter(setSpeed);
             return (float) (speed * _speedToWheelRotationFactor);
         }
         else
         {
             return 0.0f;
         }
+    }
+
+    private double lowPassFilter(double setSpeed)
+    {
+        double speed = (_speedBuf[0] + _speedBuf[1] + _speedBuf[2] + setSpeed) / 4.0;
+        _speedBuf[0] = _speedBuf[1];
+        _speedBuf[1] = _speedBuf[2];
+        _speedBuf[2] = setSpeed;
+        return speed;
     }
 
     @Override
