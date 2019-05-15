@@ -11,7 +11,6 @@ import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
@@ -19,7 +18,6 @@ import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class SimpleVehicleBuildTask implements ITask, IVehicleProvider
 {
-    private static final double VELOCITY_TO_WHEEL_ROTATION = 0.25;
     private VRepRemoteAPI _vrep;
     private int _clientID;
     private VRepObjectCreation _objectCreator;
@@ -81,9 +79,7 @@ public class SimpleVehicleBuildTask implements ITask, IVehicleProvider
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(5.0, UnitConverter.kilometersPerHourToMetersPerSecond(_maxVelocity), _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);};
 
         ILowerLayerFactory lowerFact = () -> {
-            PurePursuitController ctrl = new PurePursuitController();
-            PurePursuitParameters parameters = new PurePursuitParameters(_lookahead, VELOCITY_TO_WHEEL_ROTATION);
-            ctrl.setParameters(parameters);
+            PurePursuitController ctrl = new PurePursuitController(_lookahead);
             return ctrl;
         };
         vehicleConf.setUpperCtrlFactory(upperFact);

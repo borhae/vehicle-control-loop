@@ -22,7 +22,7 @@ import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
 import de.joachim.haensel.statemachine.Guard;
 import de.joachim.haensel.statemachine.States;
 
-public class PurePursuitController implements ILowerLayerControl<PurePursuitParameters>
+public class PurePursuitController implements ILowerLayerControl
 {
     private static final String CURRENT_SEGMENT_DEBUG_KEY = "curSeg";
     private static final int MIN_SEGMENT_BUFFER_SIZE = 5;
@@ -35,7 +35,6 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     private TrajectoryElement _currentSegment;
     private double _lookahead;
     private IVrepDrawing _vrepDrawing;
-    private PurePursuitParameters _parameters;
     private boolean _debugging;
     private boolean _debuggingCircleAttached;
     private DebugParams _debugParams;
@@ -92,12 +91,13 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
         }
     }
     
-    public PurePursuitController()
+    public PurePursuitController(double lookahead)
     {
         _debugging = false;
         _arrivedListeners = new ArrayList<>();
         _trajectoryReportListeners = new ArrayList<>();
         _trajectoryRequestListeners = new ArrayList<>();
+        _lookahead = lookahead;
     }
 
     @Override
@@ -117,12 +117,6 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     }
 
     @Override
-    public void setParameters(PurePursuitParameters parameters)
-    {
-        _parameters = parameters;
-    }
-    
-    @Override
     public void initController(IActuatingSensing actuatorsSensors, ITrajectoryProvider trajectoryProvider)
     {
         _actuatorsSensors = actuatorsSensors;
@@ -130,8 +124,6 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
         _segmentBuffer = new LinkedList<>();
         _segmentProvider = trajectoryProvider;
         _currentSegment = null;
-        _lookahead = _parameters.getLookahead();
-        _speedToWheelRotationFactor = _parameters.getSpeedToWheelRotationFactor();
     }
 
     @Override
@@ -139,7 +131,7 @@ public class PurePursuitController implements ILowerLayerControl<PurePursuitPara
     {
         ensureBufferSize();
         _actuatorsSensors.computeAndLockSensorData();
-        _speedToWheelRotationFactor = 2 / _actuatorsSensors.getWheelDiameter(); // 2/diameter = 1/radius
+        _speedToWheelRotationFactor = 2.0 / _actuatorsSensors.getWheelDiameter(); // 2/diameter = 1/radius
         Position2D currentPosition = _actuatorsSensors.getPosition();
         chooseCurrentSegment(currentPosition);
         _stateMachine.driveTo(target);

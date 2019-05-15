@@ -69,63 +69,40 @@ public class TireBlowOutAtPositionEventGenerator implements ILowerLayerControl
     @Override
     public void clearSegmentBuffer()
     {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void clearArrivedListeners()
     {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void activateDebugging(IVrepDrawing actuatingSensing, DebugParams params)
     {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void deactivateDebugging()
     {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void setParameters(Object parameters)
-    {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void stop()
     {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void addTrajectoryRequestListener(ITrajectoryRequestListener requestListener)
     {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void addTrajectoryReportListener(ITrajectoryReportListener reportListener)
     {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void addArrivedListener(IArrivedListener arrivedListener)
     {
-        // TODO Auto-generated method stub
-
     }
 }

@@ -15,7 +15,6 @@ import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
@@ -29,10 +28,7 @@ public class SimulationSetupConvenienceMethods
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(5.0, 60.0);};
         ILowerLayerFactory lowerFact = () -> {
-            PurePursuitController ctrl = new PurePursuitController();
-            PurePursuitParameters parameters = new PurePursuitParameters(10.0, 0.25);
-            parameters.setSpeed(2.5);
-            ctrl.setParameters(parameters);
+            PurePursuitController ctrl = new PurePursuitController(10.0);
             return ctrl;
         };
         vehicleConf.setUpperCtrlFactory(upperFact);
@@ -65,10 +61,7 @@ public class SimulationSetupConvenienceMethods
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(5.0, 60.0);};
         ILowerLayerFactory lowerFact = () -> {
-            PurePursuitController ctrl = new PurePursuitController();
-            PurePursuitParameters parameters = new PurePursuitParameters(10.0, 0.25);
-            parameters.setSpeed(2.5);
-            ctrl.setParameters(parameters);
+            PurePursuitController ctrl = new PurePursuitController(10.0);
             return ctrl;
         };
         vehicleConf.setUpperCtrlFactory(upperFact);

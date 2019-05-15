@@ -7,7 +7,7 @@ import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRe
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 
-public interface ILowerLayerControl<P>
+public interface ILowerLayerControl
 {
     public void controlEvent();
     public void driveTo(Position2D position);
@@ -16,7 +16,6 @@ public interface ILowerLayerControl<P>
     public void initController(IActuatingSensing actuatorsSensors, ITrajectoryProvider trajectoryProvider);
     public void activateDebugging(IVrepDrawing actuatingSensing, DebugParams params);
     public void deactivateDebugging();
-    public void setParameters(P parameters);
     public void stop();
     
     /**

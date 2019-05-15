@@ -50,7 +50,6 @@ public class TrajectoryRecorder implements ILowerLayerControl, INavigationListen
     @Override
     public void clearArrivedListeners()
     {
-        // TODO Auto-generated method stub
     }
 
     @Override
@@ -62,50 +61,31 @@ public class TrajectoryRecorder implements ILowerLayerControl, INavigationListen
     @Override
     public void activateDebugging(IVrepDrawing actuatingSensing, DebugParams params)
     {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void deactivateDebugging()
     {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void setParameters(Object parameters)
-    {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void stop()
     {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void addTrajectoryRequestListener(ITrajectoryRequestListener requestListener)
     {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void addTrajectoryReportListener(ITrajectoryReportListener reportListener)
     {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void addArrivedListener(IArrivedListener arrivedListener)
     {
-        // TODO Auto-generated method stub
-
     }
 
     public List<RecordedTrajectoryElement> getTrajectory()
@@ -135,21 +115,15 @@ public class TrajectoryRecorder implements ILowerLayerControl, INavigationListen
     @Override
     public void notifyRouteChanged(List<Line2D> route)
     {
-        // TODO Auto-generated method stub
-        
     }
 
     @Override
     public void activateRouteDebugging()
     {
-        // TODO Auto-generated method stub
-        
     }
 
     @Override
     public void activateSegmentDebugging()
     {
-        // TODO Auto-generated method stub
-        
     }
 }

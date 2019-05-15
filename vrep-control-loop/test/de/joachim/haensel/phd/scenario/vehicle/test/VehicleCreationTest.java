@@ -14,7 +14,6 @@ import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.map.sumo2vrep.VRepMap;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
-import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
@@ -22,13 +21,12 @@ import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
-import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
-import de.joachim.haensel.phd.scenario.vrep.modelvisuals.MercedesVisualsNames;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleCreator;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleFactory;
+import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
+import de.joachim.haensel.phd.scenario.vrep.modelvisuals.MercedesVisualsNames;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;
@@ -59,6 +57,7 @@ public class VehicleCreationTest implements TestConstants
     @AfterEach
     public void cleanUpObjects() throws VRepException
     {
+        _vehicles.forEach(vehicle -> vehicle.stop());
         _objectCreator.deleteAll();
     }
     
@@ -69,6 +68,7 @@ public class VehicleCreationTest implements TestConstants
         IVehicleConfiguration vehicleConf = createConfiguration();
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();
+        _vehicles.add(vehicle);
         System.out.println("wait here");
     }
 
@@ -79,6 +79,7 @@ public class VehicleCreationTest implements TestConstants
         IVehicleConfiguration vehicleConf = createConfiguration();
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();
+        _vehicles.add(vehicle);
         System.out.println("wait here");
     }
 
@@ -97,6 +98,7 @@ public class VehicleCreationTest implements TestConstants
         vehicleConf.setAutoBodyNames(autoBodyNames );
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();
+        _vehicles.add(vehicle);
         System.out.println("wait here");
     }
     
@@ -105,8 +107,7 @@ public class VehicleCreationTest implements TestConstants
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
         ILowerLayerFactory lowerFact = () -> {
-            PurePursuitController ctrl = new PurePursuitController();
-            ctrl.setParameters(new PurePursuitParameters(2.0, -0.25));
+            PurePursuitController ctrl = new PurePursuitController(2.0);
             return ctrl;
         };
         vehicleConf.setUpperCtrlFactory(upperFact);
@@ -122,7 +123,7 @@ public class VehicleCreationTest implements TestConstants
         float height = vehicleCreator.getVehicleHeight();
         
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
-        ILowerLayerFactory lowerFact = () -> {ILowerLayerControl<PurePursuitParameters> ctrl = new PurePursuitController(); ctrl.setParameters(new PurePursuitParameters(5.0, -0.25)); return ctrl;};
+        ILowerLayerFactory lowerFact = () -> new PurePursuitController(5.0);
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, null, upperFact, lowerFact);
         vehicle.setOrientation(1.0f, 1.0f, 1.0f);
@@ -134,15 +135,12 @@ public class VehicleCreationTest implements TestConstants
     {
         float scaleFactor = 0.1f;
         double lookahead = 5.0 * scaleFactor;
-        ILowerLayerControl<PurePursuitParameters> ctrl = new PurePursuitController(); 
-        ctrl.setParameters(new PurePursuitParameters(lookahead, -0.25));
-        
         VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, scaleFactor);
         float height = vehicleCreator.getVehicleHeight();
         
         
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0 * scaleFactor, 30.0);};
-        ILowerLayerFactory lowerFact = () -> {return ctrl;};
+        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController(lookahead);};
 
         vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + scaleFactor, null, upperFact, lowerFact);
         System.out.println("look at me");
@@ -160,11 +158,7 @@ public class VehicleCreationTest implements TestConstants
         float height = vehicleCreator.getVehicleHeight();
         
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
-        ILowerLayerFactory lowerFact = () -> {
-            PurePursuitController controller = new PurePursuitController();
-            controller.setParameters(new PurePursuitParameters(10.0, 1.0));
-            return controller;
-        };
+        ILowerLayerFactory lowerFact = () -> new PurePursuitController(10.0);
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap, upperFact, lowerFact);
         NetType network = roadMap.getNetwork();

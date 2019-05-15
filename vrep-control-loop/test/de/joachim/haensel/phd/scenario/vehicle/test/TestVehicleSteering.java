@@ -278,7 +278,7 @@ public class TestVehicleSteering
         public boolean isOnPath(Position2D pos);
     }
 
-    public class TestCheckingSteeringController implements ILowerLayerControl<Object>
+    public class TestCheckingSteeringController implements ILowerLayerControl
     {
         private IActuatingSensing _actuatorsSensors;
         private float _targetAngle;
@@ -342,11 +342,6 @@ public class TestVehicleSteering
         }
 
         @Override
-        public void setParameters(Object parameters)
-        {
-        }
-
-        @Override
         public void stop()
         {
         }
@@ -364,26 +359,20 @@ public class TestVehicleSteering
         @Override
         public void addArrivedListener(IArrivedListener arrivedListener)
         {
-            // TODO Auto-generated method stub
-            
         }
 
         @Override
         public void clearSegmentBuffer()
         {
-            // TODO Auto-generated method stub
-            
         }
 
         @Override
         public void clearArrivedListeners()
         {
-            // TODO Auto-generated method stub
-            
         }
     }
     
-    public class TestJustSteeringController implements ILowerLayerControl<Object>
+    public class TestJustSteeringController implements ILowerLayerControl
     {
         private IActuatingSensing _actuatorsSensors;
         private float _currentAngle;
@@ -422,11 +411,6 @@ public class TestVehicleSteering
         }
 
         @Override
-        public void setParameters(Object parameters)
-        {
-        }
-
-        @Override
         public void stop()
         {
         }
@@ -444,22 +428,16 @@ public class TestVehicleSteering
         @Override
         public void addArrivedListener(IArrivedListener arrivedListener)
         {
-            // TODO Auto-generated method stub
-            
         }
 
         @Override
         public void clearSegmentBuffer()
         {
-            // TODO Auto-generated method stub
-            
         }
 
         @Override
         public void clearArrivedListeners()
         {
-            // TODO Auto-generated method stub
-            
         }
     }
 }

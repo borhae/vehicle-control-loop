@@ -16,7 +16,6 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.map.IStreetSection;
-import de.joachim.haensel.phd.scenario.map.Node;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
@@ -30,7 +29,6 @@ import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingObject;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
-import sumobindings.EdgeType;
 
 public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
 {

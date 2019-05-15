@@ -26,7 +26,6 @@ import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.simulator.RoadMapTracker;
-import de.joachim.haensel.phd.scenario.sumobindings.tostring.Sumobindings;
 import sumobindings.EdgeType;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;

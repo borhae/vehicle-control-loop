@@ -11,8 +11,6 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.simulator.ISimulatorData;
 import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
-import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepActuatingSensingFactory;
-import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleActuatorsSensors;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import sumobindings.JunctionType;
 import sumobindings.LaneType;

@@ -27,7 +27,6 @@ import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookahead;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.LinearChangeAdaptiveNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
@@ -155,7 +154,6 @@ public class ExperimentRunnerAdaptingController
                 public ILowerLayerControl create()
                 {
                     PurePursuitControllerVariableLookahead controller = new PurePursuitControllerVariableLookahead();
-                    controller.setParameters(new PurePursuitParameters(lookahead, 0.0));
                     if(_recordOutcomes) 
                     {
                         controller.addTrajectoryRequestListener(requestListener);

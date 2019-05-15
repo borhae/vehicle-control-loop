@@ -323,8 +323,8 @@ public class Earcut
     private static double zOrder(double x, double y, double minX, double minY, double size)
     {
         // coords are transformed into non-negative 15-bit integer range
-        int lx = new Double(32767 * (x - minX) / size).intValue();
-        int ly = new Double(32767 * (y - minY) / size).intValue();
+        int lx = Double.valueOf(32767 * (x - minX) / size).intValue();
+        int ly = Double.valueOf(32767 * (y - minY) / size).intValue();
 
         lx = (lx | (lx << 8)) & 0x00FF00FF;
         lx = (lx | (lx << 4)) & 0x0F0F0F0F;

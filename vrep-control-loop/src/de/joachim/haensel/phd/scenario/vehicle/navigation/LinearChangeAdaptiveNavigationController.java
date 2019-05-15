@@ -8,7 +8,6 @@ import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.random.MersenneTwister;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.IRouteBuildingListener;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;

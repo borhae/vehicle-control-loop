@@ -24,10 +24,7 @@ import de.joachim.haensel.phd.scenario.tasks.ITask;
 import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig;
 import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
-import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
-import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookahead;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
@@ -135,16 +132,7 @@ public class ErrounousToursTest
 			public void activateRouteDebugging() {
 			}
 		});
-		taskConfiguration.setLowerLayerController(new ILowerLayerFactory()
-		{
-			@Override
-			public ILowerLayerControl create() 
-			{
-				PurePursuitControllerVariableLookahead purePursuitControllerVariableLookahead = new PurePursuitControllerVariableLookahead();
-				purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(15, 0.0));
-				return purePursuitControllerVariableLookahead;
-			}
-		});
+		taskConfiguration.setLowerLayerController(() -> new PurePursuitControllerVariableLookahead());
 		taskCreator.configure(taskConfiguration);
 		List<ITask> tasks = taskCreator.createTasks();
 

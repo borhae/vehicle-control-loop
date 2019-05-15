@@ -27,7 +27,7 @@ import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
 import de.joachim.haensel.statemachine.Guard;
 import de.joachim.haensel.statemachine.States;
 
-public class PurePursuitControllerVariableLookahead implements ILowerLayerControl<PurePursuitParameters>
+public class PurePursuitControllerVariableLookahead implements ILowerLayerControl
 {
     private static final double LOOKAHEAD_FACTOR = 2.0;
     private static final double MIN_DYNAMIC_LOOKAHEAD = 5.1;
@@ -42,7 +42,6 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     private ITrajectoryProvider _segmentProvider;
     private TrajectoryElement _currentLookaheadSegment;
     private IVrepDrawing _vrepDrawing;
-    private PurePursuitParameters _parameters;
     private boolean _debugging;
     private DebugParams _debugParams;
     private double _speedToWheelRotationFactor;
@@ -173,12 +172,6 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     }
 
     @Override
-    public void setParameters(PurePursuitParameters parameters)
-    {
-        _parameters = parameters;
-    }
-    
-    @Override
     public void initController(IActuatingSensing actuatorsSensors, ITrajectoryProvider trajectoryProvider)
     {
         _actuatorsSensors = actuatorsSensors;
@@ -186,7 +179,6 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         _segmentBuffer = new ArrayList<>();
         _segmentProvider = trajectoryProvider;
         _currentLookaheadSegment = null;
-        _speedToWheelRotationFactor = _parameters.getSpeedToWheelRotationFactor();
     }
 
     @Override
@@ -198,7 +190,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         _lastRouteReported = false;
         _lostTrack = false;
         ensureBufferSize();
-        _speedToWheelRotationFactor = 2 / _actuatorsSensors.getWheelDiameter(); // 2/diameter = 1/radius
+        _speedToWheelRotationFactor = 2.0 / _actuatorsSensors.getWheelDiameter(); // 2/diameter = 1/radius
         Position2D currentPosition = _actuatorsSensors.getPosition();
         _currentLookaheadSegment = chooseClosestSegmentFromBuffer(_actuatorsSensors.getOrientation(), currentPosition);
         _stateMachine.driveTo(target);

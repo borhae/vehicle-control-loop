@@ -81,7 +81,7 @@ public class SubScenarioCreationTest implements TestConstants
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
-        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
+        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController(15.0);};
 
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, upperFact, lowerFact);
         vehicle.setOrientation(0.0f, 0.0f, 0.0f);
@@ -100,7 +100,7 @@ public class SubScenarioCreationTest implements TestConstants
         float height = vehicleCreator.getVehicleHeight();
 
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
-        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController();};
+        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController(15.0);};
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap, upperFact, lowerFact);
         vehicle.setOrientation(0.0f, 0.0f, 0.0f);

@@ -10,7 +10,7 @@ import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRe
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 
-public class MonitoringController implements ILowerLayerControl<Object>
+public class MonitoringController implements ILowerLayerControl
 {
     private IActuatingSensing _actuatorsSensors;
     private ITrajectoryProvider _trajectoryProvider;
@@ -53,11 +53,6 @@ public class MonitoringController implements ILowerLayerControl<Object>
     }
 
     @Override
-    public void setParameters(Object parameters)
-    {
-    }
-
-    @Override
     public void stop()
     {
     }
@@ -80,14 +75,10 @@ public class MonitoringController implements ILowerLayerControl<Object>
     @Override
     public void clearSegmentBuffer()
     {
-        // TODO Auto-generated method stub
-        
     }
 
     @Override
     public void clearArrivedListeners()
     {
-        // TODO Auto-generated method stub
-        
     }
 }

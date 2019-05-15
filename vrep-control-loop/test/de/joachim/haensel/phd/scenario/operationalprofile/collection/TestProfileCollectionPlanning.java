@@ -44,7 +44,6 @@ import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookahead;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
@@ -149,10 +148,9 @@ public class TestProfileCollectionPlanning
             public ILowerLayerControl create()
             {
                 PurePursuitControllerVariableLookahead purePursuitControllerVariableLookahead = new PurePursuitControllerVariableLookahead();
-                purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(lookahead, 0.0));
                 ITrajectoryRequestListener requestListener = (newTrajectories, timestamp) ->
                 {
-                    segmentBuffers.put(new Long(timestamp), newTrajectories);
+                    segmentBuffers.put(Long.valueOf(timestamp), newTrajectories);
                 };
                 purePursuitControllerVariableLookahead.addTrajectoryRequestListener(requestListener);
                 return purePursuitControllerVariableLookahead;

@@ -65,7 +65,7 @@ public class LayerInterfaceAccessTest
         
         upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
         
-        ILowerLayerControl<Object> lowerCtrl = new MockLowerLayerControl();
+        ILowerLayerControl lowerCtrl = new MockLowerLayerControl();
         
         ITrajectoryRequestListener requestListener = new MockTrajectoryRequestListener();
         ITrajectoryReportListener reportListener = new MockTrajectoryReportListener();

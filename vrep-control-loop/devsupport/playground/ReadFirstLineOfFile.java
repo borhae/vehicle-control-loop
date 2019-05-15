@@ -31,6 +31,7 @@ public class ReadFirstLineOfFile
                 cnt++;
             }
             System.out.println(builder.toString());
+            reader.close();
         }
         catch (FileNotFoundException exc)
         {

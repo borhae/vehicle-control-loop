@@ -35,10 +35,7 @@ import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig
 import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
-import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
-import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookahead;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.IRouteAdaptor;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.IRouteProperyDetector;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
@@ -521,16 +518,7 @@ public class NavigationTest implements TestConstants
             taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisualsBrakeScript.ttm");
             
             taskConfiguration.setTargetPoints(Arrays.asList(new Position2D[] {pos1, pos2}));
-            taskConfiguration.setLowerLayerController(new ILowerLayerFactory() {
-                @Override
-                public ILowerLayerControl create()
-                {
-                    
-                    PurePursuitControllerVariableLookahead controller = new PurePursuitControllerVariableLookahead();
-                    controller.setParameters(new PurePursuitParameters(lookahead, 0.0));
-                    return controller;
-                }
-            });
+            taskConfiguration.setLowerLayerController(() -> new PurePursuitControllerVariableLookahead());
             taskCreator.configure(taskConfiguration);
             List<ITask> tasks = taskCreator.createTasks();
             
