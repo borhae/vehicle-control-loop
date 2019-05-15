@@ -309,6 +309,19 @@ public class TestTaskExecutor
            
             config.setMap(map);
             config.configSimulator(_vrep, _clientID, _objectCreator);
+            config.setControlParams(15.0, 120.0, 3.8, 4.0, 1.0);
+            config.setDebug(true);
+            config.setCarModel("./res/simcarmodel/vehicleVisuals.ttm");
+            config.setLowerLayerController(new ILowerLayerFactory()
+            {
+                @Override
+                public ILowerLayerControl create() 
+                {
+                    PurePursuitControllerVariableLookahead purePursuitControllerVariableLookahead = new PurePursuitControllerVariableLookahead();
+                    purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(15, 0.0));
+                    return purePursuitControllerVariableLookahead;
+                }
+            });
 
             config.setTargetPoints(Arrays.asList(new Position2D[]{p2, p3, p4}));
             taskCreator.configure(config);
@@ -335,14 +348,26 @@ public class TestTaskExecutor
             TaskCreator taskCreator = new TaskCreator();
             PointListTaskCreatorConfig config = new PointListTaskCreatorConfig(true);
             
-            Position2D p2 = new Position2D(5426.46,2432.27).transform(centerMatrix);
-            Position2D p3 = new Position2D(5564.77,2446.22).transform(centerMatrix);
+            Position2D p2 = new Position2D(5272.78,2468.75).transform(centerMatrix);
+            Position2D p3 = new Position2D(5557.04,2438.00).transform(centerMatrix);
             //Position2D p4 = new Position2D(5281.36,2829.22).transform(centerMatrix);
            
             config.setMap(map);
             config.configSimulator(_vrep, _clientID, _objectCreator);
-
-            config.setTargetPoints(Arrays.asList(new Position2D[]{p2, p3}));
+            config.setControlParams(15.0, 120.0, 3.8, 4.0, 1.0);
+            config.setDebug(true);
+            config.setCarModel("./res/simcarmodel/vehicleVisuals.ttm");
+            config.setLowerLayerController(new ILowerLayerFactory()
+            {
+                @Override
+                public ILowerLayerControl create() 
+                {
+                    PurePursuitControllerVariableLookahead purePursuitControllerVariableLookahead = new PurePursuitControllerVariableLookahead();
+                    purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(15, 0.0));
+                    return purePursuitControllerVariableLookahead;
+                }
+            });
+            config.setTargetPoints(Arrays.asList(new Position2D[] {p2, p3}));
             taskCreator.configure(config);
             List<ITask> tasks = taskCreator.createTasks();
 
