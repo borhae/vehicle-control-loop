@@ -35,7 +35,7 @@ import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig
 import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookahead;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.IRouteAdaptor;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.IRouteProperyDetector;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;

@@ -284,7 +284,7 @@ public class StanleyController implements ILowerLayerControl
         if(_segmentBuffer.size() < MIN_SEGMENT_BUFFER_SIZE)
         {
             int segmentRequestSize = SEGMENT_BUFFER_SIZE - _segmentBuffer.size();
-            List<TrajectoryElement> trajectories = _segmentProvider.getNewSegments(segmentRequestSize);
+            List<TrajectoryElement> trajectories = _segmentProvider.getNewElements(segmentRequestSize);
             if(trajectories == null)
             {
                 return;

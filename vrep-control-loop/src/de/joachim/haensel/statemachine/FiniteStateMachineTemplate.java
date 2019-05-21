@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookaheadOld;
+
 
 public class FiniteStateMachineTemplate
 {
@@ -52,6 +54,10 @@ public class FiniteStateMachineTemplate
             return "->" + state + "/{" + action + "}";
         }
     }
+    
+    public static Guard TRUE_GUARD = () -> true;
+    public static Consumer<EmptyParam> NO_OP_ACTION = dummy -> {};
+    public static final EmptyParam EMPTY_PARAMETER = new EmptyParam();
 
     private States _currentState;
     private States _initialState;

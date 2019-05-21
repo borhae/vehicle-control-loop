@@ -91,7 +91,7 @@ public class RandomAdaptiveNavigationController implements IUpperLayerControl
     }
 
     @Override
-    public List<TrajectoryElement> getNewSegments(int requestSize)
+    public List<TrajectoryElement> getNewElements(int requestSize)
     {
         return _segmentBuffer.getSegments(requestSize);
     }
@@ -129,4 +129,10 @@ public class RandomAdaptiveNavigationController implements IUpperLayerControl
 	{
 		return _segmentBuffer.getSize() > 0;
 	}
+
+    @Override
+    public boolean hasElements(int elementRequestSize)
+    {
+        return _segmentBuffer.getSize() >= elementRequestSize;
+    }
 }

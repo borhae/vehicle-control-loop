@@ -637,7 +637,7 @@ public class SegmentBuildingTest implements TestConstants
         nav.addRouteBuilderListener(new SegmentBuildingAdapter(visualizer));
         nav.initController(new Positioner(startingPoint), roadMap);
         nav.buildSegmentBuffer(destinationPosition, roadMap);
-        Stream<TrajectoryElement> segmentStream = nav.getNewSegments(nav.getSegmentBufferSize()).stream();
+        Stream<TrajectoryElement> segmentStream = nav.getNewElements(nav.getSegmentBufferSize()).stream();
         Deque<Vector2D> segmentBufferAsVectors = segmentStream.map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
     }
 

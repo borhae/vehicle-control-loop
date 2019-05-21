@@ -29,7 +29,7 @@ import de.joachim.haensel.phd.scenario.tasks.ITask;
 import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig;
 import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookahead;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 

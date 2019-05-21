@@ -21,7 +21,7 @@ import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookahead;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class ExperimentRunner

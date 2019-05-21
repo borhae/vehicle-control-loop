@@ -544,7 +544,7 @@ public class LayerInteractionTest implements TestConstants
         fakeNav.initController(new VRepVehicleActuatorsSensors(vehicle.getVehicleHandles(), simData, roadMap), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
 
-        Deque<Vector2D> input = fakeNav.getNewSegments(fakeNav.getSegmentBufferSize()).stream().map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
+        Deque<Vector2D> input = fakeNav.getNewElements(fakeNav.getSegmentBufferSize()).stream().map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
         Vector2DVisualizer visualizer = new Vector2DVisualizer();
         visualizer.addVectorSet(input, Color.BLUE);
         visualizer.updateVisuals();

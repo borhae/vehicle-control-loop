@@ -27,7 +27,7 @@ import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
 import de.joachim.haensel.statemachine.Guard;
 import de.joachim.haensel.statemachine.States;
 
-public class PurePursuitControllerVariableLookahead implements ILowerLayerControl
+public class PurePursuitControllerVariableLookaheadOld implements ILowerLayerControl
 {
     private static final double LOOKAHEAD_FACTOR = 2.0;
     private static final double MIN_DYNAMIC_LOOKAHEAD = 5.1;
@@ -62,11 +62,11 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         public ReactiveControllerStateMachine()
         {
             Consumer<Position2D> driveToAction = target -> _expectedTarget = target; 
-            Consumer<PurePursuitControllerVariableLookahead> driveAction = controller -> controller.driveAction();
-            Consumer<PurePursuitControllerVariableLookahead> brakeAndStopAction = controller -> controller.brakeAndStopAction();
-            Consumer<PurePursuitControllerVariableLookahead> arrivedBrakeAndStopAction = controller -> controller.arrivedBrakeAndStopAction();
-            Consumer<PurePursuitControllerVariableLookahead> driveToClosestKnownAction = controller -> controller.driveToClosestKnownAction();
-            Consumer<PurePursuitControllerVariableLookahead> resumeRegularDriving = controller -> controller.resumeDriving();
+            Consumer<PurePursuitControllerVariableLookaheadOld> driveAction = controller -> controller.driveAction();
+            Consumer<PurePursuitControllerVariableLookaheadOld> brakeAndStopAction = controller -> controller.brakeAndStopAction();
+            Consumer<PurePursuitControllerVariableLookaheadOld> arrivedBrakeAndStopAction = controller -> controller.arrivedBrakeAndStopAction();
+            Consumer<PurePursuitControllerVariableLookaheadOld> driveToClosestKnownAction = controller -> controller.driveToClosestKnownAction();
+            Consumer<PurePursuitControllerVariableLookaheadOld> resumeRegularDriving = controller -> controller.resumeDriving();
             
             Guard arrivedAtTargetGuard = () -> arrivedAtTarget();
             Guard notArrivedGuard = () -> !arrivedAtTargetGuard.isTrue();
@@ -116,7 +116,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
             return arrived;
         }
         
-        private void lostTrack(PurePursuitControllerVariableLookahead controller)
+        private void lostTrack(PurePursuitControllerVariableLookaheadOld controller)
         {
             transition(ControllerMsg.LOST_TRACK_EVENT, controller); 
         }
@@ -126,7 +126,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
             transition(ControllerMsg.DRIVE_TO, target);
         }
 
-        public void controlEvent(PurePursuitControllerVariableLookahead controller)
+        public void controlEvent(PurePursuitControllerVariableLookaheadOld controller)
         {
             if(!_lostTrack)
             {
@@ -140,13 +140,13 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
             }
         }
 
-        public void stop(PurePursuitControllerVariableLookahead controller)
+        public void stop(PurePursuitControllerVariableLookaheadOld controller)
         {
             transition(ControllerMsg.STOP, controller);
         }
     }
     
-    public PurePursuitControllerVariableLookahead()
+    public PurePursuitControllerVariableLookaheadOld()
     {
         _debugging = false;
         _arrivedListeners = new ArrayList<>();
@@ -487,7 +487,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
         if(_segmentBuffer.size() < MIN_SEGMENT_BUFFER_SIZE)
         {
             int segmentRequestSize = SEGMENT_BUFFER_SIZE - _segmentBuffer.size();
-            List<TrajectoryElement> trajectories = _segmentProvider.getNewSegments(segmentRequestSize);
+            List<TrajectoryElement> trajectories = _segmentProvider.getNewElements(segmentRequestSize);
             if(trajectories == null || trajectories.size() < segmentRequestSize)
             {
                 _routeEnding = true;

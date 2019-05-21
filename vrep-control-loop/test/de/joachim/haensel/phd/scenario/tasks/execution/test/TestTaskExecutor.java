@@ -31,7 +31,7 @@ import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookahead;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;

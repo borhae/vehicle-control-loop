@@ -87,12 +87,6 @@ public class TestVehicleSteering
             return new IUpperLayerControl() {
 
                 @Override
-                public List<TrajectoryElement> getNewSegments(int segmentRequestSize)
-                {
-                    return null;
-                }
-
-                @Override
                 public void initController(IActuatingSensing sensorsActuators, RoadMap roadMap)
                 {
                 }
@@ -121,6 +115,18 @@ public class TestVehicleSteering
 				public boolean segmentsLeft() {
 					return false;
 				}
+
+                @Override
+                public List<TrajectoryElement> getNewElements(int segmentRequestSize)
+                {
+                    return null;
+                }
+
+                @Override
+                public boolean hasElements(int elementRequestSize)
+                {
+                    return false;
+                }
             };
         };
         TestJustSteeringController llControl = new TestJustSteeringController();
@@ -179,13 +185,6 @@ public class TestVehicleSteering
         IUpperLayerFactory uperFact = () ->
         {
             return new IUpperLayerControl() {
-
-                @Override
-                public List<TrajectoryElement> getNewSegments(int segmentRequestSize)
-                {
-                    return null;
-                }
-
                 @Override
                 public void initController(IActuatingSensing sensorsActuators, RoadMap roadMap)
                 {
@@ -216,6 +215,19 @@ public class TestVehicleSteering
 				{
 					return false;
 				}
+
+                @Override
+                public List<TrajectoryElement> getNewElements(int segmentRequestSize)
+                {
+                    return null;
+                }
+
+                @Override
+                public boolean hasElements(int elementRequestSize)
+                {
+                    // TODO Auto-generated method stub
+                    return false;
+                }
             };
         };
         Position2D requiredCenter = new Position2D(0.0f, 0.0f);
