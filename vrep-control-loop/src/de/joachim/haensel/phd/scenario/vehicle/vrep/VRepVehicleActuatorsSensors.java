@@ -178,6 +178,7 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     @Override
     public void drive(float targetWheelRotation, float targetSteeringAngle)
     {
+        System.out.format("v: %.2f, angle: %.2f\n", targetWheelRotation, Math.toDegrees(targetSteeringAngle));
         internalDrive(targetWheelRotation, targetSteeringAngle);
     }
 

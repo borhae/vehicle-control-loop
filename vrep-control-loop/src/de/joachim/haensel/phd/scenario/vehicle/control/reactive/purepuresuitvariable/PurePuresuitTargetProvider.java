@@ -19,6 +19,7 @@ public class PurePuresuitTargetProvider
     private Position2D _currentPosition;
     private Vector2D _currentOrientation;
     private TrajectoryElement _currentLookaheadElement;
+    private Position2D _rearWheelCenterPosition;
 
     public PurePuresuitTargetProvider(TrajectoryBuffer trajectoryBuffer, IActuatingSensing actuatorsSensors)
     {
@@ -37,6 +38,7 @@ public class PurePuresuitTargetProvider
     {
         _trajectoryBuffer.triggerEnsureSize();
         _currentPosition = _actuatorsSensors.getPosition();
+        _rearWheelCenterPosition = _actuatorsSensors.getRearWheelCenterPosition();
         _currentOrientation = _actuatorsSensors.getLockedOrientation();
     }
 
@@ -96,14 +98,14 @@ public class PurePuresuitTargetProvider
 
     public TrajectoryElement getLookaheadTrajectoryElement(double lookahead)
     {
-        if(_currentLookaheadElement == null || !isInRange(_currentLookaheadElement, _currentPosition, lookahead))
+        if(_currentLookaheadElement == null || !isInRange(_currentLookaheadElement, _rearWheelCenterPosition, lookahead))
         {
             int bestMatchingSegmentIdx = 0;
             Map<TrajectoryElement, Integer> matchingElements = new HashMap<>();
             for(int idx = 0; idx < _trajectoryBuffer.size(); idx++)
             {
                 TrajectoryElement curElement = _trajectoryBuffer.get(idx);
-                if(isInRange(curElement, _currentPosition, lookahead))
+                if(isInRange(curElement, _rearWheelCenterPosition, lookahead))
                 {
                     matchingElements.put(curElement, idx);
                 }
@@ -124,11 +126,22 @@ public class PurePuresuitTargetProvider
                     bestMatchingSegmentIdx = matchingElements.entrySet().iterator().next().getValue();
                 }
                 TrajectoryElement newLookaheadTrajectoryElement = _trajectoryBuffer.get(bestMatchingSegmentIdx);
-                //don't go back to a former trajectory element (would be the case for new idx < old idx)
-                if((_currentLookaheadElement == null) || (newLookaheadTrajectoryElement.getIdx() > _currentLookaheadElement.getIdx()))
-                {
-                    _currentLookaheadElement = newLookaheadTrajectoryElement;
-                }
+                _currentLookaheadElement = newLookaheadTrajectoryElement;
+                //TODO beforehand I kept the old element when the new element was actually moving back on the route 
+//                 only update if the new element has a larger index (is further ahead than current element)
+//                if(_currentLookaheadElement == null)
+//                {
+//                    _currentLookaheadElement = newLookaheadTrajectoryElement;
+//                }
+//                else if(newLookaheadTrajectoryElement.getIdx() > _currentLookaheadElement.getIdx())
+//                {
+//                    _currentLookaheadElement = newLookaheadTrajectoryElement;
+//                }
+//                else
+//                {
+////                    String answer = isInRange(_currentLookaheadElement, _rearWheelCenterPosition, lookahead) ? "yes" : "no";
+////                    System.out.format("Element stays the same since new element would have a lower index then the old one (is that really a reason to keep the old one?). Is old element still in range? The answer is: %s\n", answer);
+//                }
             }
             else
             {
@@ -146,7 +159,7 @@ public class PurePuresuitTargetProvider
                 }
             }
         }
-        return null;
+        return _currentLookaheadElement;
     }
     
     private boolean isInRange(TrajectoryElement trajectoryElement, Position2D position, double lookahead)
@@ -154,6 +167,7 @@ public class PurePuresuitTargetProvider
         Vector2D vector = trajectoryElement.getVector();
         double baseDist = Position2D.distance(vector.getBase(), position);
         double tipDist = Position2D.distance(vector.getTip(), position);
-        return tipDist >= lookahead && baseDist <= lookahead;
+        
+        return tipDist > lookahead && baseDist <= lookahead;
     }
 }

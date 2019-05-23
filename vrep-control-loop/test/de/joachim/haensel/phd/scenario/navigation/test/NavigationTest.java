@@ -495,7 +495,7 @@ public class NavigationTest implements TestConstants
         Navigator navigator = new Navigator(roadMap);
 
         List<String> pointsAsString;
-        pointsAsString = Arrays.asList(new String[] {"8620.12,7275.68", "8419.82,7559.14"});
+        pointsAsString = Arrays.asList(new String[] {"8715.99,7152.40", "8440.86,7480.21"});
         List<Position2D> positions = pointsAsString.stream().map(string -> new Position2D(string).transform(centerMatrix)).collect(Collectors.toList());
 
         for(int idx = 0; (idx < positions.size() - 1); idx++)
