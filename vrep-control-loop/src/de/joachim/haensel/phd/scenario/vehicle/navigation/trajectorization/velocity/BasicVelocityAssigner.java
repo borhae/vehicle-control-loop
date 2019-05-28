@@ -215,14 +215,8 @@ public class BasicVelocityAssigner implements IVelocityAssigner
 //            Reducible to due to curvature radius relation:
         Consumer<TrajectoryElement> curvatureToVelocity = t -> 
         {
-            double maxCentripedal = Math.sqrt(_accelerationMaxLateral * t.getRadius());
+            double maxCentripedal = Math.sqrt(0.1 * _accelerationMaxLateral * Math.pow(t.getRadius(), 1.5));
             double velocity = Math.min(_velocityMaxLongitudinal, maxCentripedal);
-            
-            //drastically reduce velocity for very close radius
-            if(t.getRadius() < 10) {
-                velocity = velocity * 0.6;
-            }
-            
             t.setVelocity(velocity);
         };
         trajectories.forEach(curvatureToVelocity);
