@@ -2,6 +2,7 @@ package de.joachim.haensel.phd.scenario.experiment;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterAll;
@@ -138,6 +139,11 @@ public class ErrounousToursTest
 
 		TaskExecutor executor = new TaskExecutor();
 		executor.execute(tasks);
-		System.out.println("tada!");
+
+		System.out.println("enter arbitrary stuff an then press enter");
+        Scanner scanner = new Scanner(System.in);
+        String input = scanner.next();
+        System.out.println(input);
+        scanner.close();
 	}
 }

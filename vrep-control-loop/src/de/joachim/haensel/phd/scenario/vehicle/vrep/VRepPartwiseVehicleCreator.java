@@ -8,6 +8,7 @@ import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorData;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensingFactory;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
+import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleHandles;
 import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
 import de.joachim.haensel.phd.scenario.vehicle.VehicleHandles;
@@ -153,7 +154,11 @@ public class VRepPartwiseVehicleCreator
             
             VRepSimulatorData simulatorData = new VRepSimulatorData(_objectCreator, _vrep, _clientID, PHYSICAL_CAR_BODY_NAME);
             IActuatingSensingFactory actuatingSensingFactory = () -> {return new VRepVehicleActuatorsSensors(vehicleHandles, simulatorData, roadMap);};
-            return new Vehicle(simulatorData, vehicleHandles, roadMap, uppperLayerFactory, lowerLayerFactory, actuatingSensingFactory );
+            IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
+            vehicleConf.setUpperCtrlFactory(uppperLayerFactory);
+            vehicleConf.setLowerCtrlFactory(lowerLayerFactory);
+            vehicleConf.setRoadMap(roadMap);
+            return new Vehicle(simulatorData, vehicleHandles, actuatingSensingFactory, vehicleConf);
         }
         catch (VRepException e)
         {

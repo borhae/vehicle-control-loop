@@ -5,9 +5,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookaheadOld;
-
-
 public class FiniteStateMachineTemplate
 {
     public class ActionTargetStatePair<T>

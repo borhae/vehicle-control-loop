@@ -10,6 +10,7 @@ import de.joachim.haensel.phd.scenario.map.sumo2vrep.OrientedPosition;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.simulator.ISimulatorData;
+import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorData;
 import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import sumobindings.JunctionType;
@@ -17,32 +18,29 @@ import sumobindings.LaneType;
 
 public class Vehicle implements IVehicle 
 {
-    private static final int CONTROL_LOOP_EXECUTION_FREQUENCY = 200; //milliseconds
-
     private IUpperLayerControl _upperControlLayer;
     private ILowerLayerControl _lowerControlLayer;
     private LowLevelEventGenerator _controlEventGenerator;
     private Timer _timer;
     private RoadMap _roadMap;
     private IActuatingSensing _actuatingSensing;
-
     private IVehicleHandles _vehicleHandles;
-
     private ISimulatorData _simulatorData;
-
     private boolean _stopped;
+    private long _controlLoopRate;
 
-
-    public Vehicle(ISimulatorData simulatorData, IVehicleHandles vehicleHandles, RoadMap roadMap, IUpperLayerFactory upperLayerFactory, ILowerLayerFactory lowerLayerFactory, IActuatingSensingFactory actuatingSensingFactory)
+    public Vehicle(VRepSimulatorData simulatorData, IVehicleHandles vehicleHandles, IActuatingSensingFactory actuatingSensingFactory, IVehicleConfiguration vehicleConf)
     {
+        RoadMap roadMap = vehicleConf.getMap();
+        _controlLoopRate = vehicleConf.getControlLoopRate();
         _simulatorData = simulatorData;
         _vehicleHandles = vehicleHandles;
-        _upperControlLayer = upperLayerFactory.create();
+        _upperControlLayer = vehicleConf.getUpperCtrlFactory().create();
         _actuatingSensing = actuatingSensingFactory.create();
         _actuatingSensing.initialize();
         _upperControlLayer.initController(_actuatingSensing, roadMap);
         _upperControlLayer.addRouteBuilderListener(_actuatingSensing);
-        _lowerControlLayer = lowerLayerFactory.create();
+        _lowerControlLayer = vehicleConf.getLowerCtrlFactory().create();
         _lowerControlLayer.initController(_actuatingSensing, _upperControlLayer);
         _controlEventGenerator = new LowLevelEventGenerator();
         _controlEventGenerator.addEventListener(_lowerControlLayer);
@@ -90,7 +88,7 @@ public class Vehicle implements IVehicle
     {
         if(_stopped)
         {
-            _timer.scheduleAtFixedRate(_controlEventGenerator, 0, CONTROL_LOOP_EXECUTION_FREQUENCY);
+            _timer.scheduleAtFixedRate(_controlEventGenerator, 0, _controlLoopRate);
             _stopped = false;
         }
     }

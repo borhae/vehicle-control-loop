@@ -451,7 +451,7 @@ public class NavigationTest implements TestConstants
     }
     
     @Test
-    public void testChandigarhProblemRoute44() throws VRepException
+    public void testNavigateChandigarhProblemRoute44() throws VRepException
     {
         RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/chandigarh-roads-lefthand.removed.net.xml");
         TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
@@ -485,6 +485,51 @@ public class NavigationTest implements TestConstants
         System.out.println(input);
         scanner.close();
    }
+    
+    @Test
+    public void testNavigateAndDriveChandigarhProblemRoute44() throws VRepException
+    {
+        RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/chandigarh-roads-lefthand.removed.net.xml");
+        TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+        RoadMap roadMap = mapAndCenterMatrix.getRoadMap();
+
+        List<String> pointsAsString;
+        try
+        {
+            pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread.txt").toPath());
+            List<Position2D> positions = pointsAsString.stream().map(string -> new Position2D(string).transform(centerMatrix)).collect(Collectors.toList());
+    
+            int lower = 43;
+            int upper = 46;
+            List<Position2D> targetPoints = new ArrayList<Position2D>();
+            for(int idx = Math.max(0,  lower); (idx < Math.min(upper, positions.size())) && (lower < upper) ; idx++)
+            {
+                Position2D pos1 = positions.get(idx);
+                targetPoints.add(pos1);
+            }
+            TaskCreator taskCreator = new TaskCreator();
+            PointListTaskCreatorConfig taskConfiguration = new PointListTaskCreatorConfig();
+            double lookahead = 15.0;
+            taskConfiguration.setControlParams(lookahead, 120.0, 3.8, 4.0, 0.8);
+            taskConfiguration.setDebug(true);
+            taskConfiguration.setMap(roadMap);
+            taskConfiguration.configSimulator(_vrep, _clientID, _objectCreator);
+            
+            taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisualsBrakeScript.ttm");
+            
+            taskConfiguration.setTargetPoints(targetPoints);
+            taskConfiguration.setLowerLayerController(() -> new PurePursuitControllerVariableLookahead());
+            taskCreator.configure(taskConfiguration);
+            List<ITask> tasks = taskCreator.createTasks();
+            
+            TaskExecutor executor = new TaskExecutor();
+            executor.execute(tasks);
+        } 
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
     
     @Test
     public void testChandigarhProblemRoute54PartOnly() throws VRepException

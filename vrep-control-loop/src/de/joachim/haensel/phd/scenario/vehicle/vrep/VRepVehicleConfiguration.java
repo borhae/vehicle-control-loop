@@ -10,6 +10,8 @@ import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 
 public class VRepVehicleConfiguration implements IVehicleConfiguration
 {
+    private static final int DEFAULT_CONTROL_LOOP_EXECUTION_FREQUENCY = 200; //milliseconds
+
     private IUpperLayerFactory _upperFact;
     private ILowerLayerFactory _lowerFact;
     private double _posX;
@@ -18,7 +20,14 @@ public class VRepVehicleConfiguration implements IVehicleConfiguration
     private Vector2D _orientation;
     private RoadMap _roadMap;
     private List<String> _autoBodyNames;
+    private int _controlLoopRate;
 
+
+    public VRepVehicleConfiguration()
+    {
+        _controlLoopRate = DEFAULT_CONTROL_LOOP_EXECUTION_FREQUENCY;
+    }
+    
     @Override
     public IVehicleConfiguration setUpperCtrlFactory(IUpperLayerFactory upperFact)
     {
@@ -107,5 +116,17 @@ public class VRepVehicleConfiguration implements IVehicleConfiguration
     public List<String> getAutoBodyNames()
     {
         return _autoBodyNames;
+    }
+
+    @Override
+    public int getControlLoopRate()
+    {
+        return _controlLoopRate;
+    }
+
+    @Override
+    public void setControlLoopRate(int controlLoopRate)
+    {
+        _controlLoopRate = controlLoopRate;
     }
 }

@@ -203,7 +203,7 @@ public class ExperimentRunnerAdaptingController
             {
                 List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread_135"+ ".txt").toPath());
                 List<Position2D> positions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());
-                runner.run("luebeck_183_max_scattered_targets_adapting_135to", 15.0, 120.0, 4.0, 4.3, 1.0, positions, "luebeck-roads.net.xml", "blue");
+                runner.run("luebeck_183_max_scattered_targets_adapting_135to", 15.0, 120.0, 4.0, 4.3, 1.0, positions, "luebeck-roads.net.xml", "blue", 120);
                 runner.tearDown();
             }
             catch (IOException exc)

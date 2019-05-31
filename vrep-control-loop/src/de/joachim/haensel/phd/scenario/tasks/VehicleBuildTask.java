@@ -41,6 +41,7 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
     private String _carmodel;
 
     private IUpperLayerFactory _upperLayerFactory;
+    private int _controlLoopRate; //in milliseconds
 
     public VehicleBuildTask(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator, RoadMap map, Position2D position, Vector2D orientation, String carmodel)
     {
@@ -51,6 +52,7 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
         _position = position;
         _orientation = orientation;
         _carmodel = carmodel;
+        _controlLoopRate = 200; //milliseconds. So 200 means 5 times per second
     }
 
     public void setControlParams(double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration)
@@ -62,6 +64,11 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
         _maxLateralAcceleration = maxLateralAcceleration;
     }
     
+    public void setControlLoopRate(int controlLoopRate)
+    {
+        _controlLoopRate = controlLoopRate;
+    }
+
     @Override
     public void execute()
     {
@@ -91,6 +98,7 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
         {
             vehicleConf = createVehicleConfiguration(map, vehiclePosition, orientation, 1.5);
         }
+        vehicleConf.setControlLoopRate(_controlLoopRate);
         IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, _carmodel, 1.0f);
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();
@@ -108,7 +116,7 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
         autoBodyNames.add(MercedesVisualsNames.FRONT_LEFT_VISUAL);
         autoBodyNames.add(MercedesVisualsNames.FRONT_RIGHT_VISUAL);
         
-        vehicleConf.setAutoBodyNames(autoBodyNames );
+        vehicleConf.setAutoBodyNames(autoBodyNames);
 
         return vehicleConf;
     }

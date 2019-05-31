@@ -50,7 +50,7 @@ public class ExperimentRunner
        }
    }
 
-   public void run(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color) throws VRepException
+   public void run(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color, int controlLoopRate) throws VRepException
    {
        RoadMapAndCenterMatrix mapAndCenterMatrix = null;
        RoadMap map = null;
@@ -76,6 +76,7 @@ public class ExperimentRunner
           TaskCreator taskCreator = new TaskCreator();
           PointListTaskCreatorConfig taskConfiguration = new PointListTaskCreatorConfig();
           taskConfiguration.setControlParams(lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
+          taskConfiguration.setControlLoopRate(controlLoopRate);
           taskConfiguration.setDebug(true);
           taskConfiguration.setMap(map);
           taskConfiguration.configSimulator(_vrep, _clientID, _objectCreator);
@@ -145,8 +146,8 @@ public class ExperimentRunner
 //            	List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread_17_18_19.txt").toPath());
                 List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread.txt").toPath());
                 List<Position2D> allPositions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());//                runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "luebeck-roads.net.xml", "blue");
-                List<Position2D> positions = allPositions.subList(43, allPositions.size());
-                runner.run("chandigarh_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "chandigarh-roads-lefthand.removed.net.xml", "blue");
+                List<Position2D> positions = allPositions.subList(0, allPositions.size());
+                runner.run("chandigarh_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "chandigarh-roads-lefthand.removed.net.xml", "blue", 120);
                 runner.tearDown();
             }
             catch (IOException exc)

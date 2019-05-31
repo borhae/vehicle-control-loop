@@ -25,6 +25,8 @@ public class CarInterfaceActions
     private double _vehicleLength;
 
     private List<IArrivedListener> _arrivedListeners;
+    private TrajectoryElement _cachedLookaheadTrajectoryElement;
+    private double _cashedLookahead;
 
     public CarInterfaceActions(IActuatingSensing actuatorsSensors, List<IArrivedListener> arrivedListeners, PurePuresuitTargetProvider targetProvider)
     {
@@ -34,6 +36,8 @@ public class CarInterfaceActions
         Arrays.parallelSetAll(_speedBuf, idx -> 0.0);
         _arrivedListeners = arrivedListeners;
         _targetProvider = targetProvider;
+        _cachedLookaheadTrajectoryElement = null;
+        _cashedLookahead = 0.0;
     }
     
     public void reInit()
@@ -53,9 +57,11 @@ public class CarInterfaceActions
     {
         double kv = computeKTimesVelocity();
         double lookahead = kv;
+        _cashedLookahead = lookahead;
         
         TrajectoryElement closestTrajectoryElement = _targetProvider.getClosestTrajectoryElement();
         TrajectoryElement lookaheadTrajectoryElement = _targetProvider.getLookaheadTrajectoryElement(lookahead);
+        _cachedLookaheadTrajectoryElement  = lookaheadTrajectoryElement;
         
         float targetWheelRotation = 0.0f;
         float targetSteeringAngle = 0.0f;
@@ -230,5 +236,15 @@ public class CarInterfaceActions
     public void setDebugger(IDebugVisualizer debugger)
     {
         _debugger = debugger;
+    }
+
+    public TrajectoryElement getCurrentLookaheadTrajectoryElement()
+    {
+        return _cachedLookaheadTrajectoryElement;
+    }
+
+    public double getCurrentLookahead()
+    {
+        return _cashedLookahead;
     }
 }
