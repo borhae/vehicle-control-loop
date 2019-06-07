@@ -20,23 +20,22 @@ import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
  */
 public class VRepNavigationListener implements INavigationListener
 {
+    public interface IIDCreator
+    {
+        public String getNextStringID();
+    }
+
     private VRepObjectCreation _objectCreator;
     private boolean _routeDebugging;
     private boolean _segmentDebugging;
+    private IIDCreator _idCreator;
 
-    public enum IDCreator
+    public enum IDCreator implements IIDCreator
     {
         INSTANCE;
         
         private Integer _counter = Integer.valueOf(0);
         
-        public synchronized Integer getNextID()
-        {
-            Integer next = Integer.valueOf(_counter.intValue() + 1);
-            _counter = next;
-            return _counter;
-        }
-
         public synchronized String getNextStringID()
         {
             Integer next = Integer.valueOf(_counter.intValue() + 1);
@@ -50,6 +49,13 @@ public class VRepNavigationListener implements INavigationListener
         _objectCreator = objectCreator;
         _routeDebugging = false;
         _segmentDebugging = false;
+        _idCreator = IDCreator.INSTANCE;
+    }
+    
+    public VRepNavigationListener(VRepObjectCreation objectCreator, IIDCreator idCreator)
+    {
+        this(objectCreator);
+        _idCreator = idCreator;
     }
 
     @Override
@@ -62,7 +68,7 @@ public class VRepNavigationListener implements INavigationListener
             segments.forEach(segment -> addSegmentToMesh(segment, vertices, indices));
             try
             {
-                _objectCreator.createMeshInSimulation(vertices, indices, "segments" + IDCreator.INSTANCE.getNextStringID(), true);
+                _objectCreator.createMeshInSimulation(vertices, indices, "segments" + _idCreator.getNextStringID(), true);
             }
             catch (VRepException exc)
             {

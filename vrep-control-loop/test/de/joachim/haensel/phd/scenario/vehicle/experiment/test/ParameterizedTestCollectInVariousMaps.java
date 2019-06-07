@@ -33,10 +33,7 @@ import de.joachim.haensel.phd.scenario.tasks.ITask;
 import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig;
 import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
-import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
-import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookahead;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
@@ -149,16 +146,7 @@ public class ParameterizedTestCollectInVariousMaps
             config.configSimulator(_vrep, _clientID, _objectCreator);
             TrajectoryRecorder trajectoryRecorder = new TrajectoryRecorder();
             config.addLowerLayerControl(trajectoryRecorder);
-            config.setLowerLayerController(new ILowerLayerFactory() {
-                
-                @Override
-                public ILowerLayerControl create()
-                {
-                    PurePursuitControllerVariableLookahead purePursuitControllerVariableLookahead = new PurePursuitControllerVariableLookahead();
-                    purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(_lookahead, 0.0));
-                    return purePursuitControllerVariableLookahead;
-                }
-            });
+            config.setLowerLayerController(() -> new PurePursuitControllerVariableLookahead());
 
             config.setTargetPoints(_targetPoints);
             config.addNavigationListener(trajectoryRecorder);

@@ -93,7 +93,7 @@ public class VRepLoadModelVehicleFactory implements IVehicleFactory
             VRepSimulatorData simulatorData = new VRepSimulatorData(_objectCreator, _vrep, _clientID, PHYSICAL_CAR_BODY_NAME);
             IActuatingSensingFactory actuatingSensingFactory = 
                     () -> {return new VRepVehicleActuatorsSensors(handles, new VRepSimulatorData(_objectCreator, _vrep, _clientID, PHYSICAL_CAR_BODY_NAME), _vehicleConf.getMap());};
-            Vehicle vehicle = new Vehicle(simulatorData, handles, _vehicleConf.getMap(), _vehicleConf.getUpperCtrlFactory(), _vehicleConf.getLowerCtrlFactory(), actuatingSensingFactory);
+            Vehicle vehicle = new Vehicle(simulatorData, handles, actuatingSensingFactory, _vehicleConf);
 
             vehicle.setPosition((float)_vehicleConf.getXPos(), (float)_vehicleConf.getYPos(), (float)_vehicleConf.getZPos());
             Vector2D orientationToAlignTo = _vehicleConf.getOrientation();

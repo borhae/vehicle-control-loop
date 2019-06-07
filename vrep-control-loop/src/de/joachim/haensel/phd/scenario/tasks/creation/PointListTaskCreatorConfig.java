@@ -45,6 +45,7 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
     private ILowerLayerFactory _lowerLayerFactory;
     private IUpperLayerFactory _upperLayerFactory;
     private String _carmodel;
+    private int _controlLoopRate;
 
     public PointListTaskCreatorConfig(boolean debug)
     {
@@ -95,6 +96,7 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
         Vector2D orientation = IDrivingTask.computeOrientation(_map, startPosition, _targetPoints.get(1));
         VehicleBuildTask vehicleBuildTask = new VehicleBuildTask(_vrep, _clientID, _objectCreator, _map, startPosition, orientation, _carmodel);
         vehicleBuildTask.setControlParams(_lookahead, _maxVelocity, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
+        vehicleBuildTask.setControlLoopRate(_controlLoopRate);
         if(_lowerLayerFactory != null)
         {
             vehicleBuildTask.setLowerLayerFactory(_lowerLayerFactory);
@@ -191,5 +193,10 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
     public void setDebug(boolean debug)
     {
         _debug = debug;
+    }
+
+    public void setControlLoopRate(int controlLoopRate)
+    {
+        _controlLoopRate = controlLoopRate;
     }
 }

@@ -614,7 +614,7 @@ public class RoadMap
         junction.setY((float) pos.getY());
 
         String junctionCustomShape = junction.getCustomShape();
-        if(junctionCustomShape != null && !junctionCustomShape.isEmpty())
+        if(junctionCustomShape != null && !junctionCustomShape.isEmpty() && !junctionCustomShape.equals("1"))
         {
             String transformed = transformStringCoordinateList(transformationMatrix, junctionCustomShape);
             junction.setCustomShape(transformed);
@@ -673,7 +673,13 @@ public class RoadMap
         }
         else
         {
-            Stream<String> stringCoordinates = Arrays.asList(coordinates.split(" ")).parallelStream();
+            List<String> coordinateList = Arrays.asList(coordinates.split(" "));
+            Stream<String> stringCoordinates = coordinateList.parallelStream();
+            boolean correctCoordinates = coordinateList.stream().map(coordinate -> coordinate.split(",").length == 2).reduce((a,  b) -> a && b).orElse(false);
+            if(!correctCoordinates)
+            {
+                System.out.println("Erronous coordinates for input: " + coordinates);
+            }
             Stream<Position2D> posCoordinates = stringCoordinates.map(coordinate -> new Position2D(coordinate));
             Stream<Position2D> transformedPositions = posCoordinates.map(position -> position.transform(transformationMatrix));
             return transformedPositions;
@@ -789,5 +795,10 @@ public class RoadMap
     public IStreetSection getEdgeForEdgeType(EdgeType sumoEdge)
     {
         return _navigableEdges.get(sumoEdge);
+    }
+
+    public Edge getNavigableEdge(EdgeType edge)
+    {
+        return _navigableEdges.get(edge);
     }
 }

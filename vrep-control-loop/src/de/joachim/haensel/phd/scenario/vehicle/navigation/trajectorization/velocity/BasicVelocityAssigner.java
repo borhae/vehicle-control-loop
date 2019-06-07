@@ -2,7 +2,6 @@ package de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velo
 
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;

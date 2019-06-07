@@ -31,6 +31,12 @@ public class Navigator
         _roadMap = roadMap;
         _routeBuildingListeners = new ArrayList<>();
     }
+
+    public void setSourceTarget(Position2D source, Position2D target)
+    {
+        _sourcePosition = source;
+        _targetPosition = target;
+    }
     
     public List<Line2D> getRoute(Position2D currentPosition, Position2D targetPosition)
     {
@@ -59,10 +65,7 @@ public class Navigator
 
     public List<Line2D> getRoute(JunctionType startJunction, JunctionType targetJunction, EdgeType startEdge, EdgeType targetEdge, Vector2D orientation)
     {
-        IShortestPathAlgorithm shortestPathSolver = new DijkstraAlgo(_roadMap);
-        shortestPathSolver.setSource(startJunction);
-        shortestPathSolver.setTarget(targetJunction);
-        List<Node> path = shortestPathSolver.getPath();
+        List<Node> path = computePath(startJunction, targetJunction);
         if(path != null)
         {
             notifyListeners(path, startEdge, targetEdge);
@@ -75,6 +78,16 @@ public class Navigator
             //no path found
             return null;
         }
+    }
+    
+    //TODO public only for testing
+    public List<Node> computePath(JunctionType startJunction, JunctionType targetJunction)
+    {
+        IShortestPathAlgorithm shortestPathSolver = new DijkstraAlgo(_roadMap);
+        shortestPathSolver.setSource(startJunction);
+        shortestPathSolver.setTarget(targetJunction);
+        List<Node> path = shortestPathSolver.getPath();
+        return path;
     }
 
     private void notifyListeners(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
@@ -98,9 +111,41 @@ public class Navigator
         return result;
     }
 
+    public List<Line2D> traverse(List<Line2D> rawResult, IRouteAdaptor adaptor, IRouteProperyDetector routeProperty)
+    {
+        List<Line2D> result = new ArrayList<>();
+        for(int idx = 0; idx < rawResult.size(); idx++)
+        {
+            Line2D curLine = rawResult.get(idx);
+            result.add(curLine);
+            if(idx + 1 < rawResult.size())
+            {
+                Line2D nextLine = rawResult.get(idx + 1);
+                Vector2D curLineV = new Vector2D(curLine);
+                Vector2D nextLineV = new Vector2D(nextLine);
+                if(routeProperty.holds(rawResult, curLine, nextLine, curLineV, nextLineV))
+                {
+                    adaptor.adapt(result, curLine, nextLine, curLineV, nextLineV);
+                }
+            }
+        }
+        return result;
+    }
+
     public List<Line2D> createLinesFromPathNoSharpTurnRemoval(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
     {
         List<Line2D> result = new ArrayList<>();
+        List<EdgeType> edges = transformNodePathToEdgePath(path, startEdge, targetEdge);
+        for(int idx = 0; idx < edges.size(); idx++)
+        {
+            EdgeType curEdge = edges.get(idx);
+            regularLineAdd(result, curEdge);
+        }
+        return result;
+    }
+
+    public List<EdgeType> transformNodePathToEdgePath(List<Node> path, EdgeType startEdge, EdgeType targetEdge)
+    {
         List<EdgeType> edges = new ArrayList<>();
         for(int idx = 0; idx < path.size() - 1; idx++)
         {
@@ -111,12 +156,7 @@ public class Navigator
         }
         edges.add(0, startEdge);
         edges.add(targetEdge);
-        for(int idx = 0; idx < edges.size(); idx++)
-        {
-            EdgeType curEdge = edges.get(idx);
-            regularLineAdd(result, curEdge);
-        }
-        return result;
+        return edges;
     }
 
     private List<Line2D> regularLineAdd(List<Line2D> result, EdgeType curEdge)
@@ -127,7 +167,7 @@ public class Navigator
         result.addAll(linesToAdd);
         return linesToAdd;
     }
-    
+
     private List<Line2D> cutStartLaneShapes(List<Line2D> result, Vector2D orientation)
     {
         Position2D position = _sourcePosition;

@@ -14,13 +14,10 @@ import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.debug.Speedometer;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
-import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
-import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
@@ -82,15 +79,7 @@ public class ScriptFunctionsTest
         RoadMap roadMap = new RoadMap(new NetType());
         IVehicleFactory vehicleFactory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", 1.0); 
         VRepVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
-        vehicleConf.setLowerCtrlFactory(new ILowerLayerFactory() {
-            @Override
-            public ILowerLayerControl<Object> create()
-            {
-                ILowerLayerControl<Object> ctrl = new MonitoringController();
-                ctrl.setParameters(new PurePursuitParameters(5.0, 0.25));
-                return ctrl;
-            }
-        });
+        vehicleConf.setLowerCtrlFactory(() -> new MonitoringController());
         vehicleConf.setUpperCtrlFactory(new IUpperLayerFactory() {
             @Override
             public IUpperLayerControl create()

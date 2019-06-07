@@ -27,7 +27,7 @@ import de.joachim.haensel.statemachine.States;
  * @author dummy
  *
  */
-public class StanleyController implements ILowerLayerControl<PurePursuitParameters>
+public class StanleyController implements ILowerLayerControl
 {
     private static final String CURRENT_SEGMENT_DEBUG_KEY = "curSeg";
     private static final int MIN_SEGMENT_BUFFER_SIZE = 5;
@@ -40,7 +40,6 @@ public class StanleyController implements ILowerLayerControl<PurePursuitParamete
     private TrajectoryElement _currentSegment;
     private double _lookahead;
     private IVrepDrawing _vrepDrawing;
-    private PurePursuitParameters _parameters;
     private boolean _debugging;
     private boolean _debuggingCircleAttached;
     private DebugParams _debugParams;
@@ -97,11 +96,12 @@ public class StanleyController implements ILowerLayerControl<PurePursuitParamete
         }
     }
     
-    public StanleyController()
+    public StanleyController(double lookahead)
     {
         _debugging = false;
         _arrivedListeners = new ArrayList<>();
         _frontwheelCurrentSegmentDistance = 0.0;
+        _lookahead = lookahead;
     }
 
     @Override
@@ -121,12 +121,6 @@ public class StanleyController implements ILowerLayerControl<PurePursuitParamete
     }
 
     @Override
-    public void setParameters(PurePursuitParameters parameters)
-    {
-        _parameters = parameters;
-    }
-    
-    @Override
     public void initController(IActuatingSensing actuatorsSensors, ITrajectoryProvider trajectoryProvider)
     {
         _actuatorsSensors = actuatorsSensors;
@@ -134,8 +128,6 @@ public class StanleyController implements ILowerLayerControl<PurePursuitParamete
         _segmentBuffer = new LinkedList<>();
         _segmentProvider = trajectoryProvider;
         _currentSegment = null;
-        _lookahead = _parameters.getLookahead();
-        _speedToWheelRotationFactor = _parameters.getSpeedToWheelRotationFactor();
     }
 
     @Override
@@ -143,7 +135,7 @@ public class StanleyController implements ILowerLayerControl<PurePursuitParamete
     {
         ensureBufferSize();
         _actuatorsSensors.computeAndLockSensorData();
-        _speedToWheelRotationFactor = 2 / _actuatorsSensors.getWheelDiameter(); // 2/diameter = 1/radius
+        _speedToWheelRotationFactor = 2.0 / _actuatorsSensors.getWheelDiameter(); // 2/diameter = 1/radius
         Position2D currentPosition = _actuatorsSensors.getPosition();
         chooseCurrentSegment(currentPosition);
         _stateMachine.driveTo(target);
@@ -292,7 +284,7 @@ public class StanleyController implements ILowerLayerControl<PurePursuitParamete
         if(_segmentBuffer.size() < MIN_SEGMENT_BUFFER_SIZE)
         {
             int segmentRequestSize = SEGMENT_BUFFER_SIZE - _segmentBuffer.size();
-            List<TrajectoryElement> trajectories = _segmentProvider.getNewSegments(segmentRequestSize);
+            List<TrajectoryElement> trajectories = _segmentProvider.getNewElements(segmentRequestSize);
             if(trajectories == null)
             {
                 return;

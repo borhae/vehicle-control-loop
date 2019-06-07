@@ -31,9 +31,6 @@ import de.joachim.haensel.phd.scenario.tasks.ITask;
 import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig;
 import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
-import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
-import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.StanleyController;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TireBlowOutAtPositionEventGenerator;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
@@ -136,17 +133,7 @@ public class ParameterizedTestHazardStanley
 
             config.setTargetPoints(_targetPoints);
             config.addNavigationListener(trajectoryRecorder);
-            config.setLowerLayerController(new ILowerLayerFactory() {
-                
-                @Override
-                public ILowerLayerControl create()
-                {
-                    StanleyController controller = new StanleyController();
-                    controller.setParameters(new PurePursuitParameters(lookahead, 0.0));
-                    
-                    return controller;
-                }
-            });
+            config.setLowerLayerController(() -> new StanleyController(lookahead));
             taskCreator.configure(config);
             List<ITask> tasks = taskCreator.createTasks();
 

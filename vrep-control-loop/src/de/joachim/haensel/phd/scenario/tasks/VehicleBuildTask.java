@@ -14,8 +14,6 @@ import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookahead;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
@@ -24,8 +22,6 @@ import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class VehicleBuildTask implements ITask, IVehicleProvider
 {
-    private static final double VELOCITY_TO_WHEEL_ROTATION = 0.25;
-
     private VRepRemoteAPI _vrep;
     private int _clientID;
     private VRepObjectCreation _objectCreator;
@@ -45,6 +41,7 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
     private String _carmodel;
 
     private IUpperLayerFactory _upperLayerFactory;
+    private int _controlLoopRate; //in milliseconds
 
     public VehicleBuildTask(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator, RoadMap map, Position2D position, Vector2D orientation, String carmodel)
     {
@@ -55,6 +52,7 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
         _position = position;
         _orientation = orientation;
         _carmodel = carmodel;
+        _controlLoopRate = 200; //milliseconds. So 200 means 5 times per second
     }
 
     public void setControlParams(double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration)
@@ -66,6 +64,11 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
         _maxLateralAcceleration = maxLateralAcceleration;
     }
     
+    public void setControlLoopRate(int controlLoopRate)
+    {
+        _controlLoopRate = controlLoopRate;
+    }
+
     @Override
     public void execute()
     {
@@ -95,6 +98,7 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
         {
             vehicleConf = createVehicleConfiguration(map, vehiclePosition, orientation, 1.5);
         }
+        vehicleConf.setControlLoopRate(_controlLoopRate);
         IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, _carmodel, 1.0f);
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();
@@ -112,7 +116,7 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
         autoBodyNames.add(MercedesVisualsNames.FRONT_LEFT_VISUAL);
         autoBodyNames.add(MercedesVisualsNames.FRONT_RIGHT_VISUAL);
         
-        vehicleConf.setAutoBodyNames(autoBodyNames );
+        vehicleConf.setAutoBodyNames(autoBodyNames);
 
         return vehicleConf;
     }
@@ -139,12 +143,7 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
         }
         else
         {
-            lowerFact = () -> {
-                PurePursuitControllerVariableLookahead ctrl = new PurePursuitControllerVariableLookahead();
-                PurePursuitParameters parameters = new PurePursuitParameters(_lookahead, VELOCITY_TO_WHEEL_ROTATION);
-                ctrl.setParameters(parameters);
-                return ctrl;
-            };
+            lowerFact = () -> new PurePursuitController(_lookahead);
         }
         vehicleConf.setUpperCtrlFactory(upperFact);
         vehicleConf.setLowerCtrlFactory(lowerFact);

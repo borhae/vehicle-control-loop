@@ -34,4 +34,8 @@ public interface IVehicleConfiguration
     public Vector2D getOrientation();
 
     public List<String> getAutoBodyNames();
+    
+    public int getControlLoopRate();
+
+    public void setControlLoopRate(int controlLoopRate);
 }

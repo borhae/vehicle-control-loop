@@ -772,11 +772,11 @@ public class TestArcsSegmentDecomposition
     {
         List<TrajectoryElement> result = new ArrayList<>();
         List<TrajectoryElement> intermedidate;;
-        intermedidate = upperCtrl.getNewSegments(10);
+        intermedidate = upperCtrl.getNewElements(10);
         while(!intermedidate.isEmpty())
         {
             result.addAll(intermedidate);
-            intermedidate = upperCtrl.getNewSegments(10);
+            intermedidate = upperCtrl.getNewElements(10);
         }
         return result;
     }

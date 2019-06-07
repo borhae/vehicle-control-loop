@@ -140,11 +140,6 @@ public class RegularSavingTrajectoryRecorder implements ILowerLayerControl, INav
     }
 
     @Override
-    public void setParameters(Object parameters)
-    {
-    }
-
-    @Override
     public void stop()
     {
     }

@@ -17,7 +17,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -41,8 +40,7 @@ import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitControllerVariableLookahead;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitParameters;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
@@ -194,15 +192,14 @@ public class TestProfileCollectionObserving
                 public ILowerLayerControl create()
                 {
                     PurePursuitControllerVariableLookahead purePursuitControllerVariableLookahead = new PurePursuitControllerVariableLookahead();
-                    purePursuitControllerVariableLookahead.setParameters(new PurePursuitParameters(lookahead, 0.0));
                     ITrajectoryRequestListener requestListener = (newTrajectories, timestamp) ->
                     {
-                        configurationBuffers.put(new Long(timestamp), newTrajectories);
+                        configurationBuffers.put(Long.valueOf(timestamp), newTrajectories);
                     };
                     purePursuitControllerVariableLookahead.addTrajectoryRequestListener(requestListener);
                     ITrajectoryReportListener reportListener = (rearWheelCP, frontWheelCP, velocity, timeStamp) ->
                     {
-                        observations.put(new Long(timeStamp), new ObservationTuple(rearWheelCP, frontWheelCP, velocity, timeStamp));
+                        observations.put(Long.valueOf(timeStamp), new ObservationTuple(rearWheelCP, frontWheelCP, velocity, timeStamp));
                     };
                     purePursuitControllerVariableLookahead.addTrajectoryReportListener(reportListener);
                     return purePursuitControllerVariableLookahead;

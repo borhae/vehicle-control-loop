@@ -44,6 +44,10 @@ public class Position2D
     public Position2D(String coordinatesAsString)
     {
         String[] coordinates = coordinatesAsString.split(",");
+        if(coordinates.length != 2)
+        {
+            System.out.println("Erronous Coordinate: " + coordinatesAsString);
+        }
         init(Double.valueOf(coordinates[0]), Double.valueOf(coordinates[1]));
     }
     
@@ -163,6 +167,12 @@ public class Position2D
         _x = result[0];
         _y = result[1];
         return this;
+    }
+
+    public Position2D transformCopy(TMatrix centerMatrix)
+    {
+        Position2D result = new Position2D(this);
+        return result.transform(centerMatrix);
     }
 
     public String toSumoString()

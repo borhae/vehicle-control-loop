@@ -8,7 +8,6 @@ import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.random.MersenneTwister;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.IRouteBuildingListener;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
@@ -87,7 +86,7 @@ public class LinearChangeAdaptiveNavigationController implements IUpperLayerCont
     }
 
     @Override
-    public List<TrajectoryElement> getNewSegments(int requestSize)
+    public List<TrajectoryElement> getNewElements(int requestSize)
     {
         return _segmentBuffer.getSegments(requestSize);
     }
@@ -125,4 +124,10 @@ public class LinearChangeAdaptiveNavigationController implements IUpperLayerCont
 	{
 		return _segmentBuffer.getSize() > 0;
 	}
+
+    @Override
+    public boolean hasElements(int elementRequestSize)
+    {
+        return _segmentBuffer.getSize() >= elementRequestSize;
+    }
 }

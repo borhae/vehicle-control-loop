@@ -82,7 +82,7 @@ public class DefaultNavigationController implements IUpperLayerControl
     }
 
     @Override
-    public List<TrajectoryElement> getNewSegments(int requestSize)
+    public List<TrajectoryElement> getNewElements(int requestSize)
     {
         return _segmentBuffer.getSegments(requestSize);
     }
@@ -90,6 +90,12 @@ public class DefaultNavigationController implements IUpperLayerControl
     public TrajectoryElement segmentsPeek()
     {
         return _segmentBuffer.peek();
+    }
+    
+    @Override
+    public boolean hasElements(int requestSize)
+    {
+        return _segmentBuffer.getSize() >= requestSize;
     }
 
     public int getSegmentBufferSize()

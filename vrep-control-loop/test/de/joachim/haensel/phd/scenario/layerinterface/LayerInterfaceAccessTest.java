@@ -65,7 +65,7 @@ public class LayerInterfaceAccessTest
         
         upperCtrl.buildSegmentBuffer(destinationPosition, roadMap);
         
-        ILowerLayerControl<Object> lowerCtrl = new MockLowerLayerControl();
+        ILowerLayerControl lowerCtrl = new MockLowerLayerControl();
         
         ITrajectoryRequestListener requestListener = new MockTrajectoryRequestListener();
         ITrajectoryReportListener reportListener = new MockTrajectoryReportListener();
@@ -107,11 +107,11 @@ public class LayerInterfaceAccessTest
     {
         List<TrajectoryElement> result = new ArrayList<>();
         List<TrajectoryElement> intermedidate;;
-        intermedidate = upperCtrl.getNewSegments(10);
+        intermedidate = upperCtrl.getNewElements(10);
         while(!intermedidate.isEmpty())
         {
             result.addAll(intermedidate);
-            intermedidate = upperCtrl.getNewSegments(10);
+            intermedidate = upperCtrl.getNewElements(10);
         }
         return result;
     }

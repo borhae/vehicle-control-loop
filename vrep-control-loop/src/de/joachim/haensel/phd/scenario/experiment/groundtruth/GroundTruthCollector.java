@@ -2,7 +2,6 @@ package de.joachim.haensel.phd.scenario.experiment.groundtruth;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -10,9 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -20,13 +17,10 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.joachim.haensel.phd.converters.UnitConverter;
-import de.joachim.haensel.phd.scenario.experiment.groundtruth.GroundTruthCollector.Direction;
-import de.joachim.haensel.phd.scenario.experiment.groundtruth.GroundTruthCollector.IndexProvider;
 import de.joachim.haensel.phd.scenario.map.Edge;
 import de.joachim.haensel.phd.scenario.map.Node;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
-import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;

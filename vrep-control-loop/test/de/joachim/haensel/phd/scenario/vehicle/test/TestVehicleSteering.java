@@ -87,12 +87,6 @@ public class TestVehicleSteering
             return new IUpperLayerControl() {
 
                 @Override
-                public List<TrajectoryElement> getNewSegments(int segmentRequestSize)
-                {
-                    return null;
-                }
-
-                @Override
                 public void initController(IActuatingSensing sensorsActuators, RoadMap roadMap)
                 {
                 }
@@ -121,6 +115,18 @@ public class TestVehicleSteering
 				public boolean segmentsLeft() {
 					return false;
 				}
+
+                @Override
+                public List<TrajectoryElement> getNewElements(int segmentRequestSize)
+                {
+                    return null;
+                }
+
+                @Override
+                public boolean hasElements(int elementRequestSize)
+                {
+                    return false;
+                }
             };
         };
         TestJustSteeringController llControl = new TestJustSteeringController();
@@ -179,13 +185,6 @@ public class TestVehicleSteering
         IUpperLayerFactory uperFact = () ->
         {
             return new IUpperLayerControl() {
-
-                @Override
-                public List<TrajectoryElement> getNewSegments(int segmentRequestSize)
-                {
-                    return null;
-                }
-
                 @Override
                 public void initController(IActuatingSensing sensorsActuators, RoadMap roadMap)
                 {
@@ -216,6 +215,19 @@ public class TestVehicleSteering
 				{
 					return false;
 				}
+
+                @Override
+                public List<TrajectoryElement> getNewElements(int segmentRequestSize)
+                {
+                    return null;
+                }
+
+                @Override
+                public boolean hasElements(int elementRequestSize)
+                {
+                    // TODO Auto-generated method stub
+                    return false;
+                }
             };
         };
         Position2D requiredCenter = new Position2D(0.0f, 0.0f);
@@ -278,7 +290,7 @@ public class TestVehicleSteering
         public boolean isOnPath(Position2D pos);
     }
 
-    public class TestCheckingSteeringController implements ILowerLayerControl<Object>
+    public class TestCheckingSteeringController implements ILowerLayerControl
     {
         private IActuatingSensing _actuatorsSensors;
         private float _targetAngle;
@@ -342,11 +354,6 @@ public class TestVehicleSteering
         }
 
         @Override
-        public void setParameters(Object parameters)
-        {
-        }
-
-        @Override
         public void stop()
         {
         }
@@ -364,26 +371,20 @@ public class TestVehicleSteering
         @Override
         public void addArrivedListener(IArrivedListener arrivedListener)
         {
-            // TODO Auto-generated method stub
-            
         }
 
         @Override
         public void clearSegmentBuffer()
         {
-            // TODO Auto-generated method stub
-            
         }
 
         @Override
         public void clearArrivedListeners()
         {
-            // TODO Auto-generated method stub
-            
         }
     }
     
-    public class TestJustSteeringController implements ILowerLayerControl<Object>
+    public class TestJustSteeringController implements ILowerLayerControl
     {
         private IActuatingSensing _actuatorsSensors;
         private float _currentAngle;
@@ -422,11 +423,6 @@ public class TestVehicleSteering
         }
 
         @Override
-        public void setParameters(Object parameters)
-        {
-        }
-
-        @Override
         public void stop()
         {
         }
@@ -444,22 +440,16 @@ public class TestVehicleSteering
         @Override
         public void addArrivedListener(IArrivedListener arrivedListener)
         {
-            // TODO Auto-generated method stub
-            
         }
 
         @Override
         public void clearSegmentBuffer()
         {
-            // TODO Auto-generated method stub
-            
         }
 
         @Override
         public void clearArrivedListeners()
         {
-            // TODO Auto-generated method stub
-            
         }
     }
 }

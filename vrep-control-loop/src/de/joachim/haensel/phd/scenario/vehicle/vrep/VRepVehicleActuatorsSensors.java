@@ -16,7 +16,6 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.map.IStreetSection;
-import de.joachim.haensel.phd.scenario.map.Node;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
@@ -30,7 +29,6 @@ import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingObject;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
-import sumobindings.EdgeType;
 
 public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDrawing
 {
@@ -180,6 +178,7 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
     @Override
     public void drive(float targetWheelRotation, float targetSteeringAngle)
     {
+//        System.out.format("v: %.2f, angle: %.2f\n", targetWheelRotation, Math.toDegrees(targetSteeringAngle));
         internalDrive(targetWheelRotation, targetSteeringAngle);
     }
 
@@ -198,7 +197,10 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
             {
                 System.out.println("Warning: Input doesn't contain the specified command. Ok when this happens only once (during startup)");
             }
-            exc.printStackTrace();
+            else
+            {
+                exc.printStackTrace();
+            }
         }
     }
 
