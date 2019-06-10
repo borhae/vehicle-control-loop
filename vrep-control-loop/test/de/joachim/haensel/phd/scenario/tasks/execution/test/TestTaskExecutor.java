@@ -304,7 +304,6 @@ public class TestTaskExecutor
             
             Position2D p2 = new Position2D(5272.66,2829.71).transform(centerMatrix);
             Position2D p3 = new Position2D(5355.22,2858.13).transform(centerMatrix);
-            Position2D p4 = new Position2D(5281.36,2829.22).transform(centerMatrix);
            
             config.setMap(map);
             config.configSimulator(_vrep, _clientID, _objectCreator);
@@ -322,7 +321,7 @@ public class TestTaskExecutor
                 }
             });
 
-            config.setTargetPoints(Arrays.asList(new Position2D[]{p2, p3, p4}));
+            config.setTargetPoints(Arrays.asList(new Position2D[]{p2, p3}));
             taskCreator.configure(config);
             List<ITask> tasks = taskCreator.createTasks();
 

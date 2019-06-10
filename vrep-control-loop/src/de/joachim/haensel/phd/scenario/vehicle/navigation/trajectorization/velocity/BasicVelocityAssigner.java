@@ -216,6 +216,11 @@ public class BasicVelocityAssigner implements IVelocityAssigner
         {
             double maxCentripedal = Math.sqrt(0.1 * _accelerationMaxLateral * Math.pow(t.getRadius(), 1.5));
             double velocity = Math.min(_velocityMaxLongitudinal, maxCentripedal);
+            if(t.isReverse())
+            {
+                velocity = 0.1;
+            }
+            
             t.setVelocity(velocity);
         };
         trajectories.forEach(curvatureToVelocity);

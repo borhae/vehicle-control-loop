@@ -107,15 +107,19 @@ public class PurePuresuitTargetProvider
                 TrajectoryElement curElement = _trajectoryBuffer.get(idx);
                 if(isInRange(curElement, _rearWheelCenterPosition, lookahead))
                 {
+                    if(curElement.isReverse()) 
+                    {
+                        System.out.println("reverse drive");
+                    }
                     matchingElements.put(curElement, idx);
                 }
             }
             if(matchingElements.size() > 0)
             {
-                Predicate<? super Entry<TrajectoryElement, Integer>> isSharpTurn = entry -> Math.toDegrees(Vector2D.computeAngle(entry.getKey().getVector(), _currentOrientation)) < 120;
+                Predicate<? super Entry<TrajectoryElement, Integer>> isSharpTurn = entry -> Math.toDegrees(Vector2D.computeAngle(entry.getKey().getVector(), _currentOrientation)) < 120 || entry.getKey().isReverse();
                 List<Entry<TrajectoryElement, Integer>> matchingOrientation = matchingElements.entrySet().stream().filter(isSharpTurn).collect(Collectors.toList());
                 if(matchingOrientation.size() > 0)
-                {
+                {       
                     bestMatchingSegmentIdx = matchingOrientation.get(0).getValue();
                 }
                 else
@@ -127,6 +131,10 @@ public class PurePuresuitTargetProvider
                 }
                 TrajectoryElement newLookaheadTrajectoryElement = _trajectoryBuffer.get(bestMatchingSegmentIdx);
                 _currentLookaheadElement = newLookaheadTrajectoryElement;
+                
+                if(_currentLookaheadElement.isReverse()) {
+                    System.out.println("drive backwards");
+                }
                 //TODO beforehand I kept the old element when the new element was actually moving back on the route 
 //                 only update if the new element has a larger index (is further ahead than current element)
 //                if(_currentLookaheadElement == null)
