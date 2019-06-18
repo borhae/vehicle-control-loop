@@ -31,22 +31,50 @@ public class EventLoopStateMachine extends FiniteStateMachineTemplate
         Consumer<EmptyParam> arrivedBrakeAndStopAction = dummy -> { _actuatorsSensors.computeAndLockSensorData(); carInterface.arrivedBrakeAndStopAction();};
         Consumer<Position2D> informFailedAction = newTarget -> informFailed(newTarget);
         
-        Guard notArrivedGuard = () -> {return !arrivedAtTarget() && !lostTrack();};
-        Guard lostTrack = () -> {return !arrivedAtTarget() && lostTrack();};
+        Guard notArrivedGuard = () -> {return !arrivedAtTarget() && !lostTrack() && !reverseDrivingNearby();};
+        Guard lostTrack = () -> {return !arrivedAtTarget() && lostTrack() && !reverseDrivingNearby();};
         Guard arrivedAtTargetGuard = () -> arrivedAtTarget();
+        Guard reverseDrivingNearby = () -> {return !arrivedAtTarget() && reverseDrivingNearby();};
 
         createTransition(ControllerStates.IDLE, ControllerMsg.DRIVE_TO, TRUE_GUARD, ControllerStates.DRIVING, updateTargetAndReinitCar);
         
         createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, arrivedAtTargetGuard, ControllerStates.IDLE, arrivedBrakeAndStopAction);
         createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, notArrivedGuard, ControllerStates.DRIVING, driveAction);
         createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, lostTrack, ControllerStates.FAILED, brakeAndStopAction);
-
+        createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, reverseDrivingNearby, ControllerStates.THREE_POINT_TURN, brakeAndStopAction);
+        
         createTransition(ControllerStates.DRIVING, ControllerMsg.STOP, TRUE_GUARD, ControllerStates.IDLE, brakeAndStopAction);
         
         createTransition(ControllerStates.FAILED, ControllerMsg.DRIVE_TO, TRUE_GUARD, ControllerStates.FAILED, informFailedAction);
    
         setInitialState(ControllerStates.IDLE);
         reset();
+    }
+
+    private boolean reverseDrivingNearby()
+    {
+        TrajectoryElement closestNearbyElement = _carInterface.getNearestReverseElement();       
+        if(closestNearbyElement == null)
+        {
+            return false;
+        }
+        
+        Position2D carFrontPos = _actuatorsSensors.getFrontWheelCenterPosition();
+        Position2D carBackPos = _actuatorsSensors.getRearWheelCenterPosition();
+        
+        double baseDistFront = carFrontPos.distance(closestNearbyElement.getVector().getBase());
+        double tipDist = carBackPos.distance(closestNearbyElement.getVector().getTip());
+        
+        double baseDistRear = carBackPos.distance(closestNearbyElement.getVector().getBase());
+        
+        System.out.println("reverse Distance " + baseDistFront + " , " + tipDist + " , " + baseDistRear);
+        if(baseDistRear < 3 && baseDistFront < tipDist)
+        //if(baseDistFront < 5)
+        {
+            return true;
+        }
+        
+        return false;
     }
 
     private void informFailed(Position2D newTarget)

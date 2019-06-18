@@ -247,7 +247,12 @@ public class CarInterfaceActions
     {
         return _cachedLookaheadTrajectoryElement;
     }
-
+    
+    public TrajectoryElement getNearestReverseElement()
+    {
+        return _targetProvider.getNearestReverseElement();
+    }
+    
     public double getCurrentLookahead()
     {
         return _cashedLookahead;

@@ -42,6 +42,42 @@ public class PurePuresuitTargetProvider
         _currentOrientation = _actuatorsSensors.getLockedOrientation();
     }
 
+    public TrajectoryElement getNearestReverseElement()
+    {
+        TrajectoryElement result = null;
+        if (_currentPosition == null)
+        {
+            System.out.println("Closest Trajectory Element: No reference position available!");
+            return result;
+        }
+        if (_trajectoryBuffer.isEmpty())
+        {
+            System.out.println("Closest Trajectory Element: Buffer is empty!");
+            return result;
+        }
+        
+        double minDist = Double.POSITIVE_INFINITY;
+        int minDistIdx = Integer.MAX_VALUE;
+        for (int idx = 0; idx < _trajectoryBuffer.size(); idx++)
+        {
+            TrajectoryElement curElem = _trajectoryBuffer.get(idx);
+            Vector2D curVector = curElem.getVector();
+            curVector = new Vector2D(curVector.getbX(), curVector.getbY(), - curVector.getdX(), - curVector.getdY());
+            if (curElem.isReverse() && Math.toDegrees(Vector2D.computeAngle(curVector, _currentOrientation)) < 120)
+            {
+                double distance = curVector.toLine().distancePerpendicularOrEndpoints(_currentPosition);
+                if (distance < minDist)
+                {
+                    minDist = distance;
+                    minDistIdx = idx;
+                    result = curElem;
+                }
+            }
+        }
+        
+        return result;
+    }
+    
     public TrajectoryElement getClosestTrajectoryElement()
     {
         TrajectoryElement result = null;
@@ -107,16 +143,12 @@ public class PurePuresuitTargetProvider
                 TrajectoryElement curElement = _trajectoryBuffer.get(idx);
                 if(isInRange(curElement, _rearWheelCenterPosition, lookahead))
                 {
-                    if(curElement.isReverse()) 
-                    {
-                        System.out.println("reverse drive");
-                    }
                     matchingElements.put(curElement, idx);
                 }
             }
             if(matchingElements.size() > 0)
             {
-                Predicate<? super Entry<TrajectoryElement, Integer>> isSharpTurn = entry -> Math.toDegrees(Vector2D.computeAngle(entry.getKey().getVector(), _currentOrientation)) < 120 || entry.getKey().isReverse();
+                Predicate<? super Entry<TrajectoryElement, Integer>> isSharpTurn = entry -> Math.toDegrees(Vector2D.computeAngle(entry.getKey().getVector(), _currentOrientation)) < 120 && !entry.getKey().isReverse();
                 List<Entry<TrajectoryElement, Integer>> matchingOrientation = matchingElements.entrySet().stream().filter(isSharpTurn).collect(Collectors.toList());
                 if(matchingOrientation.size() > 0)
                 {       
@@ -132,9 +164,6 @@ public class PurePuresuitTargetProvider
                 TrajectoryElement newLookaheadTrajectoryElement = _trajectoryBuffer.get(bestMatchingSegmentIdx);
                 _currentLookaheadElement = newLookaheadTrajectoryElement;
                 
-                if(_currentLookaheadElement.isReverse()) {
-                    System.out.println("drive backwards");
-                }
                 //TODO beforehand I kept the old element when the new element was actually moving back on the route 
 //                 only update if the new element has a larger index (is further ahead than current element)
 //                if(_currentLookaheadElement == null)
