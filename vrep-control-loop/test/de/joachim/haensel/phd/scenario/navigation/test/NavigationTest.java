@@ -593,6 +593,72 @@ public class NavigationTest implements TestConstants
     }
     
     @Test
+    public void showLuebeck183RoutesLoops() throws VRepException
+    {
+        String mapFileName = "./res/roadnetworks/luebeck-roads.net.xml";
+        RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, mapFileName);
+        TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+        System.out.println("Center matrix: \n" + centerMatrix.toString());
+        RoadMap roadMap = mapAndCenterMatrix.getRoadMap();
+        
+        Navigator navigator = new Navigator(mapAndCenterMatrix.getRoadMap());
+    
+        List<String> pointsAsString;
+        try
+        {
+            pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread.txt").toPath());
+            List<Position2D> positions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());// runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "luebeck-roads.net.xml", "blue");
+            for(int idx = 0; idx < positions.size() - 1; idx++)
+            {
+                System.out.println("\nRoute: " + idx + ". ");
+                Position2D startRaw = positions.get(idx);
+                Position2D startPos = startRaw.transformCopy(centerMatrix);
+                Position2D endRaw = positions.get(idx + 1);
+                Position2D endPos = endRaw.transformCopy(centerMatrix);
+                System.out.println("raw         start: " + startRaw.toString()  + ", end: " + endRaw.toString());
+                System.out.println("transformed start: " + startPos.toString()  + ", end: " + endPos.toString());
+                
+                EdgeType startEdge = roadMap.getClosestEdgeFor(startPos);
+                EdgeType targetEdge = roadMap.getClosestEdgeFor(endPos);
+                JunctionType startJunction = roadMap.getJunctionForName(startEdge.getTo());
+                JunctionType targetJunction = roadMap.getJunctionForName(targetEdge.getFrom());
+                List<Node> nodePath = navigator.computePath(startJunction, targetJunction);
+                navigator.setSourceTarget(startPos, endPos);
+                
+                IRouteProperyDetector sharpTurnDetector = (result, curLine, nextLine, curLineV, nextLineV) -> navigator.isSharpTurn(curLineV, nextLineV);
+    
+                IRouteAdaptor sharpTurnRemover = (result, curLine, nextLine, curLineV, nextLineV) -> navigator.addTurnAroundCircle(result, curLine, nextLine);
+                List<Line2D> linesRemovedSharpTurns  = navigator.createLinesFromPath(nodePath, startEdge, targetEdge, null, sharpTurnDetector, sharpTurnRemover);
+                
+                List<Position2D> sharpTurnIntersections = new ArrayList<Position2D>();
+                IRouteAdaptor sharpTurnVisualizer = (result, curLine, nextLine, curLineV, nextLineV) -> sharpTurnIntersections.add(Position2D.between(curLine.getP2(), nextLine.getP1()));
+                navigator.createLinesFromPath(nodePath, startEdge, targetEdge, null, sharpTurnDetector, sharpTurnVisualizer);
+                
+                final int routeIdx = idx;
+                sharpTurnIntersections.stream().map(IndexAdder.indexed()).forEachOrdered(idxPos -> drawPosition(idxPos.v(), Color.RED, _objectCreator, "route_" + routeIdx + "_" + idxPos.idx()));
+                
+                ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
+                IVelocityAssignerFactory velocityFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, 120.0);
+                ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityFactory, 5.0);
+                
+                List<TrajectoryElement> trajectoryElements = trajectorizer.createTrajectory(linesRemovedSharpTurns);
+                INavigationListener navigationListener = new VRepNavigationListener(_objectCreator);
+                navigationListener.activateSegmentDebugging();
+                navigationListener.notifySegmentsChanged(trajectoryElements);
+            }
+        } 
+        catch (IOException exc)
+        {
+            exc.printStackTrace();
+        }
+        System.out.println("enter arbitrary stuff an then press enter");
+        Scanner scanner = new Scanner(System.in);
+        String input = scanner.next();
+        System.out.println(input);
+        scanner.close();
+    }
+
+    @Test
     public void showChandigarh183RoutesLoops() throws VRepException
     {
         RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/chandigarh-roads-lefthand.net.xml");
@@ -715,6 +781,43 @@ public class NavigationTest implements TestConstants
                 navigationListener.activateSegmentDebugging();
                 navigationListener.notifySegmentsChanged(trajectoryElements);
             }
+        } 
+        catch (IOException exc)
+        {
+            exc.printStackTrace();
+        }
+        System.out.println("enter arbitrary stuff an then press enter");
+        Scanner scanner = new Scanner(System.in);
+        String input = scanner.next();
+        System.out.println(input);
+        scanner.close();
+    }
+
+    @Test
+    public void identifyLuebeck183RoutesMulitloopsParallel() throws VRepException
+    {
+        RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/luebeck-roads.net.xml");
+        TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+        System.out.println("Center matrix: \n" + centerMatrix.toString());
+        RoadMap roadMap = mapAndCenterMatrix.getRoadMap();
+
+        try
+        {
+            List<String> positionsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread.txt").toPath());
+            List<Position2D> positions = positionsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());// runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "luebeck-roads.net.xml", "blue");
+            List<NumberedRoute> routes = new ArrayList<NumberedRoute>();
+            for(int idx = 0; idx < positions.size() - 1; idx++)
+            {
+                Position2D start = positions.get(idx);
+                Position2D end = positions.get(idx + 1);
+                NumberedRoute newRoute = new NumberedRoute(start, end, idx);
+                routes.add(newRoute);
+            }
+            List<MultiLoopDetectionResult> results = routes.parallelStream().map(route -> computeRouteIdentifyMultiLoop(centerMatrix, roadMap, route)).collect(Collectors.toList());
+            
+            results.forEach(result -> drawMultiloopCenterAndRouteInSimulator(result));
+            results.forEach(result -> printOnStdOut(result));
+            
         } 
         catch (IOException exc)
         {
