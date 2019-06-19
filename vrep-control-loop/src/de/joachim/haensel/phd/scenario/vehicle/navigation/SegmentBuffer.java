@@ -30,7 +30,7 @@ public class SegmentBuffer
 
     public TrajectoryElement peek()
     {
-        return _segments.get(0);
+        return _segments.get(_currentIdx);
     }
 
     public int getSize()

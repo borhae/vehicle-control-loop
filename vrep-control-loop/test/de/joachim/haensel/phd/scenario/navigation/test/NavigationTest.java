@@ -404,6 +404,58 @@ public class NavigationTest implements TestConstants
     }
     
     @Test
+    public void testLuebeckProblemRoute94() throws VRepException
+    {
+        RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/luebeck-roads.net.xml");
+        TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+        RoadMap roadMap = mapAndCenterMatrix.getRoadMap();
+        
+        Navigator navigator = new Navigator(roadMap);
+        ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
+        IVelocityAssignerFactory velocityFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, 120.0);
+        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityFactory, 5.0);
+
+        INavigationListener navigationListener = new VRepNavigationListener(_objectCreator);
+        navigationListener.activateSegmentDebugging();
+        List<String> pointsAsString = new ArrayList<String>();
+        try
+        {
+            pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread.txt").toPath());
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        List<Position2D> allPositions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());
+//        List<Position2D> positions = allPositions.subList(0, allPositions.size());
+        List<Position2D> rawPositions = allPositions.subList(93, 95);
+        System.out.println("Raw targets:");
+        System.out.println(rawPositions.stream().map(point -> point.toString()).collect(Collectors.joining(", ")));
+        List<Position2D> positions = rawPositions.stream().map(point -> point.transform(centerMatrix)).collect(Collectors.toList());
+        System.out.println("Mapped targets:");
+        System.out.println(positions.stream().map(point -> point.toString()).collect(Collectors.joining(", ")));
+
+        Position2D startPos = positions.get(0);
+        Position2D endPos = positions.get(1);
+
+        EdgeType startEdge = roadMap.getClosestEdgeFor(startPos);
+        EdgeType targetEdge = roadMap.getClosestEdgeFor(endPos);
+        JunctionType startJunction = roadMap.getJunctionForName(startEdge.getTo());
+        JunctionType targetJunction = roadMap.getJunctionForName(targetEdge.getFrom());
+        List<Node> nodePath = navigator.computePath(startJunction, targetJunction);
+        navigator.setSourceTarget(startPos, endPos);
+        List<Line2D> lines = navigator.createLinesFromPath(nodePath, startEdge, targetEdge);
+        List<TrajectoryElement> trajectoryElements = trajectorizer.createTrajectory(lines);
+        navigationListener.notifySegmentsChanged(trajectoryElements);
+
+        System.out.println("enter arbitrary stuff an then press enter");
+        Scanner scanner = new Scanner(System.in);
+        String input = scanner.next();
+        System.out.println(input);
+        scanner.close();
+    }
+    
+    @Test
     public void testChandigarhProblemRoute1() throws VRepException
     {
         RoadMapAndCenterMatrix mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, "./res/roadnetworks/chandigarh-roads-lefthand.net.xml");
@@ -817,7 +869,6 @@ public class NavigationTest implements TestConstants
             
             results.forEach(result -> drawMultiloopCenterAndRouteInSimulator(result));
             results.forEach(result -> printOnStdOut(result));
-            
         } 
         catch (IOException exc)
         {

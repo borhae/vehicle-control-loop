@@ -115,7 +115,23 @@ public class Navigator
         result = cutStartLaneShapes(result, orientation);
         result = cutEndLaneShapes(result);
         result.get(0).setP1(_sourcePosition);
-        result.get(result.size() - 1).setP2(_targetPosition);
+        Line2D lastLine = result.get(result.size() - 1);
+        
+        List<Line2D> linesOnLastEdge = edgeToLines(targetEdge);
+        List<Position2D> intersections = linesOnLastEdge.stream().map(line -> line.perpendicularIntersection(_targetPosition)).filter(curPos -> curPos != null).collect(Collectors.toList());
+
+        Position2D pointOnTargetEdge = _targetPosition;
+        double minDist = Double.POSITIVE_INFINITY;
+        for (Position2D curIntersection : intersections)
+        {
+            double curDist = Position2D.distance(curIntersection, _targetPosition);
+            if(curDist < minDist)
+            {
+                minDist = curDist;
+                pointOnTargetEdge = curIntersection;
+            }
+        }
+        lastLine.setP2(pointOnTargetEdge);
         result = traverse(result, routeAdaptor, routePropertyDetector);
         return result;
     }
@@ -252,11 +268,16 @@ public class Navigator
 
     private List<Line2D> regularLineAdd(List<Line2D> result, EdgeType curEdge)
     {
-        List<LaneType> lanes = curEdge.getLane();
-        String shape = lanes.get(0).getShape();
-        List<Line2D> linesToAdd = Line2D.createLines(shape);
+        List<Line2D> linesToAdd = edgeToLines(curEdge);
         result.addAll(linesToAdd);
         return linesToAdd;
+    }
+
+    private List<Line2D> edgeToLines(EdgeType edge)
+    {
+        List<LaneType> lanes = edge.getLane();
+        String shape = lanes.get(0).getShape();
+        return Line2D.createLines(shape);
     }
 
     private List<Line2D> cutStartLaneShapes(List<Line2D> result, Vector2D orientation)
@@ -334,18 +355,26 @@ public class Navigator
         double minDist = Double.POSITIVE_INFINITY;
         double curDist = Double.POSITIVE_INFINITY;
         int minIdx = Integer.MAX_VALUE;
+        
+        Position2D targetIntersectionPoint = null;
         for (int idx = 0; idx < result.size(); idx++)
         {
             Line2D curLine = result.get(idx);
-            curDist = curLine.perpendicularDistanceWithEndpointLimit(_targetPosition, 3.0);
+            Vector2D v = new Vector2D(curLine);
+            v.lengthen(3.0);
+            Position2D intersectionPoint = Vector2D.getPerpendicularIntersection(v, _targetPosition);
+            
+            curDist = intersectionPoint == null ? Double.POSITIVE_INFINITY : Position2D.distance(intersectionPoint, _targetPosition);
             if(curDist < minDist)
             {
                 minDist = curDist;
                 minIdx = idx;
+                targetIntersectionPoint = intersectionPoint;
             }
         }
-        if(minDist < Double.POSITIVE_INFINITY)
+        if(minDist < Double.POSITIVE_INFINITY && targetIntersectionPoint != null)
         {
+            result.get(minIdx).setP2(targetIntersectionPoint);
             return result.subList(0, minIdx + 1);
         }
         else
