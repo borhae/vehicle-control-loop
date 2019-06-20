@@ -148,7 +148,6 @@ public class SpeedProfileTest
         {
             TrajectoryElement curTrajectory = trajectories.get(idx);
             double actualVelocity = curTrajectory.getVelocity();
-//            assertThat("velocity should be a number (index: " + idx + ").", actualVelocity, isANumber());
             assertThat("velocity should be a number(index: " + idx + ").", actualVelocity, isANumber());
         }
         Deque<Vector2D> vectorSegments = trajectories.stream().map(t -> t.getVector()).collect(Collectors.toCollection(() -> new LinkedList<>()));

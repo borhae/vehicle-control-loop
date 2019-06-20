@@ -152,6 +152,7 @@ public class ErrounousToursTest
 	}
 
 	@Test
+//	1667.70,1218.93
     public void testLuebeckRoute() throws VRepException 
     {
         RoadMapAndCenterMatrix mapAndCenterMatrix = null;
@@ -170,7 +171,7 @@ public class ErrounousToursTest
         }
         List<Position2D> allPositions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());
 //        List<Position2D> positions = allPositions.subList(0, allPositions.size());
-        List<Position2D> positions = allPositions.subList(93, 95);
+        List<Position2D> positions = allPositions.subList(93, 96);
 
         try
         {

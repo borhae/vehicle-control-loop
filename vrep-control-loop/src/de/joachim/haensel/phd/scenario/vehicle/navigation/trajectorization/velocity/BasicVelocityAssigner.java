@@ -4,13 +4,12 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement.VelocityEdgeType;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryType;
 
 
 /**
@@ -81,11 +80,22 @@ public class BasicVelocityAssigner implements IVelocityAssigner
         
         identifyRegions(trajectories);
         fillInitialPadding(trajectories);
+        flattenFinalPart(trajectories);
+        notifyListeners(trajectories);
         capAccelerationDeceleration(trajectories);
         notifyListeners(trajectories);
         
 //        lowPassFilter(trajectories);
 //        notifyListeners(trajectories);
+    }
+
+    private void flattenFinalPart(List<TrajectoryElement> trajectories)
+    {
+        if(trajectories.size() >= 5)
+        {
+            List<TrajectoryElement> lastElements = trajectories.subList(trajectories.size() - 5, trajectories.size());
+            lastElements.stream().forEach(elem -> elem.setVelocity(Math.min(elem.getVelocity(), 2.0)));
+        }
     }
 
     private void capAccelerationDeceleration(List<TrajectoryElement> trajectories)
