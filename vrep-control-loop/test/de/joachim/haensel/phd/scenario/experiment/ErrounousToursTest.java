@@ -152,7 +152,6 @@ public class ErrounousToursTest
 	}
 
 	@Test
-//	1667.70,1218.93
     public void testLuebeckRoute() throws VRepException 
     {
         RoadMapAndCenterMatrix mapAndCenterMatrix = null;
