@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.vehicle.test;
+package de.joachim.haensel.phd.scenario.navigation.velocity.test;
 
 
 
@@ -9,6 +9,10 @@ import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -42,6 +46,7 @@ public class SpeedProfileTest
 {
     private Integer _visualizationIdVelocities = null;
     private Integer _visualizationIdCurve = null;
+    public static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
 
     @Test
     public void testRealWorldSpeedprofileValidVelocities()
@@ -87,6 +92,69 @@ public class SpeedProfileTest
         frame.updateVisuals();
     }
 
+    @Test
+    public void testLuebeckRoute94SpeedprofileValidVelocities()
+    {
+        RoadMap roadMap = new RoadMap(RES_ROADNETWORKS_DIRECTORY + "luebeck-roads.net.xml");
+        TMatrix centerMatrix = centerMap(roadMap);
+
+        Navigator navigator = new Navigator(roadMap);
+        
+        List<String> pointsAsString = new ArrayList<String>();
+        try
+        {
+            pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread.txt").toPath());
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        List<Position2D> allPositions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());
+        //      List<Position2D> positions = allPositions.subList(0, allPositions.size());
+        List<Position2D> rawPositions = allPositions.subList(93, 95);
+        System.out.println(rawPositions.stream().map(point -> point.toString()).collect(Collectors.joining(", ")));
+        List<Position2D> positions = rawPositions.stream().map(point -> point.transform(centerMatrix)).collect(Collectors.toList());
+        System.out.println("Mapped targets:");
+        System.out.println(positions.stream().map(point -> point.toString()).collect(Collectors.joining(", ")));
+
+        
+        Position2D startPosition = positions.get(0);
+        Position2D destinationPosition = positions.get(1);
+        List<Line2D> lineRoute = navigator.getRoute(startPosition, destinationPosition);
+        
+//        120.0, 3.8, 4.0, 0.8
+        double maxVelocity = 120.0;
+        double segmentSize = 5.0;
+        double maxLongAcc = 3.8;
+        double maxLongDec = 4.0;
+        double maxLateralAcc = 0.8;
+
+        ITrajectorizer trajectorizer = createTrajectorizerBasicVelocityAssigner(maxVelocity, segmentSize, maxLongDec, maxLongAcc, maxLateralAcc);
+        
+        Vector2DVisualizer frame = new Vector2DVisualizer();
+        frame.showOnScreen(1);
+        IProfileChangeListener listener = profile -> _visualizationIdVelocities = visualize(profile, frame, _visualizationIdVelocities);
+        ICurvatureChangeListener curveListener = profile -> _visualizationIdCurve = visualizeCurvature(profile, frame, _visualizationIdCurve);
+        trajectorizer.getVelocityAssigner().addProfileChangeListener(listener);
+        trajectorizer.getVelocityAssigner().addCurvatureChangeListener(curveListener);
+        frame.setVisible(true);
+        frame.updateVisuals();
+        
+        SegmentBuffer route = new SegmentBuffer();
+        route.fillBuffer(trajectorizer.createTrajectory(lineRoute));
+        List<TrajectoryElement> trajectories = route.getSegments(route.getSize());
+        
+        for(int idx = 0; idx < trajectories.size(); idx++)
+        {
+            TrajectoryElement curTrajectory = trajectories.get(idx);
+            double actualVelocity = curTrajectory.getVelocity();
+//            assertThat("velocity should be a number (index: " + idx + ").", actualVelocity, isANumber());
+            assertThat("velocity should be a number(index: " + idx + ").", actualVelocity, isANumber());
+        }
+        Deque<Vector2D> vectorSegments = trajectories.stream().map(t -> t.getVector()).collect(Collectors.toCollection(() -> new LinkedList<>()));
+        frame.addVectorSet(vectorSegments, Color.BLACK, 1.0, 0.15);
+        frame.updateVisuals();
+    }
 
     @Test
     public void testRealWorldSpeedprofileValidVelocities60KMpH()

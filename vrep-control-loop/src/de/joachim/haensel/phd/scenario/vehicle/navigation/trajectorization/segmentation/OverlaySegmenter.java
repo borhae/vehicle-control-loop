@@ -46,32 +46,14 @@ public class OverlaySegmenter implements ISegmenter
         LinkedList<Vector2D> quantizedRoute = new LinkedList<>();
         notifyOriginalTrajectory(quantizedRoute);
         _algorithm.quantize(srcRoute, quantizedRoute, _stepSize);
-        Deque<Vector2D> overlay = createOverlay(srcRoute, _stepSize);
-        int elementsToAdd = quantizedRoute.size() + overlay.size();
-        int addCnt = 0;
-        while(addCnt < elementsToAdd)
+        while(!quantizedRoute.isEmpty())
         {
-            if(!overlay.isEmpty())
-            {
-                Vector2D vec1 = overlay.pop();
-                addCnt++;
-                TrajectoryElement elem1 = new TrajectoryElement(vec1);
-                elem1.setIsOverlay();
-                result.add(elem1);
-            }
-            if(!quantizedRoute.isEmpty())
-            {
-                Vector2D vec2 = quantizedRoute.pop();
-                addCnt++;
-                TrajectoryElement elem2 = new TrajectoryElement(vec2);
-                elem2.setIsOriginal();
-                result.add(elem2);
-            }
+            Vector2D vec2 = quantizedRoute.pop();
+            TrajectoryElement elem2 = new TrajectoryElement(vec2);
+            result.add(elem2);
         }
         return result;
     }
-
-//    public abstract void quantize(Deque<Vector2D> input, Deque<Vector2D> result, double stepSize);
 
     public LinkedList<Vector2D> patchHolesInRoute(LinkedList<Vector2D> unevenVectorRoute)
     {

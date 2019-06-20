@@ -16,8 +16,6 @@ public class TrajectoryElement implements Comparable<TrajectoryElement>
     }
 
     private Vector2D _vector;
-//TODO remove the different types
-    private TrajectoryType _type;
     private double _velocity;
     private VelocityEdgeType _velocityEdgeType;
     private double _radius;
@@ -31,7 +29,6 @@ public class TrajectoryElement implements Comparable<TrajectoryElement>
     public TrajectoryElement(Vector2D vector)
     {
         _vector = vector;
-        _type = TrajectoryType.UNKNOWN;
         _velocity = 0.0;
         _velocityEdgeType = VelocityEdgeType.UNKNOWN;
         _radius = 0.0;
@@ -47,21 +44,6 @@ public class TrajectoryElement implements Comparable<TrajectoryElement>
     public String toString()
     {
         return _vector.toString();
-    }
-
-    public void setIsOverlay()
-    {
-        _type = TrajectoryType.OVERLAY;
-    }
-
-    public void setIsOriginal()
-    {
-        _type = TrajectoryType.ORIGINAL;
-    }
-
-    public boolean hasType(TrajectoryType other)
-    {
-        return _type == other;
     }
 
     public void setVelocity(double velocity)
@@ -134,7 +116,6 @@ public class TrajectoryElement implements Comparable<TrajectoryElement>
         copy._index = _index;
         copy._kappa = _kappa;
         copy._radius = _radius;
-        copy._type = _type;
         copy._velocity = _velocity;
         copy._velocityEdgeType = _velocityEdgeType;
         return copy;

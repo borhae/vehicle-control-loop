@@ -43,7 +43,6 @@ public class Segmenter implements ISegmenter
                 Vector2D v = segmentList.pop();
                 addCnt++;
                 TrajectoryElement t = new TrajectoryElement(v);
-                t.setIsOriginal();
                 t.setIdx(addCnt);
                 result.add(t);
             }

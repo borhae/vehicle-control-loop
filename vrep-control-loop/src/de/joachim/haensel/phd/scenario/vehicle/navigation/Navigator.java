@@ -22,6 +22,7 @@ import sumobindings.LaneType;
 public class Navigator
 {
     public static final double U_TURN_RADIUS = 10.0;
+    private static final double MAX_DISTANCE_BETWEEN_FOLLOW_UP_LANES = 0.1;
     private RoadMap _roadMap;
     private List<IRouteBuildingListener> _routeBuildingListeners;
     private Position2D _sourcePosition;
@@ -111,28 +112,29 @@ public class Navigator
     public List<Line2D> createLinesFromPath(List<Node> path, EdgeType startEdge, EdgeType targetEdge, Vector2D orientation, IRouteProperyDetector routePropertyDetector, IRouteAdaptor routeAdaptor)
     {
         List<Line2D> result = createLinesFromPathNoSharpTurnRemoval(path, startEdge, targetEdge);
-        // TODO start and end-points could also be literally on a crossing, I did not took care for that yet
+        result = patchJunctionsSpace(result);
+        
         result = cutStartLaneShapes(result, orientation);
         result = cutEndLaneShapes(result);
-        result.get(0).setP1(_sourcePosition);
-        Line2D lastLine = result.get(result.size() - 1);
-        
-        List<Line2D> linesOnLastEdge = edgeToLines(targetEdge);
-        List<Position2D> intersections = linesOnLastEdge.stream().map(line -> line.perpendicularIntersection(_targetPosition)).filter(curPos -> curPos != null).collect(Collectors.toList());
 
-        Position2D pointOnTargetEdge = _targetPosition;
-        double minDist = Double.POSITIVE_INFINITY;
-        for (Position2D curIntersection : intersections)
+        result = traverse(result, routeAdaptor, routePropertyDetector);
+        return result;
+    }
+
+    private List<Line2D> patchJunctionsSpace(List<Line2D> unpatched)
+    {
+        List<Line2D> result = new ArrayList<Line2D>();
+        for(int idx = 0; idx < unpatched.size() - 1; idx++)
         {
-            double curDist = Position2D.distance(curIntersection, _targetPosition);
-            if(curDist < minDist)
+            Position2D line1Point2 = unpatched.get(idx).getP2();
+            Position2D line2Point1 = unpatched.get(idx + 1).getP1();
+            result.add(unpatched.get(idx));
+            if(!line1Point2.equals(line2Point1, MAX_DISTANCE_BETWEEN_FOLLOW_UP_LANES))
             {
-                minDist = curDist;
-                pointOnTargetEdge = curIntersection;
+                Line2D missingLink = new Line2D(line1Point2, line2Point1);
+                result.add(missingLink);
             }
         }
-        lastLine.setP2(pointOnTargetEdge);
-        result = traverse(result, routeAdaptor, routePropertyDetector);
         return result;
     }
 
@@ -346,6 +348,7 @@ public class Navigator
         else
         {
             result = result.subList(alignedLinesIdxs.get(0), result.size());
+            result.get(0).setP1(_sourcePosition);
             return result;
         }
     }
@@ -361,7 +364,6 @@ public class Navigator
         {
             Line2D curLine = result.get(idx);
             Vector2D v = new Vector2D(curLine);
-            v.lengthen(3.0);
             Position2D intersectionPoint = Vector2D.getPerpendicularIntersection(v, _targetPosition);
             
             curDist = intersectionPoint == null ? Double.POSITIVE_INFINITY : Position2D.distance(intersectionPoint, _targetPosition);

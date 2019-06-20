@@ -429,7 +429,6 @@ public class NavigationTest implements TestConstants
         List<Position2D> allPositions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());
 //        List<Position2D> positions = allPositions.subList(0, allPositions.size());
         List<Position2D> rawPositions = allPositions.subList(93, 95);
-        System.out.println("Raw targets:");
         System.out.println(rawPositions.stream().map(point -> point.toString()).collect(Collectors.joining(", ")));
         List<Position2D> positions = rawPositions.stream().map(point -> point.transform(centerMatrix)).collect(Collectors.toList());
         System.out.println("Mapped targets:");
