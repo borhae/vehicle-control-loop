@@ -196,6 +196,7 @@ public class CarInterfaceActions
             Vector2D result = new Vector2D(rearWheelPosition, vectorSegmentIntersection.getTip());
             return result;
         }
+        
     }
 
     private double computeKTimesVelocity()
