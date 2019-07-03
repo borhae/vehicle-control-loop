@@ -80,7 +80,7 @@ public class RandomAdaptiveNavigationController implements IUpperLayerControl
         Vector2D orientation = _sensorsActuators.getOrientation();
         Navigator navigator = new Navigator(_roadMap);
         navigator.addRouteBuildingListeners(_routeBuildingListeners);
-        List<Line2D> routeBasis = navigator.getRouteWithInitialOrientation(currentPosition, targetPosition, orientation);
+        List<Line2D> routeBasis = navigator.getRouteWithInitialOrientation(currentPosition, targetPosition, _segmentSize, orientation);
         _debuggingParameters.notifyNavigationListenersRouteChanged(routeBasis);
         ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
         ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, _velocityAssignerFactory , _segmentSize);

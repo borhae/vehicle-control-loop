@@ -652,7 +652,9 @@ public class NavigationTest implements TestConstants
         System.out.println("Center matrix: \n" + centerMatrix.toString());
         RoadMap roadMap = mapAndCenterMatrix.getRoadMap();
         
+        double segmentSize = 5.0;
         Navigator navigator = new Navigator(mapAndCenterMatrix.getRoadMap());
+        navigator.setSegmentSize(segmentSize);
     
         List<String> pointsAsString;
         try
@@ -688,9 +690,9 @@ public class NavigationTest implements TestConstants
                 final int routeIdx = idx;
                 sharpTurnIntersections.stream().map(IndexAdder.indexed()).forEachOrdered(idxPos -> drawPosition(idxPos.v(), Color.RED, _objectCreator, "route_" + routeIdx + "_" + idxPos.idx()));
                 
-                ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
-                IVelocityAssignerFactory velocityFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, 120.0);
-                ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityFactory, 5.0);
+                ISegmenterFactory segmenterFactory = segmentSizeI -> new Segmenter(segmentSizeI, new InterpolationSegmenterCircleIntersection());
+                IVelocityAssignerFactory velocityFactory = segmentSizeI -> new BasicVelocityAssigner(segmentSizeI, 120.0);
+                ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityFactory, segmentSize);
                 
                 List<TrajectoryElement> trajectoryElements = trajectorizer.createTrajectory(linesRemovedSharpTurns);
                 INavigationListener navigationListener = new VRepNavigationListener(_objectCreator);

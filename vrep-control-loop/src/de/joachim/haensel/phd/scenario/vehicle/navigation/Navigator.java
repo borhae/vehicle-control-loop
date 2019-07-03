@@ -22,11 +22,12 @@ import sumobindings.LaneType;
 public class Navigator
 {
     public static final double U_TURN_RADIUS = 10.0;
-    private static final double MAX_DISTANCE_BETWEEN_FOLLOW_UP_LANES = 0.1;
+    private static final double MAX_DISTANCE_BETWEEN_FOLLOW_UP_LANES = 0.5;
     private RoadMap _roadMap;
     private List<IRouteBuildingListener> _routeBuildingListeners;
     private Position2D _sourcePosition;
     private Position2D _targetPosition;
+    private double _segmentSize;
 
     public Navigator(RoadMap roadMap)
     {
@@ -52,10 +53,11 @@ public class Navigator
         return route;
     }
     
-    public List<Line2D> getRouteWithInitialOrientation(Position2D currentPosition, Position2D targetPosition, Vector2D orientation)
+    public List<Line2D> getRouteWithInitialOrientation(Position2D currentPosition, Position2D targetPosition, double segmentSize, Vector2D orientation)
     {
         _sourcePosition = currentPosition;
         _targetPosition = targetPosition;
+        _segmentSize = segmentSize;
         EdgeType startEdge = _roadMap.getClosestEdgeForOrientationRestricted(currentPosition, orientation);
         EdgeType targetEdge = _roadMap.getClosestEdgeFor(targetPosition);
         JunctionType startJunction = _roadMap.getJunctionForName(startEdge.getTo());
@@ -112,12 +114,13 @@ public class Navigator
     public List<Line2D> createLinesFromPath(List<Node> path, EdgeType startEdge, EdgeType targetEdge, Vector2D orientation, IRouteProperyDetector routePropertyDetector, IRouteAdaptor routeAdaptor)
     {
         List<Line2D> result = createLinesFromPathNoSharpTurnRemoval(path, startEdge, targetEdge);
-        result = patchJunctionsSpace(result);
+        result = traverse(result, routeAdaptor, routePropertyDetector);
         
         result = cutStartLaneShapes(result, orientation);
         result = cutEndLaneShapes(result);
 
-        result = traverse(result, routeAdaptor, routePropertyDetector);
+        result = patchJunctionsSpace(result);
+
         return result;
     }
 
@@ -128,11 +131,17 @@ public class Navigator
         {
             Position2D line1Point2 = unpatched.get(idx).getP2();
             Position2D line2Point1 = unpatched.get(idx + 1).getP1();
+            double distance = Position2D.distance(line1Point2, line2Point1);
             result.add(unpatched.get(idx));
-            if(!line1Point2.equals(line2Point1, MAX_DISTANCE_BETWEEN_FOLLOW_UP_LANES))
+            if(distance >= MAX_DISTANCE_BETWEEN_FOLLOW_UP_LANES)
             {
                 Line2D missingLink = new Line2D(line1Point2, line2Point1);
                 result.add(missingLink);
+            }
+            else if(distance > Double.MIN_VALUE && distance < MAX_DISTANCE_BETWEEN_FOLLOW_UP_LANES)
+            {
+                line2Point1.setX(line1Point2.getX());
+                line2Point1.setY(line1Point2.getY());
             }
         }
         result.add(unpatched.get(unpatched.size() - 1));
@@ -141,8 +150,17 @@ public class Navigator
 
     public boolean isSharpTurn(Vector2D curLineV, Vector2D nextLineV)
     {
-        double angle = Math.toDegrees(Vector2D.computeAngle(curLineV, nextLineV));
-        return angle > 110; 
+        Position2D p1 = curLineV.getTip();
+        Position2D p2 = nextLineV.getBase();
+        if(Position2D.distance(p1, p2) >= _segmentSize)
+        {
+            return false;
+        }
+        else
+        {
+            double angle = Math.toDegrees(Vector2D.computeAngle(curLineV, nextLineV));
+            return angle > 110; 
+        }
     }
 
     public List<Line2D> traverse(List<Line2D> rawResult, IRouteAdaptor adaptor, IRouteProperyDetector routeProperty)
@@ -395,5 +413,10 @@ public class Navigator
     public void addRouteBuildingListeners(List<IRouteBuildingListener> segmentBuildingListeners)
     {
         _routeBuildingListeners = segmentBuildingListeners;
+    }
+
+    public void setSegmentSize(double segmentSize)
+    {
+        _segmentSize = segmentSize;
     }
 }
