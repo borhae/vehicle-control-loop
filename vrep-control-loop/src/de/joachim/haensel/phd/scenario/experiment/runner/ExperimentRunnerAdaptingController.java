@@ -115,11 +115,6 @@ public class ExperimentRunnerAdaptingController
               taskConfiguration.addNavigationListener(new INavigationListener() {
                 
                 @Override
-                public void notifySegmentsChanged(List<TrajectoryElement> segments)
-                {
-                }
-                
-                @Override
                 public void notifyRouteChanged(List<Line2D> route)
                 {
                 }
@@ -131,6 +126,11 @@ public class ExperimentRunnerAdaptingController
                 
                 @Override
                 public void activateRouteDebugging()
+                {
+                }
+
+                @Override
+                public void notifySegmentsChanged(List<TrajectoryElement> segments, Position2D startPos, Position2D endPos)
                 {
                 }
             });

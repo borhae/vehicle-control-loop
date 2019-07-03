@@ -165,7 +165,7 @@ public class RegularSavingTrajectoryRecorder implements ILowerLayerControl, INav
     }
 
     @Override
-    public void notifySegmentsChanged(List<TrajectoryElement> segments)
+    public void notifySegmentsChanged(List<TrajectoryElement> segments, Position2D startPos, Position2D endPos)
     {
         List<Position2D> segmentsToAdd = segments.stream().map(trajectory -> trajectory.getVector().getBase()).collect(Collectors.toList());
         _plannedTrajectory.addAll(segmentsToAdd);

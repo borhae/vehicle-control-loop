@@ -21,6 +21,8 @@ import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.RoadMapAndCenterMatrix;
 import de.joachim.haensel.phd.scenario.SimulationSetupConvenienceMethods;
 import de.joachim.haensel.phd.scenario.debug.INavigationListener;
+import de.joachim.haensel.phd.scenario.debug.VRepNavigationListener;
+import de.joachim.haensel.phd.scenario.debug.VRepNavigationListener.IIDCreator;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
@@ -35,7 +37,24 @@ import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class ErrounousToursTest 
 {
-	private static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
+	public class RouteIDCreator implements IIDCreator
+    {
+	    private Integer _counter = Integer.valueOf(0);
+
+        public RouteIDCreator(int routeStartIdx)
+        {
+            _counter = Integer.valueOf(routeStartIdx);
+        }
+        
+        public synchronized String getNextStringID()
+        {
+            Integer next = Integer.valueOf(_counter.intValue() + 1);
+            _counter = next;
+            return _counter.toString();
+        }
+    }
+
+    private static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
 
 	private static VRepRemoteAPI _vrep;
 	private static int _clientID;
@@ -122,10 +141,6 @@ public class ErrounousToursTest
 		taskConfiguration.addNavigationListener(new INavigationListener()
 		{
 			@Override
-			public void notifySegmentsChanged(List<TrajectoryElement> segments) {
-			}
-
-			@Override
 			public void notifyRouteChanged(List<Line2D> route) {
 			}
 
@@ -136,6 +151,11 @@ public class ErrounousToursTest
 			@Override
 			public void activateRouteDebugging() {
 			}
+
+            @Override
+            public void notifySegmentsChanged(List<TrajectoryElement> segments, Position2D startPos, Position2D endPos)
+            {
+            }
 		});
 		taskConfiguration.setLowerLayerController(() -> new PurePursuitControllerVariableLookahead());
 		taskCreator.configure(taskConfiguration);
@@ -154,7 +174,6 @@ public class ErrounousToursTest
 	@Test
     public void testLuebeckRoute() throws VRepException 
     {
-        RoadMapAndCenterMatrix mapAndCenterMatrix = null;
         RoadMap map = null;
         
         List<Position2D> targetPositionsMapped = null;
@@ -170,27 +189,18 @@ public class ErrounousToursTest
         }
         List<Position2D> allPositions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());
 //        List<Position2D> positions = allPositions.subList(0, allPositions.size());
-        List<Position2D> positions = allPositions.subList(93, 96);
+        int routeStartIdx = 0;
+        List<Position2D> positions = allPositions.subList(routeStartIdx, 96);
 
-        try
-        {
-            mapAndCenterMatrix = 
-                    SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, RES_ROADNETWORKS_DIRECTORY + mapFilenName);
-        }
-        catch (VRepException exc)
-        {
-            exc.printStackTrace();
-        }
-        if (mapAndCenterMatrix != null)
-        {
-            map = mapAndCenterMatrix.getRoadMap();
-            TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
-            System.out.println("Raw targets:");
-            System.out.println(positions.stream().map(point -> point.toString()).collect(Collectors.joining(", ")));
-            targetPositionsMapped = positions.stream().map(point -> point.transform(centerMatrix)).collect(Collectors.toList());
-            System.out.println("Mapped targets:");
-            System.out.println(targetPositionsMapped.stream().map(point -> point.toString()).collect(Collectors.joining(", ")));
-        }
+        RoadMapAndCenterMatrix mapAndCenterMatrix = 
+                SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, RES_ROADNETWORKS_DIRECTORY + mapFilenName);
+        map = mapAndCenterMatrix.getRoadMap();
+        TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+        System.out.println("Raw targets:");
+        System.out.println(positions.stream().map(point -> point.toString()).collect(Collectors.joining(", ")));
+        targetPositionsMapped = positions.stream().map(point -> point.transform(centerMatrix)).collect(Collectors.toList());
+        System.out.println("Mapped targets:");
+        System.out.println(targetPositionsMapped.stream().map(point -> point.toString()).collect(Collectors.joining(", ")));
         TaskCreator taskCreator = new TaskCreator();
         PointListTaskCreatorConfig taskConfiguration = new PointListTaskCreatorConfig();
         taskConfiguration.setControlParams(15.0, 120.0, 3.8, 4.0, 1.0);
@@ -202,6 +212,10 @@ public class ErrounousToursTest
 
         taskConfiguration.setTargetPoints(targetPositionsMapped);
         taskConfiguration.setLowerLayerController(() -> new PurePursuitControllerVariableLookahead());
+        IIDCreator routeIdCreator = new RouteIDCreator(routeStartIdx);
+        VRepNavigationListener routesEndsMarker = new VRepNavigationListener(_objectCreator, routeIdCreator);
+        routesEndsMarker.activateRouteEndsDebugging();
+        taskConfiguration.addNavigationListener(routesEndsMarker);
         taskCreator.configure(taskConfiguration);
         List<ITask> tasks = taskCreator.createTasks();
 

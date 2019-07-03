@@ -80,6 +80,10 @@ public class EventLoopStateMachine extends FiniteStateMachineTemplate
     {
         Position2D curPos = _actuatorsSensors.getFrontWheelCenterPosition();
         double distance = Position2D.distance(curPos, _target);
+        if(distance < 10.0)
+        {
+            System.out.println("close to target: " + distance);
+        }
         boolean arrived = distance < DISTANCE_TO_TARGET_THRESHOLD;
         return arrived;
     }

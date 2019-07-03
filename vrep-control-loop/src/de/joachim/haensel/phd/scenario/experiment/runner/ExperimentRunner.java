@@ -52,69 +52,63 @@ public class ExperimentRunner
 
    public void run(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints, String mapFilenName, String color, int controlLoopRate) throws VRepException
    {
-       RoadMapAndCenterMatrix mapAndCenterMatrix = null;
-       RoadMap map = null;
-       List<Position2D> targetPointsMapped = null;
-       try 
-       {
-           mapAndCenterMatrix = SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, RES_ROADNETWORKS_DIRECTORY + mapFilenName);
-       } 
-       catch (VRepException exc) 
-       {
-           exc.printStackTrace();
-       }
-       String finalTestID;
-       if (mapAndCenterMatrix != null) 
-       {
-          map = mapAndCenterMatrix.getRoadMap();
-          TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
-          targetPointsMapped = targetPoints.stream().map(point -> point.transform(centerMatrix))
-                   .collect(Collectors.toList());
-          finalTestID = testID + String.format("%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity,
-                   maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
+        RoadMap map = null;
+        List<Position2D> targetPointsMapped = null;
+        RoadMapAndCenterMatrix mapAndCenterMatrix = 
+                SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, RES_ROADNETWORKS_DIRECTORY + mapFilenName);
+        String finalTestID;
+        map = mapAndCenterMatrix.getRoadMap();
+        TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+        targetPointsMapped = targetPoints.stream().map(point -> point.transform(centerMatrix))
+                .collect(Collectors.toList());
+        finalTestID = 
+                testID + String.format("%f_%f_%.2f_%.2f_%.2f_", lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
 
-          TaskCreator taskCreator = new TaskCreator();
-          PointListTaskCreatorConfig taskConfiguration = new PointListTaskCreatorConfig();
-          taskConfiguration.setControlParams(lookahead, maxVelocity, maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
-          taskConfiguration.setControlLoopRate(controlLoopRate);
-          taskConfiguration.setDebug(true);
-          taskConfiguration.setMap(map);
-          taskConfiguration.configSimulator(_vrep, _clientID, _objectCreator);
-         
-          String baseOutputDirectory = "./res/operationalprofiletest/serializedruns/";
-          RegularSavingTrajectoryRecorder trajectoryRecorder = new RegularSavingTrajectoryRecorder(50, 100, baseOutputDirectory, finalTestID);
-          RegularSavingReportListener reportListener = new RegularSavingReportListener(100, baseOutputDirectory, finalTestID);
-          RegularSavingRequestListener requestListener = new RegularSavingRequestListener(100, baseOutputDirectory, finalTestID);
+        TaskCreator taskCreator = new TaskCreator();
+        PointListTaskCreatorConfig taskConfiguration = new PointListTaskCreatorConfig();
+        taskConfiguration.setControlParams(lookahead, maxVelocity, maxLongitudinalAcceleration,
+                maxLongitudinalDecceleration, maxLateralAcceleration);
+        taskConfiguration.setControlLoopRate(controlLoopRate);
+        taskConfiguration.setDebug(true);
+        taskConfiguration.setMap(map);
+        taskConfiguration.configSimulator(_vrep, _clientID, _objectCreator);
 
-          taskConfiguration.addLowerLayerControl(trajectoryRecorder);
-          taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisualsBrakeScript.ttm");
-    
-          taskConfiguration.setTargetPoints(targetPointsMapped);
-          taskConfiguration.addNavigationListener(trajectoryRecorder);
-          taskConfiguration.setLowerLayerController(new ILowerLayerFactory() {
-              @Override
-              public ILowerLayerControl create()
-              {
+        String baseOutputDirectory = "./res/operationalprofiletest/serializedruns/";
+        RegularSavingTrajectoryRecorder trajectoryRecorder = new RegularSavingTrajectoryRecorder(50, 100,
+                baseOutputDirectory, finalTestID);
+        RegularSavingReportListener reportListener = new RegularSavingReportListener(100, baseOutputDirectory,
+                finalTestID);
+        RegularSavingRequestListener requestListener = new RegularSavingRequestListener(100, baseOutputDirectory,
+                finalTestID);
 
-                  PurePursuitControllerVariableLookahead controller = new PurePursuitControllerVariableLookahead();
-                  controller.addTrajectoryRequestListener(requestListener);
-                  controller.addTrajectoryReportListener(reportListener);
-                  return controller;
-              }
-          });
-          taskCreator.configure(taskConfiguration);
-          List<ITask> tasks = taskCreator.createTasks();
-    
-          TaskExecutor executor = new TaskExecutor();
-          executor.execute(tasks);
-          
-          System.out.println("Executed all tasks, now final serialization of results");
-          trajectoryRecorder.savePermanently();
-          reportListener.savePermanently();
-          requestListener.savePermanently();
-          System.out.println("Serialization finished. WAIT FOR THIS!");
-       }
-   }
+        taskConfiguration.addLowerLayerControl(trajectoryRecorder);
+        taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisualsBrakeScript.ttm");
+
+        taskConfiguration.setTargetPoints(targetPointsMapped);
+        taskConfiguration.addNavigationListener(trajectoryRecorder);
+        taskConfiguration.setLowerLayerController(new ILowerLayerFactory()
+        {
+            @Override
+            public ILowerLayerControl create()
+            {
+                PurePursuitControllerVariableLookahead controller = new PurePursuitControllerVariableLookahead();
+                controller.addTrajectoryRequestListener(requestListener);
+                controller.addTrajectoryReportListener(reportListener);
+                return controller;
+            }
+        });
+        taskCreator.configure(taskConfiguration);
+        List<ITask> tasks = taskCreator.createTasks();
+
+        TaskExecutor executor = new TaskExecutor();
+        executor.execute(tasks);
+
+        System.out.println("Executed all tasks, now final serialization of results");
+        trajectoryRecorder.savePermanently();
+        reportListener.savePermanently();
+        requestListener.savePermanently();
+        System.out.println("Serialization finished. WAIT FOR THIS!");
+    }
    
    public void initialize() throws VRepException
    {

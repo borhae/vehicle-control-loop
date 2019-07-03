@@ -87,7 +87,7 @@ public class RandomAdaptiveNavigationController implements IUpperLayerControl
         trajectorizer.addSegmentBuildingListeners(_routeBuildingListeners);
         List<TrajectoryElement> allSegments = trajectorizer.createTrajectory(routeBasis);
         _segmentBuffer.fillBuffer(allSegments);
-        _debuggingParameters.notifyNavigationListenersSegmentsChanged(allSegments);
+        _debuggingParameters.notifyNavigationListenersSegmentsChanged(allSegments, currentPosition, targetPosition);
     }
 
     @Override

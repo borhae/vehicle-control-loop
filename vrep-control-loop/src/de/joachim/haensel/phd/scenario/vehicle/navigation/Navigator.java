@@ -135,6 +135,7 @@ public class Navigator
                 result.add(missingLink);
             }
         }
+        result.add(unpatched.get(unpatched.size() - 1));
         return result;
     }
 
