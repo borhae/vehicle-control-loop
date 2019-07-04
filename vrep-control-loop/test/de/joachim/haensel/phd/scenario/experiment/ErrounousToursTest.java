@@ -37,7 +37,9 @@ import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class ErrounousToursTest 
 {
-	public class RouteIDCreator implements IIDCreator
+	private static final int ROUTE_ALLTIME_MIN_IDX = 0;
+
+    public class RouteIDCreator implements IIDCreator
     {
 	    private Integer _counter = Integer.valueOf(0);
 
@@ -188,9 +190,19 @@ public class ErrounousToursTest
             e.printStackTrace();
         }
         List<Position2D> allPositions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());
-//        List<Position2D> positions = allPositions.subList(0, allPositions.size());
-        int routeStartIdx = 0;
-        List<Position2D> positions = allPositions.subList(routeStartIdx, 96);
+        int routeAllTimeMaxIdx = allPositions.size();
+        
+        int minIdx = 0;
+        int maxIdx = 96;
+        if(minIdx >= maxIdx)
+        {
+            System.out.println("min idx larger or equal to max idx. returning.");
+            return;
+        }
+        
+        int routeStartIdx = Math.max(minIdx, ROUTE_ALLTIME_MIN_IDX);
+        int routeEndIdx = Math.min(maxIdx, routeAllTimeMaxIdx);
+        List<Position2D> positions = allPositions.subList(routeStartIdx, routeEndIdx);
 
         RoadMapAndCenterMatrix mapAndCenterMatrix = 
                 SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, RES_ROADNETWORKS_DIRECTORY + mapFilenName);
