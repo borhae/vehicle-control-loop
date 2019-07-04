@@ -117,7 +117,7 @@ public class Navigator
         result = traverse(result, routeAdaptor, routePropertyDetector);
         
         result = cutStartLaneShapes(result, orientation);
-        result = cutEndLaneShapes(result);
+//        result = cutEndLaneShapes(result, targetEdge);
 
         result = patchJunctionsSpace(result);
 
@@ -200,7 +200,30 @@ public class Navigator
         for(int idx = 0; idx < edges.size(); idx++)
         {
             EdgeType curEdge = edges.get(idx);
-            regularLineAdd(result, curEdge);
+            if(curEdge != targetEdge)
+            {
+                regularLineAdd(result, curEdge);
+            }
+            else
+            {
+                List<LaneType> lanes = curEdge.getLane();
+                List<String> lanesAsString = lanes.stream().map(lane -> lane.getShape()).collect(Collectors.toList());
+                List<List<Line2D>> lineSelectionToChooseFrom = lanesAsString.stream().map(shape -> Line2D.createLines(shape)).collect(Collectors.toList());
+                double minDist = Double.POSITIVE_INFINITY;
+                double curDist = Double.POSITIVE_INFINITY;
+                List<Line2D> linesToAdd = lineSelectionToChooseFrom.get(0);
+                for(List<Line2D> curShape : lineSelectionToChooseFrom)
+                {
+                    curShape = cutEndLaneShapes(curShape, targetEdge);
+                    curDist = Position2D.distance(curShape.get(curShape.size() - 1).getP2(), _targetPosition);
+                    if(curDist < minDist)
+                    {
+                        minDist = curDist;
+                        linesToAdd = curShape;
+                    }
+                }
+                result.addAll(linesToAdd);
+            }
         }
         return result;
     }
@@ -372,7 +395,7 @@ public class Navigator
         }
     }
     
-    private List<Line2D> cutEndLaneShapes(List<Line2D> result)
+    private List<Line2D> cutEndLaneShapes(List<Line2D> result, EdgeType targetEdge)
     {
         double minDist = Double.POSITIVE_INFINITY;
         double curDist = Double.POSITIVE_INFINITY;

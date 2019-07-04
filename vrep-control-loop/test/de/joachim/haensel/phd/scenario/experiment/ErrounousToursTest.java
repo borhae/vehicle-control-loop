@@ -192,8 +192,8 @@ public class ErrounousToursTest
         List<Position2D> allPositions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());
         int routeAllTimeMaxIdx = allPositions.size();
         
-        int minIdx = 0;
-        int maxIdx = 96;
+        int minIdx = 171;
+        int maxIdx = 173;
         if(minIdx >= maxIdx)
         {
             System.out.println("min idx larger or equal to max idx. returning.");
