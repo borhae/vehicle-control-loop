@@ -263,6 +263,7 @@ public class TestTaskExecutor
         taskConfiguration.addLowerLayerControl(trajectoryRecorder);
         taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisualsBrakeScript.ttm");
 
+        taskConfiguration.setControlLoopRate(120);
         taskConfiguration.setTargetPoints(targetPoints);
         taskConfiguration.addNavigationListener(trajectoryRecorder);
         taskConfiguration.setLowerLayerController(new ILowerLayerFactory() {
@@ -288,7 +289,6 @@ public class TestTaskExecutor
         TaskExecutor executor = new TaskExecutor();
         executor.execute(tasks);
     }
-    
 
     @Test
     public void testExecute180Route()
