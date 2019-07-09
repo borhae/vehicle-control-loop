@@ -58,23 +58,35 @@ public class EventLoopStateMachine extends FiniteStateMachineTemplate
         {
             return false;
         }
+        System.out.println("reverse drive detected");
         
         Position2D carFrontPos = _actuatorsSensors.getFrontWheelCenterPosition();
         Position2D carBackPos = _actuatorsSensors.getRearWheelCenterPosition();
-        
+          
         double baseDistFront = carFrontPos.distance(closestNearbyElement.getVector().getBase());
-        double tipDist = carBackPos.distance(closestNearbyElement.getVector().getTip());
         
-        double baseDistRear = carBackPos.distance(closestNearbyElement.getVector().getBase());
-        
-        System.out.println("reverse Distance " + baseDistFront + " , " + tipDist + " , " + baseDistRear);
-        if(baseDistRear < 3 && baseDistFront < tipDist)
-        //if(baseDistFront < 5)
+        if(baseDistFront > 5)
         {
-            return true;
+            System.out.println("too far");
+            return false;
         }
-        
-        return false;
+//        Position2D carFrontPos = _actuatorsSensors.getFrontWheelCenterPosition();
+//        Position2D carBackPos = _actuatorsSensors.getRearWheelCenterPosition();
+//        
+//        double baseDistFront = carFrontPos.distance(closestNearbyElement.getVector().getBase());
+//        double tipDist = carBackPos.distance(closestNearbyElement.getVector().getTip());
+//        
+//        double baseDistRear = carBackPos.distance(closestNearbyElement.getVector().getBase());
+//        
+//        System.out.println("reverse Distance " + baseDistFront + " , " + tipDist + " , " + baseDistRear);
+//        if(baseDistRear < 3 && baseDistFront < tipDist)
+//        //if(baseDistFront < 5)
+//        {
+//            return true;
+//        }
+//        
+//        return false;
+        return true;
     }
 
     private void informFailed(Position2D newTarget)

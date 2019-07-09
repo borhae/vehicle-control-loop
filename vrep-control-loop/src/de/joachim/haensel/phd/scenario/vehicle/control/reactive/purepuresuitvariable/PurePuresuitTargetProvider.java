@@ -19,6 +19,7 @@ public class PurePuresuitTargetProvider
     private Position2D _currentPosition;
     private Vector2D _currentOrientation;
     private TrajectoryElement _currentLookaheadElement;
+    private TrajectoryElement _nearestReverseElement;
     private int _currentClosestElementIndex;
     private Position2D _rearWheelCenterPosition;
 
@@ -47,38 +48,7 @@ public class PurePuresuitTargetProvider
 
     public TrajectoryElement getNearestReverseElement()
     {
-        TrajectoryElement result = null;
-        if (_currentPosition == null)
-        {
-            System.out.println("Closest Trajectory Element: No reference position available!");
-            return result;
-        }
-        if (_trajectoryBuffer.isEmpty())
-        {
-            System.out.println("Closest Trajectory Element: Buffer is empty!");
-            return result;
-        }
-        
-        double minDist = Double.POSITIVE_INFINITY;
-        int minDistIdx = Integer.MAX_VALUE;
-        for (int idx = 0; idx < _trajectoryBuffer.size(); idx++)
-        {
-            TrajectoryElement curElem = _trajectoryBuffer.get(idx);
-            Vector2D curVector = curElem.getVector();
-            curVector = new Vector2D(curVector.getbX(), curVector.getbY(), - curVector.getdX(), - curVector.getdY());
-            if (curElem.isReverse() && Math.toDegrees(Vector2D.computeAngle(curVector, _currentOrientation)) < 120)
-            {
-                double distance = curVector.toLine().distancePerpendicularOrEndpoints(_currentPosition);
-                if (distance < minDist)
-                {
-                    minDist = distance;
-                    minDistIdx = idx;
-                    result = curElem;
-                }
-            }
-        }
-        
-        return result;
+        return _nearestReverseElement;
     }
     
     public TrajectoryElement getClosestTrajectoryElement()
@@ -101,7 +71,7 @@ public class PurePuresuitTargetProvider
         {
             TrajectoryElement curElem = _trajectoryBuffer.get(idx);
             Vector2D curVector = curElem.getVector();
-            if (Math.toDegrees(Vector2D.computeAngle(curVector, _currentOrientation)) < 120)
+            if (Math.toDegrees(Vector2D.computeAngle(curVector, _currentOrientation)) < 120 || curElem.isReverse())
             {
                 double distance = curVector.toLine().distancePerpendicularOrEndpoints(_currentPosition);
                 if (distance < minDist)
@@ -109,7 +79,7 @@ public class PurePuresuitTargetProvider
                     minDist = distance;
                     minDistIdx = idx;
                     _currentClosestElementIndex = idx;
-                    result = curElem;
+                    result = curElem;                    
                 }
             }
         }
@@ -130,6 +100,12 @@ public class PurePuresuitTargetProvider
                 }
             }
         }
+        
+        if(_trajectoryBuffer.get(_currentClosestElementIndex).isReverse())
+        {
+            System.out.println("current closest is reverse");
+        }
+        
         if (minDistIdx != 0 && minDist != Double.POSITIVE_INFINITY)
         {
             _trajectoryBuffer.removeBelowIndex(minDistIdx);
@@ -139,25 +115,38 @@ public class PurePuresuitTargetProvider
 
     public TrajectoryElement getLookaheadTrajectoryElement(double lookahead)
     {
-        if(_currentLookaheadElement == null || !isInRange(_currentLookaheadElement, _rearWheelCenterPosition, lookahead))
-        {
+//        if(_currentLookaheadElement == null || !isInRange(_currentLookaheadElement, _rearWheelCenterPosition, lookahead))
+//        {
             if(_currentClosestElementIndex == -1)
             {
                 getClosestTrajectoryElement();
             }
             
-            int maxSteps = (int) Math.round(lookahead / 5.0) * 2;           
+            int maxSteps = (int) Math.round(lookahead / 5.0) * 4 + 1;           
             int targetIndex = -1;   
             
             
             //find a fitting trajectory element in front of the vehicle
             for(int i = _currentClosestElementIndex; i < Math.min(_currentClosestElementIndex + maxSteps, _trajectoryBuffer.size() -1); i++)
             {
-                if(isInRange(_trajectoryBuffer.get(i), _rearWheelCenterPosition, lookahead))
+                TrajectoryElement curTrajElement = _trajectoryBuffer.get(i);
+                if(isInRange(curTrajElement, _rearWheelCenterPosition, lookahead))
                 {
+                    System.out.println("element in range found");
                     targetIndex = i;
+                    if(!curTrajElement.isReverse()) {
+                        _nearestReverseElement = null;
+                    }
+                    
                     break;
-                }                           
+                }
+                else if(curTrajElement.isReverse())
+                {
+                    System.out.println("reverse element found");
+                    targetIndex = i;   
+                    _nearestReverseElement = curTrajElement;
+                    break;
+                }
             }
             
             if(targetIndex != -1)
@@ -166,6 +155,17 @@ public class PurePuresuitTargetProvider
             }
             else
             {
+                for(int i = 0; i < Math.min(20, _trajectoryBuffer.size() -1); i++)
+                {
+                    if(_trajectoryBuffer.get(i).isReverse())
+                    {
+                        System.out.println("reverse stuff");
+                    }
+                    else {
+                        System.out.println("no");
+                    }
+                }
+                
                 if(_trajectoryBuffer.getCurrentState() != RouteBufferStates.ROUTE_ENDING)
                 {
                     boolean segmentsLeft = _trajectoryBuffer.elementsLeft();
@@ -181,7 +181,7 @@ public class PurePuresuitTargetProvider
                     System.out.println("No segment in range on ending route");
                 }
             }
-        }
+//        }
         
         return _currentLookaheadElement;
     }
