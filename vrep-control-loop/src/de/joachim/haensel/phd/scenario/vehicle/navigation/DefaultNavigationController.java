@@ -126,4 +126,10 @@ public class DefaultNavigationController implements IUpperLayerControl
     {
         // TODO Auto-generated method stub
     }
+
+    @Override
+    public double getTrajectoryElementLength()
+    {
+        return _segmentSize;
+    }
 }

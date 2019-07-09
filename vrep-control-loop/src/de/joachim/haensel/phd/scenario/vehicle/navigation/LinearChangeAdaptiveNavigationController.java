@@ -130,4 +130,10 @@ public class LinearChangeAdaptiveNavigationController implements IUpperLayerCont
     {
         return _segmentBuffer.getSize() >= elementRequestSize;
     }
+
+    @Override
+    public double getTrajectoryElementLength()
+    {
+        return _segmentSize;
+    }
 }

@@ -135,4 +135,10 @@ public class RandomAdaptiveNavigationController implements IUpperLayerControl
     {
         return _segmentBuffer.getSize() >= elementRequestSize;
     }
+
+    @Override
+    public double getTrajectoryElementLength()
+    {
+        return _segmentSize;
+    }
 }

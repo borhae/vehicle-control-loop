@@ -1,7 +1,6 @@
 package de.joachim.haensel.phd.scenario.vehicle.test;
 
 import java.awt.Color;
-import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -13,20 +12,17 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
-import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
-import de.joachim.haensel.phd.scenario.vehicle.IRouteBuildingListener;
 import de.joachim.haensel.phd.scenario.vehicle.ITrajectoryProvider;
-import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
+import de.joachim.haensel.phd.scenario.vehicle.UpperLayerControlAdapter;
 import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
 import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleCreator;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingType;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
@@ -82,58 +78,10 @@ public class TestVehicleSteering
     {
         VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
 
-        IUpperLayerFactory uperFact = () ->
-        {
-            return new IUpperLayerControl() {
-
-                @Override
-                public void initController(IActuatingSensing sensorsActuators, RoadMap roadMap)
-                {
-                }
-
-                @Override
-                public void buildSegmentBuffer(Position2D position2d, RoadMap roadMap)
-                {
-                }
-
-                @Override
-                public void activateDebugging(DebugParams params)
-                {
-                }
-
-                @Override
-                public void deactivateDebugging()
-                {
-                }
-
-                @Override
-                public void addRouteBuilderListener(IRouteBuildingListener listener)
-                {
-                }
-
-				@Override
-				public boolean segmentsLeft() {
-					return false;
-				}
-
-                @Override
-                public List<TrajectoryElement> getNewElements(int segmentRequestSize)
-                {
-                    return null;
-                }
-
-                @Override
-                public boolean hasElements(int elementRequestSize)
-                {
-                    return false;
-                }
-            };
-        };
+        IUpperLayerFactory uperFact = () -> new UpperLayerControlAdapter();
+        
         TestJustSteeringController llControl = new TestJustSteeringController();
-        ILowerLayerFactory lowerFact = () ->
-        {
-            return llControl;
-        };
+        ILowerLayerFactory lowerFact = () -> llControl;
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, null, uperFact, lowerFact);
 
@@ -182,54 +130,8 @@ public class TestVehicleSteering
     {
         VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
 
-        IUpperLayerFactory uperFact = () ->
-        {
-            return new IUpperLayerControl() {
-                @Override
-                public void initController(IActuatingSensing sensorsActuators, RoadMap roadMap)
-                {
-                }
-
-                @Override
-                public void buildSegmentBuffer(Position2D position2d, RoadMap roadMap)
-                {
-                }
-
-                @Override
-                public void activateDebugging(DebugParams params)
-                {
-                }
-
-                @Override
-                public void deactivateDebugging()
-                {
-                }
-
-                @Override
-                public void addRouteBuilderListener(IRouteBuildingListener listener)
-                {
-                }
-
-				@Override
-				public boolean segmentsLeft() 
-				{
-					return false;
-				}
-
-                @Override
-                public List<TrajectoryElement> getNewElements(int segmentRequestSize)
-                {
-                    return null;
-                }
-
-                @Override
-                public boolean hasElements(int elementRequestSize)
-                {
-                    // TODO Auto-generated method stub
-                    return false;
-                }
-            };
-        };
+        IUpperLayerFactory uperFact = () -> new UpperLayerControlAdapter();
+        
         Position2D requiredCenter = new Position2D(0.0f, 0.0f);
         double requiredRadius = 5.0;
         TestCheckingSteeringController llControl = new TestCheckingSteeringController(pos -> {return Math.abs(Position2D.distance(requiredCenter, pos) - requiredRadius) < 0.000000000000001;});
