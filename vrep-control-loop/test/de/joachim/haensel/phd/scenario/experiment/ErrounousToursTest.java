@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -20,19 +19,16 @@ import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.RoadMapAndCenterMatrix;
 import de.joachim.haensel.phd.scenario.SimulationSetupConvenienceMethods;
-import de.joachim.haensel.phd.scenario.debug.INavigationListener;
 import de.joachim.haensel.phd.scenario.debug.VRepNavigationListener;
 import de.joachim.haensel.phd.scenario.debug.VRepNavigationListener.IIDCreator;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
-import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.tasks.ITask;
 import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig;
 import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class ErrounousToursTest 

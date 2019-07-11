@@ -97,6 +97,7 @@ public class RoadMap
     private ConcurrentMap<Position2D, LaneType> _positionToLaneMap;
     private TMatrix _transformationMatrix;
     private Map<EdgeType, Edge> _navigableEdges;
+    private XYMinMax _minMax;
 
 
     public RoadMap(String networkFileName)
@@ -704,42 +705,46 @@ public class RoadMap
 
     public XYMinMax computeMapDimensions()
     {
-        XYMinMax minMax = new XYMinMax();
-        List<JunctionType> junctions = getJunctions();
-        for (JunctionType curJunction : junctions)
+        if(_minMax == null)
         {
-            if(curJunction.getType().equals("internal"))
+            XYMinMax minMax = new XYMinMax();
+            List<JunctionType> junctions = getJunctions();
+            for (JunctionType curJunction : junctions)
             {
-                continue;
-            }
-            updateMinMax(curJunction, minMax);
-        }
-        List<EdgeType> edges = getEdges();
-        for (EdgeType curEdge : edges)
-        {
-            String function = curEdge.getFunction();
-            if(function == null || function.isEmpty())
-            {
-                List<LaneType> lanes = curEdge.getLane();
-                for (LaneType curLane : lanes)
+                if(curJunction.getType().equals("internal"))
                 {
-                    String shape = curLane.getShape();
-                    String[] lineCoordinates = shape.split(" ");
-                    int numberCoordinates = lineCoordinates.length;
-                    if(numberCoordinates == 2)
+                    continue;
+                }
+                updateMinMax(curJunction, minMax);
+            }
+            List<EdgeType> edges = getEdges();
+            for (EdgeType curEdge : edges)
+            {
+                String function = curEdge.getFunction();
+                if(function == null || function.isEmpty())
+                {
+                    List<LaneType> lanes = curEdge.getLane();
+                    for (LaneType curLane : lanes)
                     {
-                        String p1 = lineCoordinates[0];
-                        String p2 = lineCoordinates[1];
-                        updateMinMax(curLane, p1, p2, minMax);              
-                    }
-                    else
-                    {
-                        updateMinMaxRecursive(curLane, Arrays.asList(lineCoordinates), minMax);
+                        String shape = curLane.getShape();
+                        String[] lineCoordinates = shape.split(" ");
+                        int numberCoordinates = lineCoordinates.length;
+                        if(numberCoordinates == 2)
+                        {
+                            String p1 = lineCoordinates[0];
+                            String p2 = lineCoordinates[1];
+                            updateMinMax(curLane, p1, p2, minMax);              
+                        }
+                        else
+                        {
+                            updateMinMaxRecursive(curLane, Arrays.asList(lineCoordinates), minMax);
+                        }
                     }
                 }
             }
+            _minMax = minMax;
         }
-        return minMax;
+        return _minMax;
     }
 
     private void updateMinMax(JunctionType junction, XYMinMax minMax)
