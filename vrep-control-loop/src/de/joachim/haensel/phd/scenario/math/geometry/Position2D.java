@@ -1,6 +1,7 @@
 package de.joachim.haensel.phd.scenario.math.geometry;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -209,6 +210,11 @@ public class Position2D
     public String toString(String seperator)
     {
         return _x + seperator + _y ;
+    }
+    
+    public String toFormattedString(String format)
+    {
+        return String.format(Locale.ENGLISH, format, _x, _y);
     }
     
     public String toPyPlotString()
