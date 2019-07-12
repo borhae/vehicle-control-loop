@@ -604,6 +604,7 @@ public class RoadMap
 //            transformEdge(curEdge, transformationMatrix);
 //        }
         edges.parallelStream().forEach(edge -> transformEdge(edge, transformationMatrix));
+        _minMax = internalComputeMapDimensions();
     }
 
     private void transformJunction(JunctionType junction, TMatrix transformationMatrix)
@@ -707,6 +708,13 @@ public class RoadMap
     {
         if(_minMax == null)
         {
+            _minMax = internalComputeMapDimensions();
+        }
+        return _minMax;
+    }
+
+    public XYMinMax internalComputeMapDimensions()
+    {
             XYMinMax minMax = new XYMinMax();
             List<JunctionType> junctions = getJunctions();
             for (JunctionType curJunction : junctions)
@@ -742,9 +750,7 @@ public class RoadMap
                     }
                 }
             }
-            _minMax = minMax;
-        }
-        return _minMax;
+            return minMax;
     }
 
     private void updateMinMax(JunctionType junction, XYMinMax minMax)

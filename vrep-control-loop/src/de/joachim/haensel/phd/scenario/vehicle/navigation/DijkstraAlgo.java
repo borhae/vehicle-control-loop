@@ -47,7 +47,7 @@ public class DijkstraAlgo implements IShortestPathAlgorithm
 //        int neighbourCnt = 0;
         int size = _unvisitedNodes.size();
         boolean foundTarget = false;
-        _unvisitedNodes.remove(_target);
+//        _unvisitedNodes.remove(_source);
         while(!_unvisitedNodes.isEmpty())
         {
             Node u = minimumDistance(_unvisitedNodes);

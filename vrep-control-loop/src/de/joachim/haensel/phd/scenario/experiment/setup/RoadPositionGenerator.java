@@ -83,7 +83,7 @@ public class RoadPositionGenerator
             List<String> pointsAsStrings = resultPointsOnMap.stream().map(curPos -> curPos.toFormattedString("%8.2f, %8.2f")).collect(Collectors.toList());
             try
             {
-                Path targetPath = Paths.get(Paths.get("").toAbsolutePath().toString(), input2 + ".txt");
+                Path targetPath = Paths.get(Paths.get("").toAbsolutePath().toString(), RES_ROADNETWORKS_DIRECTORY, input2);
                 Files.write(targetPath, pointsAsStrings,Charset.defaultCharset());
             } 
             catch (IOException exc)

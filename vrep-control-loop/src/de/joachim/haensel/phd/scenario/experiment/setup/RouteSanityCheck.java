@@ -40,8 +40,14 @@ public class RouteSanityCheck
                 PositionPair pair = new PositionPair(curPos, nexPos, idx);
                 pairs.add(pair);
             }
-            List<String> errorMsg = pairs.parallelStream().map(pair -> checkSanityForPositionPair(map, pair.idx, pair.curPos, pair.nexPos)).collect(Collectors.toList());
-            errorMsg.stream().forEach(msg -> System.out.println(msg));
+            List<ErrorMsg> errorMsg = pairs.parallelStream().map(pair -> checkSanityForPositionPair(map, pair.idx, pair.curPos, pair.nexPos)).collect(Collectors.toList());
+
+//            List<String> errorMsg = pairs.parallelStream().map(pair -> checkSanityForPositionPair(map, pair.idx, pair.curPos, pair.nexPos)).collect(Collectors.toList());
+            errorMsg.stream().forEach(msg -> System.out.println(msg.getLongMsg()));
+            errorMsg.stream().forEach(msg -> System.out.print(msg.getShortMsg()));
+            System.out.println("");
+            int numOfErrors = errorMsg.stream().filter(msg -> msg.isFailed()).collect(Collectors.toList()).size();
+            System.out.println("Number of erronous routes: " + numOfErrors);
         }
         catch (IOException e) 
         {
@@ -49,7 +55,7 @@ public class RouteSanityCheck
         }
     }
 
-	private static String checkSanityForPositionPair(RoadMap map, int idx, Position2D curPos, Position2D nexPos) 
+	private static ErrorMsg checkSanityForPositionPair(RoadMap map, int idx, Position2D curPos, Position2D nexPos) 
 	{
 		StringBuilder result = new StringBuilder();
         Navigator nav = new Navigator(map);
@@ -57,10 +63,12 @@ public class RouteSanityCheck
         System.out.format("Processing route from point number %d to point number %d\n", idx, idx + 1);
 		result.append(String.format("> Checking route from point number %d to point number %d\n", idx, idx + 1));
 		List<Line2D> route = nav.getRoute(curPos, nexPos);
+		boolean failed = false;
 		if(route == null)
 		{
 			result.append(String.format("     XX No route between these points!: (%.2f, %.2f), (%.2f, %.2f)\n", curPos.getX(), curPos.getY(), nexPos.getX(), nexPos.getY()));
 			result.append(String.format("route: %d\n",  idx));
+			failed = true;
 		}
 		else
 		{
@@ -70,6 +78,7 @@ public class RouteSanityCheck
 		    if(path == null)
 		    {
 		    	result.append("what? navigator found route, dijkstra didn't?");
+		    	failed = true;
 		    }
 		    else
 		    {
@@ -98,6 +107,7 @@ public class RouteSanityCheck
 		            if(!nodeConnects)
 		            {
 		            	result.append(String.format("     XX Just one node. Node does not connect these points: (%.2f, %.2f), (%.2f, %.2f)\n", curPos.getX(), curPos.getY(), nexPos.getX(), nexPos.getY()));
+		            	failed = true;
 		            }
 		        }
 		        else
@@ -112,6 +122,7 @@ public class RouteSanityCheck
 		                	result.append("what? navigator found route, dijkstra too but the nodes aren't connected!");
 		                	result.append(String.format("Strange found points with no connection!: (%.2f, %.2f), (%.2f, %.2f)\n", curPos.getX(), curPos.getY(), nexPos.getX(), nexPos.getY()));
 		                    result.append(String.format("route: %d\n",  idx));
+		                    failed = true;
 		                    break;
 		                }
 		            }
@@ -120,6 +131,7 @@ public class RouteSanityCheck
 		    result.append(String.format("     VVV route with %d lines found: \n", route.size()));
 		}
 		result.append("< Checked ");
-		return result.toString();
+		ErrorMsg resultMsg = new ErrorMsg(result.toString(), failed, idx);
+		return resultMsg;
 	}
 }
