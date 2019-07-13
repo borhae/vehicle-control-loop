@@ -21,8 +21,10 @@ public class RouteSanityCheck
 {
     public static void main(String[] args)
     {
-        RoadMap map = new RoadMap("./res/roadnetworks/chandigarh-roads.net.xml");
-        try (Stream<String> stream = Files.lines(Paths.get("./res/roadnetworks/Chandigarhpoints_spread.txt"))) 
+//        RoadMap map = new RoadMap("./res/roadnetworks/chandigarh-roads.net.xml");
+//        try (Stream<String> stream = Files.lines(Paths.get("./res/roadnetworks/Chandigarhpoints_spread.txt"))) 
+        RoadMap map = new RoadMap("./res/roadnetworks/luebeck-roads.net.xml");
+        try (Stream<String> stream = Files.lines(Paths.get("./res/roadnetworks/Luebeckpoints_spread.txt"))) 
         {
             List<Position2D> positions = stream.map(stringPos -> new Position2D(stringPos)).collect(Collectors.toList());
             List<PositionPair> pairs = new ArrayList<PositionPair>();

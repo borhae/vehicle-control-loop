@@ -146,4 +146,9 @@ public class TrajectoryBuffer extends FiniteStateMachineTemplate
     {
         return _trajectoryProvider.segmentsLeft();
     }
+
+    public double getTrajectoryElementLength()
+    {
+        return _trajectoryProvider.getTrajectoryElementLength();
+    }
 }

@@ -7,10 +7,12 @@ import java.util.List;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Point3D;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.streamextensions.IndexAdder;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
+import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
 
 
 /**
@@ -29,6 +31,7 @@ public class VRepNavigationListener implements INavigationListener
     private boolean _routeDebugging;
     private boolean _segmentDebugging;
     private IIDCreator _idCreator;
+    private boolean _routeEndsDebugging;
 
     public enum IDCreator implements IIDCreator
     {
@@ -49,6 +52,7 @@ public class VRepNavigationListener implements INavigationListener
         _objectCreator = objectCreator;
         _routeDebugging = false;
         _segmentDebugging = false;
+        _routeEndsDebugging = false;
         _idCreator = IDCreator.INSTANCE;
     }
     
@@ -59,8 +63,9 @@ public class VRepNavigationListener implements INavigationListener
     }
 
     @Override
-    public void notifySegmentsChanged(List<TrajectoryElement> segments)
+    public void notifySegmentsChanged(List<TrajectoryElement> segments, Position2D startPos, Position2D endPos)
     {
+        String routeID = _idCreator.getNextStringID();
         if(_segmentDebugging)
         {
             ArrayList<Point3D> vertices = new ArrayList<>();
@@ -68,11 +73,34 @@ public class VRepNavigationListener implements INavigationListener
             segments.forEach(segment -> addSegmentToMesh(segment, vertices, indices));
             try
             {
-                _objectCreator.createMeshInSimulation(vertices, indices, "segments" + _idCreator.getNextStringID(), true);
+                _objectCreator.createMeshInSimulation(vertices, indices, "segments" + routeID, true);
             }
             catch (VRepException exc)
             {
                 exc.printStackTrace();
+            }
+        }
+        if(_routeEndsDebugging && segments.size() >= 2)
+        {
+//            Position2D startPos = segments.get(0).getVector().getBase();
+//            Position2D endPos = segments.get(segments.size() - 1).getVector().getTip();
+            try
+            {
+                ShapeParameters startSphereParams = new ShapeParameters();
+                startSphereParams.makeStandardSphere();
+                startSphereParams.setName("start_" + routeID);
+                startSphereParams.setPosition((float)startPos.getX(), (float)startPos.getY(), 1.0f);
+                _objectCreator.createPrimitive(startSphereParams);
+
+                ShapeParameters endSphereParams = new ShapeParameters();
+                endSphereParams.makeStandardSphere();
+                endSphereParams.setName("end_" + routeID);
+                endSphereParams.setPosition((float)endPos.getX(), (float)endPos.getY(), 1.0f);
+                _objectCreator.createPrimitive(endSphereParams);
+            } 
+            catch (VRepException e)
+            {
+                e.printStackTrace();
             }
         }
     }
@@ -137,5 +165,10 @@ public class VRepNavigationListener implements INavigationListener
     public void activateSegmentDebugging()
     {
         _segmentDebugging = true;
+    }
+    
+    public void activateRouteEndsDebugging()
+    {
+        _routeEndsDebugging = true;
     }
 }

@@ -1,12 +1,5 @@
 package de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
@@ -20,12 +13,15 @@ public class PurePuresuitTargetProvider
     private Vector2D _currentOrientation;
     private TrajectoryElement _currentLookaheadElement;
     private TrajectoryElement _nearestReverseElement;
+
     private int _currentClosestElementIndex;
     private Position2D _rearWheelCenterPosition;
+    private double _trajectoryElementLength;
 
     public PurePuresuitTargetProvider(TrajectoryBuffer trajectoryBuffer, IActuatingSensing actuatorsSensors)
     {
         _trajectoryBuffer = trajectoryBuffer;
+        _trajectoryElementLength = trajectoryBuffer.getTrajectoryElementLength();
         _actuatorsSensors = actuatorsSensors;
         _currentLookaheadElement = null;
         _currentClosestElementIndex = -1;
@@ -65,47 +61,85 @@ public class PurePuresuitTargetProvider
             return null;
         }
 
-        double minDist = Double.POSITIVE_INFINITY;
-        int minDistIdx = Integer.MAX_VALUE;
+        double minDistForwardAngle = Double.POSITIVE_INFINITY;
+        int minDistForwardAngleIdx = Integer.MAX_VALUE;
+        double minDistGeneral = Double.POSITIVE_INFINITY;
+        int minDistGeneralIdx = Integer.MAX_VALUE;
+        double minDistLowestIdxs = Double.POSITIVE_INFINITY;
+        int minDistLowestIdxsIdx = Integer.MAX_VALUE;
+        
         for (int idx = 0; idx < _trajectoryBuffer.size(); idx++)
         {
             TrajectoryElement curElem = _trajectoryBuffer.get(idx);
             Vector2D curVector = curElem.getVector();
-            if (Math.toDegrees(Vector2D.computeAngle(curVector, _currentOrientation)) < 120 || curElem.isReverse())
+
+            double angle = Math.toDegrees(Vector2D.computeAngle(curVector, _currentOrientation));
+            double distance = curVector.toLine().distancePerpendicularOrEndpoints(_currentPosition);
+            if(distance < minDistGeneral)
             {
-                double distance = curVector.toLine().distancePerpendicularOrEndpoints(_currentPosition);
-                if (distance < minDist)
-                {
-                    minDist = distance;
-                    minDistIdx = idx;
-                    _currentClosestElementIndex = idx;
-                    result = curElem;                    
-                }
+                minDistGeneral = distance;
+                minDistGeneralIdx = idx;
             }
-        }
-        if(minDist == Double.POSITIVE_INFINITY)
+            if((angle < 120) && distance < minDistForwardAngle)
+            {
+                minDistForwardAngle = distance;
+                minDistForwardAngleIdx = idx;
+            }
+            if((idx < 4) && distance < minDistLowestIdxs)
+            {
+                minDistLowestIdxs = distance;
+                minDistLowestIdxsIdx = idx;
+            }
+        }   
+
+        int minDistIdx = Integer.MAX_VALUE;
+        double minDist = Double.POSITIVE_INFINITY;
+        if(minDistForwardAngle == Double.POSITIVE_INFINITY && minDistGeneral == Double.POSITIVE_INFINITY && minDistLowestIdxs == Double.POSITIVE_INFINITY)
         {
-            System.out.println("No element found with ok orientation: going for the closest");
-            for (int idx = 0; idx < _trajectoryBuffer.size(); idx++)
-            {
-                TrajectoryElement curElem = _trajectoryBuffer.get(idx);
-                Vector2D curVector = curElem.getVector();
-                double distance = curVector.toLine().distancePerpendicularOrEndpoints(_currentPosition);
-                if (distance < minDist)
-                {
-                    minDist = distance;
-                    minDistIdx = idx;
-                    _currentClosestElementIndex = idx;
-                    result = curElem;
-                }
-            }
+            System.out.println("Could not determine any closest element. Debug here!!");
+            _currentClosestElementIndex = -1;
+            return null;
         }
         
-        if(_trajectoryBuffer.get(_currentClosestElementIndex).isReverse())
+        double deltaLowestGeneral = minDistLowestIdxs - minDistGeneral;
+        double deltaLowestForwardAngle = minDistLowestIdxs - minDistForwardAngle;
+        double deltaForwardGeneral = minDistForwardAngle - minDistGeneral;
+        
+        if(minDistForwardAngleIdx != Integer.MAX_VALUE && minDistLowestIdxsIdx != Integer.MAX_VALUE && Math.abs(deltaLowestForwardAngle) < (_trajectoryElementLength / 2.0))
         {
-            System.out.println("current closest is reverse");
+            // If there is no significant difference between the forward and the low-index element prefer the low-index element.
+            minDist = minDistLowestIdxs;
+            minDistIdx = minDistLowestIdxsIdx;
+        }
+        else if(minDistForwardAngleIdx != Integer.MAX_VALUE && minDistGeneralIdx != Integer.MAX_VALUE && Math.abs(deltaForwardGeneral) < (_trajectoryElementLength * 2.0))
+        {
+            // If there is no significant difference between the overall closest element and the forward closest element prefer the forward one.
+            minDist = minDistForwardAngle;
+            minDistIdx = minDistForwardAngleIdx;
+        }
+        else if(minDistLowestIdxsIdx != Integer.MAX_VALUE && minDistGeneralIdx != Integer.MAX_VALUE && Math.abs(deltaLowestGeneral) < (_trajectoryElementLength / 2.0))
+        {
+            // if there is no significant difference between the overall closest and the low-index closest element prefer the low-index element
+            minDistIdx = minDistLowestIdxsIdx;
+            minDist = minDistLowestIdxs;
+        }
+        else if(minDistGeneralIdx != Integer.MAX_VALUE)
+        {
+            // worst case: nothing usefull found. We are probably far of the track!
+            System.out.println("Could not find an element that is either low on index or correct in angle. Going for overall smallest value.");
+            minDist = minDistGeneral;
+            minDistIdx = minDistGeneralIdx;
+        }
+        else
+        {
+            System.out.println("Could not determine any closest element. Debug here!!");
+            _currentClosestElementIndex = -1;
+            return null;
         }
         
+        _currentClosestElementIndex = minDistIdx;
+        result = _trajectoryBuffer.get(minDistIdx);
+
         if (minDistIdx != 0 && minDist != Double.POSITIVE_INFINITY)
         {
             _trajectoryBuffer.removeBelowIndex(minDistIdx);
@@ -115,43 +149,36 @@ public class PurePuresuitTargetProvider
 
     public TrajectoryElement getLookaheadTrajectoryElement(double lookahead)
     {
-//        if(_currentLookaheadElement == null || !isInRange(_currentLookaheadElement, _rearWheelCenterPosition, lookahead))
-//        {
+        if(_currentLookaheadElement == null || !isInRange(_currentLookaheadElement, _rearWheelCenterPosition, lookahead))
+        {
             if(_currentClosestElementIndex == -1)
             {
                 getClosestTrajectoryElement();
+                if(_currentClosestElementIndex == -1)
+                {
+                    _currentLookaheadElement = null;
+                    return null;
+                }
             }
             
-            int maxSteps = (int) Math.round(lookahead / 5.0) * 4 + 1;           
-            int targetIndex = -1;   
+            int maxSteps = (int) Math.round(lookahead / _trajectoryElementLength) * 2;           
+            int targetIdx = -1;   
             
             
             //find a fitting trajectory element in front of the vehicle
-            for(int i = _currentClosestElementIndex; i < Math.min(_currentClosestElementIndex + maxSteps, _trajectoryBuffer.size() -1); i++)
+            int lastIdx = Math.min(_currentClosestElementIndex + maxSteps, _trajectoryBuffer.size() -1 );
+            for(int idx = _currentClosestElementIndex; idx < lastIdx; idx++)
             {
-                TrajectoryElement curTrajElement = _trajectoryBuffer.get(i);
-                if(isInRange(curTrajElement, _rearWheelCenterPosition, lookahead))
+                if(isInRange(_trajectoryBuffer.get(idx), _rearWheelCenterPosition, lookahead))
                 {
-                    System.out.println("element in range found");
-                    targetIndex = i;
-                    if(!curTrajElement.isReverse()) {
-                        _nearestReverseElement = null;
-                    }
-                    
+                    targetIdx = idx;
                     break;
-                }
-                else if(curTrajElement.isReverse())
-                {
-                    System.out.println("reverse element found");
-                    targetIndex = i;   
-                    _nearestReverseElement = curTrajElement;
-                    break;
-                }
+                }                           
             }
             
-            if(targetIndex != -1)
+            if(targetIdx != -1)
             {
-                _currentLookaheadElement = _trajectoryBuffer.get(targetIndex);
+                _currentLookaheadElement = _trajectoryBuffer.get(targetIdx);
             }
             else
             {
@@ -173,7 +200,7 @@ public class PurePuresuitTargetProvider
                     System.out.println("Buffersize: " + _trajectoryBuffer.size());
                     String info = segmentsLeft ? "yep" : "nope";
                     System.out.println("Segmentprovider has segments? " + info);
-                    _currentLookaheadElement = _trajectoryBuffer.get(_currentClosestElementIndex);
+                    _currentLookaheadElement = _trajectoryBuffer.get(Math.min(_currentClosestElementIndex, _trajectoryBuffer.size() - 1));
                     
                 }
                 else
@@ -181,7 +208,7 @@ public class PurePuresuitTargetProvider
                     System.out.println("No segment in range on ending route");
                 }
             }
-//        }
+        }
         
         return _currentLookaheadElement;
     }

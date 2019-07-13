@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class DebugParams
@@ -42,9 +43,9 @@ public class DebugParams
         _navigationListeners.add(navigationListener);
     }
 
-    public void notifyNavigationListenersSegmentsChanged(List<TrajectoryElement> segments)
+    public void notifyNavigationListenersSegmentsChanged(List<TrajectoryElement> segments, Position2D startPos, Position2D endPos)
     {
-        _navigationListeners.forEach(listener -> listener.notifySegmentsChanged(segments));
+        _navigationListeners.forEach(listener -> listener.notifySegmentsChanged(segments, startPos, endPos));
     }
 
     public void notifyNavigationListenersRouteChanged(List<Line2D> route)

@@ -21,10 +21,13 @@ import sumobindings.LaneType;
 
 public class Navigator
 {
+    private static final double MAX_DISTANCE_BETWEEN_FOLLOW_UP_LANES = 0.5;
+    
     private RoadMap _roadMap;
     private List<IRouteBuildingListener> _routeBuildingListeners;
     private Position2D _sourcePosition;
     private Position2D _targetPosition;
+    private double _segmentSize;
 
     public Navigator(RoadMap roadMap)
     {
@@ -50,10 +53,11 @@ public class Navigator
         return route;
     }
     
-    public List<Line2D> getRouteWithInitialOrientation(Position2D currentPosition, Position2D targetPosition, Vector2D orientation)
+    public List<Line2D> getRouteWithInitialOrientation(Position2D currentPosition, Position2D targetPosition, double segmentSize, Vector2D orientation)
     {
         _sourcePosition = currentPosition;
         _targetPosition = targetPosition;
+        _segmentSize = segmentSize;
         EdgeType startEdge = _roadMap.getClosestEdgeForOrientationRestricted(currentPosition, orientation);
         EdgeType targetEdge = _roadMap.getClosestEdgeFor(targetPosition);
         JunctionType startJunction = _roadMap.getJunctionForName(startEdge.getTo());
@@ -139,7 +143,30 @@ public class Navigator
         for(int idx = 0; idx < edges.size(); idx++)
         {
             EdgeType curEdge = edges.get(idx);
-            regularLineAdd(result, curEdge);
+            if(curEdge != targetEdge)
+            {
+                regularLineAdd(result, curEdge);
+            }
+            else
+            {
+                List<LaneType> lanes = curEdge.getLane();
+                List<String> lanesAsString = lanes.stream().map(lane -> lane.getShape()).collect(Collectors.toList());
+                List<List<Line2D>> lineSelectionToChooseFrom = lanesAsString.stream().map(shape -> Line2D.createLines(shape)).collect(Collectors.toList());
+                double minDist = Double.POSITIVE_INFINITY;
+                double curDist = Double.POSITIVE_INFINITY;
+                List<Line2D> linesToAdd = lineSelectionToChooseFrom.get(0);
+                for(List<Line2D> curShape : lineSelectionToChooseFrom)
+                {
+                    curShape = cutEndLaneShapes(curShape, targetEdge);
+                    curDist = Position2D.distance(curShape.get(curShape.size() - 1).getP2(), _targetPosition);
+                    if(curDist < minDist)
+                    {
+                        minDist = curDist;
+                        linesToAdd = curShape;
+                    }
+                }
+                result.addAll(linesToAdd);
+            }
         }
         return result;
     }
@@ -161,11 +188,16 @@ public class Navigator
 
     private List<Line2D> regularLineAdd(List<Line2D> result, EdgeType curEdge)
     {
-        List<LaneType> lanes = curEdge.getLane();
-        String shape = lanes.get(0).getShape();
-        List<Line2D> linesToAdd = Line2D.createLines(shape);
+        List<Line2D> linesToAdd = edgeToLines(curEdge);
         result.addAll(linesToAdd);
         return linesToAdd;
+    }
+
+    private List<Line2D> edgeToLines(EdgeType edge)
+    {
+        List<LaneType> lanes = edge.getLane();
+        String shape = lanes.get(0).getShape();
+        return Line2D.createLines(shape);
     }
 
     private List<Line2D> cutStartLaneShapes(List<Line2D> result, Vector2D orientation)
@@ -234,27 +266,35 @@ public class Navigator
         else
         {
             result = result.subList(alignedLinesIdxs.get(0), result.size());
+            result.get(0).setP1(_sourcePosition);
             return result;
         }
     }
     
-    private List<Line2D> cutEndLaneShapes(List<Line2D> result)
+    private List<Line2D> cutEndLaneShapes(List<Line2D> result, EdgeType targetEdge)
     {
         double minDist = Double.POSITIVE_INFINITY;
         double curDist = Double.POSITIVE_INFINITY;
         int minIdx = Integer.MAX_VALUE;
+        
+        Position2D targetIntersectionPoint = null;
         for (int idx = 0; idx < result.size(); idx++)
         {
             Line2D curLine = result.get(idx);
-            curDist = curLine.perpendicularDistanceWithEndpointLimit(_targetPosition, 3.0);
+            Vector2D v = new Vector2D(curLine);
+            Position2D intersectionPoint = Vector2D.getPerpendicularIntersection(v, _targetPosition);
+            
+            curDist = intersectionPoint == null ? Double.POSITIVE_INFINITY : Position2D.distance(intersectionPoint, _targetPosition);
             if(curDist < minDist)
             {
                 minDist = curDist;
                 minIdx = idx;
+                targetIntersectionPoint = intersectionPoint;
             }
         }
-        if(minDist < Double.POSITIVE_INFINITY)
+        if(minDist < Double.POSITIVE_INFINITY && targetIntersectionPoint != null)
         {
+            result.get(minIdx).setP2(targetIntersectionPoint);
             return result.subList(0, minIdx + 1);
         }
         else
@@ -272,5 +312,10 @@ public class Navigator
     public void addRouteBuildingListeners(List<IRouteBuildingListener> segmentBuildingListeners)
     {
         _routeBuildingListeners = segmentBuildingListeners;
+    }
+
+    public void setSegmentSize(double segmentSize)
+    {
+        _segmentSize = segmentSize;
     }
 }

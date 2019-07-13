@@ -4,13 +4,12 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement.VelocityEdgeType;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryType;
 
 
 /**
@@ -71,33 +70,32 @@ public class BasicVelocityAssigner implements IVelocityAssigner
     @Override
     public void addVelocities(List<TrajectoryElement> trajectories)
     {
-        List<TrajectoryElement> original = filterOutType(trajectories, TrajectoryType.OVERLAY);
-        List<TrajectoryElement> overlay = filterOutType(trajectories, TrajectoryType.ORIGINAL);
-        computeCurvatures(original);
+        computeCurvatures(trajectories);
         notifyListeners(trajectories);
 
-        computeCurvatures(overlay);
-        notifyListeners(trajectories);
-        
-        if(!overlay.isEmpty())
-        {
-            //first half segment in overlay is not needed 
-            trajectories.remove(0);
-        }
         curvatureLimitedPass(trajectories);
         trajectories.get(0).setVelocity(_initialVelocity);
 //        lowPassFilter(trajectories);
-//        notifyListeners(trajectories);
+        notifyListeners(trajectories);
         
         identifyRegions(trajectories);
         fillInitialPadding(trajectories);
+        flattenFinalPart(trajectories);
+        notifyListeners(trajectories);
         capAccelerationDeceleration(trajectories);
-        // TODO re-think this: for now I gave the car a little bump for the last segment so it can reach it's target
-        trajectories.get(trajectories.size() - 1).setVelocity(2);
         notifyListeners(trajectories);
         
 //        lowPassFilter(trajectories);
 //        notifyListeners(trajectories);
+    }
+
+    private void flattenFinalPart(List<TrajectoryElement> trajectories)
+    {
+        if(trajectories.size() >= 5)
+        {
+            List<TrajectoryElement> lastElements = trajectories.subList(trajectories.size() - 5, trajectories.size());
+            lastElements.stream().forEach(elem -> elem.setVelocity(Math.min(elem.getVelocity(), 2.0)));
+        }
     }
 
     private void capAccelerationDeceleration(List<TrajectoryElement> trajectories)
@@ -237,11 +235,6 @@ public class BasicVelocityAssigner implements IVelocityAssigner
             radius = Position2D.distance(circleCenter, t1.getVector().getBase());
         }
         return radius;
-    }
-
-    private List<TrajectoryElement> filterOutType(List<TrajectoryElement> trajectories, TrajectoryType type)
-    {
-        return trajectories.stream().filter(t -> !t.hasType(type)).collect(Collectors.toList());
     }
 
     @Override

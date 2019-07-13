@@ -267,4 +267,9 @@ public class Line2D
         }
         return result;
     }
+
+    public Position2D perpendicularIntersection(Position2D p)
+    {
+        return Vector2D.getPerpendicularIntersection(new Vector2D(this), p);
+    }
 }

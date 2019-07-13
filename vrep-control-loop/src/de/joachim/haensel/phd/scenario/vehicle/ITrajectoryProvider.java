@@ -11,4 +11,6 @@ public interface ITrajectoryProvider
 	public boolean segmentsLeft();
 
     public boolean hasElements(int elementRequestSize);
+    
+    public double getTrajectoryElementLength();
 }

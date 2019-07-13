@@ -65,8 +65,7 @@ public class Trajectorizer implements ITrajectorizer
         }
         
         for(int i = 0; i < result.size(); i++) {
-            result.get(i).setIdx(i);
-            result.get(i).setIsOriginal();         
+            result.get(i).setIdx(i);   
         }
         
         return result;

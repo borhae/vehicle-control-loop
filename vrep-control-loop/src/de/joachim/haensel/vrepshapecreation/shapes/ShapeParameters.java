@@ -32,6 +32,19 @@ public class ShapeParameters extends Parameters
         _respondableMask = 0b0;
         _visibilityLayerMask = 0b1111_1111__1111_1111 & CUT_UPPER_BITMASK;
     }
+
+    public void makeStandardSphere()
+    {
+        _sizeX = 1.0f;
+        _sizeY = 1.0f;
+        _sizeZ = 1.0f;
+        _mass = 0.0f;
+        _type = EVRepShapes.SPHERE;
+        _isRespondable = false;
+        _isDynamic = false;
+        _respondableMask = 0b0;
+        _visibilityLayerMask = 0b1111_1111__1111_1111 & CUT_UPPER_BITMASK;
+    }
     
     @Override
     protected void populateInts(List<Integer> paramList)

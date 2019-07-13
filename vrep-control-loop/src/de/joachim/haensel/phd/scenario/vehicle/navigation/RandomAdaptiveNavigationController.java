@@ -80,14 +80,14 @@ public class RandomAdaptiveNavigationController implements IUpperLayerControl
         Vector2D orientation = _sensorsActuators.getOrientation();
         Navigator navigator = new Navigator(_roadMap);
         navigator.addRouteBuildingListeners(_routeBuildingListeners);
-        List<Line2D> routeBasis = navigator.getRouteWithInitialOrientation(currentPosition, targetPosition, orientation);
+        List<Line2D> routeBasis = navigator.getRouteWithInitialOrientation(currentPosition, targetPosition, _segmentSize, orientation);
         _debuggingParameters.notifyNavigationListenersRouteChanged(routeBasis);
         ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
         ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, _velocityAssignerFactory , _segmentSize);
         trajectorizer.addSegmentBuildingListeners(_routeBuildingListeners);
         List<TrajectoryElement> allSegments = trajectorizer.createTrajectory(routeBasis);
         _segmentBuffer.fillBuffer(allSegments);
-        _debuggingParameters.notifyNavigationListenersSegmentsChanged(allSegments);
+        _debuggingParameters.notifyNavigationListenersSegmentsChanged(allSegments, currentPosition, targetPosition);
     }
 
     @Override
@@ -134,5 +134,11 @@ public class RandomAdaptiveNavigationController implements IUpperLayerControl
     public boolean hasElements(int elementRequestSize)
     {
         return _segmentBuffer.getSize() >= elementRequestSize;
+    }
+
+    @Override
+    public double getTrajectoryElementLength()
+    {
+        return _segmentSize;
     }
 }

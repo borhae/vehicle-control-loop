@@ -59,19 +59,9 @@ public class GlodererHertleVelocityAssigner implements IVelocityAssigner
     @Override
     public void addVelocities(List<TrajectoryElement> trajectories)
     {
-        List<TrajectoryElement> original = filterOutType(trajectories, TrajectoryType.OVERLAY);
-        List<TrajectoryElement> overlay = filterOutType(trajectories, TrajectoryType.ORIGINAL);
-        computeCurvatures(original);
+        computeCurvatures(trajectories);
         notifyListeners(trajectories);
 
-        computeCurvatures(overlay);
-        notifyListeners(trajectories);
-        
-        if(!overlay.isEmpty())
-        {
-            //first half segment in overlay is not needed 
-            trajectories.remove(0);
-        }
         trajectories.get(0).setVelocity(UnitConverter.kilometersPerHourToMetersPerSecond(1.0));
         forwardPass(trajectories);
         // TODO re-think this: for now I gave the car a little bump for the last segment so it can reach it's target if the veocity was set to 0
@@ -140,11 +130,6 @@ public class GlodererHertleVelocityAssigner implements IVelocityAssigner
             radius = Position2D.distance(circleCenter, t1.getVector().getBase());
         }
         return radius;
-    }
-
-    private List<TrajectoryElement> filterOutType(List<TrajectoryElement> trajectories, TrajectoryType type)
-    {
-        return trajectories.stream().filter(t -> t.hasType(type)).collect(Collectors.toList());
     }
 
     @Override
