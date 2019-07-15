@@ -99,7 +99,6 @@ public class Test3NavigationRouteDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
  
@@ -130,7 +129,6 @@ public class Test3NavigationRouteDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         
@@ -143,7 +141,6 @@ public class Test3NavigationRouteDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         
@@ -157,7 +154,6 @@ public class Test3NavigationRouteDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         return segments;

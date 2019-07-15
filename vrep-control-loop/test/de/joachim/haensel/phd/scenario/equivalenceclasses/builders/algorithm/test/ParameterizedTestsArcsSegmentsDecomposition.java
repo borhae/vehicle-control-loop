@@ -116,7 +116,6 @@ public class ParameterizedTestsArcsSegmentsDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         
@@ -129,7 +128,6 @@ public class ParameterizedTestsArcsSegmentsDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         
@@ -143,7 +141,6 @@ public class ParameterizedTestsArcsSegmentsDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         return segments;
