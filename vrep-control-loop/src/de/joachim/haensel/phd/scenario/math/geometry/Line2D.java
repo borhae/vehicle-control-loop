@@ -12,6 +12,11 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class Line2D
 {
+    public interface ILineStringFormat
+    {
+        String format(Line2D line2d);
+    }
+
     private double _x1;
     private double _y1;
     private double _x2;
@@ -271,5 +276,10 @@ public class Line2D
     public Position2D perpendicularIntersection(Position2D p)
     {
         return Vector2D.getPerpendicularIntersection(new Vector2D(this), p);
+    }
+
+    public String toStringFormatted(ILineStringFormat formatter)
+    {
+        return formatter.format(this);
     }
 }
