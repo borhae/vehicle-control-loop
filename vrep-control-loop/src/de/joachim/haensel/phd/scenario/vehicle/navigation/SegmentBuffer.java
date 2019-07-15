@@ -35,6 +35,6 @@ public class SegmentBuffer
 
     public int getSize()
     {
-        return _segments.size();
+        return _segments.size() - _currentIdx;
     }
 }
