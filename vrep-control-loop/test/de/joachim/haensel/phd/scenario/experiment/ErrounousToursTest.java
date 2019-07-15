@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -179,7 +180,8 @@ public class ErrounousToursTest
         List<String> pointsAsString = new ArrayList<String>();
         try
         {
-            pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread.txt").toPath());
+//            pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread.txt").toPath());
+            pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_generatedSeed4096.txt").toPath());
         }
         catch (IOException e)
         {
@@ -187,9 +189,9 @@ public class ErrounousToursTest
         }
         List<Position2D> allPositions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());
         int routeAllTimeMaxIdx = allPositions.size();
-        
-        int minIdx = 171;
-        int maxIdx = 173;
+        // 83 - 84 has an issue
+        int minIdx = 81;
+        int maxIdx = 85;
         if(minIdx >= maxIdx)
         {
             System.out.println("min idx larger or equal to max idx. returning.");
@@ -221,6 +223,48 @@ public class ErrounousToursTest
         taskConfiguration.setTargetPoints(targetPositionsMapped);
         taskConfiguration.setLowerLayerController(() -> new PurePursuitControllerVariableLookahead());
         IIDCreator routeIdCreator = new RouteIDCreator(routeStartIdx);
+        VRepNavigationListener routesEndsMarker = new VRepNavigationListener(_objectCreator, routeIdCreator);
+        routesEndsMarker.activateRouteEndsDebugging();
+        taskConfiguration.addNavigationListener(routesEndsMarker);
+        taskCreator.configure(taskConfiguration);
+        List<ITask> tasks = taskCreator.createTasks();
+
+        TaskExecutor executor = new TaskExecutor();
+        executor.execute(tasks);
+
+        System.out.println("enter arbitrary stuff an then press enter");
+        Scanner scanner = new Scanner(System.in);
+        String input = scanner.next();
+        System.out.println(input);
+        scanner.close();
+    }
+	
+	@Test
+    public void testLuebeckRoutePart() throws VRepException 
+    {
+        RoadMap map = null;
+        
+        String mapFilenName = "luebeck-roads.net.xml";
+
+        RoadMapAndCenterMatrix mapAndCenterMatrix = 
+                SimulationSetupConvenienceMethods.createCenteredMap(_clientID, _vrep, _objectCreator, RES_ROADNETWORKS_DIRECTORY + mapFilenName);
+        map = mapAndCenterMatrix.getRoadMap();
+        TMatrix centerMatrix = mapAndCenterMatrix.getCenterMatrix();
+        Position2D startPos = new Position2D(3066.47, 6228.96).transform(centerMatrix);
+        Position2D endPos = new Position2D(3059.49, 6117.85).transform(centerMatrix);
+
+        TaskCreator taskCreator = new TaskCreator();
+        PointListTaskCreatorConfig taskConfiguration = new PointListTaskCreatorConfig();
+        taskConfiguration.setControlParams(15.0, 120.0, 3.8, 4.0, 1.0);
+        taskConfiguration.setControlLoopRate(120);
+        taskConfiguration.setDebug(true);
+        taskConfiguration.setMap(map);
+        taskConfiguration.configSimulator(_vrep, _clientID, _objectCreator);
+        taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisuals.ttm");
+
+        taskConfiguration.setTargetPoints(Arrays.asList(new Position2D[] {startPos, endPos}));
+        taskConfiguration.setLowerLayerController(() -> new PurePursuitControllerVariableLookahead());
+        IIDCreator routeIdCreator = new RouteIDCreator(1);
         VRepNavigationListener routesEndsMarker = new VRepNavigationListener(_objectCreator, routeIdCreator);
         routesEndsMarker.activateRouteEndsDebugging();
         taskConfiguration.addNavigationListener(routesEndsMarker);
