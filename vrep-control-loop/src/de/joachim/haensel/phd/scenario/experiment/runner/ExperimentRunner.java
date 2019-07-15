@@ -161,15 +161,12 @@ public class ExperimentRunner
             try
             {
 //                List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread.txt").toPath());
-//            	List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread_from63.txt").toPath());
-//            	List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread_from83.txt").toPath());
-//            	List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread_17_18_19.txt").toPath());
-                List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread.txt").toPath());
-//                List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread.txt").toPath());
+                List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_generatedSeed4096.txt").toPath());
+//                List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread.txt").toPath());
                 List<Position2D> allPositions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());
                 List<Position2D> positions = allPositions.subList(0, allPositions.size());
-                runner.run("chandigarh_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "chandigarh-roads-lefthand.removed.net.xml", "blue", 120);
-//                runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "luebeck-roads.net.xml", "blue", 120);
+//                runner.run("chandigarh_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "chandigarh-roads-lefthand.removed.net.xml", "blue", 120);
+                runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "luebeck-roads.net.xml", "blue", 120);
                 runner.tearDown();
             }
             catch (IOException exc)
