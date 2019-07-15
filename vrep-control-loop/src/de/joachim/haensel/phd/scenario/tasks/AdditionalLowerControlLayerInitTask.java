@@ -26,7 +26,6 @@ public class AdditionalLowerControlLayerInitTask implements ITask
     @Override
     public int getTimeout()
     {
-        // TODO Auto-generated method stub
         return 0;
     }
 
