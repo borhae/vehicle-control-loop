@@ -1,5 +1,11 @@
 package de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Line2D.ILineStringFormat;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
@@ -157,7 +163,8 @@ public class PurePuresuitTargetProvider
             
             
             //find a fitting trajectory element in front of the vehicle
-            int lastIdx = Math.min(_currentClosestElementIndex + maxSteps, _trajectoryBuffer.size() -1 );
+//            int lastIdx = Math.min(_currentClosestElementIndex + maxSteps, _trajectoryBuffer.size() -1 );
+            int lastIdx = _trajectoryBuffer.size();
             for(int idx = _currentClosestElementIndex; idx < lastIdx; idx++)
             {
                 if(isInRange(_trajectoryBuffer.get(idx), _rearWheelCenterPosition, lookahead))
@@ -185,7 +192,18 @@ public class PurePuresuitTargetProvider
                 }
                 else
                 {
-                    System.out.println("No segment in range on ending route");
+//                    System.out.println("maxsteps: " + maxSteps + ", _currentClosestElementIndex: " + _currentClosestElementIndex + ", lastIdx: " + lastIdx);
+//                    List<Line2D> lines = new ArrayList<Line2D>();
+//                    for(int idx = 0; idx < _trajectoryBuffer.size(); idx++)
+//                    {
+//                        Line2D line = _trajectoryBuffer.get(idx).getVector().toLine();
+//                        lines.add(line);
+//                    }
+//                    ILineStringFormat formatter = l -> String.format("%.2f, %.2f ", l.getX1(), l.getY1());
+//                    String debugOut = lines.stream().map(line -> line.toStringFormatted(formatter)).collect(Collectors.joining("\n"));
+//                    debugOut = debugOut + "\n" + lines.get(lines.size() - 1).toStringFormatted(l -> String.format("%.2f, %.2f", l.getX2(), l.getY2()));
+//                    System.out.println(debugOut);
+                    _currentLookaheadElement = _trajectoryBuffer.get(_trajectoryBuffer.size() - 1);
                 }
             }
         }

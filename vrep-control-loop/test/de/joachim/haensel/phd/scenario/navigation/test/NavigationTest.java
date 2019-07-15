@@ -1283,7 +1283,6 @@ public class NavigationTest implements TestConstants
         }
         catch (VRepException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
     }
