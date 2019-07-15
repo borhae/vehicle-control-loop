@@ -35,11 +35,8 @@ public class TrajectoryBuffer extends FiniteStateMachineTemplate
         _trajectoryRequestListeners = trajectoryRequestListeners;
 
         setInitialState(RouteBufferStates.INIT);
-//        Guard enoughElements = () -> _trajectoryElements.size() < MIN_TRAJECTORY_BUFFER_SIZE && _trajectoryProvider.hasElements(_currentElementRequestSize);
-//        Guard notEnoughElements = () -> _trajectoryElements.size() < MIN_TRAJECTORY_BUFFER_SIZE && !_trajectoryProvider.hasElements(_currentElementRequestSize);
         Guard enoughElements = () -> _trajectoryElements.size() < MIN_TRAJECTORY_BUFFER_SIZE && _trajectoryProvider.hasElements(_currentElementRequestSize);
         Guard notEnoughElements = () -> _trajectoryElements.size() < MIN_TRAJECTORY_BUFFER_SIZE && !_trajectoryProvider.hasElements(_currentElementRequestSize);
-
             
         Consumer<Integer> ensureSizeAndReportAction = elementRequestSize -> {ensureSize(elementRequestSize); notifyListeners();};
         Consumer<Integer> ensureSizeAndReportActionInformRouteEndOnScreen = elementRequestSize -> {ensureSize(elementRequestSize); notifyListeners(); System.out.println("buffer route ending");};
@@ -52,7 +49,7 @@ public class TrajectoryBuffer extends FiniteStateMachineTemplate
         createTransition(RouteBufferStates.ROUTE_ACTIVE, RouteBufferMsg.ENSURE_SIZE, notEnoughElements, RouteBufferStates.ROUTE_ENDING, ensureSizeAndReportActionInformRouteEndOnScreen); //ensure size and report action
         createTransition(RouteBufferStates.ROUTE_ENDING, RouteBufferMsg.ENSURE_SIZE, notEnoughElements, RouteBufferStates.ROUTE_ENDING, routeEndOnScreen); //no op
 
-        createTransition(RouteBufferStates.ROUTE_ENDING, RouteBufferMsg.ENSURE_SIZE, enoughElements, RouteBufferStates.ROUTE_ACTIVE, ensureSizeAndReportActionInformRouteEndOnScreen); //ensure size and report action
+        createTransition(RouteBufferStates.ROUTE_ENDING, RouteBufferMsg.ENSURE_SIZE, enoughElements, RouteBufferStates.ROUTE_ACTIVE, ensureSizeAndReportAction);
         
         reset();
     }
