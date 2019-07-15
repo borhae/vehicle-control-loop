@@ -42,7 +42,6 @@ public class RouteSanityCheck
             }
             List<ErrorMsg> errorMsg = pairs.parallelStream().map(pair -> checkSanityForPositionPair(map, pair.idx, pair.curPos, pair.nexPos)).collect(Collectors.toList());
 
-//            List<String> errorMsg = pairs.parallelStream().map(pair -> checkSanityForPositionPair(map, pair.idx, pair.curPos, pair.nexPos)).collect(Collectors.toList());
             errorMsg.stream().forEach(msg -> System.out.println(msg.getLongMsg()));
             errorMsg.stream().forEach(msg -> System.out.print(msg.getShortMsg()));
             System.out.println("");
