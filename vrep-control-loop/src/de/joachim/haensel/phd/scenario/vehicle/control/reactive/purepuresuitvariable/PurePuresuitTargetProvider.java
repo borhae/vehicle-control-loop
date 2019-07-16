@@ -1,11 +1,5 @@
 package de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
-import de.joachim.haensel.phd.scenario.math.geometry.Line2D.ILineStringFormat;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
@@ -18,7 +12,6 @@ public class PurePuresuitTargetProvider
     private Position2D _currentPosition;
     private Vector2D _currentOrientation;
     private TrajectoryElement _currentLookaheadElement;
-    private int _currentClosestElementIndex;
     private Position2D _rearWheelCenterPosition;
     private double _trajectoryElementLength;
 
@@ -28,14 +21,12 @@ public class PurePuresuitTargetProvider
         _trajectoryElementLength = trajectoryBuffer.getTrajectoryElementLength();
         _actuatorsSensors = actuatorsSensors;
         _currentLookaheadElement = null;
-        _currentClosestElementIndex = -1;
     }
 
     public void reset()
     {
         _trajectoryBuffer.clear();
         _currentLookaheadElement = null;
-        _currentClosestElementIndex = -1;
     }
 
     public void loopPrepare()
@@ -95,7 +86,6 @@ public class PurePuresuitTargetProvider
         if(minDistForwardAngle == Double.POSITIVE_INFINITY && minDistGeneral == Double.POSITIVE_INFINITY && minDistLowestIdxs == Double.POSITIVE_INFINITY)
         {
             System.out.println("Could not determine any closest element. Debug here!!");
-            _currentClosestElementIndex = -1;
             return null;
         }
         
@@ -123,7 +113,7 @@ public class PurePuresuitTargetProvider
         }
         else if(minDistGeneralIdx != Integer.MAX_VALUE)
         {
-            // worst case: nothing usefull found. We are probably far of the track!
+            // worst case: nothing useful found. We are probably far of the track!
             System.out.println("Could not find an element that is either low on index or correct in angle. Going for overall smallest value.");
             minDist = minDistGeneral;
             minDistIdx = minDistGeneralIdx;
@@ -131,11 +121,8 @@ public class PurePuresuitTargetProvider
         else
         {
             System.out.println("Could not determine any closest element. Debug here!!");
-            _currentClosestElementIndex = -1;
             return null;
         }
-        
-        _currentClosestElementIndex = minDistIdx;
         result = _trajectoryBuffer.get(minDistIdx);
         if (minDistIdx != 0 && minDist != Double.POSITIVE_INFINITY)
         {
@@ -148,24 +135,14 @@ public class PurePuresuitTargetProvider
     {
         if(_currentLookaheadElement == null || !isInRange(_currentLookaheadElement, _rearWheelCenterPosition, lookahead))
         {
-            if(_currentClosestElementIndex == -1)
-            {
-                getClosestTrajectoryElement();
-                if(_currentClosestElementIndex == -1)
-                {
-                    _currentLookaheadElement = null;
-                    return null;
-                }
-            }
-            
-            int maxSteps = (int) Math.round(lookahead / _trajectoryElementLength) * 2;           
+//            int maxSteps = (int) Math.round(lookahead / _trajectoryElementLength) * 2;           
             int targetIdx = -1;   
             
             
             //find a fitting trajectory element in front of the vehicle
 //            int lastIdx = Math.min(_currentClosestElementIndex + maxSteps, _trajectoryBuffer.size() -1 );
             int lastIdx = _trajectoryBuffer.size();
-            for(int idx = _currentClosestElementIndex; idx < lastIdx; idx++)
+            for(int idx = 0; idx < lastIdx; idx++)
             {
                 if(isInRange(_trajectoryBuffer.get(idx), _rearWheelCenterPosition, lookahead))
                 {
@@ -187,22 +164,11 @@ public class PurePuresuitTargetProvider
                     System.out.println("Buffersize: " + _trajectoryBuffer.size());
                     String info = segmentsLeft ? "yep" : "nope";
                     System.out.println("Segmentprovider has segments? " + info);
-                    _currentLookaheadElement = _trajectoryBuffer.get(Math.min(_currentClosestElementIndex, _trajectoryBuffer.size() - 1));
+                    _currentLookaheadElement = _trajectoryBuffer.get(0);
                     
                 }
                 else
                 {
-//                    System.out.println("maxsteps: " + maxSteps + ", _currentClosestElementIndex: " + _currentClosestElementIndex + ", lastIdx: " + lastIdx);
-//                    List<Line2D> lines = new ArrayList<Line2D>();
-//                    for(int idx = 0; idx < _trajectoryBuffer.size(); idx++)
-//                    {
-//                        Line2D line = _trajectoryBuffer.get(idx).getVector().toLine();
-//                        lines.add(line);
-//                    }
-//                    ILineStringFormat formatter = l -> String.format("%.2f, %.2f ", l.getX1(), l.getY1());
-//                    String debugOut = lines.stream().map(line -> line.toStringFormatted(formatter)).collect(Collectors.joining("\n"));
-//                    debugOut = debugOut + "\n" + lines.get(lines.size() - 1).toStringFormatted(l -> String.format("%.2f, %.2f", l.getX2(), l.getY2()));
-//                    System.out.println(debugOut);
                     _currentLookaheadElement = _trajectoryBuffer.get(_trajectoryBuffer.size() - 1);
                 }
             }
