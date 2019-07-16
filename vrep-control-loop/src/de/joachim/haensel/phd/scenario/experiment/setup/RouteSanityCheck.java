@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,17 +17,34 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DijkstraAlgo;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
 import sumobindings.EdgeType;
+import sumobindings.JunctionType;
 
 public class RouteSanityCheck
 {
+    public static int _numOfRoutes = 0;
+    
     public static void main(String[] args)
     {
-        String networkName = 
-                "luebeck-roads.net.xml";
-//                "chandigarh-roads-lefthand.removed.net.xml";
-        String pointsFileName = 
-//                "Luebeckpoints_spread.txt";
-                "Luebeckpoints_generatedSeed4096.txt";
+        System.out.println("choose map: 1 and <enter> for Luebeck, 2 and <enter> for Chandigarh");
+        Scanner scanner = new Scanner(System.in);
+        String mapFileNameInput = scanner.next();
+        String networkName = "";
+        if(mapFileNameInput.equalsIgnoreCase("1"))
+        {
+            networkName = "luebeck-roads.net.xml";
+        }
+        else if(mapFileNameInput.equalsIgnoreCase("2"))
+        {
+            networkName = "chandigarh-roads-lefthand.removed.net.xml";
+        }
+        else
+        {
+            System.out.println("You need to decide :)!");
+            scanner.close();
+            return;
+        }
+        System.out.println("Enter the pointlist filename and <enter>");
+        String pointsFileName = scanner.next(); 
 
         RoadMap map = new RoadMap("./res/roadnetworks/" + networkName);
         try (Stream<String> stream = Files.lines(Paths.get("./res/roadnetworks/" + pointsFileName))) 
@@ -40,6 +58,7 @@ public class RouteSanityCheck
                 PositionPair pair = new PositionPair(curPos, nexPos, idx);
                 pairs.add(pair);
             }
+            _numOfRoutes = pairs.size();
             List<ErrorMsg> errorMsg = pairs.parallelStream().map(pair -> checkSanityForPositionPair(map, pair.idx, pair.curPos, pair.nexPos)).collect(Collectors.toList());
 
             errorMsg.stream().forEach(msg -> System.out.println(msg.getLongMsg()));
@@ -52,6 +71,7 @@ public class RouteSanityCheck
         {
             e.printStackTrace();
         }
+        scanner.close();
     }
 
 	private static ErrorMsg checkSanityForPositionPair(RoadMap map, int idx, Position2D curPos, Position2D nexPos) 
@@ -71,8 +91,13 @@ public class RouteSanityCheck
 		}
 		else
 		{
-		    dijkstra.setSource(map.getClosestJunctionFor(curPos));
-		    dijkstra.setTarget(map.getClosestJunctionFor(nexPos));
+	        EdgeType startEdge = map.getClosestEdgeFor(curPos);
+	        EdgeType targetEdge = map.getClosestEdgeFor(nexPos);
+	        JunctionType startJunction = map.getJunctionForName(startEdge.getTo());
+	        JunctionType targetJunction = map.getJunctionForName(targetEdge.getFrom());
+
+		    dijkstra.setSource(startJunction);
+		    dijkstra.setTarget(targetJunction);
 		    List<Node> path = dijkstra.getPath();
 		    if(path == null)
 		    {
@@ -131,6 +156,8 @@ public class RouteSanityCheck
 		}
 		result.append("< Checked ");
 		ErrorMsg resultMsg = new ErrorMsg(result.toString(), failed, idx);
+		_numOfRoutes--;
+		System.out.println("Remaining routes to work on: " + _numOfRoutes);
 		return resultMsg;
 	}
 }

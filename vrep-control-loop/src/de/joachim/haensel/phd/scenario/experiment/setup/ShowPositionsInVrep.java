@@ -2,10 +2,7 @@ package de.joachim.haensel.phd.scenario.experiment.setup;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -13,7 +10,6 @@ import java.util.stream.Collectors;
 
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
-import de.joachim.haensel.phd.scenario.debug.INavigationListener;
 import de.joachim.haensel.phd.scenario.debug.VRepNavigationListener;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.map.sumo2vrep.VRepMap;
@@ -27,14 +23,15 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.Traje
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.ISegmenterFactory;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterCircleIntersection;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.Segmenter;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.BasicVelocityAssigner;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.IVelocityAssignerFactory;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.velocity.NoVelocityAssigner;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 import de.joachim.haensel.vrepshapecreation.shapes.ShapeParameters;
 
 public class ShowPositionsInVrep
 {
     private static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
+    private static int _routeCnt;
 
     public static void main(String[] args) throws VRepException
     {
@@ -68,21 +65,10 @@ public class ShowPositionsInVrep
             RoadMap roadMap = new RoadMap(RES_ROADNETWORKS_DIRECTORY + mapFileName);
 
             List<Position2D> resultPointsOnMap = readPositionsFromFile(input2);
-            List<String> pointsAsStrings = resultPointsOnMap.stream().map(curPos -> curPos.toFormattedString("%8.2f, %8.2f")).collect(Collectors.toList());
-            try
-            {
-                Path targetPath = Paths.get(Paths.get("").toAbsolutePath().toString(), input2 + ".txt");
-                Files.write(targetPath, pointsAsStrings,Charset.defaultCharset());
-            } 
-            catch (IOException exc)
-            {
-                exc.printStackTrace();
-            }
-            VRepObjectCreation objectCreator = null;
 
             VRepRemoteAPI vrep = VRepRemoteAPI.INSTANCE;
             int clientID = vrep.simxStart("127.0.0.1", 19997, true, true, 5000, 5);
-            objectCreator = new VRepObjectCreation(vrep, clientID);
+            VRepObjectCreation objectCreator = new VRepObjectCreation(vrep, clientID);
             float streetWidth = (float)1.5;
             float streetHeight = (float)0.4;
 
@@ -95,41 +81,72 @@ public class ShowPositionsInVrep
             VRepMap mapCreator = new VRepMap(streetWidth, streetHeight, vrep, clientID, objectCreator);
             mapCreator.createMeshBasedMap(roadMap);
             mapCreator.createMapSizedRectangle(roadMap, false);
-            
-            for(int idx = 0; idx < copy.size(); idx++)
+            System.out.println("Show endpoints? (y and <enter> for yes, anything else and <enter> no");
+            String showPoints = scanner.next();
+            if(showPoints.equalsIgnoreCase("y"))
             {
-                Position2D curPos = copy.get(idx);
-                ShapeParameters params = new ShapeParameters();
-                params.makeStandardSphere();
-                String markerName = String.format("point_%03d", idx);
-                params.setName(markerName);
-                params.setPosition((float)curPos.getX(), (float)curPos.getY(), 0.1f);
-                params.setSize(15.0f, 15.0f, 15.0f);
-                objectCreator.createPrimitive(params);
+                for(int idx = 0; idx < copy.size(); idx++)
+                {
+                    Position2D curPos = copy.get(idx);
+                    ShapeParameters params = new ShapeParameters();
+                    params.makeStandardSphere();
+                    String markerName = String.format("point_%03d", idx);
+                    params.setName(markerName);
+                    params.setPosition((float)curPos.getX(), (float)curPos.getY(), 0.1f);
+                    params.setSize(15.0f, 15.0f, 15.0f);
+                    objectCreator.createPrimitive(params);
+                }
+                
+                System.out.println("done");
             }
-
-            System.out.println("done");
-            System.out.println("Show routes? y and <enter> to show, anything else and <enter> to leave");
+            System.out.println("Show routes? y and <enter> to show all, a comma seperated list of endpoints and <enter> for specific routes and anything else and <enter> to leave");
             String showRoutes = scanner.next();
             if(showRoutes.equalsIgnoreCase("y"))
             {
-                Navigator navigator = new Navigator(roadMap);
-                ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
-                IVelocityAssignerFactory velocityFactory = segmentSize -> new BasicVelocityAssigner(segmentSize, 120.0);
-                ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityFactory, 5.0);
-
-                INavigationListener navigationListener = new VRepNavigationListener(objectCreator);
-                navigationListener.activateSegmentDebugging();
-
+                List<PositionPair> pairs = new ArrayList<PositionPair>();
                 for(int idx = 0; idx < copy.size() - 1; idx++)
                 {
-                    Position2D start = copy.get(idx);
-                    Position2D destination = copy.get(idx + 1);
-                    List<Line2D> route = navigator.getRoute(start, destination);
-                    List<TrajectoryElement> trajectoryElements = trajectorizer.createTrajectory(route);
-                    navigationListener.notifySegmentsChanged(trajectoryElements,  start, destination);
+                    Position2D curPos = copy.get(idx);
+                    Position2D nexPos = copy.get(idx + 1);
+                    PositionPair pair = new PositionPair(curPos, nexPos, idx);
+                    pairs.add(pair);
+                }
+                _routeCnt  = pairs.size();
+                pairs.parallelStream().forEach(pair -> computeRoute(roadMap, pair));
+                
+                VRepNavigationListener navigationListener = new VRepNavigationListener(objectCreator);
+                navigationListener.activateSegmentDebugging();
+
+                pairs.stream().forEach(pair -> {navigationListener.setIdCreator(() -> String.format("%03d", pair.idx)); navigationListener.notifySegmentsChanged(pair.result, pair.curPos, pair.nexPos);});
+            }
+            else 
+            {
+                String[] pointNumbers = showRoutes.split(",");
+                if(pointNumbers.length == 2)
+                {
+                    int idx1 = Integer.parseInt(pointNumbers[0]);
+                    int idx2 = Integer.parseInt(pointNumbers[1]);
+                    List<PositionPair> pairs = new ArrayList<PositionPair>();
+                    if(idx1 < idx2)
+                    {
+                        for(int idx = idx1; idx < Math.min(idx2, copy.size() - 1); idx++)
+                        {
+                            Position2D curPos = copy.get(idx);
+                            Position2D nexPos = copy.get(idx + 1);
+                            PositionPair pair = new PositionPair(curPos, nexPos, idx);
+                            pairs.add(pair);
+                        }
+                        _routeCnt  = pairs.size();
+                        pairs.parallelStream().forEach(pair -> computeRoute(roadMap, pair));
+                        
+                        VRepNavigationListener navigationListener = new VRepNavigationListener(objectCreator);
+                        navigationListener.activateSegmentDebugging();
+                        
+                        pairs.stream().forEach(pair -> {navigationListener.setIdCreator(() -> String.format("%03d", pair.idx)); navigationListener.notifySegmentsChanged(pair.result, pair.curPos, pair.nexPos);});
+                    }
                 }
             }
+                
             System.out.println("type anything and <enter> to leave.");
             scanner.next();
             System.out.println("done, leaving.");
@@ -137,8 +154,22 @@ public class ShowPositionsInVrep
             
             objectCreator.deleteAll();
             objectCreator.removeScriptloader();
+            System.out.println("done");
         }
         scanner.close();
+    }
+
+    private static void computeRoute(RoadMap roadMap, PositionPair positionPair)
+    {
+        Navigator navigator = new Navigator(roadMap);
+        ISegmenterFactory segmenterFactory = segmentSize -> new Segmenter(segmentSize, new InterpolationSegmenterCircleIntersection());
+        IVelocityAssignerFactory velocityFactory = segmentSize -> new NoVelocityAssigner();
+        ITrajectorizer trajectorizer = new Trajectorizer(segmenterFactory, velocityFactory, 5.0);
+        List<Line2D> route = navigator.getRoute(positionPair.curPos, positionPair.nexPos);
+        List<TrajectoryElement> trajectoryElements = trajectorizer.createTrajectory(route);
+        positionPair.result = trajectoryElements;
+        _routeCnt--;
+        System.out.println("routes to go: " + _routeCnt);
     }
 
     private static List<Position2D> readPositionsFromFile(String filename)
