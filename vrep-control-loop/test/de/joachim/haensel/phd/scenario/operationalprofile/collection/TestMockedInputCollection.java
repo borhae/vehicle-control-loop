@@ -16,12 +16,17 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
-import de.joachim.haensel.phd.scenario.equivalenceclasses.TrajectoryNormalizer;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.navigation.test.Positioner;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.TrajectoryNormalizer;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ConfigurationObservationTreeCounter;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.CountTreeNode;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.NodesPerLevelCounter;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.NodesPerLevelPrinter;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ObservationTuple;
 import de.joachim.haensel.phd.scenario.random.MersenneTwister;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;

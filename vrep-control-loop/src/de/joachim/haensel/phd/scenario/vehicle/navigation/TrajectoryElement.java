@@ -21,6 +21,7 @@ public class TrajectoryElement implements Comparable<TrajectoryElement>
     private double _radius;
     private double _kappa;
     private int _index;
+    private String _type; // for compatibilty reasons
 
     public TrajectoryElement()
     {
@@ -71,7 +72,7 @@ public class TrajectoryElement implements Comparable<TrajectoryElement>
     public VelocityEdgeType getRiseFall()
     {
         return _velocityEdgeType;
-    }
+    } 
 
     public void setRadius(double radius)
     {

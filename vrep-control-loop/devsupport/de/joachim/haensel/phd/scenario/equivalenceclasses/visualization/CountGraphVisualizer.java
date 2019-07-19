@@ -22,9 +22,9 @@ import com.mxgraph.util.mxEventObject;
 import com.mxgraph.util.mxEventSource.mxIEventListener;
 
 import de.joachim.haensel.phd.scenario.equivalenceclasses.visualization.graph.FoldableTree;
-import de.joachim.haensel.phd.scenario.operationalprofile.collection.ConfigurationObservationTreeCounter;
-import de.joachim.haensel.phd.scenario.operationalprofile.collection.CountTreeNode;
-import de.joachim.haensel.phd.scenario.operationalprofile.collection.ObservationTuple;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ConfigurationObservationTreeCounter;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.CountTreeNode;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ObservationTuple;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class CountGraphVisualizer extends JFrame

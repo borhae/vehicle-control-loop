@@ -5,10 +5,10 @@ import java.awt.Stroke;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.Arc;
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsSegmentContainerElement;
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.Segment;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.segmenting.Arc;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.segmenting.IArcsSegmentContainerElement;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.segmenting.Segment;
 import de.joachim.haensel.streamextensions.IndexAdder;
 
 public class ArcSegmentContentElement implements IContentElement

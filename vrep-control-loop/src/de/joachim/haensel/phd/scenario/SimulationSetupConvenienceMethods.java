@@ -6,6 +6,7 @@ import java.util.List;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
+import de.joachim.haensel.phd.scenario.map.RoadMapAndCenterMatrix;
 import de.joachim.haensel.phd.scenario.map.sumo2vrep.VRepMap;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
