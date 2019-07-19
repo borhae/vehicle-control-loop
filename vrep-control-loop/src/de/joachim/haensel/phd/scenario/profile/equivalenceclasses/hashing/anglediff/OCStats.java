@@ -1,16 +1,16 @@
-package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff;
+package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import de.joachim.haensel.phd.converters.UnitConverter;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.nodetypes.AngleNode;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.nodetypes.DisplacementNode;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.nodetypes.LeafNode;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.nodetypes.SetAngleNode;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.nodetypes.SetVelocityNode;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.nodetypes.VelocityNode;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.nodetypes.AngleNode;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.nodetypes.DisplacementNode;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.nodetypes.LeafNode;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.nodetypes.SetAngleNode;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.nodetypes.SetVelocityNode;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.nodetypes.VelocityNode;
 
 public class OCStats
 {

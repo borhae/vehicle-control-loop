@@ -1,38 +1,38 @@
-package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff;
+package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ContentAtLevelPerNode
+public class NodesAtLevel
 {
-    public static List<List<Integer>> count(CountTreeNode root)
+    public static List<List<CountTreeNode>> get(CountTreeNode root)
     {
-        List<List<Integer>> result =  new ArrayList<>();
+        List<List<CountTreeNode>> result =  new ArrayList<>();
         int level = 0;
-        List<Integer> rootAmount = new ArrayList<>();
-        rootAmount.add(0);
+        List<CountTreeNode> rootAmount = new ArrayList<>();
+        rootAmount.add(root);
         result.add(rootAmount);
         while(!result.get(level).isEmpty())
         {
             level++;
-            List<Integer> size = count(root, level);
+            List<CountTreeNode> size = count(root, level);
             result.add(size);
         }
         return result;
     }
 
-    private static List<Integer> count(CountTreeNode node, int level)
+    private static List<CountTreeNode> count(CountTreeNode node, int level)
     {
         if(level == 0)
         {
-            List<Integer> result = new ArrayList<>();
-            result.add(node.getContent().size());
+            List<CountTreeNode> result = new ArrayList<>();
+            result.add(node);
             return result;
         }
         else
         {
-            List<Integer> result = new ArrayList<>();
+            List<CountTreeNode> result = new ArrayList<>();
             Collection<CountTreeNode> children = node.getChildren();
             for (CountTreeNode curChild : children)
             {

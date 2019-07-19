@@ -21,8 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.TrajectoryNormalizer;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ObservationTuple;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.TurtleHash;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ObservationTuple;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class TestSumOptimizer

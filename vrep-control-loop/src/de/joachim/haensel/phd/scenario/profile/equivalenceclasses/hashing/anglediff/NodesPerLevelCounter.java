@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff;
+package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff;
 
 import java.util.ArrayList;
 import java.util.Collection;

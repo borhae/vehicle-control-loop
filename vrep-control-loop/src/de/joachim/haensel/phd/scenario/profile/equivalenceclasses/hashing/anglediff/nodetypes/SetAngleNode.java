@@ -1,9 +1,9 @@
-package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.nodetypes;
+package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.nodetypes;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ClassificationConstants;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ICountListElem;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.OCStats;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ClassificationConstants;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ICountListElem;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.OCStats;
 
 public class SetAngleNode implements ICountListElem, ClassificationConstants
 {

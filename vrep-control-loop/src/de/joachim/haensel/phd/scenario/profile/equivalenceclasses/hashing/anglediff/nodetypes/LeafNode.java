@@ -1,10 +1,10 @@
-package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.nodetypes;
+package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.nodetypes;
 
 import java.util.List;
 
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ICountListElem;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.OCStats;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ObservationTuple;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ICountListElem;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.OCStats;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ObservationTuple;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class LeafNode implements ICountListElem

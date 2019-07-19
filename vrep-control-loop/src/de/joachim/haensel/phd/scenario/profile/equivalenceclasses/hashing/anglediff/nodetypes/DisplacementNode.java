@@ -1,26 +1,30 @@
-package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.nodetypes;
+package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.nodetypes;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ClassificationConstants;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ICountListElem;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.OCStats;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ObservationTuple;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ClassificationConstants;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ICountListElem;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.OCStats;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ObservationTuple;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
-public class AngleNode implements ICountListElem, ClassificationConstants
+public class DisplacementNode implements ICountListElem, ClassificationConstants
 {
-    private double _angle;
+    private double _displacement;
     private ICountListElem _next;
 
-    public AngleNode(ObservationTuple observationTuple, TrajectoryElement firstTrajectoryElement)
+    public DisplacementNode(ObservationTuple observationTuple, TrajectoryElement trajectoryElement)
     {
         Position2D rearWheelCP = observationTuple.getRearWheelCP();
         Position2D frontWheelCP = observationTuple.getFrontWheelCP();
-        Vector2D vehicleVector = new Vector2D(rearWheelCP, frontWheelCP);
-        Vector2D trajectoryStartVector = firstTrajectoryElement.getVector();
-        _angle = Vector2D.computeAngle(vehicleVector, trajectoryStartVector);
+        Position2D vehicleCenter = Position2D.between(rearWheelCP, frontWheelCP);
+        
+        Vector2D trajectoryVector = trajectoryElement.getVector();
+        
+        Position2D intersection = Vector2D.getUnrangedPerpendicularIntersection(trajectoryVector, vehicleCenter);
+        _displacement = Position2D.distance(vehicleCenter, intersection);
     }
+    
 
     @Override
     public void setNext(ICountListElem elem)
@@ -37,26 +41,29 @@ public class AngleNode implements ICountListElem, ClassificationConstants
     @Override
     public int getHashRangeIdx()
     {
-        return ClassificationConstants.angleHashValue(_angle);
+        return ClassificationConstants.displacementHashValue(_displacement);
     }
 
     @Override
     public double getNumericalValue()
     {
-        return _angle;
+        return _displacement;
     }
+
 
     @Override
     public String toString()
     {
-        return String.format("|Angle: %.2f|", Math.toDegrees(_angle));
+        return String.format("|Displ.: %.2f|", _displacement);
     }
+
 
     @Override
     public double getNormyValue()
     {
-        return Math.toDegrees(_angle);
+        return _displacement;
     }
+
 
     @Override
     public void accept(OCStats stats)
@@ -67,7 +74,7 @@ public class AngleNode implements ICountListElem, ClassificationConstants
     @Override
     public int compareTo(ICountListElem o)
     {
-        if(o instanceof AngleNode)
+        if(o instanceof DisplacementNode)
         {
             double comparison = getNumericalValue() - o.getNumericalValue();
             if(Math.abs(comparison) <  EPSILON)

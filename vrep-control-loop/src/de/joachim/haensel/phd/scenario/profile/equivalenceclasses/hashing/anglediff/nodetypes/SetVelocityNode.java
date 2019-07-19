@@ -1,21 +1,18 @@
-package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.nodetypes;
+package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.nodetypes;
 
 import de.joachim.haensel.phd.converters.UnitConverter;
-import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ClassificationConstants;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ICountListElem;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.OCStats;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ObservationTuple;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ClassificationConstants;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ICountListElem;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.OCStats;
 
-public class VelocityNode implements ICountListElem, ClassificationConstants
+public class SetVelocityNode implements ICountListElem, ClassificationConstants
 {
     private double _velocity;
     private ICountListElem _next;
 
-    public VelocityNode(ObservationTuple observationTuple)
+    public SetVelocityNode(double velocity)
     {
-        double[] rawVelocity = observationTuple.getVelocity();
-        _velocity = new Line2D(0.0, 0.0, rawVelocity[0], rawVelocity[1]).length();
+        _velocity = velocity;
     }
 
     @Override
@@ -30,15 +27,10 @@ public class VelocityNode implements ICountListElem, ClassificationConstants
         return _next;
     }
 
-    public double getVelocity()
-    {
-        return _velocity;
-    }
-
     @Override
     public int getHashRangeIdx()
     {
-        return ClassificationConstants.velocityHashValue(_velocity);
+        return ClassificationConstants.setVelocityHashValue(_velocity);
     }
 
     @Override
@@ -50,7 +42,7 @@ public class VelocityNode implements ICountListElem, ClassificationConstants
     @Override
     public String toString()
     {
-        return String.format("|Velo: %.2f|", UnitConverter.meterPerSecondToKilometerPerHour(_velocity));
+        return String.format("|SVelo: %.2f|", UnitConverter.meterPerSecondToKilometerPerHour(_velocity));
     }
 
     @Override
@@ -68,7 +60,7 @@ public class VelocityNode implements ICountListElem, ClassificationConstants
     @Override
     public int compareTo(ICountListElem o)
     {
-        if(o instanceof VelocityNode)
+        if(o instanceof SetVelocityNode)
         {
             double comparison = getNumericalValue() - o.getNumericalValue();
             if(Math.abs(comparison) <  EPSILON)

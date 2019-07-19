@@ -22,12 +22,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ConfigurationObservationTreeCounter;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ContentAtLevelPerNode;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.CountTreeNode;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.OCStats;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.ObservationTuple;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.anglediff.StatsPerLevel;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ConfigurationObservationTreeCounter;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ContentAtLevelPerNode;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.CountTreeNode;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.OCStats;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ObservationTuple;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.StatsPerLevel;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class TestTuneClassBuilding
