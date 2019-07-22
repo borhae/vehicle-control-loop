@@ -19,10 +19,10 @@ import java.util.stream.IntStream;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.joachim.haensel.phd.scenario.equivalenceclasses.TrajectoryNormalizer;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
-import de.joachim.haensel.phd.scenario.operationalprofile.collection.ObservationTuple;
-import de.joachim.haensel.phd.scenario.operationalprofile.collection.TurtleHash;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.TrajectoryNormalizer;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.TurtleHash;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ObservationTuple;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class TestSumOptimizer

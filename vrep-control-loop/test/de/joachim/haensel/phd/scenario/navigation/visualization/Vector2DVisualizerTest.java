@@ -10,12 +10,12 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.Arc;
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsSegmentContainerElement;
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.Segment;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.segmenting.Arc;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.segmenting.IArcsSegmentContainerElement;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.segmenting.Segment;
 
 public class Vector2DVisualizerTest
 {

@@ -2,6 +2,8 @@ package de.joachim.haensel.phd.scenario.experiment.evaluation;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +14,8 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.joachim.haensel.phd.scenario.equivalenceclasses.TrajectoryNormalizer;
-import de.joachim.haensel.phd.scenario.operationalprofile.collection.TurtleHash;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.TrajectoryNormalizer;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.TurtleHash;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class ProbabilitiesExtractor
@@ -33,7 +35,8 @@ public class ProbabilitiesExtractor
             TreeMap<Long, List<TrajectoryElement>> configsSorted = new TreeMap<Long, List<TrajectoryElement>>(configurations);
             TreeMap<String, List<Long>> configsHashed = new TreeMap<String, List<Long>>();
             createHistogram(hasher, configurations, configsSorted, configsHashed);
-            
+            List<String> histogramString = configsHashed.entrySet().stream().map(entry -> String.format("%s, %d", entry.getKey(), entry.getValue().size())).collect(Collectors.toList());
+            Files.write(Paths.get(args[1]), histogramString);
             
 //            List<String> percentages = computePercentages(configsHashed).stream().map(value -> Double.toString(value)).collect(Collectors.toList());
 //            List<String> absolutes = computeHistogram(configsHashed).stream().map(value -> Integer.toString(value)).collect(Collectors.toList());

@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.joachim.haensel.phd.scenario.equivalenceclasses.TrajectoryNormalizer;
-import de.joachim.haensel.phd.scenario.operationalprofile.collection.TurtleHash;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.TrajectoryNormalizer;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.TurtleHash;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class ProfileComparison

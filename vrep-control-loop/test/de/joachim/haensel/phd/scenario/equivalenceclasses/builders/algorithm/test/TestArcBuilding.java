@@ -14,9 +14,9 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.Arc;
 import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.segmenting.Arc;
 
 public class TestArcBuilding
 {
