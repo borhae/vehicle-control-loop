@@ -14,7 +14,7 @@ import de.joachim.haensel.statemachine.Guard;
 
 public class EventLoopStateMachine extends FiniteStateMachineTemplate
 {
-    private static final double DISTANCE_TO_TARGET_THRESHOLD = 2.5;
+    private static final double DISTANCE_TO_TARGET_THRESHOLD = 3.0;
     private IActuatingSensing _actuatorsSensors;
     private Position2D _target;
     private CarInterfaceActions _carInterface;

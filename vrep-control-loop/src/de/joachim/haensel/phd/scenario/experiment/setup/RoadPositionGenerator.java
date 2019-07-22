@@ -59,7 +59,8 @@ public class RoadPositionGenerator
 
         RoadMap roadMap = new RoadMap(RES_ROADNETWORKS_DIRECTORY + mapFileName);
         
-        MersenneTwister randomGen = new MersenneTwister(4096);
+//        MersenneTwister randomGen = new MersenneTwister(4096);
+        MersenneTwister randomGen = new MersenneTwister(5098);
         List<Position2D> resultPointsOnMap = randomPointsByRandomMapElementSelection(numberOfPoints, roadMap, randomGen);
 
         System.out.println("Show points? y|n and <enter>");
