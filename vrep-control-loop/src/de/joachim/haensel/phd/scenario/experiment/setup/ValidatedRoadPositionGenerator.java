@@ -23,6 +23,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.random.MersenneTwister;
+import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorData;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DijkstraAlgo;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.ITrajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
@@ -42,47 +43,199 @@ import sumobindings.LaneType;
 public class ValidatedRoadPositionGenerator
 {
     private static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
-    private static VRepObjectCreation _objectCreator;
-    private static int _numOfRoutes;
+    private VRepObjectCreation _objectCreator;
+    private int _numOfRoutes;
+    private String _mapFileName;
+    private int _seed;
+    private VRepRemoteAPI _vrep;
+    private int _clientID;
+    private boolean _visualisationInSimulator;
+    private TMatrix _centerMatrix;
+    private List<Position2D> _generatedPointsOnMap;
+    private RoadMap _roadMap;
+    private String _resultPath;
+    private VRepSimulatorData _connectedSimulator;
+    private int _numberOfPoints;
+
+    public String getResultPath()
+    {
+        return _resultPath;
+    }
 
     public static void main(String[] args) throws VRepException
     {
-        System.out.println("choose map: 1 and <enter> for Luebeck, 2 and <enter> for Chandigarh");
+        ValidatedRoadPositionGenerator generator = new ValidatedRoadPositionGenerator();
+        generator.runUserInteraction(true);
+    }
+
+    public boolean runUserInteraction(boolean detachSimulator) throws VRepException
+    {
         Scanner scanner = new Scanner(System.in);
-        String mapFileNameInput = scanner.next();
-        String mapFileName = "";
-        if(mapFileNameInput.equalsIgnoreCase("1"))
+        _visualisationInSimulator = false;
+
+        if(!chooseMap(scanner))
         {
-            mapFileName = "luebeck-roads.net.xml";
+            return false;
         }
-        else if(mapFileNameInput.equalsIgnoreCase("2"))
+
+        if(!chooseSeed(scanner))
         {
-            mapFileName = "chandigarh-roads-lefthand.removed.net.xml";
+            return false;
+        }
+
+        _roadMap = new RoadMap(RES_ROADNETWORKS_DIRECTORY + _mapFileName);
+
+        _generatedPointsOnMap = generateUnvalidatedPositions();
+
+        _centerMatrix = _roadMap.center(0.0, 0.0);
+
+        potentiallyShowMapInSimulator(scanner);
+        
+        potentiallyShowPositionsInSimulator(scanner);
+        
+        List<ErrorMsg> errorMsgs = potentialSanityCheck(scanner);
+
+        showRoutesInSimulator(scanner, errorMsgs);
+        
+        boolean savedToFile = potentiallySaveToFile(scanner);
+        
+        if(_visualisationInSimulator)
+        {
+            System.out.println("cleaning visualisation");
+            _objectCreator.deleteAll();
+            if(detachSimulator)
+            {
+                _objectCreator.removeScriptloader();
+                _vrep.simxFinish(_clientID);
+            }
+            System.out.println("done");
+        }
+        return savedToFile;
+    }
+
+    private boolean potentiallySaveToFile(Scanner scanner)
+    {
+        System.out.println("n and <enter> to leave or a filename and <enter> to save the pointlist");
+        String fileNameOrOut = scanner.next();
+        _resultPath = "";
+        if(fileNameOrOut.equalsIgnoreCase("n"))
+        {
+            return false;
         }
         else
         {
-            System.out.println("You need to decide :)!");
-            scanner.close();
-            return;
+            System.out.println("saving to: " + fileNameOrOut);
+            List<String> pointsAsStrings = _generatedPointsOnMap.stream().map(curPos -> curPos.toFormattedString("%8.2f, %8.2f")).collect(Collectors.toList());
+            try
+            {
+                Path targetPath = Paths.get(Paths.get("").toAbsolutePath().toString(), RES_ROADNETWORKS_DIRECTORY, fileNameOrOut);
+                Files.write(targetPath, pointsAsStrings,Charset.defaultCharset());
+                _resultPath = fileNameOrOut;
+            } 
+            catch (IOException exc)
+            {
+                exc.printStackTrace();
+            }
+            return true;
         }
+    }
 
-        int numberOfPoints = 200;
+    private void showRoutesInSimulator(Scanner scanner, List<ErrorMsg> errorMsgs) throws VRepException
+    {
+        System.out.println("Show routes? y and <enter> to show all, anything else and <enter> to not show them");
+        String showRoutes = scanner.next();
+        if(showRoutes.equalsIgnoreCase("y"))
+        {
+            if(!_visualisationInSimulator)
+            {
+                connectSimulator();
+            }
+            _visualisationInSimulator = true;
+            VRepNavigationListener navigationListener = new VRepNavigationListener(_objectCreator);
+            navigationListener.activateSegmentDebugging();
+            
+            errorMsgs.stream().forEach(msg -> 
+            {
+                navigationListener.setIdCreator(() -> String.format("%03d", msg.getIdx())); 
+                navigationListener.notifySegmentsChanged(msg.getTrajectory(), msg.curPos, msg.nexPos);
+            });
+        }
+    }
 
-        RoadMap roadMap = new RoadMap(RES_ROADNETWORKS_DIRECTORY + mapFileName);
-        
-        VRepRemoteAPI vrep = VRepRemoteAPI.INSTANCE;
-        int clientID = vrep.simxStart("127.0.0.1", 19997, true, true, 5000, 5);
-        _objectCreator = new VRepObjectCreation(vrep, clientID);
+    private List<ErrorMsg> potentialSanityCheck(Scanner scanner)
+    {
+        System.out.println("Check routes for sanity? Y and <enter> for yes, anything else and <enter> for no");
+        String checkRoutes = scanner.next();
+        List<ErrorMsg> errorMsg = null;
+        if(checkRoutes.equalsIgnoreCase("y"))
+        {
+            errorMsg = checkRoutesSanity(_roadMap, _generatedPointsOnMap, _centerMatrix);
+        }
+        return errorMsg;
+    }
 
+    private void potentiallyShowPositionsInSimulator(Scanner scanner) throws VRepException
+    {
+        System.out.println("Show points? y|n and <enter>");
+        String showPoints = scanner.next();
+        if(showPoints.equalsIgnoreCase("y"))
+        {
+            if(!_visualisationInSimulator)
+            {
+                connectSimulator();
+            }
+            _visualisationInSimulator = true;
+            visualiseInSimulator(_roadMap, _generatedPointsOnMap, _centerMatrix);
+        }
+    }
+
+    private void potentiallyShowMapInSimulator(Scanner scanner) throws VRepException
+    {
+        System.out.println("Show map? y|<other> and <enter>");
+        String showMap = scanner.next();
+        if(showMap.equalsIgnoreCase("y"))
+        {
+            if(!_visualisationInSimulator)
+            {
+                connectSimulator();
+            }
+            _visualisationInSimulator = true;
+            float streetWidth = (float)1.5;
+            float streetHeight = (float)0.4;
+            
+            VRepMap mapCreator = new VRepMap(streetWidth, streetHeight, _vrep, _clientID, _objectCreator);
+            mapCreator.createMeshBasedMap(_roadMap);
+            mapCreator.createMapSizedRectangle(_roadMap, false);
+        }
+    }
+
+    private void connectSimulator() throws VRepException
+    {
+        _vrep = VRepRemoteAPI.INSTANCE;
+        _clientID = _vrep.simxStart("127.0.0.1", 19997, true, true, 5000, 5);
+        _objectCreator = new VRepObjectCreation(_vrep, _clientID);
+        _connectedSimulator = new VRepSimulatorData(_vrep, _clientID, _objectCreator);
+    }
+
+    private List<Position2D> generateUnvalidatedPositions()
+    {
+        _numberOfPoints = 200;
+        MersenneTwister randomGen = new MersenneTwister(_seed);
+        List<Position2D> generatedPointsOnMap = randomPointsByRandomMapElementSelection(_numberOfPoints, _roadMap, randomGen);
+        return generatedPointsOnMap;
+    }
+
+    private boolean chooseSeed(Scanner scanner)
+    {
         System.out.println("Choose generator seed (number and <enter>)");
         boolean correctSeedGiven = false;
-        int seed = -1;
+        _seed = -1;
         String stringSeed = scanner.next();
         while(!correctSeedGiven)
         {
             try
             {
-                seed = Integer.parseInt(stringSeed);
+                _seed = Integer.parseInt(stringSeed);
                 correctSeedGiven = true;
             }
             catch (NumberFormatException exc) 
@@ -94,93 +247,34 @@ public class ValidatedRoadPositionGenerator
                 stringSeed = scanner.next();
                 if(stringSeed.equalsIgnoreCase("y"))
                 {
-                    scanner.close();
-                    return;
+                    return false;
                 }
             }
         }
+        return true;
+    }
 
-        MersenneTwister randomGen = new MersenneTwister(seed);
-        List<Position2D> generatedPointsOnMap = randomPointsByRandomMapElementSelection(numberOfPoints, roadMap, randomGen);
-
-        TMatrix centerMatrix = roadMap.center(0.0, 0.0);
-
-        boolean withVisualisation = false;
-        System.out.println("Show map? y|<other> and <enter>");
-        String showMap = scanner.next();
-        if(showMap.equalsIgnoreCase("y"))
+    private boolean chooseMap(Scanner scanner)
+    {
+        System.out.println("choose map: 1 and <enter> for Luebeck, 2 and <enter> for Chandigarh or anything else and <enter> to leave");
+        String mapFileNameInput = scanner.next();
+        _mapFileName = "";
+        if(mapFileNameInput.equalsIgnoreCase("1"))
         {
-            float streetWidth = (float)1.5;
-            float streetHeight = (float)0.4;
-            
-            VRepMap mapCreator = new VRepMap(streetWidth, streetHeight, vrep, clientID, _objectCreator);
-            mapCreator.createMeshBasedMap(roadMap);
-            mapCreator.createMapSizedRectangle(roadMap, false);
-            withVisualisation = true;
+            _mapFileName = "luebeck-roads.net.xml";
         }
-        
-        System.out.println("Show points? y|n and <enter>");
-        String showPoints = scanner.next();
-        if(showPoints.equalsIgnoreCase("y"))
+        else if(mapFileNameInput.equalsIgnoreCase("2"))
         {
-            visualiseInSimulator(roadMap, generatedPointsOnMap, centerMatrix);
-            withVisualisation = true;
-        }
-        
-        System.out.println("Check routes for sanity? Y and <enter> for yes, anything else and <enter> for no");
-        String checkRoutes = scanner.next();
-        if(checkRoutes.equalsIgnoreCase("y"))
-        {
-            List<ErrorMsg> errorMsg = checkRoutesSanity(roadMap, generatedPointsOnMap, centerMatrix);
-
-            System.out.println("Show routes? y and <enter> to show all, anything else and <enter> to not show them");
-            String showRoutes = scanner.next();
-            if(showRoutes.equalsIgnoreCase("y"))
-            {
-                VRepNavigationListener navigationListener = new VRepNavigationListener(_objectCreator);
-                navigationListener.activateSegmentDebugging();
-                
-                errorMsg.stream().forEach(msg -> 
-                {
-                    navigationListener.setIdCreator(() -> String.format("%03d", msg.getIdx())); 
-                    navigationListener.notifySegmentsChanged(msg.getTrajectory(), msg.curPos, msg.nexPos);
-                });
-                withVisualisation = true;
-            }
-        }
-        
-        System.out.println("n and <enter> to leave or a filename and <enter> to save the pointlist");
-        String input2 = scanner.next();
-        if(input2.equalsIgnoreCase("n"))
-        {
-            System.out.println("leaving");
+            _mapFileName = "chandigarh-roads-lefthand.removed.net.xml";
         }
         else
         {
-            System.out.println("saving to: " + input2);
-            List<String> pointsAsStrings = generatedPointsOnMap.stream().map(curPos -> curPos.toFormattedString("%8.2f, %8.2f")).collect(Collectors.toList());
-            try
-            {
-                Path targetPath = Paths.get(Paths.get("").toAbsolutePath().toString(), RES_ROADNETWORKS_DIRECTORY, input2);
-                Files.write(targetPath, pointsAsStrings,Charset.defaultCharset());
-            } 
-            catch (IOException exc)
-            {
-                exc.printStackTrace();
-            }
-            System.out.println("done, leaving.");
+            System.out.println("Bye");
         }
-        scanner.close();
-        if(withVisualisation)
-        {
-            System.out.println("cleaning visualisation");
-            _objectCreator.deleteAll();
-            _objectCreator.removeScriptloader();
-            System.out.println("done");
-        }
+        return !_mapFileName.equals("");
     }
 
-    private static List<ErrorMsg> checkRoutesSanity(RoadMap map, List<Position2D> sumoPositions, TMatrix centerMatrix)
+    private List<ErrorMsg> checkRoutesSanity(RoadMap map, List<Position2D> sumoPositions, TMatrix centerMatrix)
     {
         List<Position2D> positions = new ArrayList<Position2D>();
         sumoPositions.forEach(pos -> positions.add(new Position2D(pos)));
@@ -206,7 +300,7 @@ public class ValidatedRoadPositionGenerator
         return errorMessages;
     }
 
-    private static void visualiseInSimulator(RoadMap roadMap, List<Position2D> resultPointsOnMap, TMatrix centerMatrix) throws VRepException
+    private void visualiseInSimulator(RoadMap roadMap, List<Position2D> resultPointsOnMap, TMatrix centerMatrix) throws VRepException
     {
         ArrayList<Position2D> copy = new ArrayList<Position2D>();
         resultPointsOnMap.forEach(position -> copy.add(new Position2D(position)));
@@ -225,7 +319,7 @@ public class ValidatedRoadPositionGenerator
         }
     }
 
-    private static List<Position2D> randomPointsByRandomMapElementSelection(int numberOfPoints, RoadMap roadMap, MersenneTwister randomGen)
+    private List<Position2D> randomPointsByRandomMapElementSelection(int numberOfPoints, RoadMap roadMap, MersenneTwister randomGen)
     {
         List<Position2D> resultPointsOnMap = new ArrayList<Position2D>();
         List<EdgeType> edges = filterEdgesSuitableForPositions(roadMap);
@@ -282,7 +376,7 @@ public class ValidatedRoadPositionGenerator
         return resultPointsOnMap;
     }
 
-    private static List<EdgeType> filterEdgesSuitableForPositions(RoadMap roadMap)
+    private List<EdgeType> filterEdgesSuitableForPositions(RoadMap roadMap)
     {
         List<EdgeType> rawEdges = roadMap.getEdges();
         List<EdgeType> edges = rawEdges.stream().filter(curEdge -> (curEdge.getFunction() == null || !curEdge.getFunction().equalsIgnoreCase("internal"))).collect(Collectors.toList());
@@ -302,8 +396,7 @@ public class ValidatedRoadPositionGenerator
         return edges;
     }
 
-    private static boolean checkDistanceToOtherPoints(List<Position2D> resultPointsOnMap,
-            double minimumDistanceBetweenPoints, MersenneTwister distanceRandomGen, Position2D mapPoint)
+    private boolean checkDistanceToOtherPoints(List<Position2D> resultPointsOnMap, double minimumDistanceBetweenPoints, MersenneTwister distanceRandomGen, Position2D mapPoint)
     {
         boolean isTooClose = false;
         for(int idx = 0; idx < resultPointsOnMap.size(); idx++)
@@ -318,14 +411,14 @@ public class ValidatedRoadPositionGenerator
         return isTooClose;
     }
 
-    private static double setRange(double randomVal, double lowerBound, double upperBound)
+    private double setRange(double randomVal, double lowerBound, double upperBound)
     {
         randomVal = randomVal <= lowerBound ? lowerBound : randomVal;
         randomVal = randomVal >= upperBound ? upperBound : randomVal;
         return randomVal;
     }
     
-    private static ErrorMsg checkSanityForPositionPair(RoadMap map, int idx, Position2D curPos, Position2D nexPos) 
+    private ErrorMsg checkSanityForPositionPair(RoadMap map, int idx, Position2D curPos, Position2D nexPos) 
     {
         StringBuilder result = new StringBuilder();
         Navigator nav = new Navigator(map);
@@ -415,5 +508,46 @@ public class ValidatedRoadPositionGenerator
         _numOfRoutes--;
         System.out.println("Remaining routes to work on: " + _numOfRoutes);
         return resultMsg;
+    }
+
+    public VRepSimulatorData getSimulatorData()
+    {
+        return _connectedSimulator;
+    }
+
+    public boolean simulatorConnected()
+    {
+        return _visualisationInSimulator;
+    }
+
+    public String getMapFileName()
+    {
+        return _mapFileName;
+    }
+
+    public String getCityName()
+    {
+        if(_mapFileName.equals("luebeck-roads.net.xml"))
+        {
+            return "luebeck";
+        }
+        else if(_mapFileName.equals("chandigarh-roads-lefthand.removed.net.xml"))
+        {
+            return "chandigarh";
+        }
+        else
+        {
+            return "";
+        }
+    }
+
+    public int getNumberOfPositions()
+    {
+        return _numberOfPoints;
+    }
+
+    public long getSeed()
+    {
+        return _seed;
     }
 }
