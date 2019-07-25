@@ -10,7 +10,7 @@ import de.joachim.haensel.phd.scenario.map.sumo2vrep.OrientedPosition;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.simulator.ISimulatorData;
-import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorData;
+import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorAndVehicleData;
 import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 import sumobindings.JunctionType;
@@ -29,7 +29,7 @@ public class Vehicle implements IVehicle
     private boolean _stopped;
     private long _controlLoopRate;
 
-    public Vehicle(VRepSimulatorData simulatorData, IVehicleHandles vehicleHandles, IActuatingSensingFactory actuatingSensingFactory, IVehicleConfiguration vehicleConf)
+    public Vehicle(VRepSimulatorAndVehicleData simulatorData, IVehicleHandles vehicleHandles, IActuatingSensingFactory actuatingSensingFactory, IVehicleConfiguration vehicleConf)
     {
         RoadMap roadMap = vehicleConf.getMap();
         _controlLoopRate = vehicleConf.getControlLoopRate();

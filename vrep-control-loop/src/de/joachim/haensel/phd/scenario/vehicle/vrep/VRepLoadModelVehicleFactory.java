@@ -9,7 +9,7 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorData;
+import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorAndVehicleData;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensingFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
@@ -90,9 +90,9 @@ public class VRepLoadModelVehicleFactory implements IVehicleFactory
             List<Integer> handlesToBeRemoved = new ArrayList<>();
             handles.setAdditionalObjectHandles(handlesToBeRemoved );
             
-            VRepSimulatorData simulatorData = new VRepSimulatorData(_objectCreator, _vrep, _clientID, PHYSICAL_CAR_BODY_NAME);
+            VRepSimulatorAndVehicleData simulatorData = new VRepSimulatorAndVehicleData(_objectCreator, _vrep, _clientID, PHYSICAL_CAR_BODY_NAME);
             IActuatingSensingFactory actuatingSensingFactory = 
-                    () -> {return new VRepVehicleActuatorsSensors(handles, new VRepSimulatorData(_objectCreator, _vrep, _clientID, PHYSICAL_CAR_BODY_NAME), _vehicleConf.getMap());};
+                    () -> {return new VRepVehicleActuatorsSensors(handles, new VRepSimulatorAndVehicleData(_objectCreator, _vrep, _clientID, PHYSICAL_CAR_BODY_NAME), _vehicleConf.getMap());};
             Vehicle vehicle = new Vehicle(simulatorData, handles, actuatingSensingFactory, _vehicleConf);
 
             vehicle.setPosition((float)_vehicleConf.getXPos(), (float)_vehicleConf.getYPos(), (float)_vehicleConf.getZPos());

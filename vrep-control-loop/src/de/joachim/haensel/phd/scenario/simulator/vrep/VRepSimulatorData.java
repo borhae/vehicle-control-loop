@@ -1,32 +1,22 @@
 package de.joachim.haensel.phd.scenario.simulator.vrep;
 
-import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
-import de.joachim.haensel.phd.scenario.simulator.ISimulatorData;
-import de.joachim.haensel.phd.scenario.vehicle.IVehicleHandles;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
-public class VRepSimulatorData implements ISimulatorData
+public class VRepSimulatorData
 {
-    private String _vehicleScriptParentName;
     private VRepRemoteAPI _vrepAPI;
     private int _clientID;
     private VRepObjectCreation _objectCreator;
 
-    public VRepSimulatorData(VRepObjectCreation objectCreator, VRepRemoteAPI vrep, int clientID, String vehicleScriptParentName)
+    public VRepSimulatorData(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator)
     {
         _vrepAPI = vrep;
         _clientID = clientID;
         _objectCreator = objectCreator;
-        _vehicleScriptParentName = vehicleScriptParentName;
     }
 
-    public String getVehicleScriptParentName()
-    {
-        return _vehicleScriptParentName;
-    }
-
-    public VRepRemoteAPI getVRepRemoteAPI()
+    public VRepRemoteAPI getVrepAPI()
     {
         return _vrepAPI;
     }
@@ -36,21 +26,7 @@ public class VRepSimulatorData implements ISimulatorData
         return _clientID;
     }
 
-    @Override
-    public void removeItemsFromSimulation(IVehicleHandles vehicleHandles)
-    {
-        try
-        {
-            _objectCreator.deleteScripts(vehicleHandles.getAllScriptHandles());
-            _objectCreator.deleteAutomaticObjects(vehicleHandles.getAllObjectHandles());
-        }
-        catch (VRepException exc)
-        {
-            exc.printStackTrace();
-        }
-    }
-
-    public VRepObjectCreation getVRepObjectCreator()
+    public VRepObjectCreation getObjectCreator()
     {
         return _objectCreator;
     }
