@@ -8,9 +8,9 @@ import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerMsg;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerStates;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
+import de.joachim.haensel.statemachine.DebuggableGuard;
 import de.joachim.haensel.statemachine.EmptyParam;
 import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
-import de.joachim.haensel.statemachine.Guard;
 
 public class EventLoopStateMachine extends FiniteStateMachineTemplate
 {
@@ -31,9 +31,51 @@ public class EventLoopStateMachine extends FiniteStateMachineTemplate
         Consumer<EmptyParam> arrivedBrakeAndStopAction = dummy -> { _actuatorsSensors.computeAndLockSensorData(); carInterface.arrivedBrakeAndStopAction();};
         Consumer<Position2D> informFailedAction = newTarget -> informFailed(newTarget);
         
-        Guard notArrivedGuard = () -> {return !arrivedAtTarget() && !lostTrack();};
-        Guard lostTrack = () -> {return !arrivedAtTarget() && lostTrack();};
-        Guard arrivedAtTargetGuard = () -> arrivedAtTarget();
+//        Guard notArrivedGuard = () -> {return !arrivedAtTarget() && !lostTrack();};
+//        Guard lostTrack = () -> {return !arrivedAtTarget() && lostTrack();};
+//        Guard arrivedAtTargetGuard = () -> arrivedAtTarget();
+        DebuggableGuard notArrivedGuard = new DebuggableGuard()
+        {
+            @Override
+            public boolean isTrue()
+            {
+                return !arrivedAtTarget() && !lostTrack();
+            }
+            
+            @Override
+            public String guardAsString()
+            {
+                return "!arrivedAtTarget() && !lostTrack();";
+            }
+        };
+        DebuggableGuard lostTrack = new DebuggableGuard()
+        {
+            @Override
+            public boolean isTrue()
+            {
+                return !arrivedAtTarget() && lostTrack();
+            }
+            
+            @Override
+            public String guardAsString()
+            {
+                return "!arrivedAtTarget() && lostTrack()";
+            }
+        };
+        DebuggableGuard arrivedAtTargetGuard = new DebuggableGuard()
+        {
+            @Override
+            public boolean isTrue()
+            {
+                return arrivedAtTarget();
+            }
+            
+            @Override
+            public String guardAsString()
+            {
+                return "arrivedAtTarget()";
+            }
+        };
 
         createTransition(ControllerStates.IDLE, ControllerMsg.DRIVE_TO, TRUE_GUARD, ControllerStates.DRIVING, updateTargetAndReinitCar);
         
@@ -80,10 +122,6 @@ public class EventLoopStateMachine extends FiniteStateMachineTemplate
     {
         Position2D curPos = _actuatorsSensors.getFrontWheelCenterPosition();
         double distance = Position2D.distance(curPos, _target);
-        if(distance < 10.0)
-        {
-            System.out.println("close to target: " + distance);
-        }
         boolean arrived = distance < DISTANCE_TO_TARGET_THRESHOLD;
         return arrived;
     }
