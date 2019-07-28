@@ -71,7 +71,7 @@ public class CarInterfaceActions
             targetWheelRotation = computeTargetWheelRotationSpeed(closestTrajectoryElement);
             targetSteeringAngle = computeTargetSteeringAngle(lookahead, lookaheadTrajectoryElement);
             
-            if(lookaheadTrajectoryElement.isReverse()) 
+            if(lookaheadTrajectoryElement.isReverse() || closestTrajectoryElement.isReverse()) 
             {
                 targetWheelRotation = - targetWheelRotation;
             }

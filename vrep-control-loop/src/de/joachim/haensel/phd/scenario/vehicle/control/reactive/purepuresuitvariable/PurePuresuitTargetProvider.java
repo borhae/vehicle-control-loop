@@ -169,11 +169,28 @@ public class PurePuresuitTargetProvider
             int lastIdx = Math.min(_currentClosestElementIndex + maxSteps, _trajectoryBuffer.size() -1 );
             for(int idx = _currentClosestElementIndex; idx < lastIdx; idx++)
             {
-                if(isInRange(_trajectoryBuffer.get(idx), _rearWheelCenterPosition, lookahead))
+                TrajectoryElement curTrajElement = _trajectoryBuffer.get(idx);
+                if(isInRange(curTrajElement, _rearWheelCenterPosition, lookahead))
                 {
                     targetIdx = idx;
+                    if(curTrajElement.isReverse()) 
+                    {
+                        _nearestReverseElement = curTrajElement;
+                    }
+                    else 
+                    {
+                        _nearestReverseElement = null;   
+                    }
                     break;
-                }                           
+                }
+                else if(curTrajElement.isReverse())
+                {
+                    System.out.println("reverse element found");
+                    targetIdx = idx;   
+                    _nearestReverseElement = curTrajElement;
+                    break;
+                }  
+
             }
             
             if(targetIdx != -1)
@@ -182,17 +199,6 @@ public class PurePuresuitTargetProvider
             }
             else
             {
-                for(int i = 0; i < Math.min(20, _trajectoryBuffer.size() -1); i++)
-                {
-                    if(_trajectoryBuffer.get(i).isReverse())
-                    {
-                        System.out.println("reverse stuff");
-                    }
-                    else {
-                        System.out.println("no");
-                    }
-                }
-                
                 if(_trajectoryBuffer.getCurrentState() != RouteBufferStates.ROUTE_ENDING)
                 {
                     boolean segmentsLeft = _trajectoryBuffer.elementsLeft();
