@@ -6,8 +6,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.MinimalBlurredSegment;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.segmenting.algorithm.MinimalBlurredSegment;
 
 public class MinimalBlurredSegmentTest
 {

@@ -4,7 +4,7 @@ import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
-import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorData;
+import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorAndVehicleData;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensingFactory;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
@@ -152,7 +152,7 @@ public class VRepPartwiseVehicleCreator
             vehicleHandles.setFrontLeftWheelDummy(frontLeftWheelDummy).setFrontRightWheelDummy(frontRightWheelDummy);
             vehicleHandles.setRearWheelVisualizationDummy(rearWheelDummy);
             
-            VRepSimulatorData simulatorData = new VRepSimulatorData(_objectCreator, _vrep, _clientID, PHYSICAL_CAR_BODY_NAME);
+            VRepSimulatorAndVehicleData simulatorData = new VRepSimulatorAndVehicleData(_objectCreator, _vrep, _clientID, PHYSICAL_CAR_BODY_NAME);
             IActuatingSensingFactory actuatingSensingFactory = () -> {return new VRepVehicleActuatorsSensors(vehicleHandles, simulatorData, roadMap);};
             IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
             vehicleConf.setUpperCtrlFactory(uppperLayerFactory);

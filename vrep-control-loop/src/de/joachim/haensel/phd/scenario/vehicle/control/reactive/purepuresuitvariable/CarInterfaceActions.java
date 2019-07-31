@@ -59,7 +59,7 @@ public class CarInterfaceActions
         double lookahead = kv;
         _cashedLookahead = lookahead;
         
-        TrajectoryElement closestTrajectoryElement = _targetProvider.getClosestTrajectoryElement();
+        TrajectoryElement closestTrajectoryElement = _targetProvider.getClosestTrajectoryElement();   
         TrajectoryElement lookaheadTrajectoryElement = _targetProvider.getLookaheadTrajectoryElement(lookahead);
         _cachedLookaheadTrajectoryElement  = lookaheadTrajectoryElement;
         
@@ -71,7 +71,7 @@ public class CarInterfaceActions
             targetWheelRotation = computeTargetWheelRotationSpeed(closestTrajectoryElement);
             targetSteeringAngle = computeTargetSteeringAngle(lookahead, lookaheadTrajectoryElement);
             
-            if(lookaheadTrajectoryElement.isReverse() || closestTrajectoryElement.isReverse()) 
+            if(lookaheadTrajectoryElement.isReverse()) 
             {
                 targetWheelRotation = - targetWheelRotation;
             }
@@ -116,17 +116,14 @@ public class CarInterfaceActions
         Vector2D rearWheelToFrontWheel = new Vector2D(rearWheelPosition, frontWheelPosition);
         if(rearWheelToLookAhead == null)
         {
-            return 0.0f;
+            rearWheelToLookAhead = new Vector2D(rearWheelPosition, currentTrajectoryElementVector.getTip());
         }
-        else
-        {
-            double alpha = Vector2D.computeAngle(rearWheelToLookAhead, rearWheelToFrontWheel) * rearWheelToLookAhead.side(rearWheelToFrontWheel) * -1.0;
-            double L = _vehicleLength;
-            double kv = computeKTimesVelocity();
-            
-            double delta = Math.atan( (2.0 * L * Math.sin(alpha)) / kv);
-            return (float) delta;
-        }
+        double alpha = Vector2D.computeAngle(rearWheelToLookAhead, rearWheelToFrontWheel) * rearWheelToLookAhead.side(rearWheelToFrontWheel) * -1.0;
+        double L = _vehicleLength;
+        double kv = computeKTimesVelocity();
+        
+        double delta = Math.atan( (2.0 * L * Math.sin(alpha)) / kv);
+        return (float) delta;
     }
 
     private Vector2D computeRearWheelToLookaheadVector(Position2D rearWheelPosition, Vector2D currentSegment, double lookahead)

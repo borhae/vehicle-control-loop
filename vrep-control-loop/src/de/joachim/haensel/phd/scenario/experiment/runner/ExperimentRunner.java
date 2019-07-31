@@ -10,11 +10,11 @@ import coppelia.IntWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
 import de.hpi.giese.coppeliawrapper.VRepRemoteAPI;
-import de.joachim.haensel.phd.scenario.RoadMapAndCenterMatrix;
 import de.joachim.haensel.phd.scenario.SimulationSetupConvenienceMethods;
 import de.joachim.haensel.phd.scenario.debug.VRepNavigationListener;
 import de.joachim.haensel.phd.scenario.debug.VRepNavigationListener.IIDCreator;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
+import de.joachim.haensel.phd.scenario.map.RoadMapAndCenterMatrix;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.tasks.ITask;
@@ -28,24 +28,6 @@ import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class ExperimentRunner
 {
-    public class RouteIDCreator implements IIDCreator
-    {
-        private Integer _counter = Integer.valueOf(0);
-
-        public RouteIDCreator(int routeStartIdx)
-        {
-            _counter = Integer.valueOf(routeStartIdx);
-        }
-        
-        public synchronized String getNextStringID()
-        {
-            Integer next = Integer.valueOf(_counter.intValue() + 1);
-            _counter = next;
-            return _counter.toString();
-        }
-    }
-
-    
     public static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
 
     private static VRepRemoteAPI _vrep;
@@ -160,16 +142,27 @@ public class ExperimentRunner
             runner.initialize();
             try
             {
-//                List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread.txt").toPath());
-//            	List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread_from63.txt").toPath());
-//            	List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread_from83.txt").toPath());
-//            	List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread_17_18_19.txt").toPath());
-                List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread.txt").toPath());
-//                List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread.txt").toPath());
+//              List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_spread.txt").toPath());
+//              List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_generatedSeed4096.txt").toPath());
+//              List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_generatedSeed5098.txt").toPath());
+//                List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Luebeckpoints_generatedSeed5555.txt").toPath());
+                
+//              List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_spread.txt").toPath());
+//              List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_generatedSeed4096.txt").toPath());
+//              List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_generatedSeed5098.txt").toPath());
+                List<String> pointsAsString = Files.readAllLines(new File(RES_ROADNETWORKS_DIRECTORY + "Chandigarhpoints_generatedSeed5555.txt").toPath());
                 List<Position2D> allPositions = pointsAsString.stream().map(string -> new Position2D(string)).collect(Collectors.toList());
                 List<Position2D> positions = allPositions.subList(0, allPositions.size());
-                runner.run("chandigarh_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "chandigarh-roads-lefthand.removed.net.xml", "blue", 120);
-//                runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "luebeck-roads.net.xml", "blue", 120);
+//              
+                
+//                runner.run("chandigarh_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "chandigarh-roads-lefthand.removed.net.xml", "blue", 120);
+//              runner.run("chandigarh_200_gen_S5098_", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "chandigarh-roads-lefthand.removed.net.xml", "blue", 120);
+                runner.run("chandigarh_200_gen_S5555_", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "chandigarh-roads-lefthand.removed.net.xml", "blue", 120);
+
+//              runner.run("luebeck_183_max_scattered_targets", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "luebeck-roads.net.xml", "blue", 120);
+//              runner.run("luebeck_200_gen_S5098_", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "luebeck-roads.net.xml", "blue", 120);
+//              runner.run("luebeck_200_gen_S5555_", 15.0, 120.0, 3.8, 4.0, 0.8, positions, "luebeck-roads.net.xml", "blue", 120);
+
                 runner.tearDown();
             }
             catch (IOException exc)

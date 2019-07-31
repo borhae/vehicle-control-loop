@@ -8,13 +8,13 @@ import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerMsg;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerStates;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
+import de.joachim.haensel.statemachine.DebuggableGuard;
 import de.joachim.haensel.statemachine.EmptyParam;
 import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
-import de.joachim.haensel.statemachine.Guard;
 
 public class EventLoopStateMachine extends FiniteStateMachineTemplate
 {
-    private static final double DISTANCE_TO_TARGET_THRESHOLD = 2.5;
+    private static final double DISTANCE_TO_TARGET_THRESHOLD = 3.0;
     private IActuatingSensing _actuatorsSensors;
     private Position2D _target;
     private CarInterfaceActions _carInterface;
@@ -31,17 +31,73 @@ public class EventLoopStateMachine extends FiniteStateMachineTemplate
         Consumer<EmptyParam> arrivedBrakeAndStopAction = dummy -> { _actuatorsSensors.computeAndLockSensorData(); carInterface.arrivedBrakeAndStopAction();};
         Consumer<Position2D> informFailedAction = newTarget -> informFailed(newTarget);
         
-        Guard notArrivedGuard = () -> {return !arrivedAtTarget() && !lostTrack() && !reverseDrivingNearby();};
-        Guard lostTrack = () -> {return !arrivedAtTarget() && lostTrack() && !reverseDrivingNearby();};
-        Guard arrivedAtTargetGuard = () -> arrivedAtTarget();
-        Guard reverseDrivingNearby = () -> {return !arrivedAtTarget() && reverseDrivingNearby();};
+//      Guard notArrivedGuard = () -> {return !arrivedAtTarget() && !lostTrack();};
+//      Guard lostTrack = () -> {return !arrivedAtTarget() && lostTrack();};
+//      Guard arrivedAtTargetGuard = () -> arrivedAtTarget();
+        
+        DebuggableGuard reverseDrivingNearby = new DebuggableGuard()
+        {
+            @Override
+            public boolean isTrue()
+            {
+                return !arrivedAtTarget() && reverseDrivingNearby();
+            }
+            
+            @Override
+            public String guardAsString()
+            {
+                return "!arrivedAtTarget() && reverseDrivingNearby();";
+            }
+        };
+        DebuggableGuard notArrivedGuard = new DebuggableGuard()
+        {
+            @Override
+            public boolean isTrue()
+            {
+                return !arrivedAtTarget() && !lostTrack() && !reverseDrivingNearby();
+            }
+            
+            @Override
+            public String guardAsString()
+            {
+                return "!arrivedAtTarget() && !lostTrack();";
+            }
+        };
+        DebuggableGuard lostTrack = new DebuggableGuard()
+        {
+            @Override
+            public boolean isTrue()
+            {
+                return !arrivedAtTarget() && lostTrack() && !reverseDrivingNearby();
+            }
+            
+            @Override
+            public String guardAsString()
+            {
+                return "!arrivedAtTarget() && lostTrack()";
+            }
+        };
+        DebuggableGuard arrivedAtTargetGuard = new DebuggableGuard()
+        {
+            @Override
+            public boolean isTrue()
+            {
+                return arrivedAtTarget();
+            }
+            
+            @Override
+            public String guardAsString()
+            {
+                return "arrivedAtTarget()";
+            }
+        };
 
         createTransition(ControllerStates.IDLE, ControllerMsg.DRIVE_TO, TRUE_GUARD, ControllerStates.DRIVING, updateTargetAndReinitCar);
         
         createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, arrivedAtTargetGuard, ControllerStates.IDLE, arrivedBrakeAndStopAction);
         createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, notArrivedGuard, ControllerStates.DRIVING, driveAction);
         createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, lostTrack, ControllerStates.FAILED, brakeAndStopAction);
-        createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, reverseDrivingNearby, ControllerStates.THREE_POINT_TURN, brakeAndStopAction);
+        createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, reverseDrivingNearby, ControllerStates.THREE_POINT_TURN, driveAction);
         
         createTransition(ControllerStates.DRIVING, ControllerMsg.STOP, TRUE_GUARD, ControllerStates.IDLE, brakeAndStopAction);
         
@@ -70,22 +126,6 @@ public class EventLoopStateMachine extends FiniteStateMachineTemplate
             System.out.println("too far");
             return false;
         }
-//        Position2D carFrontPos = _actuatorsSensors.getFrontWheelCenterPosition();
-//        Position2D carBackPos = _actuatorsSensors.getRearWheelCenterPosition();
-//        
-//        double baseDistFront = carFrontPos.distance(closestNearbyElement.getVector().getBase());
-//        double tipDist = carBackPos.distance(closestNearbyElement.getVector().getTip());
-//        
-//        double baseDistRear = carBackPos.distance(closestNearbyElement.getVector().getBase());
-//        
-//        System.out.println("reverse Distance " + baseDistFront + " , " + tipDist + " , " + baseDistRear);
-//        if(baseDistRear < 3 && baseDistFront < tipDist)
-//        //if(baseDistFront < 5)
-//        {
-//            return true;
-//        }
-//        
-//        return false;
         return true;
     }
 
@@ -120,10 +160,6 @@ public class EventLoopStateMachine extends FiniteStateMachineTemplate
     {
         Position2D curPos = _actuatorsSensors.getFrontWheelCenterPosition();
         double distance = Position2D.distance(curPos, _target);
-        if(distance < 10.0)
-        {
-            System.out.println("close to target: " + distance);
-        }
         boolean arrived = distance < DISTANCE_TO_TARGET_THRESHOLD;
         return arrived;
     }

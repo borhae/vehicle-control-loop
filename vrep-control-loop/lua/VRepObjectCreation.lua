@@ -6,9 +6,17 @@ deleteCreated = function(inInts, inFloats, inStrings, inBuffer)
 	while(next(createdObjects)) do
 	  local handleToRemove = table.remove(createdObjects)
 	  sim.addStatusbarMessage("about to delete object with handle:"..handleToRemove)
+	  
+	  local savedState = simGetInt32Parameter(sim_intparam_error_report_mode)
+      simSetInt32Parameter(sim_intparam_error_report_mode, 0)
 	  local name = sim.getObjectName(handleToRemove)
-	  sim.addStatusbarMessage("with name: "..name)
-		sim.removeObject(handleToRemove)
+	  if name ~= nil then
+		sim.addStatusbarMessage("with name: "..name)
+	    sim.removeObject(handleToRemove)
+	  else
+		sim.addStatusbarMessage("Handle does not exist any more "..handleToRemove)
+      end      
+      simSetInt32Parameter(sim_intparam_error_report_mode, savedState)
 	end
 	return {}, {}, {}, "" 
 end

@@ -1,9 +1,12 @@
 package de.joachim.haensel.statemachine;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class FiniteStateMachineTemplate
 {
@@ -92,23 +95,31 @@ public class FiniteStateMachineTemplate
         else
         {
             Set<Guard> guards = guardedActionTargetStatePair.keySet();
-            boolean hasAlreadyTriggered = false;
+            //TODO maybe remove this and make it a flag again
+            List<Guard> triggerableGuards = new ArrayList<Guard>();
+            ActionTargetStatePair<T> activeActionTargetStatePair = null;
             for (Guard curGuard : guards)
             {
                 if(curGuard.isTrue())
                 {
-                    if(!hasAlreadyTriggered)
+                    if(triggerableGuards.isEmpty())
                     {
-                        ActionTargetStatePair<T> actionTargetStatePair = guardedActionTargetStatePair.get(curGuard);
-                        actionTargetStatePair.runAction(parameter);
-                        _currentState = actionTargetStatePair.getState();
-                        hasAlreadyTriggered = true;
+                        activeActionTargetStatePair = guardedActionTargetStatePair.get(curGuard);
                     }
-                    else
-                    {
-                        System.out.println("Warning: there was a second guard that could have triggered. This machine is not deterministic!");
-                    }
+                    triggerableGuards.add(curGuard);
                 }
+            }
+            if(triggerableGuards.size() == 1)
+            {
+                activeActionTargetStatePair.runAction(parameter);
+                _currentState = activeActionTargetStatePair.getState();
+            } 
+            else if(triggerableGuards.size() > 1)
+            {
+                System.out.println("there might be non-determinism here (either in the statemachine instantiation or the statemachine template). Listing debuggable guards:");
+                List<DebuggableGuard> debuggableGuards = triggerableGuards.stream().filter(guard -> guard instanceof DebuggableGuard).map(guard -> (DebuggableGuard)guard).collect(Collectors.toList());
+                System.out.println(debuggableGuards.stream().map(guard -> guard.guardAsString()).collect(Collectors.joining(", ", "guards: ", "")));
+                System.out.println("took first guard");
             }
         }
     }

@@ -20,6 +20,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.EquivalenClassEntry;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ICountListElem;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ObservationTuple;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.RecordedTrajectoryElement;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 

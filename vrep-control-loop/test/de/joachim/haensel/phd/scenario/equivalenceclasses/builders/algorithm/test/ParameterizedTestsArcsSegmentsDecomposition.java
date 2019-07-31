@@ -18,8 +18,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsSegmentContainerElement;
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.ArcSegmentDecompositionAlgorithmByNgoEtAl;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
@@ -27,6 +25,8 @@ import de.joachim.haensel.phd.scenario.math.geometry.TangentSegment;
 import de.joachim.haensel.phd.scenario.math.geometry.TangentSpaceTransformer;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.navigation.test.Positioner;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.segmenting.IArcsSegmentContainerElement;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.segmenting.algorithm.ArcSegmentDecompositionAlgorithmByNgoEtAl;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
@@ -116,7 +116,6 @@ public class ParameterizedTestsArcsSegmentsDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         
@@ -129,7 +128,6 @@ public class ParameterizedTestsArcsSegmentsDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         
@@ -143,7 +141,6 @@ public class ParameterizedTestsArcsSegmentsDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         return segments;

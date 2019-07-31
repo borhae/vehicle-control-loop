@@ -22,7 +22,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.simulator.ISimulatorData;
 import de.joachim.haensel.phd.scenario.simulator.RoadMapTracker;
-import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorData;
+import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorAndVehicleData;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleHandles;
 import de.joachim.haensel.phd.scenario.vrepdebugging.DrawingObject;
@@ -58,7 +58,7 @@ public class VRepVehicleActuatorsSensors implements IActuatingSensing, IVrepDraw
         _drawingObjectsStore = new HashMap<String, DrawingObject>();
         _vechicleVelocity = new double[3];
 
-        VRepSimulatorData vrepData = (VRepSimulatorData)simulatorData;
+        VRepSimulatorAndVehicleData vrepData = (VRepSimulatorAndVehicleData)simulatorData;
         _vehicleScriptParentName = vrepData.getVehicleScriptParentName();
         _vrep = vrepData.getVRepRemoteAPI();
         _clientID = vrepData.getClientID();

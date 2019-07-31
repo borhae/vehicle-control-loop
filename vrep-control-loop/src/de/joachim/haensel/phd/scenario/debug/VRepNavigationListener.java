@@ -61,6 +61,11 @@ public class VRepNavigationListener implements INavigationListener
         this(objectCreator);
         _idCreator = idCreator;
     }
+    
+    public void setIdCreator(IIDCreator idCreator)
+    {
+        _idCreator = idCreator;
+    }
 
     @Override
     public void notifySegmentsChanged(List<TrajectoryElement> segments, Position2D startPos, Position2D endPos)

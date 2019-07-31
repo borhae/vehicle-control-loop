@@ -20,8 +20,6 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.IArcsSegmentContainerElement;
-import de.joachim.haensel.phd.scenario.equivalenceclasses.builders.algorithm.ArcSegmentDecompositionAlgorithmByNgoEtAl;
 import de.joachim.haensel.phd.scenario.layerinterface.RandomMapPositionCreator;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
@@ -36,6 +34,8 @@ import de.joachim.haensel.phd.scenario.navigation.visualization.ArcSegmentConten
 import de.joachim.haensel.phd.scenario.navigation.visualization.IContentElement;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
 import de.joachim.haensel.phd.scenario.navigation.visualization.VectorContentElement;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.segmenting.IArcsSegmentContainerElement;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.segmenting.algorithm.ArcSegmentDecompositionAlgorithmByNgoEtAl;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
@@ -55,7 +55,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
@@ -66,7 +65,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         System.out.println("finshed");
@@ -84,7 +82,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
@@ -96,7 +93,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         System.out.println("finshed");
@@ -114,7 +110,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         List<TangentSegment> tangentSpace = TangentSpaceTransformer.transform(dataPoints);
@@ -125,7 +120,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         System.out.println("finshed");
@@ -143,7 +137,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         ArcSegmentDecompositionAlgorithmByNgoEtAl segmenter = new ArcSegmentDecompositionAlgorithmByNgoEtAl();
@@ -172,7 +165,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         try
@@ -181,7 +173,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
 
@@ -201,7 +192,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         ArcSegmentDecompositionAlgorithmByNgoEtAl segmenter = new ArcSegmentDecompositionAlgorithmByNgoEtAl();
@@ -237,7 +227,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         System.out.println("finshed");
@@ -394,7 +383,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         System.out.println("finshed writing route");
@@ -409,7 +397,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         System.out.println("finshed writing segmentation");
@@ -452,7 +439,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         System.out.println("finshed writing route");
@@ -467,7 +453,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         System.out.println("finshed writing segmentation");
@@ -510,7 +495,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         System.out.println("finshed writing route");
@@ -525,7 +509,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         System.out.println("finshed writing segmentation");
@@ -571,7 +554,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         System.out.println("finshed writing route");
@@ -585,7 +567,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         System.out.println("finshed writing segmentation");
@@ -600,7 +581,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         System.out.println("finshed writing segmentation");
@@ -700,7 +680,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         
@@ -713,7 +692,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         
@@ -727,7 +705,6 @@ public class TestArcsSegmentDecomposition
         }
         catch (IOException exc)
         {
-            // TODO Auto-generated catch block
             exc.printStackTrace();
         }
         return segments;

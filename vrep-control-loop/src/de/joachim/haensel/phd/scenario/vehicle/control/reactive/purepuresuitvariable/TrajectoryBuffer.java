@@ -43,8 +43,8 @@ public class TrajectoryBuffer extends FiniteStateMachineTemplate
         createTransition(RouteBufferStates.INIT, RouteBufferMsg.ENSURE_SIZE, TRUE_GUARD, RouteBufferStates.ROUTE_ACTIVE, ensureSizeAndReportAction);
         createTransition(RouteBufferStates.ROUTE_ACTIVE, RouteBufferMsg.ENSURE_SIZE, enoughElements, RouteBufferStates.ROUTE_ACTIVE, ensureSizeAndReportAction);
         
-        createTransition(RouteBufferStates.ROUTE_ACTIVE, RouteBufferMsg.ENSURE_SIZE, notEnoughElements, RouteBufferStates.ROUTE_ENDING, ensureSizeAndReportAction);
-        createTransition(RouteBufferStates.ROUTE_ENDING, RouteBufferMsg.ENSURE_SIZE, notEnoughElements, RouteBufferStates.ROUTE_ENDING, NO_OP_ACTION);
+        createTransition(RouteBufferStates.ROUTE_ACTIVE, RouteBufferMsg.ENSURE_SIZE, notEnoughElements, RouteBufferStates.ROUTE_ENDING, ensureSizeAndReportAction); 
+        createTransition(RouteBufferStates.ROUTE_ENDING, RouteBufferMsg.ENSURE_SIZE, notEnoughElements, RouteBufferStates.ROUTE_ENDING, val -> {}); 
 
         createTransition(RouteBufferStates.ROUTE_ENDING, RouteBufferMsg.ENSURE_SIZE, enoughElements, RouteBufferStates.ROUTE_ACTIVE, ensureSizeAndReportAction);
         

@@ -26,7 +26,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Line2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
-import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorData;
+import de.joachim.haensel.phd.scenario.simulator.vrep.VRepSimulatorAndVehicleData;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
@@ -540,7 +540,7 @@ public class LayerInteractionTest implements TestConstants
     {
         Vector2D carOrientation = vehicle.getOrientation();
         DefaultNavigationController fakeNav = new DefaultNavigationController(2.0 *  scaleFactor, 30.0);
-        VRepSimulatorData simData = new VRepSimulatorData(null, _vrep, _clientID, null);
+        VRepSimulatorAndVehicleData simData = new VRepSimulatorAndVehicleData(null, _vrep, _clientID, null);
         fakeNav.initController(new VRepVehicleActuatorsSensors(vehicle.getVehicleHandles(), simData, roadMap), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
 
