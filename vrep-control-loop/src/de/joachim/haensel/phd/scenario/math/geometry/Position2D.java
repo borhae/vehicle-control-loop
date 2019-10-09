@@ -106,18 +106,13 @@ public class Position2D
         _y = y;
     }
     
-    public void setXY(float[] xy)
-    {
-        init(xy[0], xy[1]);
-    }
-    
     public void setXY(double x, double y)
     {
         init(x, y);
     }
     
 
-    public void setXY(Position2D newValue)
+    public void makeACopy(Position2D newValue)
     {
         setXY(newValue._x, newValue._y);
     }

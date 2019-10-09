@@ -475,7 +475,7 @@ public class RoadMap
                 intermediateResult = curClosestPoint;
             }
         }
-        result.setXY(intermediateResult);
+        result.makeACopy(intermediateResult);
         return result;
     }
 
@@ -539,7 +539,7 @@ public class RoadMap
                 tmpResultLine = curLine;
             }
         }
-        resultIntersection.setXY(tmpResultIntersection);
+        resultIntersection.makeACopy(tmpResultIntersection);
         resultLine.setLine(tmpResultLine);
         return minDist;
     }

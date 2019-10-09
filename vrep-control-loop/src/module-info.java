@@ -17,6 +17,11 @@ module vrepvehicle
     opens de.joachim.haensel.phd.scenario.math.geometry to com.fasterxml.jackson.databind;
     opens de.joachim.haensel.phd.scenario.vehicle.experiment to com.fasterxml.jackson.databind;
     opens de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff;
+
+    exports de.joachim.haensel.phd.scenario.vehicle.navigation to org.mongodb.bson;
+    exports de.joachim.haensel.phd.scenario.math.geometry to org.mongodb.bson;
+    exports de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb  to org.mongodb.bson;
+
     
     requires transitive coppelialib;
     requires java.xml;
@@ -28,5 +33,8 @@ module vrepvehicle
 	requires com.fasterxml.jackson.core;
 	requires com.fasterxml.jackson.annotation;
 	requires com.fasterxml.jackson.databind;
-	requires java.lsh;
+	
+	requires org.mongodb.driver.sync.client;
+	requires org.mongodb.driver.core;
+	requires org.mongodb.bson;
 }

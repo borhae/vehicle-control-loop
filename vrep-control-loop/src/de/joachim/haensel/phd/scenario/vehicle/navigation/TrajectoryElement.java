@@ -21,7 +21,7 @@ public class TrajectoryElement implements Comparable<TrajectoryElement>
     private double _radius;
     private double _kappa;
     private int _index;
-    private String _type; // for compatibilty reasons
+    private String _type; // for compatibilty reasons when reading json
 
     public TrajectoryElement()
     {
