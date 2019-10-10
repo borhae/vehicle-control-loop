@@ -39,37 +39,42 @@ public class ImportData
             return;
         }
         File experimentResultFile = new File(args[0]);
-        String id = args[1];
-        String simulationRunTable = "simulationrun" + id;
+        String experimentID = args[1];
+        String experimentTableName = "simulationrun" + experimentID;
         
         CodecRegistry pojoCodecRegistry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build()));
         MongoClientSettings settings = MongoClientSettings.builder().codecRegistry(pojoCodecRegistry).build();
         MongoClient mongoClient = MongoClients.create(settings);
         ObjectMapper mapper = new ObjectMapper();
-        
+        ImportData importer = new ImportData();
 
-        
+        importer.importFileIntoDatabase(experimentResultFile, experimentID, experimentTableName, mongoClient, mapper);
+
+        mongoClient.close();
+    }
+
+    public void importFileIntoDatabase(File experimentResultFile, String experimentID, String experimentTableName, MongoClient mongoClient, ObjectMapper jsonMapper)
+    {
         MongoDatabase database = mongoClient.getDatabase("car");
         try
         {
-            database.createCollection(simulationRunTable);
+            database.createCollection(experimentTableName);
         } 
         catch (MongoCommandException exc)
         {
-            System.out.println(simulationRunTable + " collection (table) already created");
+            System.out.println(experimentTableName + " collection (table) already created");
         }
-        MongoCollection<Document> collection = database.getCollection(simulationRunTable);
+        MongoCollection<Document> collection = database.getCollection(experimentTableName);
         try
         {
-            Map<Long, List<TrajectoryElement>> configurations = mapper.readValue(experimentResultFile, new TypeReference<Map<Long, List<TrajectoryElement>>>() {});
+            Map<Long, List<TrajectoryElement>> configurations = jsonMapper.readValue(experimentResultFile, new TypeReference<Map<Long, List<TrajectoryElement>>>() {});
             Map<Long, List<MongoTrajectory>> mongoConfigurations = MongoTrajectoryTransform.transform(configurations);
-            List<Document> docs = mongoConfigurations.entrySet().stream().map(curEntry -> new Document().append("simID", id).append("timestamp", curEntry.getKey()).append("trajectory", curEntry.getValue())).collect(Collectors.toList());
+            List<Document> docs = mongoConfigurations.entrySet().parallelStream().map(curEntry -> new Document().append("simID", experimentID).append("timestamp", curEntry.getKey()).append("trajectory", curEntry.getValue())).collect(Collectors.toList());
             collection.insertMany(docs);
         } 
         catch (IOException exc)
         {
             exc.printStackTrace();
         }
-        mongoClient.close();
     }
 }
