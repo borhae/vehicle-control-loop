@@ -115,7 +115,7 @@ public class ValidatedRoadPositionGenerator
 
     private boolean potentiallySaveToFile(Scanner scanner)
     {
-        System.out.println("n and <enter> to leave or a filename and <enter> to save the pointlist");
+        System.out.println("n and <enter> to leave, d and <enter> for default name and location, or a filename and <enter> to save the pointlist");
         String fileNameOrOut = scanner.next();
         _resultPath = "";
         if(fileNameOrOut.equalsIgnoreCase("n"))
@@ -124,8 +124,13 @@ public class ValidatedRoadPositionGenerator
         }
         else
         {
-            System.out.println("saving to: " + fileNameOrOut);
+            if(fileNameOrOut.equalsIgnoreCase("d"))
+            {
+                String city = getCityName();
+                fileNameOrOut = city.substring(0, 1).toUpperCase() + city.substring(1) + "points_generatedSeed" + getSeed() + ".txt";
+            }
             List<String> pointsAsStrings = _generatedPointsOnMap.stream().map(curPos -> curPos.toFormattedString("%8.2f, %8.2f")).collect(Collectors.toList());
+            System.out.println("saving to: " + fileNameOrOut);
             try
             {
                 Path targetPath = Paths.get(Paths.get("").toAbsolutePath().toString(), RES_ROADNETWORKS_DIRECTORY, fileNameOrOut);
