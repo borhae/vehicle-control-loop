@@ -6,7 +6,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement.Velo
 
 public class MongoTrajectory implements IDatabaseTrajectory
 {
-    private MongoVector2D _Vector2D;
+    private MongoVector2D _vector2D;
     private double _velocity;
     private VelocityEdgeType _riseFall;
     private double _radius;
@@ -19,13 +19,12 @@ public class MongoTrajectory implements IDatabaseTrajectory
     
     public MongoTrajectory(TrajectoryElement trajElem)
     {
-        _Vector2D = new MongoVector2D(trajElem.getVector());
+        _vector2D = new MongoVector2D(trajElem.getVector());
         _velocity = trajElem.getVelocity();
         _riseFall = trajElem.getRiseFall();
         _radius = trajElem.getRadius();
         _kappa = trajElem.getKappa();
         _idx = trajElem.getIdx();
-        
     }
 
     public int getIdx()
@@ -40,12 +39,12 @@ public class MongoTrajectory implements IDatabaseTrajectory
 
     public MongoVector2D getVector2D()
     {
-        return _Vector2D;
+        return _vector2D;
     }
 
     public void setVector2D(MongoVector2D mongoVector2D)
     {
-        _Vector2D = mongoVector2D;
+        _vector2D = mongoVector2D;
     }
 
     public double getVelocity()

@@ -22,12 +22,13 @@ public class BatchImportData
     {
         if(args.length != 1)
         {
-            System.out.println("need 1 config file containing lines like the following (path id)");
-            System.out.println("C:\\dir\\experimentfile.json id");
+            System.out.println("need 1 config file containing lines like the following (id pathconfig pathobservation)");
+            System.out.println("id C:\\dir\\configfile.json C:\\dir\\observationfile.json");
             return;
         }
         List<String> batchContent = Files.readAllLines(new File(args[0]).toPath());
-        Map<String, String> idToPath = batchContent.stream().map(line -> line.split(" ")).collect(Collectors.toMap(splitLine -> splitLine[1], splitLine -> splitLine[0]));
+        Map<String, ExperimentFiles> idToPath = 
+                batchContent.stream().map(line -> line.split(" ")).collect(Collectors.toMap(splitLine -> splitLine[0], splitLine -> new ExperimentFiles(splitLine[1], splitLine[2])));
         
         CodecRegistry pojoCodecRegistry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build()));
         MongoClientSettings settings = MongoClientSettings.builder().codecRegistry(pojoCodecRegistry).build();
@@ -35,7 +36,7 @@ public class BatchImportData
         ObjectMapper mapper = new ObjectMapper();
         ImportData importer = new ImportData();
 
-        idToPath.entrySet().stream().forEach(entry -> importer.importFileIntoDatabase(new File(entry.getValue()), entry.getKey(), "sim_" + entry.getKey(), mongoClient, mapper));
+        idToPath.entrySet().stream().forEach(entry -> importer.importFileIntoDatabase(entry.getValue(), entry.getKey(), "sim_" + entry.getKey(), mongoClient, mapper));
 
         mongoClient.close();
     }
