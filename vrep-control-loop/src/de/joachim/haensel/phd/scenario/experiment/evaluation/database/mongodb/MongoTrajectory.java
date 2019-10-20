@@ -1,5 +1,7 @@
 package de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb;
 
+import org.bson.Document;
+
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.IDatabaseTrajectory;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement.VelocityEdgeType;
@@ -27,6 +29,31 @@ public class MongoTrajectory implements IDatabaseTrajectory
         _idx = trajElem.getIdx();
     }
 
+    public MongoTrajectory(Document doc)
+    {
+        _vector2D = doc.get("vector2D", MongoVector2D.class);
+        Double velocity = doc.getDouble("velocity");
+        _velocity = velocity == null ? 0.0d : velocity.doubleValue();
+        _riseFall = VelocityEdgeType.valueOf(doc.getString("riseFall"));
+        Double radius = doc.getDouble("radius");
+        _radius = radius == null ? 0.0d : radius.doubleValue();
+        Double kappa = doc.getDouble("kappa");
+        _kappa = kappa == null ? 0.0d : kappa.doubleValue();
+        _idx = doc.getInteger("idx", 0);
+    }
+
+    public TrajectoryElement decode()
+    {
+        TrajectoryElement result = new TrajectoryElement();
+        result.setVector(_vector2D.decode());
+        result.setVelocity(_velocity);
+        result.setRiseFall(_riseFall);
+        result.setRadius(_radius);
+        result.setKappa(_kappa);
+        result.setIdx(_idx);
+        return result;
+    }
+    
     public int getIdx()
     {
         return _idx;

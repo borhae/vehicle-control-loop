@@ -2,6 +2,7 @@ package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.angle
 
 import java.util.List;
 
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.ObservationTuple;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.nodetypes.AngleNode;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.nodetypes.DisplacementNode;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.nodetypes.LeafNode;

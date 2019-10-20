@@ -7,8 +7,6 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.bson.Document;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoCommandException;
@@ -16,10 +14,11 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
+import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoObservationConfiguration;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoObservationTuple;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoTrajectory;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoTransform;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ObservationTuple;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.ObservationTuple;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 /** This class expects a running mongodb installation
@@ -40,7 +39,7 @@ public class ImportData
         {
             System.out.println(experimentTableName + " collection (table) already created");
         }
-        MongoCollection<Document> collection = database.getCollection(experimentTableName);
+        MongoCollection<MongoObservationConfiguration> collection = database.getCollection(experimentTableName, MongoObservationConfiguration.class);
         try
         {
             Map<Long, List<TrajectoryElement>> configurations = jsonMapper.readValue(experimentFileNames.getConfigurationsFile(), new TypeReference<Map<Long, List<TrajectoryElement>>>() {});
@@ -48,7 +47,7 @@ public class ImportData
             
             Map<Long, List<MongoTrajectory>> mongoConfigurations = MongoTransform.transformConfigurations(configurations);
             Map<Long, MongoObservationTuple> mongoObservations = MongoTransform.transformObservations(observations);
-            List<Document> docs = createMongoDocs(experimentID, mongoConfigurations, mongoObservations);
+            List<MongoObservationConfiguration> docs = createMongoDocs(experimentID, mongoConfigurations, mongoObservations);
             collection.insertMany(docs);
         } 
         catch (IOException exc)
@@ -57,29 +56,17 @@ public class ImportData
         }
     }
 
-    private List<Document> createMongoDocs(String experimentID, Map<Long, List<MongoTrajectory>> mongoConfigurations, Map<Long, MongoObservationTuple> mongoObservations)
+    private List<MongoObservationConfiguration> createMongoDocs(String experimentID, Map<Long, List<MongoTrajectory>> mongoConfigurations, Map<Long, MongoObservationTuple> mongoObservations)
     {
         Stream<Entry<Long, List<MongoTrajectory>>> configsStream = mongoConfigurations.entrySet().parallelStream();
-        List<Document> docs = configsStream.map(curEntry -> createMongoDocument(experimentID, curEntry, mongoObservations)).collect(Collectors.toList());
+        List<MongoObservationConfiguration> docs = configsStream.map(curEntry -> createMongoDocument(experimentID, curEntry, mongoObservations)).collect(Collectors.toList());
         return docs;
     }
 
-    private Document createMongoDocument(String experimentID, Entry<Long, List<MongoTrajectory>> entry, Map<Long, MongoObservationTuple> observations)
+    private MongoObservationConfiguration createMongoDocument(String experimentID, Entry<Long, List<MongoTrajectory>> entry, Map<Long, MongoObservationTuple> observations)
     {
         Long timeStamp = entry.getKey();
-        Document result = new Document();
-        result.append("simID", experimentID);
-        result.append("timestamp", timeStamp);
-        result.append("trajectory", entry.getValue());
-        MongoObservationTuple observationForTimeStamp = observations.get(timeStamp);
-        if(observationForTimeStamp != null)
-        {
-            result.append("observations", observationForTimeStamp);
-        }
-        else
-        {
-            result.append("observations", "could not find an observation for this timestamp");
-        }
+        MongoObservationConfiguration result = new MongoObservationConfiguration(experimentID, entry.getValue(), observations.get(timeStamp), timeStamp);
         return result;
     }
 }

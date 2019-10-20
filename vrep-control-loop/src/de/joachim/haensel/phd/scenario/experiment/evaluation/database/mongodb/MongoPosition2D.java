@@ -36,4 +36,9 @@ public class MongoPosition2D
     {
         _y = y;
     }
+
+    public Position2D decode()
+    {
+        return new Position2D(_x, _y);
+    }
 }

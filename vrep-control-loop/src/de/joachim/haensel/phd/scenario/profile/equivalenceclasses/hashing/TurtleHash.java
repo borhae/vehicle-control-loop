@@ -37,6 +37,33 @@ public class TurtleHash
         _offsetX = _gridWidth / 2;
         _offsetY = _gridHeight / 2;
     }
+    
+    public String hash(List<TrajectoryElement> trajectory)
+    {
+        if(trajectory.size() != _numOfElems)
+        {
+            return String.format("length was %d should be %d", trajectory.size(), _numOfElems);
+        }
+        List<int[]> pixels = pixelate(trajectory);
+        List<Integer> steps = createSteps3D(pixels);
+        for(int idx = 0; idx < pixels.size() - 1; idx++)
+        {
+            int[] cur = pixels.get(idx);
+            int[] nxt = pixels.get(idx + 1);
+            boolean differentPoints = !TurtleHash.same3D(cur, nxt);
+            boolean connectedPoints = TurtleHash.connected3D(cur, nxt);
+            if(!differentPoints || !connectedPoints)
+            {
+                return String.format("consecutive points connected? %b not the same?", connectedPoints, differentPoints);
+            }
+        }
+        String hash = steps.stream().map(d -> TurtleHash.toBase26(d)).collect(Collectors.joining());
+        if(hash.equals(""))
+        {
+            return "to base26 results in empty string";
+        }
+        return hash;
+    }
 
     public List<int[]> pixelate(List<TrajectoryElement> trajectory)
     {

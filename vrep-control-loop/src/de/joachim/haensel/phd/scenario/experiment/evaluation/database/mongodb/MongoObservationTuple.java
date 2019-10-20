@@ -4,7 +4,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ObservationTuple;
+import org.bson.Document;
+
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.ObservationTuple;
 
 public class MongoObservationTuple
 {
@@ -12,6 +14,7 @@ public class MongoObservationTuple
     private MongoPosition2D _frontWheelCP;
     private MongoPosition2D _rearWheelCP;
     private List<Double> _velocity;
+    private long _timeStamp;
 
     public MongoObservationTuple()
     {
@@ -23,6 +26,7 @@ public class MongoObservationTuple
         _frontWheelCP = new MongoPosition2D(value.getFrontWheelCP());
         _rearWheelCP = new MongoPosition2D(value.getRearWheelCP());
         _velocity = Arrays.stream(value.getVelocity()).boxed().collect(Collectors.toList());
+        _timeStamp = value.getTimeStamp();
     }
 
     public MongoVector2D getOrientation()
@@ -63,5 +67,15 @@ public class MongoObservationTuple
     public void setVelocity(List<Double> velocity)
     {
         _velocity = velocity;
+    }
+
+    public ObservationTuple decode()
+    {
+        return new ObservationTuple(_rearWheelCP.decode(), _frontWheelCP.decode(), toArray(_velocity), _timeStamp);
+    }
+
+    private double[] toArray(List<Double> list)
+    {
+        return list.stream().mapToDouble(d -> d).toArray();
     }
 }
