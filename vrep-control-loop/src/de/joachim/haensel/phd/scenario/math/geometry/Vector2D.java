@@ -924,4 +924,19 @@ public class Vector2D
         updateNormVector();
         return this;
     }
+
+    public Vector2D sumVector(Vector2D other)
+    {
+        return new Vector2D(_bX + other._bX, _bY + other._bY, _dX + other._dX, _dY + other._dY);
+    }
+    
+    public void sumIntoThis(Vector2D other)
+    {
+        _bX = _bX + other._bX;
+        _bY = _bY + other._bY;
+        _dX = _dX + other._dX;
+        _dY = _dY + other._dY;
+        updateLength();
+        updateNormVector();
+    }
 }

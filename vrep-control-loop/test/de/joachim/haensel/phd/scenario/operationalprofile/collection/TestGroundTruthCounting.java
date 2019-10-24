@@ -15,8 +15,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ObservationConfiguration;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff.ObservationTuple;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.ObservationTuple;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.ObservationConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class TestGroundTruthCounting

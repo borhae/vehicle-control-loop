@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff;
+package de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.ObservationTuple;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class ObservationConfiguration implements Comparable<ObservationConfiguration>
@@ -73,5 +74,10 @@ public class ObservationConfiguration implements Comparable<ObservationConfigura
     public ObservationTuple getObservation()
     {
         return _observation;
+    }
+
+    public Long getTimeStamp()
+    {
+        return _timestamp;
     }
 }

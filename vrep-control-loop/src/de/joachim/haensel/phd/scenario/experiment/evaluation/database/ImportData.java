@@ -1,27 +1,24 @@
 package de.joachim.haensel.phd.scenario.experiment.evaluation.database;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
-
-import org.bson.Document;
-import org.bson.codecs.configuration.CodecRegistries;
-import org.bson.codecs.configuration.CodecRegistry;
-import org.bson.codecs.pojo.PojoCodecProvider;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCommandException;
 import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
+import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoObservationConfiguration;
+import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoObservationTuple;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoTrajectory;
-import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoTrajectoryTransform;
+import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoTransform;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.ObservationTuple;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 /** This class expects a running mongodb installation
@@ -31,29 +28,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
  */
 public class ImportData
 {
-    public static void main(String[] args)
-    {
-        if(args.length != 2)
-        {
-            System.out.println("usage: java-prefix .. ImportData [file-to-import] [data-set-identifier]");
-            return;
-        }
-        File experimentResultFile = new File(args[0]);
-        String experimentID = args[1];
-        String experimentTableName = "simulationrun" + experimentID;
-        
-        CodecRegistry pojoCodecRegistry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build()));
-        MongoClientSettings settings = MongoClientSettings.builder().codecRegistry(pojoCodecRegistry).build();
-        MongoClient mongoClient = MongoClients.create(settings);
-        ObjectMapper mapper = new ObjectMapper();
-        ImportData importer = new ImportData();
-
-        importer.importFileIntoDatabase(experimentResultFile, experimentID, experimentTableName, mongoClient, mapper);
-
-        mongoClient.close();
-    }
-
-    public void importFileIntoDatabase(File experimentResultFile, String experimentID, String experimentTableName, MongoClient mongoClient, ObjectMapper jsonMapper)
+    public void importFileIntoDatabase(ExperimentFiles experimentFileNames, String experimentID, String experimentTableName, MongoClient mongoClient, ObjectMapper jsonMapper)
     {
         MongoDatabase database = mongoClient.getDatabase("car");
         try
@@ -64,17 +39,34 @@ public class ImportData
         {
             System.out.println(experimentTableName + " collection (table) already created");
         }
-        MongoCollection<Document> collection = database.getCollection(experimentTableName);
+        MongoCollection<MongoObservationConfiguration> collection = database.getCollection(experimentTableName, MongoObservationConfiguration.class);
         try
         {
-            Map<Long, List<TrajectoryElement>> configurations = jsonMapper.readValue(experimentResultFile, new TypeReference<Map<Long, List<TrajectoryElement>>>() {});
-            Map<Long, List<MongoTrajectory>> mongoConfigurations = MongoTrajectoryTransform.transform(configurations);
-            List<Document> docs = mongoConfigurations.entrySet().parallelStream().map(curEntry -> new Document().append("simID", experimentID).append("timestamp", curEntry.getKey()).append("trajectory", curEntry.getValue())).collect(Collectors.toList());
+            Map<Long, List<TrajectoryElement>> configurations = jsonMapper.readValue(experimentFileNames.getConfigurationsFile(), new TypeReference<Map<Long, List<TrajectoryElement>>>() {});
+            Map<Long, ObservationTuple> observations = jsonMapper.readValue(experimentFileNames.getObservationsFile(), new TypeReference<Map<Long, ObservationTuple>>(){});
+            
+            Map<Long, List<MongoTrajectory>> mongoConfigurations = MongoTransform.transformConfigurations(configurations);
+            Map<Long, MongoObservationTuple> mongoObservations = MongoTransform.transformObservations(observations);
+            List<MongoObservationConfiguration> docs = createMongoDocs(experimentID, mongoConfigurations, mongoObservations);
             collection.insertMany(docs);
         } 
         catch (IOException exc)
         {
             exc.printStackTrace();
         }
+    }
+
+    private List<MongoObservationConfiguration> createMongoDocs(String experimentID, Map<Long, List<MongoTrajectory>> mongoConfigurations, Map<Long, MongoObservationTuple> mongoObservations)
+    {
+        Stream<Entry<Long, List<MongoTrajectory>>> configsStream = mongoConfigurations.entrySet().parallelStream();
+        List<MongoObservationConfiguration> docs = configsStream.map(curEntry -> createMongoDocument(experimentID, curEntry, mongoObservations)).collect(Collectors.toList());
+        return docs;
+    }
+
+    private MongoObservationConfiguration createMongoDocument(String experimentID, Entry<Long, List<MongoTrajectory>> entry, Map<Long, MongoObservationTuple> observations)
+    {
+        Long timeStamp = entry.getKey();
+        MongoObservationConfiguration result = new MongoObservationConfiguration(experimentID, entry.getValue(), observations.get(timeStamp), timeStamp);
+        return result;
     }
 }

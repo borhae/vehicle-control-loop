@@ -109,7 +109,7 @@ public class EventLoopStateMachine extends FiniteStateMachineTemplate
         Vector2D vector = curLookaheadElement.getVector();
         double baseDist = Position2D.distance(vector.getBase(), curPos);
         double tipDist = Position2D.distance(vector.getTip(), curPos);
-        double allowedDeviation = 15.0;
+        double allowedDeviation = 50.0;
         boolean inRange = tipDist + allowedDeviation > lookahead && baseDist - allowedDeviation <= lookahead;
         if(!inRange)
         {

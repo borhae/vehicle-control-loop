@@ -27,6 +27,11 @@ public class MongoVector2D
         _normY = vector.getNormY();
     }
 
+    public Vector2D decode()
+    {
+        return new Vector2D(_bX, _bY, _dX, _dY);
+    }
+
     public double getBX()
     {
         return _bX;
