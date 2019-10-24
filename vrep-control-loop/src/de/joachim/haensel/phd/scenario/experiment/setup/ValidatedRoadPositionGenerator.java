@@ -224,7 +224,7 @@ public class ValidatedRoadPositionGenerator
 
     private List<Position2D> generateUnvalidatedPositions()
     {
-        _numberOfPoints = 200;
+        _numberOfPoints = 400;
         MersenneTwister randomGen = new MersenneTwister(_seed);
         List<Position2D> generatedPointsOnMap = randomPointsByRandomMapElementSelection(_numberOfPoints, _roadMap, randomGen);
         return generatedPointsOnMap;
@@ -353,7 +353,7 @@ public class ValidatedRoadPositionGenerator
         int cnt = 0;
         int tries = 0;
         int maxTries = 100000;
-        double minimumDistanceBetweenPoints = 400.0; //around 400 meters between any two points
+        double minimumDistanceBetweenPoints = 300.0; //around 300 meters between any two points
 
         MersenneTwister distanceRandomGen = new MersenneTwister(50);
         while(cnt < numberOfPoints && tries < maxTries)

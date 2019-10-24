@@ -13,14 +13,16 @@ module vrepvehicle
     exports sumobindings;
 
     opens sumobindings to java.xml.bind;
-    opens de.joachim.haensel.phd.scenario.vehicle.navigation to com.fasterxml.jackson.databind;
     opens de.joachim.haensel.phd.scenario.math.geometry to com.fasterxml.jackson.databind;
+    opens de.joachim.haensel.phd.scenario.vehicle.navigation to com.fasterxml.jackson.databind;
     opens de.joachim.haensel.phd.scenario.vehicle.experiment to com.fasterxml.jackson.databind;
+    opens de.joachim.haensel.phd.scenario.profile.equivalenceclasses to com.fasterxml.jackson.databind;
     opens de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff;
 
     exports de.joachim.haensel.phd.scenario.vehicle.navigation to org.mongodb.bson;
     exports de.joachim.haensel.phd.scenario.math.geometry to org.mongodb.bson;
-    exports de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb  to org.mongodb.bson;
+    exports de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb to org.mongodb.bson;
+    exports de.joachim.haensel.phd.scenario.experiment.evaluation.database to org.mongodb.bson;
 
     
     requires transitive coppelialib;

@@ -17,7 +17,7 @@ from pandas import DataFrame
 def main():
     print("histogram")
     client = pymongo.MongoClient("mongodb://localhost:27017/")
-    angle_collection = client.car.angles
+    angle_collection = client.histograms.test
 
     cursor_chandigarh = angle_collection.find({"city": "Chandigarh"})
     entries_chandigarh = list(cursor_chandigarh)

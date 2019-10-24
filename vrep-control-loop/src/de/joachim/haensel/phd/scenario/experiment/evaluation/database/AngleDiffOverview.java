@@ -1,11 +1,9 @@
 package de.joachim.haensel.phd.scenario.experiment.evaluation.database;
 
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistries;
