@@ -9,6 +9,8 @@ verify_ssl = true
 pymongo = "*"
 matplotlib = "*"
 pandas = "*"
+traits = "*"
+glumpy = "*"
 
 [requires]
 python_version = "3.7"

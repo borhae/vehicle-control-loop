@@ -20,12 +20,12 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoObservationConfiguration;
-import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.TrajectoryNormalizer;
 import de.joachim.haensel.phd.scenario.random.MersenneTwister;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
-public class KMeansClustering
+public class KMeansClustering3D
 {
     public static void main(String[] args)
     {
@@ -47,60 +47,75 @@ public class KMeansClustering
         List<NamedObsConf> luebeckData = aligned.parallelStream().filter(obsCon -> obsCon.getName().equals("Luebeck")).collect(Collectors.toList());
 
         System.out.println("database read, now getting trajectories");
-        Function<NamedObsConf, List<Vector2D>> toTrajectory = entry -> entry.getConfiguration().stream().map(elem -> elem.getVector()).collect(Collectors.toList());
-        List<List<Vector2D>> trajectories = luebeckData.parallelStream().map(toTrajectory).collect(Collectors.toList());
+        Function<NamedObsConf, List<TrajectoryElement>> toTrajectory = entry -> entry.getConfiguration().stream().map(elem -> elem).collect(Collectors.toList());
+        List<List<TrajectoryElement>> trajectories = luebeckData.parallelStream().map(toTrajectory).collect(Collectors.toList());
         Collections.shuffle(trajectories);
    
-        List<List<Vector2D>> smallSample = trajectories.subList(0, 50000);
+//        List<List<TrajectoryElement>> smallSample = trajectories.subList(0, 50000);
 
-        KMeansClustering clusterer = new KMeansClustering();
-        Map<Integer, List<Integer>> result = clusterer.cluster(smallSample, 100, 30);
+        KMeansClustering3D clusterer = new KMeansClustering3D();
+        Map<Integer, List<Integer>> result = clusterer.cluster(trajectories, 100, 30);
         MongoDatabase histogramDatabase = mongoClient.getDatabase("histograms");
-        String targetCollectionName = "test1";
+        String targetCollectionName = "test3d";
         histogramDatabase.createCollection(targetCollectionName);
-        MongoCollection<MongoHistogramEntry> histogramCollection = histogramDatabase.getCollection(targetCollectionName, MongoHistogramEntry.class);
-        List<MongoHistogramEntry> histogram = result.entrySet().stream().map(entry -> new MongoHistogramEntry(entry.getKey(), entry.getValue(), trajectories)).collect(Collectors.toList());
+        MongoCollection<MongoHistogram3DEntry> histogramCollection = histogramDatabase.getCollection(targetCollectionName, MongoHistogram3DEntry.class);
+        List<MongoHistogram3DEntry> histogram = result.entrySet().stream().map(entry -> new MongoHistogram3DEntry(entry.getKey(), entry.getValue(), trajectories)).collect(Collectors.toList());
         histogramCollection.insertMany(histogram);
         
         mongoClient.close();
     }
 
-    private Map<Integer, List<Integer>> cluster(List<List<Vector2D>> trajectories, int numOfClusters, int maxIters)
+    private Map<Integer, List<Integer>> cluster(List<List<TrajectoryElement>> smallSample, int numOfClusters, int maxIters)
     {
-        List<List<Vector2D>> centers0 = createInitialCenters(trajectories, numOfClusters);
+        List<List<TrajectoryElement>> centers0 = createInitialCenters(smallSample, numOfClusters);
         System.out.println("Random centers the sample: " + centers0.size());
-        Map<Integer, List<Integer>> cluster0 = assignToCenters(trajectories, centers0);
+        Map<Integer, List<Integer>> cluster0 = assignToCenters(smallSample, centers0);
         System.out.println("Centers after initial clustering: " + cluster0.keySet().size());
         Map<Integer, List<Integer>> result = new HashMap<Integer, List<Integer>>();
-        List<List<Vector2D>> curCenters = centers0;
+        List<List<TrajectoryElement>> curCenters = centers0;
         for(int cnt = 0; cnt < maxIters; cnt++)
         {
-            curCenters = findNewCenters(cluster0, curCenters, trajectories);
+            curCenters = findNewCenters(cluster0, curCenters, smallSample);
             System.out.format("Centers number %d adjusted. There are %d of them. \n", cnt, curCenters.size());
-            result = assignToCenters(trajectories, curCenters);
+            result = assignToCenters(smallSample, curCenters);
             System.out.format("Number of centers after assignment %d: %d\n", cnt, result.keySet().size());
         }
         return result;
     }
 
-    private List<List<Vector2D>> findNewCenters(Map<Integer, List<Integer>> cluster, List<List<Vector2D>> oldCenters, List<List<Vector2D>> trajectories)
+    private List<List<TrajectoryElement>> findNewCenters(Map<Integer, List<Integer>> cluster, List<List<TrajectoryElement>> curCenters, List<List<TrajectoryElement>> data)
     {
-        List<List<Vector2D>> result = cluster.entrySet().stream().map(entry -> findCenter(entry.getValue(), trajectories)).collect(Collectors.toList());
+        List<List<TrajectoryElement>> result = cluster.entrySet().stream().map(entry -> findCenter(entry.getValue(), data)).collect(Collectors.toList());
         return result;
     }
 
     
-    public List<Vector2D> findCenter(List<Integer> trajectoryIndices, List<List<Vector2D>> trajectories)
+    public List<TrajectoryElement> findCenter(List<Integer> trajectoryIndices, List<List<TrajectoryElement>> smallSample)
     {
-        TrajectoryAverager averager = trajectoryIndices.stream().map(idx -> trajectories.get(idx)).collect(TrajectoryAverager::new, TrajectoryAverager::accept, TrajectoryAverager::combine);
-        List<Vector2D> average = averager.getAverage();
-        return average;
+        List<List<TrajectoryElement>> centerTrajectories = trajectoryIndices.stream().map(idx -> smallSample.get(idx)).collect(Collectors.toList());
+        List<List<double[]>> centerArrays = toDoubleArray(centerTrajectories);
+        TrajectoryAverager3D averager = centerArrays.stream().collect(TrajectoryAverager3D::new, TrajectoryAverager3D::accept, TrajectoryAverager3D::combine);
+        List<double[]> average = averager.getAverage();
+        List<TrajectoryElement> result = average.stream().map(v -> {TrajectoryElement t = new TrajectoryElement(new Vector2D(0.0, 0.0, v[0], v[1])); t.setVelocity(v[2]); return t;}).collect(Collectors.toList());
+        return result;
     }
 
-    private Map<Integer, List<Integer>> assignToCenters(List<List<Vector2D>> trajectories, List<List<Vector2D>> centers)
+    private List<List<double[]>> toDoubleArray(List<List<TrajectoryElement>> centerTrajectories)
     {
-        List<Integer> indices = IntStream.range(0, trajectories.size()).boxed().collect(Collectors.toList());
-        List<Integer[]> centerIndices = indices.stream().map(dataIdx -> new Integer[] {dataIdx, assignToCenterIdx(trajectories.get(dataIdx), centers)}).collect(Collectors.toList());
+        List<List<double[]>> result = new ArrayList<List<double[]>>();
+        for(int idx = 0; idx < centerTrajectories.size(); idx++)
+        {
+            List<TrajectoryElement> curTrajectory = centerTrajectories.get(idx);
+            List<double[]> arrayTrajectory = curTrajectory.stream().map(t -> {Vector2D v = t.getVector(); return new double[] {v.getbX(), v.getbY(), t.getVelocity()};}).collect(Collectors.toList());
+            result.add(arrayTrajectory);
+        }
+        return result;
+    }
+
+    private Map<Integer, List<Integer>> assignToCenters(List<List<TrajectoryElement>> smallSample, List<List<TrajectoryElement>> centers0)
+    {
+        List<Integer> indices = IntStream.range(0, smallSample.size()).boxed().collect(Collectors.toList());
+        List<Integer[]> centerIndices = indices.stream().map(dataIdx -> new Integer[] {dataIdx, assignToCenterIdx(smallSample.get(dataIdx), centers0)}).collect(Collectors.toList());
         Map<Integer, List<Integer>> result = centerIndices.stream().collect(Collectors.toMap(t -> t[1], t -> {List<Integer> r = new ArrayList<Integer>(); r.add(t[0]); return r;}, (l1, l2) -> {l1.addAll(l2); return l1;}));
 //        Stream<Integer[]> rStream = indices.parallelStream().map(dataIdx -> new Integer[] {dataIdx, assignToCenterIdx(trajectories.get(dataIdx), centers)});
 //        
@@ -108,13 +123,13 @@ public class KMeansClustering
         return result;
     }
 
-    private Integer assignToCenterIdx(List<Vector2D> trajectory, List<List<Vector2D>> centers)
+    private Integer assignToCenterIdx(List<TrajectoryElement> list, List<List<TrajectoryElement>> centers0)
     {
         int minIdx = 0;
         double curMin = Double.MAX_VALUE;
-        for(int centersIdx = 0; centersIdx < centers.size(); centersIdx++)
+        for(int centersIdx = 0; centersIdx < centers0.size(); centersIdx++)
         {
-            Double distance = computeDistance(centers.get(centersIdx), trajectory);
+            Double distance = computeDistance(centers0.get(centersIdx), list);
             if(distance < curMin)
             {
                 minIdx = centersIdx;
@@ -124,31 +139,47 @@ public class KMeansClustering
         return minIdx;
     }
 
-    private List<List<Vector2D>> createInitialCenters(List<List<Vector2D>> trajectories, int k)
+    private List<List<TrajectoryElement>> createInitialCenters(List<List<TrajectoryElement>> smallSample, int k)
     {
         MersenneTwister randomGen = new MersenneTwister();
-        List<Integer> randomSelection = IntStream.range(0, trajectories.size()).boxed().collect(Collectors.toList());
+        List<Integer> randomSelection = IntStream.range(0, smallSample.size()).boxed().collect(Collectors.toList());
         Collections.shuffle(randomSelection, randomGen);
         List<Integer> idxs = new ArrayList<Integer>(randomSelection.subList(0, k - 1));
-        List<List<Vector2D>> result = idxs.stream().map(idx -> trajectories.get(idx)).collect(Collectors.toList());
+        List<List<TrajectoryElement>> result = idxs.stream().map(idx -> smallSample.get(idx)).collect(Collectors.toList());
         return result;
     }
 
-    private Double computeDistance(List<Vector2D> a, List<Vector2D> b)
+    private Double computeDistance(List<TrajectoryElement> t1, List<TrajectoryElement> t2)
     {
-        if (a.size() != b.size())
+        if (t1.size() != t2.size())
         {
             System.out.println("error trajecories of different length not comparable. Result set to infinity");
             return Double.POSITIVE_INFINITY;
         }
         double result = 0.0;
-        for (int idx = 0; idx < a.size(); idx++)
+        for (int idx = 0; idx < t1.size(); idx++)
         {
-            Position2D pI = a.get(idx).getTip();
-            Position2D pJ = b.get(idx).getTip();
-            result += pI.distance(pJ);
+            double[] pI3D = new double[] {
+              t1.get(idx).getVector().getTip().getX(),
+              t1.get(idx).getVector().getTip().getY(),
+              t1.get(idx).getVelocity()
+            };
+            double[] pJ3D = new double[] {
+                    t2.get(idx).getVector().getTip().getX(),
+                    t2.get(idx).getVector().getTip().getY(),
+                    t2.get(idx).getVelocity()
+                  };
+            result += distance(pI3D, pJ3D);
         }
         return result;
+    }
+
+    private double distance(double[] p1, double[] p2)
+    {
+        double dx = p2[0] - p1[0];
+        double dy = p2[1] - p1[1];
+        double dz = p2[2] - p1[2];
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
     private static ArrayList<NamedObsConf> decodeMongoCollection(MongoCollection<MongoObservationConfiguration> collection, int limit)
