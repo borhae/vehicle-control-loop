@@ -16,7 +16,7 @@ import com.mongodb.client.MongoDatabase;
 
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoObservationConfiguration;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoObservationTuple;
-import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoTrajectory;
+import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoTrajectoryElement;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoTransform;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.ObservationTuple;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
@@ -45,7 +45,7 @@ public class ImportData
             Map<Long, List<TrajectoryElement>> configurations = jsonMapper.readValue(experimentFileNames.getConfigurationsFile(), new TypeReference<Map<Long, List<TrajectoryElement>>>() {});
             Map<Long, ObservationTuple> observations = jsonMapper.readValue(experimentFileNames.getObservationsFile(), new TypeReference<Map<Long, ObservationTuple>>(){});
             
-            Map<Long, List<MongoTrajectory>> mongoConfigurations = MongoTransform.transformConfigurations(configurations);
+            Map<Long, List<MongoTrajectoryElement>> mongoConfigurations = MongoTransform.transformConfigurations(configurations);
             Map<Long, MongoObservationTuple> mongoObservations = MongoTransform.transformObservations(observations);
             List<MongoObservationConfiguration> docs = createMongoDocs(experimentID, mongoConfigurations, mongoObservations);
             collection.insertMany(docs);
@@ -56,14 +56,14 @@ public class ImportData
         }
     }
 
-    private List<MongoObservationConfiguration> createMongoDocs(String experimentID, Map<Long, List<MongoTrajectory>> mongoConfigurations, Map<Long, MongoObservationTuple> mongoObservations)
+    private List<MongoObservationConfiguration> createMongoDocs(String experimentID, Map<Long, List<MongoTrajectoryElement>> mongoConfigurations, Map<Long, MongoObservationTuple> mongoObservations)
     {
-        Stream<Entry<Long, List<MongoTrajectory>>> configsStream = mongoConfigurations.entrySet().parallelStream();
+        Stream<Entry<Long, List<MongoTrajectoryElement>>> configsStream = mongoConfigurations.entrySet().parallelStream();
         List<MongoObservationConfiguration> docs = configsStream.map(curEntry -> createMongoDocument(experimentID, curEntry, mongoObservations)).collect(Collectors.toList());
         return docs;
     }
 
-    private MongoObservationConfiguration createMongoDocument(String experimentID, Entry<Long, List<MongoTrajectory>> entry, Map<Long, MongoObservationTuple> observations)
+    private MongoObservationConfiguration createMongoDocument(String experimentID, Entry<Long, List<MongoTrajectoryElement>> entry, Map<Long, MongoObservationTuple> observations)
     {
         Long timeStamp = entry.getKey();
         MongoObservationConfiguration result = new MongoObservationConfiguration(experimentID, entry.getValue(), observations.get(timeStamp), timeStamp);

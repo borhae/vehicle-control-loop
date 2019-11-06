@@ -3,6 +3,7 @@ package de.joachim.haensel.phd.scenario.experiment.evaluation.database;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -20,6 +21,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoObservationConfiguration;
+import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoTrajectory;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.TrajectoryNormalizer;
 import de.joachim.haensel.phd.scenario.random.MersenneTwister;
@@ -51,13 +53,16 @@ public class KMeansClustering3D
         List<List<TrajectoryElement>> trajectories = luebeckData.parallelStream().map(toTrajectory).collect(Collectors.toList());
         Collections.shuffle(trajectories);
    
-//        List<List<TrajectoryElement>> smallSample = trajectories.subList(0, 50000);
-
         KMeansClustering3D clusterer = new KMeansClustering3D();
-        Map<Integer, List<Integer>> result = clusterer.cluster(trajectories, 100, 30);
+        Map<Integer, List<Integer>> result = clusterer.cluster(trajectories, 10, 300);
         MongoDatabase histogramDatabase = mongoClient.getDatabase("histograms");
         String targetCollectionName = "test3d";
         histogramDatabase.createCollection(targetCollectionName);
+        String debugCollectionName = "debug";
+        histogramDatabase.createCollection(debugCollectionName);
+        
+        MongoCollection<MongoTrajectory> debugCollection = histogramDatabase.getCollection(debugCollectionName, MongoTrajectory.class);
+        
         MongoCollection<MongoHistogram3DEntry> histogramCollection = histogramDatabase.getCollection(targetCollectionName, MongoHistogram3DEntry.class);
         List<MongoHistogram3DEntry> histogram = result.entrySet().stream().map(entry -> new MongoHistogram3DEntry(entry.getKey(), entry.getValue(), trajectories)).collect(Collectors.toList());
         histogramCollection.insertMany(histogram);
@@ -65,19 +70,21 @@ public class KMeansClustering3D
         mongoClient.close();
     }
 
-    private Map<Integer, List<Integer>> cluster(List<List<TrajectoryElement>> smallSample, int numOfClusters, int maxIters)
+    public Map<Integer, List<Integer>> cluster(List<List<TrajectoryElement>> indexedTrajectories, int numOfClusters, int maxIters)
     {
-        List<List<TrajectoryElement>> centers0 = createInitialCenters(smallSample, numOfClusters);
+        List<List<TrajectoryElement>> centers0 = createInitialCenters(indexedTrajectories, numOfClusters);
         System.out.println("Random centers the sample: " + centers0.size());
-        Map<Integer, List<Integer>> cluster0 = assignToCenters(smallSample, centers0);
+        Map<Integer, List<Integer>> cluster0 = assignToCenters(indexedTrajectories, centers0);
         System.out.println("Centers after initial clustering: " + cluster0.keySet().size());
         Map<Integer, List<Integer>> result = new HashMap<Integer, List<Integer>>();
         List<List<TrajectoryElement>> curCenters = centers0;
         for(int cnt = 0; cnt < maxIters; cnt++)
         {
-            curCenters = findNewCenters(cluster0, curCenters, smallSample);
-            System.out.format("Centers number %d adjusted. There are %d of them. \n", cnt, curCenters.size());
-            result = assignToCenters(smallSample, curCenters);
+            curCenters = findNewCenters(cluster0, curCenters, indexedTrajectories);
+            System.out.format("Iteration cnt: %d with %d centers.\n", cnt, curCenters.size());
+            result = assignToCenters(indexedTrajectories, curCenters);
+            IntSummaryStatistics summaryStatistics = result.entrySet().stream().map(entry -> entry.getValue().size()).mapToInt(i -> i).summaryStatistics();
+            System.out.format("Summary after clustering step %d : %s\n", cnt, summaryStatistics.toString());
             System.out.format("Number of centers after assignment %d: %d\n", cnt, result.keySet().size());
         }
         return result;
@@ -89,7 +96,6 @@ public class KMeansClustering3D
         return result;
     }
 
-    
     public List<TrajectoryElement> findCenter(List<Integer> trajectoryIndices, List<List<TrajectoryElement>> smallSample)
     {
         List<List<TrajectoryElement>> centerTrajectories = trajectoryIndices.stream().map(idx -> smallSample.get(idx)).collect(Collectors.toList());
@@ -117,9 +123,6 @@ public class KMeansClustering3D
         List<Integer> indices = IntStream.range(0, smallSample.size()).boxed().collect(Collectors.toList());
         List<Integer[]> centerIndices = indices.stream().map(dataIdx -> new Integer[] {dataIdx, assignToCenterIdx(smallSample.get(dataIdx), centers0)}).collect(Collectors.toList());
         Map<Integer, List<Integer>> result = centerIndices.stream().collect(Collectors.toMap(t -> t[1], t -> {List<Integer> r = new ArrayList<Integer>(); r.add(t[0]); return r;}, (l1, l2) -> {l1.addAll(l2); return l1;}));
-//        Stream<Integer[]> rStream = indices.parallelStream().map(dataIdx -> new Integer[] {dataIdx, assignToCenterIdx(trajectories.get(dataIdx), centers)});
-//        
-//        ConcurrentMap<Integer, List<Integer>> result = rStream.collect(Collectors.toConcurrentMap(t -> t[1], t -> {List<Integer> r = new ArrayList<Integer>(); r.add(t[0]); return r;}, (l1, l2) -> {l1.addAll(l2); return l1;}));
         return result;
     }
 

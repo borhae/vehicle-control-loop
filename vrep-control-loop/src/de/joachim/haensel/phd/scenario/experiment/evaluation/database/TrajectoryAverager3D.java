@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
-
 public class TrajectoryAverager3D
 {
     public static List<double[]> EMPTY_TRAJECTORY = 
@@ -53,7 +51,6 @@ public class TrajectoryAverager3D
             v1[idx] += v2[idx];
         }
     }
-
 
     public void combine(TrajectoryAverager3D other)
     {

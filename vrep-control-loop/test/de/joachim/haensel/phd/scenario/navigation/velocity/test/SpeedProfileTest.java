@@ -107,6 +107,7 @@ public class SpeedProfileTest
         
         Stream<String> stream = Files.lines(Paths.get(pointsFileName)); 
         List<Position2D> positions = stream.map(stringPos -> new Position2D(stringPos)).collect(Collectors.toList());
+        stream.close();
         int routeAllTimeMaxIdx = positions.size();
         // 83 - 84 has an issue
         int minIdx = 81;

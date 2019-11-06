@@ -9,16 +9,16 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class MongoTransform
 {
-    public static Map<Long, List<MongoTrajectory>> transformConfigurations(Map<Long, List<TrajectoryElement>> configurations)
+    public static Map<Long, List<MongoTrajectoryElement>> transformConfigurations(Map<Long, List<TrajectoryElement>> configurations)
     {
-        Map<Long, List<MongoTrajectory>> result = 
+        Map<Long, List<MongoTrajectoryElement>> result = 
                 configurations.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> transformConfiguration(entry.getValue())));
         return result;
     }
 
-    private static List<MongoTrajectory> transformConfiguration(List<TrajectoryElement> inList)
+    private static List<MongoTrajectoryElement> transformConfiguration(List<TrajectoryElement> inList)
     {
-        return inList.stream().map(curTrajElem -> new MongoTrajectory(curTrajElem)).collect(Collectors.toList());
+        return inList.stream().map(curTrajElem -> new MongoTrajectoryElement(curTrajElem)).collect(Collectors.toList());
     }
 
     public static Map<Long, MongoObservationTuple> transformObservations(Map<Long, ObservationTuple> observations)

@@ -18,7 +18,7 @@ import com.mongodb.client.MongoIterable;
 
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoObservationConfiguration;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoObservationTuple;
-import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoTrajectory;
+import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoTrajectoryElement;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.TrajectoryNormalizer;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.ObservationConfiguration;
 
@@ -50,7 +50,7 @@ public class BatchNormalizeData
 
     private static MongoObservationConfiguration encode(ObservationConfiguration confObs, String experimentName)
     {
-        List<MongoTrajectory> trajectory = confObs.getConfiguration().stream().map(t -> new MongoTrajectory(t)).collect(Collectors.toList());
+        List<MongoTrajectoryElement> trajectory = confObs.getConfiguration().stream().map(t -> new MongoTrajectoryElement(t)).collect(Collectors.toList());
         MongoObservationConfiguration result = 
                 new MongoObservationConfiguration(experimentName, trajectory, new MongoObservationTuple(confObs.getObservation()), confObs.getTimeStamp());
         return result;

@@ -9,14 +9,14 @@ public class MongoObservationConfiguration
 {
     private String _experimentID;
     private MongoObservationTuple _observation;
-    private List<MongoTrajectory> _configuration;
+    private List<MongoTrajectoryElement> _configuration;
     private Long _timeStamp;
     
     public MongoObservationConfiguration()
     {
     }
 
-    public MongoObservationConfiguration(String experimentID, List<MongoTrajectory> configuration, MongoObservationTuple observation, Long timeStamp)
+    public MongoObservationConfiguration(String experimentID, List<MongoTrajectoryElement> configuration, MongoObservationTuple observation, Long timeStamp)
     {
         _experimentID = experimentID;
         _configuration = configuration;
@@ -50,12 +50,12 @@ public class MongoObservationConfiguration
         _observation = observation;
     }
 
-    public List<MongoTrajectory> getConfiguration()
+    public List<MongoTrajectoryElement> getConfiguration()
     {
         return _configuration;
     }
 
-    public void setConfiguration(List<MongoTrajectory> configuration)
+    public void setConfiguration(List<MongoTrajectoryElement> configuration)
     {
         _configuration = configuration;
     }
