@@ -33,20 +33,20 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.NamedObsConf;
+import de.joachim.haensel.phd.scenario.experiment.evaluation.database.TrajectoryAverager3D;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoObservationConfiguration;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.TrajectoryNormalizer;
+import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.TurtleHash;
 import de.joachim.haensel.phd.scenario.random.MersenneTwister;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
-public class KMedoidClusterOpimizedDebug extends AbstractAnalysis
+public class HashBasedClustersDebug extends AbstractAnalysis
 {
-    private static final String DISTANCE_SUM = "distance sum";
-    private static final String ASSIGN_TO_CENTER = "assign to center";
     private Scanner _scanner;
 
-    public KMedoidClusterOpimizedDebug()
+    public HashBasedClustersDebug()
     {
         _scanner = new Scanner(System.in);
     }
@@ -55,7 +55,7 @@ public class KMedoidClusterOpimizedDebug extends AbstractAnalysis
     {
         try 
         {
-            KMedoidClusterOpimizedDebug debugRun = new KMedoidClusterOpimizedDebug();
+            HashBasedClustersDebug debugRun = new HashBasedClustersDebug();
             AnalysisLauncher.open(debugRun);
         } 
         catch (Exception e) 
@@ -111,10 +111,10 @@ public class KMedoidClusterOpimizedDebug extends AbstractAnalysis
             List<MongoCollection<MongoObservationConfiguration>> collections = 
                     collectionNames.parallelStream().map(collectionName -> carDatabase.getCollection(collectionName, MongoObservationConfiguration.class)).collect(Collectors.toList());
         
-            List<NamedObsConf> decoded = 
-                    collections.stream().map(collection -> decodeMongoCollection(collection, 100)).flatMap(list -> list.stream()).collect(Collectors.toList());
-//                List<NamedObsConf> decoded = 
-//                        collections.stream().map(collection -> decodeMongoCollection(collection)).flatMap(list -> list.stream()).collect(Collectors.toList());
+//            List<NamedObsConf> decoded = 
+//                    collections.stream().map(collection -> decodeMongoCollection(collection, 100)).flatMap(list -> list.stream()).collect(Collectors.toList());
+                List<NamedObsConf> decoded = 
+                        collections.stream().map(collection -> decodeMongoCollection(collection)).flatMap(list -> list.stream()).collect(Collectors.toList());
             System.out.format("Number of decoded Trajectories: %d\n", decoded.size());
             
             List<NamedObsConf> pruned = decoded.parallelStream().filter(obsConf -> obsConf.getConfiguration().size() == 20).collect(Collectors.toList());
@@ -129,97 +129,60 @@ public class KMedoidClusterOpimizedDebug extends AbstractAnalysis
             List<double[][]> trajectoryArrrays = toDoubleArray(trajectories);
             
             System.out.format("Number of trajectories: %s\n", trajectories.size());
-            Collections.shuffle(trajectoryArrrays, new MersenneTwister());
-            System.out.println("Computing path coordinates");
 
-            Map<Integer, List<Integer>> result = cluster(trajectoryArrrays, 10, 20, visualizer);
-            System.out.println("draw cluster? Enter something and <enter>");
+            Map<String, List<double[][]>> clusters = cluster(trajectoryArrrays, 10, 20, visualizer);
+            System.out.format("Number of clusters: %d\n", clusters.size());
+            clusters.forEach((key, value) -> System.out.format("%s, %d\n", key, value.size()));
+            System.out.println("type something and press <enter> to finish");
             _scanner.next();
-            visualizer.drawCluster(trajectoryArrrays, result);
             
             mongoClient.close();
         };
     }
 
-    public Map<Integer, List<Integer>> cluster(List<double[][]> allTrajectories, int numOfClusters, int maxIters, TrajectoryDraw visualizer)
+    public Map<String, List<double[][]>> cluster(List<double[][]> allTrajectories, int numOfClusters, int maxIters, TrajectoryDraw visualizer)
     {
-        List<Integer> curCenters = createInitialCenters(allTrajectories, numOfClusters);
-
-        visualizer.setRange(maxIters);
-        visualizer.setMaxTrajectoriesToKeep(5);
-        visualizer.drawTrajectoriesByIndex(curCenters, allTrajectories, 0);
+        TurtleHash hasher = new TurtleHash(25.1, 5.0, 21);
+        // "clusters" by hash-function
+        Map<String, List<double[][]>> result = allTrajectories.parallelStream().collect(Collectors.groupingBy(trajectory -> hash(hasher, trajectory)));
         
-        System.out.println("type anything!");
-        _scanner.next();
+        visualizer.setRange(1);
+        visualizer.setMaxTrajectoriesToKeep(1);
 
         DistanceCache cache = new DistanceCache(allTrajectories);
+        Map<String, double[][]> centers = findCenters(result, cache);
         
-        Map<Integer, List<Integer>> curResult = assignToCenters(allTrajectories, curCenters, cache);
-        System.out.format("Initial cluster assignement done (num of clusters: %d).\n", curResult.keySet().size());
-
-        for(int cnt = 0; cnt < maxIters; cnt++)
-        {
-            curCenters = findNewCenters(curResult, allTrajectories, cache);
-            System.out.println("New centers found.");
-            visualizer.drawTrajectoriesByIndex(curCenters, allTrajectories, cnt + 1);
-
-            System.out.format("Clustering step %d, assigning to new centers.\n", cnt);
-            curResult = assignToCenters(allTrajectories, curCenters, cache);
-            IntSummaryStatistics summaryStatistics = curResult.entrySet().stream().map(entry -> entry.getValue().size()).mapToInt(i -> i).summaryStatistics();
-            System.out.format("Summary after clustering step %d : %s\n", cnt, summaryStatistics.toString());
-        }
-        return curResult;
-    }
-
-    private Map<Integer, List<Integer>> assignToCenters(List<double[][]> allTrajectories, List<Integer> centers0, DistanceCache cache)
-    {
-        List<Integer> indices = IntStream.range(0, allTrajectories.size()).boxed().collect(Collectors.toList());
-        // format is as follows: [idx-trajectory, idx-of-centers]
-        List<Integer[]> centerIndices = indices.parallelStream().map(dataIdx -> new Integer[] {dataIdx, assignToCenterIdx(dataIdx, centers0, allTrajectories, cache)}).collect(Collectors.toList());
-        Map<Integer, List<Integer>> result = centerIndices.stream().collect(Collectors.toMap(t -> t[1], t -> {List<Integer> r = new ArrayList<Integer>(); r.add(t[0]); return r;}, (l1, l2) -> {l1.addAll(l2); return l1;}));
+        visualizer.drawTrajectories(new ArrayList<double[][]>(centers.values()), 1);
         return result;
     }
 
-    private Integer assignToCenterIdx(Integer trajectoryIdx, List<Integer> centerIndices, List<double[][]> allTrajectories, DistanceCache cache)
+    private Map<String, double[][]> findCenters(Map<String, List<double[][]>> clusters, DistanceCache cache)
     {
-        int minIdx = 0;
-        double curMin = Double.MAX_VALUE;
-        for(int centersIdx = 0; centersIdx < centerIndices.size(); centersIdx++)
+        Map<String, double[][]> result = 
+                clusters.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> findCenter(entry.getValue(), cache)));
+        return result;
+    }
+
+    private String hash(TurtleHash hasher, double[][] trajectory)
+    {
+        double[][] copy = new double[trajectory.length][trajectory[0].length];
+        for(int idxI = 0; idxI < trajectory.length; idxI++)
         {
-            Integer centerIndex = centerIndices.get(centersIdx);
-//            double distance = cache.getDistance(trajectoryIdx, centerIndex, ASSIGN_TO_CENTER);
-            double distance = cache.getManhattenDistance(trajectoryIdx, centerIndex);
-            if(distance < curMin)
+            for(int idxJ = 0; idxJ < trajectory[idxI].length; idxJ++)
             {
-                minIdx = centersIdx;
-                curMin = distance;
+                copy[idxI][idxJ] = trajectory[idxI][idxJ];
             }
         }
-        return minIdx;
+        return hasher.hash(copy);
     }
 
-    private List<Integer> findNewCenters(Map<Integer, List<Integer>> cluster, List<double[][]> allTrajectories, DistanceCache cache)
+    public double[][] findCenter(List<double[][]> trajectories, DistanceCache cache)
     {
-        List<Integer> result = cluster.entrySet().stream().map(entry -> findMedoidsCenter(entry.getValue(), allTrajectories, cache)).collect(Collectors.toList());
-        return result;
+        TrajectoryAverager3D averager = trajectories.parallelStream().collect(TrajectoryAverager3D::new, TrajectoryAverager3D::accept, TrajectoryAverager3D::combine);
+        double[][] average = averager.getAverage();
+        return average;
     }
 
-    private Integer findMedoidsCenter(List<Integer> thisClusterTrajectoryIdxs, List<double[][]> allTrajectories, DistanceCache cache)
-    {
-        Stream<Integer> allTrajectoriesIdx = IntStream.range(0, allTrajectories.size()).boxed();
-        Map<Integer, Double> trajectoryToSum = allTrajectoriesIdx.collect(Collectors.toMap(idx -> idx, idx -> distanceSum(idx, thisClusterTrajectoryIdxs, allTrajectories, cache)));
-        
-        Entry<Integer, Double> min = Collections.min(trajectoryToSum.entrySet(), Comparator.comparing(Entry::getValue));
-        return min.getKey();
-    }
-
-    private Double distanceSum(Integer idxFrom, List<Integer> idxTo, List<double[][]> allTrajectories, DistanceCache cache)
-    {
-//        double result = idxTo.parallelStream().mapToDouble(curTrajectoryIdx -> cache.getDistance(curTrajectoryIdx, idxFrom, DISTANCE_SUM)).sum();
-        double result = idxTo.parallelStream().mapToDouble(curTrajectoryIdx -> cache.getManhattenDistance(curTrajectoryIdx, idxFrom)).sum();
-        return result;
-    }
-    
     private List<double[][]> toDoubleArray(List<List<TrajectoryElement>> trajectories)
     {
         return trajectories.stream().map(trajectory -> trajectoryToDoubleArrayTrajectory(trajectory)).collect(Collectors.toList());
@@ -238,22 +201,13 @@ public class KMedoidClusterOpimizedDebug extends AbstractAnalysis
         arrayTrajectory[20] = (new double[] {tTip.getX(), tTip.getY(), t.getVelocity()});
         return arrayTrajectory;
     }
-
-    private List<Integer> createInitialCenters(List<double[][]> trajectoryArrrays, int k)
-    {
-        MersenneTwister randomGen = new MersenneTwister();
-        List<Integer> randomSelection = IntStream.range(0, trajectoryArrrays.size()).boxed().collect(Collectors.toList());
-        Collections.shuffle(randomSelection, randomGen);
-        List<Integer> idxs = new ArrayList<Integer>(randomSelection.subList(0, k));
-        return idxs;
-    }
     
     private static ArrayList<NamedObsConf> decodeMongoCollection(MongoCollection<MongoObservationConfiguration> collection, int limit)
     {
         return collection.find().limit(limit).map(doc -> new NamedObsConf(doc.decode(), doc.getExperimentID())).into(new ArrayList<NamedObsConf>());
     }
-
-    private static ArrayList<NamedObsConf> decodeMongoCollection(MongoCollection<MongoObservationConfiguration> collection)
+    
+    private ArrayList<NamedObsConf> decodeMongoCollection(MongoCollection<MongoObservationConfiguration> collection)
     {
         return collection.find().map(doc -> new NamedObsConf(doc.decode(), doc.getExperimentID())).into(new ArrayList<NamedObsConf>());
     }

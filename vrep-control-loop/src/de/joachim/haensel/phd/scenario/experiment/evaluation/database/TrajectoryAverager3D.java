@@ -1,46 +1,39 @@
 package de.joachim.haensel.phd.scenario.experiment.evaluation.database;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class TrajectoryAverager3D
 {
-    public static List<double[]> EMPTY_TRAJECTORY = 
-            IntStream.range(0, 20).boxed().map(idx -> new double[] {0.0, 0.0, 0.0}).collect(Collectors.toList());
-
-    private List<double[]> _runningSum = createEmpty();
+    private double[][] _runningSum = createEmpty();
     private int _runningCount = 0;
     private boolean _firstUsage = true;
 
-    private static List<double[]> createEmpty()
+    private static double[][] createEmpty()
     {
-        return new ArrayList<double[]>(EMPTY_TRAJECTORY);
+        return new double[20][3];
     }
 
-
-    public void accept(List<double[]> newTrajectory)
+    public void accept(double[][] newTrajectory)
     {
         if(_firstUsage)
         {
-            _runningSum = IntStream.range(0, newTrajectory.size()).boxed().map(idx -> new double[] {0.0, 0.0, 0.0}).collect(Collectors.toList());
+            _runningSum = new double[newTrajectory.length][3];
             _firstUsage = false;
         }
         addInto(_runningSum, newTrajectory);
         _runningCount++;
     }
 
-    private void addInto(List<double[]> result, List<double[]> other)
+    private void addInto(double[][] result, double[][] other)
     {
-        if(result.size() != other.size())
+        if(result.length != other.length)
         {
             _runningSum = null;
             System.out.println("can't compute sum of trajectories of different length");
         }
         else
         {
-            IntStream.range(0, result.size()).boxed().forEach(idx -> sumInto(result.get(idx), other.get(idx)));
+            IntStream.range(0, result.length).boxed().forEach(idx -> sumInto(result[idx], other[idx]));
         }
     }
 
@@ -59,9 +52,15 @@ public class TrajectoryAverager3D
     }
 
 
-    public List<double[]> getAverage()
+    public double[][] getAverage()
     {
-        return _runningSum.stream().map(v -> divide(v, (double)_runningCount)).collect(Collectors.toList());
+        double[][] result = new double[_runningSum.length][3];
+        for(int idx = 0; idx < _runningSum.length; idx++)
+        {
+            double[] cur = _runningSum[idx];
+            result[idx] = divide(cur, _runningCount);
+        }
+        return result;
     }
 
     private double[] divide(double[] v, double divisor)

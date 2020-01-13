@@ -17,7 +17,6 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.jzy3d.analysis.AbstractAnalysis;
 import org.jzy3d.analysis.AnalysisLauncher;
-import org.jzy3d.chart.Chart;
 import org.jzy3d.chart.factories.AWTChartComponentFactory;
 import org.jzy3d.chart.factories.IChartComponentFactory.Toolkit;
 import org.jzy3d.colors.Color;
@@ -78,7 +77,8 @@ public class KMeansClusterDebug extends AbstractAnalysis
         chart.getScene().getGraph().add(line1);
         chart.getScene().getGraph().add(line2);
         chart.getScene().getGraph().add(line3);
-        Executors.newCachedThreadPool().execute(createClusterTask());
+        TrajectoryDraw visualizer = new TrajectoryDraw(chart);
+        Executors.newCachedThreadPool().execute(createClusterTask(visualizer));
     }
 
     private LineStrip createStandardLine(double x1, double y1, double z1, double x2, double y2, double z2)
@@ -92,7 +92,7 @@ public class KMeansClusterDebug extends AbstractAnalysis
         return line;
     }
 
-    private Runnable createClusterTask()
+    private Runnable createClusterTask(TrajectoryDraw visualizer)
     {
         return new Runnable()
         {
@@ -123,120 +123,70 @@ public class KMeansClusterDebug extends AbstractAnalysis
                 System.out.println("database read, now getting trajectories");
                 Function<NamedObsConf, List<TrajectoryElement>> toTrajectory = entry -> entry.getConfiguration().stream().map(elem -> elem).collect(Collectors.toList());
                 List<List<TrajectoryElement>> trajectories = aligned.parallelStream().map(toTrajectory).collect(Collectors.toList());
+                List<double[][]> trajectoryArrrays = toDoubleArray(trajectories);
+                
                 
                 System.out.format("Number of trajectories: %s\n", trajectories.size());
                 Collections.shuffle(trajectories);
                 System.out.println("Computing path coordinates");
-                List<List<Coord3d>> allPaths = 
-                        trajectories.parallelStream().map(t -> trajectoryToChartPath(t)).collect(Collectors.toList());
-                
 
-                Map<Integer, List<Integer>> result = cluster(trajectories, 100, 100, allPaths, chart);
+                Map<Integer, List<Integer>> result = cluster(trajectoryArrrays, 500, 100, visualizer);
                 System.out.println("draw cluster? Enter something and <enter>");
                 _scanner.next();
-                drawCluster(allPaths, result);
+                visualizer.drawCluster(trajectoryArrrays, result);
                 
                 mongoClient.close();
             }
         };
     }
-
-    private void drawCluster(List<List<Coord3d>> allPaths, Map<Integer, List<Integer>> result)
-    {
-        Map<Integer, List<LineStrip>> lineCluster = 
-                result.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue().parallelStream().map(idx -> new LineStrip(allPaths.get(idx))).collect(Collectors.toList())));
-        
-        int numOfClusters = lineCluster.keySet().size();
-        System.out.println("assigning colors");
-        lineCluster.entrySet().stream().forEach(entry -> entry.getValue().stream().forEach(line -> setColor(line, entry.getKey(), numOfClusters, 5)));
-
-        System.out.println("assigning width, display true, showpoints true and wireframe true");
-        lineCluster.entrySet().parallelStream().forEach(entry -> entry.getValue().parallelStream().forEach(line -> configureLine(line)));
-        
-        List<LineStrip> lines = lineCluster.values().stream().flatMap(cluster -> cluster.stream()).collect(Collectors.toList());
-        System.out.println("setting up chart");
-        System.out.println("adding lines to chart");
-        chart.getScene().getGraph().add(lines);
-    }
-
-    private List<Coord3d> trajectoryToChartPath(List<TrajectoryElement> trajectory)
-    {
-        return trajectory.stream().map(te -> {return new Coord3d(te.getVector().getbX(), te.getVector().getbY(), te.getVelocity());}).collect(Collectors.toList());
-    }
-
-    private List<LineStrip> trajectoriesToLines(List<List<TrajectoryElement>> trajectories)
-    {
-        List<List<Coord3d>> chartPaths = trajectories.parallelStream().map(trajectory -> trajectoryToChartPath(trajectory)).collect(Collectors.toList());
-        return chartPaths.parallelStream().map(chartPath -> new LineStrip(chartPath)).map(line -> configureLine(line)).collect(Collectors.toList());
-    }
-
-    public LineStrip configureLine(LineStrip line)
-    {
-        line.setWireframeWidth(1.0f); 
-        line.setFaceDisplayed(true); 
-        line.setShowPoints(true); 
-        line.setWireframeDisplayed(true);
-        return line;
-    }
     
-    public Map<Integer, List<Integer>> cluster(List<List<TrajectoryElement>> allTrajectories, int numOfClusters, int maxIters, List<List<Coord3d>> allPaths, Chart chart)
+    public Map<Integer, List<Integer>> cluster(List<double[][]> allTrajectories, int numOfClusters, int maxIters, TrajectoryDraw visualizer)
     {
-        List<List<TrajectoryElement>> centers0 = createInitialCenters(allTrajectories, numOfClusters);
-        float brightness = 0.0f/(float)maxIters;
-        List<LineStrip> initialCenterLines = drawTrajectories(chart, centers0, brightness);
+        List<double[][]> centers0 = createInitialCenters(allTrajectories, numOfClusters);
         
+        visualizer.setRange(maxIters);
+        visualizer.setMaxTrajectoriesToKeep(5);
+        visualizer.drawTrajectories(centers0, 0);
+        
+        DistanceCache cache = new DistanceCache(allTrajectories);
+
         System.out.println("type anything!");
         _scanner.next();
         
         System.out.println("Number of random centers, press anything and <enter> to continue: " + centers0.size());
-        Map<Integer, List<Integer>> cluster0 = assignToCenters(allTrajectories, centers0);
+        Map<Integer, List<Integer>> cluster0 = assignToCenters(allTrajectories, centers0, cache);
         System.out.println("Centers after initial clustering: " + cluster0.keySet().size());
         Map<Integer, List<Integer>> result = cluster0;
-        List<List<TrajectoryElement>> curCenters = centers0;
-        Map<Integer, List<LineStrip>> drawnLines = new HashMap<Integer, List<LineStrip>>();
-        drawnLines.put(0, initialCenterLines);
+        List<double[][]> curCenters = centers0;
         for(int cnt = 0; cnt < maxIters; cnt++)
         {
-            curCenters = findNewCenters(result, curCenters, allTrajectories);
-            System.out.println("new centers, enter anything when seen");
-            brightness = ((float)(cnt + 1))/(float)(maxIters);
-            if(cnt > 5)
-            {
-                List<LineStrip> obsoleteLines = drawnLines.get(cnt - 6);
-                obsoleteLines.stream().forEach(line -> chart.getScene().getGraph().remove(line));
-            }
-            drawnLines.put(cnt + 1, drawTrajectories(chart, curCenters, brightness));
+            curCenters = findNewCenters(result, allTrajectories, cache);
             System.out.format("Iteration cnt: %d with %d centers.\n", cnt, curCenters.size());
-            result = assignToCenters(allTrajectories, curCenters);
+            result = assignToCenters(allTrajectories, curCenters, cache);
+            visualizer.drawTrajectories(curCenters, cnt + 1);
             IntSummaryStatistics summaryStatistics = result.entrySet().stream().map(entry -> entry.getValue().size()).mapToInt(i -> i).summaryStatistics();
             System.out.format("Summary after clustering step %d : %s\n", cnt, summaryStatistics.toString());
         }
         return result;
     }
 
-    private List<LineStrip> drawTrajectories(Chart chart, List<List<TrajectoryElement>> trajectories, float brightness)
-    {
-        List<LineStrip> lines = trajectoriesToLines(trajectories);
-        IntStream.range(0, lines.size()).forEach(idx -> setColor(lines.get(idx), idx, lines.size(), 1.0f, brightness));
-        chart.getScene().getGraph().add(lines);
-        return lines;
-    }
-
-    private Map<Integer, List<Integer>> assignToCenters(List<List<TrajectoryElement>> allTrajectories, List<List<TrajectoryElement>> centers0)
+    private Map<Integer, List<Integer>> assignToCenters(List<double[][]> allTrajectories, List<double[][]> centers, DistanceCache cache)
     {
         List<Integer> indices = IntStream.range(0, allTrajectories.size()).boxed().collect(Collectors.toList());
-        List<Integer[]> centerIndices = indices.stream().map(dataIdx -> new Integer[] {dataIdx, assignToCenterIdx(allTrajectories.get(dataIdx), centers0)}).collect(Collectors.toList());
-        Map<Integer, List<Integer>> result = centerIndices.stream().collect(Collectors.toMap(t -> t[1], t -> {List<Integer> r = new ArrayList<Integer>(); r.add(t[0]); return r;}, (l1, l2) -> {l1.addAll(l2); return l1;}));
+
+        // format is as follows: [idx-trajectory, idx-of-centers]
+        List<Integer[]> centerIndices = indices.parallelStream().map(dataIdx -> new Integer[] {dataIdx, assignToCenterIdx(allTrajectories.get(dataIdx), centers, cache)}).collect(Collectors.toList());
+        Map<Integer, List<Integer>> result = centerIndices.parallelStream().collect(Collectors.toMap(t -> t[1], t -> {List<Integer> r = new ArrayList<Integer>(); r.add(t[0]); return r;}, (l1, l2) -> {l1.addAll(l2); return l1;}));
         return result;
     }
 
-    private Integer assignToCenterIdx(List<TrajectoryElement> list, List<List<TrajectoryElement>> centers0)
+    private Integer assignToCenterIdx(double[][] trajectory, List<double[][]> centerTrajectories, DistanceCache cache)
     {
         int minIdx = 0;
         double curMin = Double.MAX_VALUE;
-        for(int centersIdx = 0; centersIdx < centers0.size(); centersIdx++)
+        for(int centersIdx = 0; centersIdx < centerTrajectories.size(); centersIdx++)
         {
-            Double distance = computeDistance(centers0.get(centersIdx), list);
+            double distance = cache.distance(centerTrajectories.get(centersIdx), trajectory);
             if(distance < curMin)
             {
                 minIdx = centersIdx;
@@ -246,107 +196,45 @@ public class KMeansClusterDebug extends AbstractAnalysis
         return minIdx;
     }
 
-    private Double computeDistance(List<TrajectoryElement> t1, List<TrajectoryElement> t2)
+    private List<double[][]> findNewCenters(Map<Integer, List<Integer>> cluster, List<double[][]> allTrajectories, DistanceCache cache)
     {
-        if (t1.size() != t2.size())
-        {
-            System.out.println("error trajecories of different length not comparable. Result set to infinity");
-            return Double.POSITIVE_INFINITY;
-        }
-        double result = 0.0;
-        for (int idx = 0; idx < t1.size(); idx++)
-        {
-            double[] pI3D = new double[] {
-              t1.get(idx).getVector().getTip().getX(),
-              t1.get(idx).getVector().getTip().getY(),
-              t1.get(idx).getVelocity()
-            };
-            double[] pJ3D = new double[] {
-                    t2.get(idx).getVector().getTip().getX(),
-                    t2.get(idx).getVector().getTip().getY(),
-                    t2.get(idx).getVelocity()
-                  };
-            result += distance(pI3D, pJ3D);
-        }
+        List<double[][]> result = cluster.entrySet().parallelStream().map(entry -> findCenter(entry.getValue(), allTrajectories, cache)).collect(Collectors.toList());
         return result;
     }
 
-    private double distance(double[] p1, double[] p2)
+    public double[][] findCenter(List<Integer> trajectoryIndices, List<double[][]> allTrajectories, DistanceCache cache)
     {
-        double dx = p2[0] - p1[0];
-        double dy = p2[1] - p1[1];
-        double dz = p2[2] - p1[2];
-        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+        List<double[][]> centerTrajectories = trajectoryIndices.stream().map(idx -> allTrajectories.get(idx)).collect(Collectors.toList());
+        TrajectoryAverager3D averager = centerTrajectories.parallelStream().collect(TrajectoryAverager3D::new, TrajectoryAverager3D::accept, TrajectoryAverager3D::combine);
+        double[][] average = averager.getAverage();
+        return average;
     }
 
-    private List<List<TrajectoryElement>> findNewCenters(Map<Integer, List<Integer>> cluster, List<List<TrajectoryElement>> curCenters, List<List<TrajectoryElement>> data)
-    {
-        List<List<TrajectoryElement>> result = cluster.entrySet().stream().map(entry -> findCenter(entry.getValue(), data)).collect(Collectors.toList());
-        return result;
-    }
-
-    public List<TrajectoryElement> findCenter(List<Integer> trajectoryIndices, List<List<TrajectoryElement>> allTrajectories)
-    {
-        List<List<TrajectoryElement>> centerTrajectories = trajectoryIndices.stream().map(idx -> allTrajectories.get(idx)).collect(Collectors.toList());
-        List<List<double[]>> centerArrays = toDoubleArray(centerTrajectories);
-        TrajectoryAverager3D averager = centerArrays.stream().collect(TrajectoryAverager3D::new, TrajectoryAverager3D::accept, TrajectoryAverager3D::combine);
-        List<double[]> average = averager.getAverage();
-        List<TrajectoryElement> result = IntStream.range(0, average.size() - 1).boxed().map(idx -> createTrajectoryElement(idx, average)).collect(Collectors.toList());
-        return result;
-    }
-
-    private TrajectoryElement createTrajectoryElement(int idx, List<double[]> average)
-    {
-        Position2D p1 = new Position2D(average.get(idx));
-        Position2D p2 = new Position2D(average.get(idx + 1));
-        TrajectoryElement result = new TrajectoryElement(new Vector2D(p1, p2));
-        result.setVelocity(average.get(idx)[2]);
-        return result;
-    }
-
-    private List<List<double[]>> toDoubleArray(List<List<TrajectoryElement>> centerTrajectories)
-    {
-        List<List<double[]>> result = new ArrayList<List<double[]>>();
-        for(int idx = 0; idx < centerTrajectories.size(); idx++)
-        {
-            List<TrajectoryElement> curTrajectory = centerTrajectories.get(idx);
-            List<double[]> arrayTrajectory = curTrajectory.stream().map(t -> {Vector2D v = t.getVector(); return new double[] {v.getbX(), v.getbY(), t.getVelocity()};}).collect(Collectors.toList());
-            TrajectoryElement t = curTrajectory.get(curTrajectory.size() - 1);
-            Position2D tTip = t.getVector().getTip();
-            arrayTrajectory.add(new double[] {tTip.getX(), tTip.getY(), t.getVelocity()});
-            result.add(arrayTrajectory);
-        }
-        return result;
-    }
-
-    private List<List<TrajectoryElement>> createInitialCenters(List<List<TrajectoryElement>> smallSample, int k)
+    private List<double[][]> createInitialCenters(List<double[][]> allTrajectories, int numberOfClusters)
     {
         MersenneTwister randomGen = new MersenneTwister();
-        List<Integer> randomSelection = IntStream.range(0, smallSample.size()).boxed().collect(Collectors.toList());
-        Collections.shuffle(randomSelection, randomGen);
-        List<Integer> idxs = new ArrayList<Integer>(randomSelection.subList(0, k - 1));
-        List<List<TrajectoryElement>> result = idxs.stream().map(idx -> smallSample.get(idx)).collect(Collectors.toList());
-        return result;
+        List<double[][]> randomRoot = new ArrayList<double[][]>(allTrajectories);
+        Collections.shuffle(randomRoot, randomGen);
+        return randomRoot.subList(0, numberOfClusters - 1);
     }
-    
-    private void setColor(LineStrip line, int idx, int range, int alpha)
+
+    private List<double[][]> toDoubleArray(List<List<TrajectoryElement>> trajectories)
     {
-        float hue = ((float)idx)/((float)range);
-        int rgbCompund = java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f);
-        int red = (rgbCompund >> 16) & 0xFF;
-        int green = (rgbCompund >> 8) & 0xFF; 
-        int blue = (rgbCompund >> 0) & 0xFF;
-        line.setWireframeColor(new Color(red, green, blue, alpha));
+        return trajectories.stream().map(trajectory -> trajectoryToDoubleArrayTrajectory(trajectory)).collect(Collectors.toList());
     }
-    
-    private void setColor(LineStrip line, int idx, int range, float saturation, float brightness)
+
+    private double[][] trajectoryToDoubleArrayTrajectory(List<TrajectoryElement> trajectory)
     {
-        float hue = ((float)idx)/((float)range);
-        int rgbCompund = java.awt.Color.HSBtoRGB(hue, saturation, brightness);
-        int red = (rgbCompund >> 16) & 0xFF;
-        int green = (rgbCompund >> 8) & 0xFF; 
-        int blue = (rgbCompund >> 0) & 0xFF;
-        line.setWireframeColor(new Color(red, green, blue, 128));
+        Function<TrajectoryElement, double[]> toArray = t -> {Vector2D v = t.getVector(); return new double[] {v.getbX(), v.getbY(), t.getVelocity()};};
+        double[][] arrayTrajectory = new double[21][3];
+        for(int idx = 0; idx < trajectory.size(); idx++)
+        {
+            arrayTrajectory[idx] = toArray.apply(trajectory.get(idx));
+        }
+        TrajectoryElement t = trajectory.get(trajectory.size() - 1);
+        Position2D tTip = t.getVector().getTip();
+        arrayTrajectory[20] = (new double[] {tTip.getX(), tTip.getY(), t.getVelocity()});
+        return arrayTrajectory;
     }
     
     private ArrayList<NamedObsConf> decodeMongoCollection(MongoCollection<MongoObservationConfiguration> collection)
@@ -357,19 +245,5 @@ public class KMeansClusterDebug extends AbstractAnalysis
     private static ArrayList<NamedObsConf> decodeMongoCollection(MongoCollection<MongoObservationConfiguration> collection, int limit)
     {
         return collection.find().limit(limit).map(doc -> new NamedObsConf(doc.decode(), doc.getExperimentID())).into(new ArrayList<NamedObsConf>());
-    }
-    
-    private static NamedObsConf simplifyToCity(NamedObsConf obsCon)
-    {
-        String name = obsCon.getName();
-        if(name.contains("Luebeck"))
-        {
-            obsCon.setName("Luebeck");
-        }
-        else if(name.contains("Chandigarh"))
-        {
-            obsCon.setName("Chandigarh");
-        }
-        return obsCon;
     }
 }

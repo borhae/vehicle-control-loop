@@ -65,6 +65,123 @@ public class TurtleHash
         return hash;
     }
 
+    public String hash(double[][] trajectory)
+    {
+        if(trajectory.length != _numOfElems)
+        {
+            return String.format("length was %d should be %d", trajectory.length, _numOfElems);
+        }
+        List<int[]> pixels = pixelate(trajectory);
+        List<Integer> steps = createSteps3D(pixels);
+        for(int idx = 0; idx < pixels.size() - 1; idx++)
+        {
+            int[] cur = pixels.get(idx);
+            int[] nxt = pixels.get(idx + 1);
+            boolean differentPoints = !TurtleHash.same3D(cur, nxt);
+            boolean connectedPoints = TurtleHash.connected3D(cur, nxt);
+            if(!differentPoints || !connectedPoints)
+            {
+                return String.format("consecutive points connected? %b not the same?", connectedPoints, differentPoints);
+            }
+        }
+        String hash = steps.stream().map(d -> TurtleHash.toBase26(d)).collect(Collectors.joining());
+        if(hash.equals(""))
+        {
+            if(pixels.size() == 1)
+            {
+                return "y";
+            }
+            else
+            {
+                return "to base26 results in empty string";
+            }
+        }
+        return hash;
+    }
+    
+    public List<int[]> pixelate(double[][] trajectory)
+    {
+        List<int[]> pixels = new ArrayList<int[]>();
+        double scaleFactor = _gridSize;
+        scale(trajectory, scaleFactor);
+        List<Point3D> points = toPoints(trajectory);
+        for(int idxPoints = 0; idxPoints < points.size() - 1; idxPoints++)
+        {
+            Point3D p1 = points.get(idxPoints);
+            Point3D p2 = points.get(idxPoints + 1);
+            int[][] rasterizedV = rasterizeVectorBresenham3D(p1, p2);
+            validateVector3D(rasterizedV);
+            if(rasterizedV.length <= 0)
+            {
+                continue;
+            }
+            int rasterIdx = 0;
+            int[] pLast = pixels.isEmpty() ? null : pixels.get(pixels.size() - 1);
+            int[] pNext = rasterizedV[0];
+            if(!pixels.isEmpty() && !connected3D(pLast, pNext))
+            {
+                int filler[][] = rasterizeVectorBresenham3D(new Point3D(pLast), new Point3D(pNext));
+                int size = rasterizedV.length + filler.length;
+                List<int[]> tmp = new ArrayList<int[]>(size);
+                for(int idx = 0; idx < size; idx++)
+                {
+                    if(idx == filler.length)
+                    {
+                        if((idx > 0) && same3D(tmp.get(idx - 1), rasterizedV[idx - filler.length]))
+                        {
+                            continue;
+                        }
+                    }
+                    if(idx < filler.length)
+                    {
+                        tmp.add(filler[idx]);
+                    }
+                    else
+                    {
+                        tmp.add(rasterizedV[idx - filler.length]);
+                    }
+                }
+                rasterizedV = tmp.toArray(new int[0][0]);
+            }
+            pNext = rasterizedV[0];
+            if(!pixels.isEmpty() && same3D(pLast, pNext))
+            {
+                rasterIdx = 1;
+            }
+            for(; rasterIdx < rasterizedV.length; rasterIdx++)
+            {
+                int[] curPoint = rasterizedV[rasterIdx];
+                pixels.add(curPoint);
+            }
+            validateVector3D(pixels.toArray(new int[0][0]));
+        }
+        pixels.parallelStream().forEach(p -> {p[0] += _offsetX; p[1] += _offsetY;});
+        
+        return pixels;
+    }
+
+    private List<Point3D> toPoints(double[][] trajectory)
+    {
+        List<Point3D> points = new ArrayList<Point3D>();
+        for(int idx = 0; idx < trajectory.length; idx++)
+        {
+            points.add(new Point3D(trajectory[idx]));
+        }
+        return points;
+    }
+
+    private void scale(double[][] trajectory, double scaleFactor)
+    {
+        for(int idxI = 0; idxI < trajectory.length; idxI++)
+        {
+            double[] cur = trajectory[idxI];
+            for(int idxJ = 0; idxJ < cur.length; idxJ++)
+            {
+                cur[idxJ] = cur[idxJ] / scaleFactor;
+            }
+        }
+    }
+    
     public List<int[]> pixelate(List<TrajectoryElement> trajectory)
     {
         trajectory.stream().forEach(trajE -> {trajE.setVector(trajE.getVector().scale(1.0/_gridSize)); trajE.setVelocity(trajE.getVelocity()/_gridSize);});

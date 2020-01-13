@@ -36,7 +36,7 @@ public class DistanceCache
             if(_cache[trajectoryIdx1].get(trajectoryIdx2) == null && _cache[trajectoryIdx2].get(trajectoryIdx1) == null)
             {
                 _cacheMissCnt++;
-                result = distance(trajectoryIdx1, trajectoryIdx2);
+                result = distanceByIndex(trajectoryIdx1, trajectoryIdx2);
                 _cache[trajectoryIdx1].put(trajectoryIdx2, result);
             }
             else
@@ -60,21 +60,42 @@ public class DistanceCache
         return result;
     }
 
-    private double distance(int trajectoryIdx1, int trajectoryIdx2)
+    private double distanceByIndex(int trajectoryIdx1, int trajectoryIdx2)
     {
         double[][] t1 = _allTrajectories.get(trajectoryIdx1);
         double[][] t2 = _allTrajectories.get(trajectoryIdx2);
+        return distance(t1, t2);
+    }
+
+    public double distance(double[][] trajectory1, double[][] trajectory2)
+    {
         double result = 0.0;
-        for(int idx = 0; idx < t1.length; idx++)
+        for(int idx = 0; idx < trajectory1.length; idx++)
         {
-            double[] p1 = t1[idx];
-            double[] p2 = t2[idx];
+            double[] p1 = trajectory1[idx];
+            double[] p2 = trajectory2[idx];
             double dx = p2[0] - p1[0];
             double dy = p2[1] - p1[1];
             double dz = p2[2] - p1[2];
             result += Math.sqrt(dx * dx + dy * dy + dz * dz);
         }
         return result;
+    }
 
+    public double getManhattenDistance(Integer trajectoryIdx1, Integer trajectoryIdx2)
+    {
+        double result = 0.0;
+        double[][] trajectory1 = _allTrajectories.get(trajectoryIdx1);
+        double[][] trajectory2 = _allTrajectories.get(trajectoryIdx2);
+        for(int idx = 0; idx < trajectory1.length; idx++)
+        {
+            double[] p1 = trajectory1[idx];
+            double[] p2 = trajectory2[idx];
+            double dx = Math.abs(p2[0] - p1[0]);
+            double dy = Math.abs(p2[1] - p1[1]);
+            double dz = Math.abs(p2[2] - p1[2]);
+            result += dx + dy + dz;
+        }
+        return result;
     }
 }
