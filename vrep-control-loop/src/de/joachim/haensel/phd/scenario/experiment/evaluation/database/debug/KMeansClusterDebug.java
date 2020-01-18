@@ -2,7 +2,6 @@ package de.joachim.haensel.phd.scenario.experiment.evaluation.database.debug;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.NamedObsConf;
-import de.joachim.haensel.phd.scenario.experiment.evaluation.database.TrajectoryAverager3D;
+import de.joachim.haensel.phd.scenario.experiment.evaluation.database.Trajectory3DSummaryStatistics;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoObservationConfiguration;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
@@ -109,10 +108,10 @@ public class KMeansClusterDebug extends AbstractAnalysis
                 List<MongoCollection<MongoObservationConfiguration>> collections = 
                         collectionNames.parallelStream().map(collectionName -> carDatabase.getCollection(collectionName, MongoObservationConfiguration.class)).collect(Collectors.toList());
             
-//                List<NamedObsConf> decoded = 
-//                        collections.stream().map(collection -> decodeMongoCollection(collection, 20000)).flatMap(list -> list.stream()).collect(Collectors.toList());
                 List<NamedObsConf> decoded = 
-                        collections.stream().map(collection -> decodeMongoCollection(collection)).flatMap(list -> list.stream()).collect(Collectors.toList());
+                        collections.stream().map(collection -> decodeMongoCollection(collection, 2000)).flatMap(list -> list.stream()).collect(Collectors.toList());
+//                List<NamedObsConf> decoded = 
+//                        collections.stream().map(collection -> decodeMongoCollection(collection)).flatMap(list -> list.stream()).collect(Collectors.toList());
                 System.out.format("Number of decoded Trajectories: %d\n", decoded.size());
                 
                 List<NamedObsConf> pruned = decoded.parallelStream().filter(obsConf -> obsConf.getConfiguration().size() == 20).collect(Collectors.toList());
@@ -125,12 +124,11 @@ public class KMeansClusterDebug extends AbstractAnalysis
                 List<List<TrajectoryElement>> trajectories = aligned.parallelStream().map(toTrajectory).collect(Collectors.toList());
                 List<double[][]> trajectoryArrrays = toDoubleArray(trajectories);
                 
-                
                 System.out.format("Number of trajectories: %s\n", trajectories.size());
                 Collections.shuffle(trajectories);
                 System.out.println("Computing path coordinates");
 
-                Map<Integer, List<Integer>> result = cluster(trajectoryArrrays, 500, 100, visualizer);
+                Map<Integer, List<Integer>> result = cluster(trajectoryArrrays, 100, 20, visualizer);
                 System.out.println("draw cluster? Enter something and <enter>");
                 _scanner.next();
                 visualizer.drawCluster(trajectoryArrrays, result);
@@ -205,8 +203,10 @@ public class KMeansClusterDebug extends AbstractAnalysis
     public double[][] findCenter(List<Integer> trajectoryIndices, List<double[][]> allTrajectories, DistanceCache cache)
     {
         List<double[][]> centerTrajectories = trajectoryIndices.stream().map(idx -> allTrajectories.get(idx)).collect(Collectors.toList());
-        TrajectoryAverager3D averager = centerTrajectories.parallelStream().collect(TrajectoryAverager3D::new, TrajectoryAverager3D::accept, TrajectoryAverager3D::combine);
-        double[][] average = averager.getAverage();
+//        TrajectoryAverager3D statistics = centerTrajectories.parallelStream().collect(TrajectoryAverager3D::new, TrajectoryAverager3D::accept, TrajectoryAverager3D::combine);
+        Trajectory3DSummaryStatistics statistics = 
+                centerTrajectories.parallelStream().collect(Trajectory3DSummaryStatistics::new, Trajectory3DSummaryStatistics::accept, Trajectory3DSummaryStatistics::combine);
+        double[][] average = statistics.getAverage();
         return average;
     }
 

@@ -6,6 +6,7 @@ module vrepvehicle
 {
     exports de.joachim.haensel.phd.scenario.experiment.evaluation.database;
     exports de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb;
+    exports de.joachim.haensel.phd.scenario.experiment.evaluation.histograms;
     
     exports de.joachim.haensel.vehiclecreation;
     exports de.joachim.haensel.vrepshapecreation;

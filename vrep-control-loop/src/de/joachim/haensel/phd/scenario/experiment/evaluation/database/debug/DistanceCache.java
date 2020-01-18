@@ -1,6 +1,5 @@
 package de.joachim.haensel.phd.scenario.experiment.evaluation.database.debug;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +66,7 @@ public class DistanceCache
         return distance(t1, t2);
     }
 
-    public double distance(double[][] trajectory1, double[][] trajectory2)
+    public static double distance(double[][] trajectory1, double[][] trajectory2)
     {
         double result = 0.0;
         for(int idx = 0; idx < trajectory1.length; idx++)
