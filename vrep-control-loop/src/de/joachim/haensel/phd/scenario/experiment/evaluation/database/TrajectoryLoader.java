@@ -17,6 +17,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoObservationConfiguration;
+import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoTrajectory;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.TrajectoryNormalizer;
@@ -24,6 +25,7 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class TrajectoryLoader
 {
+    
     public List<double[][]> loadData(boolean isLimitedLoad, boolean isLimitedUse, int limitUse, int limitLoad)
     {
         CodecRegistry pojoCodecRegistry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build()));
@@ -67,6 +69,24 @@ public class TrajectoryLoader
         mongoClient.close();
         List<double[][]> trajectoryArrrays = toDoubleArray(trajectories);
         return trajectoryArrrays;
+    }
+    
+    public List<MongoTrajectory> loadIndexedData(String collectionName)
+    {
+        CodecRegistry pojoCodecRegistry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build()));
+        MongoClientSettings settings = MongoClientSettings.builder().codecRegistry(pojoCodecRegistry).build();
+        MongoClient mongoClient = MongoClients.create(settings);
+
+        System.out.println("About to load data from database");
+        MongoDatabase indexedTrajectoriesDB = mongoClient.getDatabase("indexed_trajectories");
+        
+        MongoCollection<MongoTrajectory> dbTrajectories = indexedTrajectoriesDB.getCollection(collectionName, MongoTrajectory.class);
+        List<MongoTrajectory> trajectories = dbTrajectories.find().into(new ArrayList<MongoTrajectory>());
+    
+        System.out.format("Number of decoded Trajectories: %d\n", trajectories.size());
+        
+        mongoClient.close();
+        return trajectories;
     }
 
     private List<double[][]> toDoubleArray(List<List<TrajectoryElement>> trajectories)

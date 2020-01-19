@@ -5,10 +5,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.Trajectory3DSummaryStatistics;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.debug.DistanceCache;
+import de.joachim.haensel.phd.scenario.random.MersenneTwister;
 
 public class KMeansClusterer
 {
@@ -75,6 +77,32 @@ public class KMeansClusterer
             curState = assignToCenters(allTrajectories, clusterStatistics);
         }
         return curState;
+    }
+
+    /**
+     * Cluster according to k-means clustering, doing runs runs, resulting in clustering with minimum average distance from means
+     * @param seedBase A seed base for the random number generator
+     * @param runs how many runs to do 
+     * @return
+     */
+    public Map<Trajectory3DSummaryStatistics, List<double[][]>> cluster(int seedBase, int runs)
+    {
+        double minRunAverageDistance = Double.POSITIVE_INFINITY;
+        Map<Trajectory3DSummaryStatistics, List<double[][]>> minRunResult = null;
+        for(int runNr = 0; runNr < runs; runNr++)
+        {
+            int seed = runNr + seedBase;
+            _randomGenerator = new MersenneTwister(seed);
+            Map<Trajectory3DSummaryStatistics, List<double[][]>> result = cluster();
+            Set<Trajectory3DSummaryStatistics> centerStatistics = result.keySet();
+            double averageDistance = centerStatistics.stream().mapToDouble(centerStatistic -> centerStatistic.getAverageDistance()).sum() / centerStatistics.size();
+            if(averageDistance < minRunAverageDistance)
+            {
+                minRunAverageDistance = averageDistance;
+                minRunResult = result;
+            }
+        }
+        return minRunResult;
     }
 
     private Map<Trajectory3DSummaryStatistics, List<double[][]>> assignToCenters(List<double[][]> allTrajectories, List<Trajectory3DSummaryStatistics> centers)
