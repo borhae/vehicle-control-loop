@@ -3,6 +3,7 @@ package de.joachim.haensel.phd.scenario.experiment.evaluation.database;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -87,6 +88,39 @@ public class TrajectoryLoader
         
         mongoClient.close();
         return trajectories;
+    }
+    
+    public Map<Integer, double[][]> loadIndexedDataToMap(String collectionName)
+    {
+        CodecRegistry pojoCodecRegistry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build()));
+        MongoClientSettings settings = MongoClientSettings.builder().codecRegistry(pojoCodecRegistry).build();
+        MongoClient mongoClient = MongoClients.create(settings);
+
+        System.out.println("About to load data from database");
+        MongoDatabase indexedTrajectoriesDB = mongoClient.getDatabase("indexed_trajectories");
+        
+        MongoCollection<MongoTrajectory> dbTrajectories = indexedTrajectoriesDB.getCollection(collectionName, MongoTrajectory.class);
+        List<MongoTrajectory> trajectories = dbTrajectories.find().into(new ArrayList<MongoTrajectory>());
+        Map<Integer, double[][]> result = trajectories.stream().collect(Collectors.toMap(MongoTrajectory::getIdx, mongoTrajectory -> fromDoubleListToDoubleArray(mongoTrajectory.getTrajectory())));
+    
+        System.out.format("Number of decoded Trajectories: %d\n", trajectories.size());
+        
+        mongoClient.close();
+        return result;
+    }
+
+    public static double[][] fromDoubleListToDoubleArray(List<List<Double>> trajectory)
+    {
+        //should init to double[21][3] meaning [length][x, y, z]
+        double[][] result = new double[trajectory.size()][trajectory.get(0).size()];
+        for(int idx = 0; idx < trajectory.size(); idx++)
+        {
+            List<Double> point = trajectory.get(idx);
+            result[idx][0] = point.get(0); //x
+            result[idx][1] = point.get(1); //y
+            result[idx][2] = point.get(2); //z
+        }
+        return result;
     }
 
     private List<double[][]> toDoubleArray(List<List<TrajectoryElement>> trajectories)

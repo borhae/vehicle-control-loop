@@ -6,7 +6,7 @@ public class StorableClassification<T>
 {
     private int _clusterNr;
     private String _clusteringMethod;
-    private List<List<List<Double>>> _members;
+    private List<Integer> _members;
     protected T _classifier;
     
     public int getClusterNr()
@@ -29,12 +29,12 @@ public class StorableClassification<T>
         _clusteringMethod = clusteringMethod;
     }
     
-    public List<List<List<Double>>> getMembers()
+    public List<Integer> getMembers()
     {
         return _members;
     }
     
-    public void setMembers(List<List<List<Double>>> members)
+    public void setMembers(List<Integer> members)
     {
         _members = members;
     }
