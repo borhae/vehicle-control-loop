@@ -8,7 +8,6 @@ import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class NamedObsConf extends ObservationConfiguration
 {
-
     private String _name;
 
     public NamedObsConf(ObservationTuple observation, List<TrajectoryElement> configuration, Long timestamp)

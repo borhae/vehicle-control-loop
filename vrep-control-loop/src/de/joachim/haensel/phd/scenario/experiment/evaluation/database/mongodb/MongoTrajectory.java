@@ -1,116 +1,72 @@
 package de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb;
 
-import org.bson.Document;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import de.joachim.haensel.phd.scenario.experiment.evaluation.database.IDatabaseTrajectory;
+import de.joachim.haensel.phd.scenario.experiment.evaluation.database.NamedObsConf;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
-import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement.VelocityEdgeType;
 
-public class MongoTrajectory implements IDatabaseTrajectory
+public class MongoTrajectory
 {
-    private MongoVector2D _vector2D;
-    private double _velocity;
-    private VelocityEdgeType _riseFall;
-    private double _radius;
-    private double _kappa;
-    private int _idx;
+    private Integer _idx;
+    private List<List<Double>> _trajectory;
+    private String _name;
 
     public MongoTrajectory()
     {
     }
     
-    public MongoTrajectory(TrajectoryElement trajElem)
+    public MongoTrajectory(NamedObsConf namedObsConf, Integer idx)
     {
-        _vector2D = new MongoVector2D(trajElem.getVector());
-        _velocity = trajElem.getVelocity();
-        _riseFall = trajElem.getRiseFall();
-        _radius = trajElem.getRadius();
-        _kappa = trajElem.getKappa();
-        _idx = trajElem.getIdx();
+        _trajectory = trajectoryToDoubleArrayTrajectory(namedObsConf.getConfiguration());
+        _idx = idx;
+        _name = namedObsConf.getName();
     }
 
-    public MongoTrajectory(Document doc)
-    {
-        _vector2D = doc.get("vector2D", MongoVector2D.class);
-        Double velocity = doc.getDouble("velocity");
-        _velocity = velocity == null ? 0.0d : velocity.doubleValue();
-        _riseFall = VelocityEdgeType.valueOf(doc.getString("riseFall"));
-        Double radius = doc.getDouble("radius");
-        _radius = radius == null ? 0.0d : radius.doubleValue();
-        Double kappa = doc.getDouble("kappa");
-        _kappa = kappa == null ? 0.0d : kappa.doubleValue();
-        _idx = doc.getInteger("idx", 0);
-    }
-
-    public TrajectoryElement decode()
-    {
-        TrajectoryElement result = new TrajectoryElement();
-        result.setVector(_vector2D.decode());
-        result.setVelocity(_velocity);
-        result.setRiseFall(_riseFall);
-        result.setRadius(_radius);
-        result.setKappa(_kappa);
-        result.setIdx(_idx);
-        return result;
-    }
-    
-    public int getIdx()
+    public Integer getIdx()
     {
         return _idx;
     }
 
-    public void setIdx(int idx)
+    public void setIdx(Integer idx)
     {
         _idx = idx;
     }
 
-    public MongoVector2D getVector2D()
+    public List<List<Double>> getTrajectory()
     {
-        return _vector2D;
+        return _trajectory;
     }
 
-    public void setVector2D(MongoVector2D mongoVector2D)
+    public void setTrajectory(List<List<Double>> trajectory)
     {
-        _vector2D = mongoVector2D;
+        _trajectory = trajectory;
     }
 
-    public double getVelocity()
+    public String getName()
     {
-        return _velocity;
+        return _name;
     }
 
-    public void setVelocity(double velocity)
+    public void setName(String name)
     {
-        _velocity = velocity;
+        _name = name;
     }
 
-    public VelocityEdgeType getRiseFall()
+    private List<List<Double>> trajectoryToDoubleArrayTrajectory(List<TrajectoryElement> trajectory)
     {
-        return _riseFall;
-    }
-
-    public void setRiseFall(VelocityEdgeType riseFall)
-    {
-        _riseFall = riseFall;
-    }
-
-    public double getRadius()
-    {
-        return _radius;
-    }
-
-    public void setRadius(double radius)
-    {
-        _radius = radius;
-    }
-
-    public double getKappa()
-    {
-        return _kappa;
-    }
-
-    public void setKappa(double kappa)
-    {
-        _kappa = kappa;
+        Function<TrajectoryElement, List<Double>> toList = 
+                t -> {Vector2D v = t.getVector(); List<Double> result = Arrays.asList(v.getbX(), v.getbY(), t.getVelocity()); return result;};
+        List<List<Double>> result = trajectory.stream().map(toList).collect(Collectors.toList());
+        
+        TrajectoryElement t = trajectory.get(trajectory.size() - 1);
+        Position2D tTip = t.getVector().getTip();
+        List<Double> last = Arrays.asList(tTip.getX(), tTip.getY(), t.getVelocity());
+        result.add(last);
+        return result;
     }
 }

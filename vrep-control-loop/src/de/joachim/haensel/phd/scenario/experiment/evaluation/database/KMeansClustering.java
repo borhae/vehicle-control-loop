@@ -2,6 +2,7 @@ package de.joachim.haensel.phd.scenario.experiment.evaluation.database;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -50,30 +51,36 @@ public class KMeansClustering
         List<List<Vector2D>> trajectories = luebeckData.parallelStream().map(toTrajectory).collect(Collectors.toList());
         Collections.shuffle(trajectories);
    
-        List<List<Vector2D>> smallSample = trajectories.subList(0, 10000);
+        List<List<Vector2D>> smallSample = trajectories.subList(0, 50000);
 
         KMeansClustering clusterer = new KMeansClustering();
-        Map<Integer, List<Integer>> result = clusterer.cluster(smallSample, 100);
+        Map<Integer, List<Integer>> result = clusterer.cluster(smallSample, 100, 30);
         MongoDatabase histogramDatabase = mongoClient.getDatabase("histograms");
-        histogramDatabase.createCollection("test");
-        MongoCollection<MongoHistogramEntry> histogramCollection = histogramDatabase.getCollection("test", MongoHistogramEntry.class);
+        String targetCollectionName = "test1";
+        histogramDatabase.createCollection(targetCollectionName);
+        MongoCollection<MongoHistogramEntry> histogramCollection = histogramDatabase.getCollection(targetCollectionName, MongoHistogramEntry.class);
         List<MongoHistogramEntry> histogram = result.entrySet().stream().map(entry -> new MongoHistogramEntry(entry.getKey(), entry.getValue(), trajectories)).collect(Collectors.toList());
         histogramCollection.insertMany(histogram);
         
         mongoClient.close();
     }
 
-    private Map<Integer, List<Integer>> cluster(List<List<Vector2D>> trajectories, int numOfClusters)
+    private Map<Integer, List<Integer>> cluster(List<List<Vector2D>> trajectories, int numOfClusters, int maxIters)
     {
-        List<List<Vector2D>> centers = createInitialCenters(trajectories, numOfClusters);
-        System.out.println("Centers created 0: " + centers.size());
-        Map<Integer, List<Integer>> cluster0 = assignToCenters(trajectories, centers);
-        System.out.println("Centers after assignment 0: " + cluster0.keySet().size());
-        List<List<Vector2D>> newCenters = findNewCenters(cluster0, centers, trajectories);
-        System.out.println("Centers 1 adjusted: " + newCenters.size());
-        Map<Integer, List<Integer>> cluster1 = assignToCenters(trajectories, newCenters);
-        System.out.println("Centers after assignment 1: " + cluster1.keySet().size());
-        return cluster1;
+        List<List<Vector2D>> centers0 = createInitialCenters(trajectories, numOfClusters);
+        System.out.println("Random centers the sample: " + centers0.size());
+        Map<Integer, List<Integer>> cluster0 = assignToCenters(trajectories, centers0);
+        System.out.println("Centers after initial clustering: " + cluster0.keySet().size());
+        Map<Integer, List<Integer>> result = new HashMap<Integer, List<Integer>>();
+        List<List<Vector2D>> curCenters = centers0;
+        for(int cnt = 0; cnt < maxIters; cnt++)
+        {
+            curCenters = findNewCenters(cluster0, curCenters, trajectories);
+            System.out.format("Centers number %d adjusted. There are %d of them. \n", cnt, curCenters.size());
+            result = assignToCenters(trajectories, curCenters);
+            System.out.format("Number of centers after assignment %d: %d\n", cnt, result.keySet().size());
+        }
+        return result;
     }
 
     private List<List<Vector2D>> findNewCenters(Map<Integer, List<Integer>> cluster, List<List<Vector2D>> oldCenters, List<List<Vector2D>> trajectories)

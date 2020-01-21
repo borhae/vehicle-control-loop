@@ -4,6 +4,10 @@
  */
 module vrepvehicle
 {
+    exports de.joachim.haensel.phd.scenario.experiment.evaluation.database;
+    exports de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb;
+    exports de.joachim.haensel.phd.scenario.experiment.evaluation.histograms;
+    
     exports de.joachim.haensel.vehiclecreation;
     exports de.joachim.haensel.vrepshapecreation;
     exports de.joachim.haensel.vrepshapecreation.shapes;
@@ -11,6 +15,10 @@ module vrepvehicle
     exports de.joachim.haensel.vrepshapecreation.joints;
     exports de.joachim.haensel.vrepshapecreation.parameters;
     exports sumobindings;
+    
+    exports de.joachim.haensel.phd.scenario.vehicle.navigation;
+    exports de.joachim.haensel.phd.scenario.math.geometry;
+    exports de.joachim.haensel.phd.scenario.profile.equivalenceclasses;
 
     opens sumobindings to java.xml.bind;
     opens de.joachim.haensel.phd.scenario.math.geometry to com.fasterxml.jackson.databind;
@@ -19,13 +27,12 @@ module vrepvehicle
     opens de.joachim.haensel.phd.scenario.profile.equivalenceclasses to com.fasterxml.jackson.databind;
     opens de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglediff;
 
-    exports de.joachim.haensel.phd.scenario.vehicle.navigation to org.mongodb.bson;
-    exports de.joachim.haensel.phd.scenario.math.geometry to org.mongodb.bson;
-    exports de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb to org.mongodb.bson;
-    exports de.joachim.haensel.phd.scenario.experiment.evaluation.database to org.mongodb.bson;
-
-    
     requires transitive coppelialib;
+    requires jzy3d.api;
+    requires jzy3d.jdt.core;
+
+    requires java.logging;
+    
     requires java.xml;
     requires java.xml.bind;
     requires org.junit.jupiter.api;

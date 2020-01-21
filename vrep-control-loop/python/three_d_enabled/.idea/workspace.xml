@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3207980f-0756-48d5-95f7-412b7ce81652" name="Default Changelist" comment="" />
+    <list default="true" id="3cdb3ac1-3ec7-4ee4-98c3-f1aeb4aaafdb" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,14 +18,15 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../.." />
   </component>
-  <component name="ProjectId" id="1SbOruyeyjkwwc9S1sdG2siUJ8n" />
+  <component name="ProjectId" id="1ShOoC7fN26NJPGFLOkcmOiGRrM" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../three_d_enabled" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\opt\git\vrep-vehicle-control-loop\vrep-control-loop\python\phd-visualization" />
+      <recent name="C:\opt\git\vrep-vehicle-control-loop\vrep-control-loop\python\three_d_enabled" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -45,11 +46,11 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="3207980f-0756-48d5-95f7-412b7ce81652" name="Default Changelist" comment="" />
-      <created>1571829031013</created>
+      <changelist id="3cdb3ac1-3ec7-4ee4-98c3-f1aeb4aaafdb" name="Default Changelist" comment="" />
+      <created>1572012533557</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1571829031013</updated>
+      <updated>1572012533557</updated>
     </task>
     <servers />
   </component>
@@ -65,16 +66,5 @@
         </entry>
       </map>
     </option>
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/visualizationscript.py</url>
-          <line>168</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>
