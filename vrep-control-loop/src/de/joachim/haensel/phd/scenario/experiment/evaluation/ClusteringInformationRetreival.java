@@ -1,12 +1,16 @@
 package de.joachim.haensel.phd.scenario.experiment.evaluation;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.ClusteringLoader;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.Trajectory3DSummaryStatistics;
+import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoTrajectory;
 
 public class ClusteringInformationRetreival
 {
@@ -43,5 +47,37 @@ public class ClusteringInformationRetreival
         ClusteringLoader clusteringLoader = new ClusteringLoader();
         Map<Trajectory3DSummaryStatistics, List<Integer>> clustering = clusteringLoader.loadClusters(clusterID);
         return clustering;
+    }
+
+    public static Map<Integer, Trajectory3DSummaryStatistics> reverseClustering(Map<Trajectory3DSummaryStatistics, List<Integer>> clustering)
+    {
+        Map<Integer, Trajectory3DSummaryStatistics> reversedMap = 
+                clustering.entrySet().stream().flatMap
+                (
+                        entry -> entry.getValue().stream().map
+                        (
+                                trajectory -> Map.entry
+                                (
+                                        trajectory, entry.getKey()
+                                ) 
+                        )
+                ).collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+        return reversedMap;
+    }
+    
+    public static Collection<? extends Integer> getClusterIndices(Map<Trajectory3DSummaryStatistics, List<Integer>> clustering)
+    {
+        return clustering.values().stream().flatMap(trajectories -> trajectories.stream()).collect(Collectors.toList());
+    }
+
+    public static Map<Trajectory3DSummaryStatistics, List<Integer>> extractForCity(Map<Integer, MongoTrajectory> dbTrajectories, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering, Set<Trajectory3DSummaryStatistics> clusterKeys, String cityName)
+    {
+        Map<Trajectory3DSummaryStatistics, List<Integer>> resultClustering = new HashMap<Trajectory3DSummaryStatistics, List<Integer>>();
+        for (Trajectory3DSummaryStatistics curCenter : clusterKeys)
+        {
+            List<Integer> luebeckTrajectories = clustering.get(curCenter).stream().filter(idx -> dbTrajectories.get(idx).getName().contains(cityName)).collect(Collectors.toList());
+            resultClustering.put(curCenter, luebeckTrajectories);
+        }
+        return resultClustering;
     }
 }

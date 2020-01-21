@@ -1,9 +1,13 @@
 package de.joachim.haensel.phd.scenario.experiment.evaluation;
 
+import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.*;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -12,32 +16,33 @@ import de.joachim.haensel.phd.scenario.experiment.evaluation.database.Trajectory
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoTrajectory;
 import de.joachim.haensel.phd.scenario.random.MersenneTwister;
 
-import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.*;
-
-public class MeasureGroundTruthValidity
+public class CityProfileDevelopment
 {
     public static void main(String[] args)
     {
         TrajectoryLoader trajectoryLoader = new TrajectoryLoader();
         Map<Integer, MongoTrajectory> dbTrajectories = trajectoryLoader.loadIndexedDataToMap("data_available_at_2020-01-18");
         Map<Trajectory3DSummaryStatistics, List<Integer>> clustering = loadClusteringK(100);
+        Map<Trajectory3DSummaryStatistics, List<Integer>> luebeckClustering = extractForCity(dbTrajectories, clustering, clustering.keySet(), "Luebeck");
+        Map<Trajectory3DSummaryStatistics, List<Integer>> chandigarhClustering = extractForCity(dbTrajectories, clustering, clustering.keySet(), "Chandigarh");
+        
         Map<Integer, Trajectory3DSummaryStatistics> reversedMap = reverseClustering(clustering);
         
+        List<Integer> luebeckIndices = new ArrayList<Integer>(getClusterIndices(luebeckClustering));
         MersenneTwister randomGen = new MersenneTwister(1001);
-        List<Integer> trajectoryIndices = new ArrayList<Integer>(dbTrajectories.keySet());
-        Collections.shuffle(trajectoryIndices, randomGen);
-        int sampleSize = trajectoryIndices.size();
+        Collections.shuffle(luebeckIndices, randomGen);
+        int sampleSize = luebeckIndices.size();
         int maxRange = 1000;
         List<Integer> percentages = 
                 IntStream.rangeClosed(1, maxRange).map(val -> val * (sampleSize/maxRange)).boxed().collect(Collectors.toList());
         System.out.println("count delta");
         for(int cnt = 0; cnt < maxRange - 1; cnt++)
         {
-            ArrayList<Integer> data_i = new ArrayList<Integer>(trajectoryIndices.subList(0, percentages.get(cnt)));
-            ArrayList<Integer> data_i_prime = new ArrayList<Integer>(trajectoryIndices.subList(0, percentages.get(cnt + 1)));
+            ArrayList<Integer> data_i = new ArrayList<Integer>(luebeckIndices.subList(0, percentages.get(cnt)));
+            ArrayList<Integer> data_i_prime = new ArrayList<Integer>(luebeckIndices.subList(0, percentages.get(cnt + 1)));
             
-            Map<Trajectory3DSummaryStatistics, List<Integer>> data_i_cluster = clusterDataSet(reversedMap, clustering, data_i);
-            Map<Trajectory3DSummaryStatistics, List<Integer>> data_i_prime_cluster = clusterDataSet(reversedMap, clustering, data_i_prime);
+            Map<Trajectory3DSummaryStatistics, List<Integer>> data_i_cluster = clusterDataSet(reversedMap, luebeckClustering, data_i);
+            Map<Trajectory3DSummaryStatistics, List<Integer>> data_i_prime_cluster = clusterDataSet(reversedMap, luebeckClustering, data_i_prime);
             
             List<Double> data_i_p = retreiveProfileFrom(data_i_cluster);
             List<Double> data_i_prime_p = retreiveProfileFrom(data_i_prime_cluster);

@@ -1,16 +1,15 @@
 package de.joachim.haensel.phd.scenario.experiment.evaluation.histograms;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.ClusteringLoader;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.Trajectory3DSummaryStatistics;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.TrajectoryLoader;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoTrajectory;
+import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.*;
 
 public class CityHistograms
 {
@@ -115,16 +114,5 @@ public class CityHistograms
         int sizeA = clustering.get(a).size();
         int sizeB = clustering.get(b).size();
         return Integer.compare(sizeA, sizeB);
-    }
-
-    private static Map<Trajectory3DSummaryStatistics, List<Integer>> extractForCity(Map<Integer, MongoTrajectory> dbTrajectories, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering, Set<Trajectory3DSummaryStatistics> clusterKeys, String cityName)
-    {
-        Map<Trajectory3DSummaryStatistics, List<Integer>> resultClustering = new HashMap<Trajectory3DSummaryStatistics, List<Integer>>();
-        for (Trajectory3DSummaryStatistics curCenter : clusterKeys)
-        {
-            List<Integer> luebeckTrajectories = clustering.get(curCenter).stream().filter(idx -> dbTrajectories.get(idx).getName().contains(cityName)).collect(Collectors.toList());
-            resultClustering.put(curCenter, luebeckTrajectories);
-        }
-        return resultClustering;
     }
 }
