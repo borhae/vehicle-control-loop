@@ -3,9 +3,9 @@ import math
 
 def main():
     T = 8
-    r_s = risk_t_self_defined([1.0], [1.0], T)
-    print()
-    print("risk: %5.2f, p_i: %s\n" % r_s)
+    p = [1.0]
+    r_s = risk_t_self_defined(p, [1.0], T)
+    print("risk: %5.2f\n" % r_s)
 
     r_d = risk_t_self_defined([0.3, 0.7], [0.3, 0.7], T)
     print("dual profile risk: %5.2f\n" % r_d)
@@ -22,6 +22,8 @@ def main():
 
 def risk_t_self_defined(p, t_w, T):
     r = 0.0;
+    print(p)
+    print(t_w)
     for p_i, t_w_i in zip(p, t_w):
         t_i = t_w_i * T;
         print(t_i);
@@ -31,6 +33,7 @@ def risk_t_self_defined(p, t_w, T):
 
 def risk_johannes(p, T):
     r = 0.0;
+    print(p)
     sqrt_sum : float = 0.0;
     for p_i in p:
         sqrt_sum += math.sqrt(p_i)
