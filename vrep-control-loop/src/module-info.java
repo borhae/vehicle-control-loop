@@ -31,6 +31,8 @@ module vrepvehicle
     requires jzy3d.api;
     requires jzy3d.jdt.core;
 
+    requires java.logging;
+    
     requires java.xml;
     requires java.xml.bind;
     requires org.junit.jupiter.api;

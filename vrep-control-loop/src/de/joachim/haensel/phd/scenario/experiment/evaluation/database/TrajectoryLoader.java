@@ -90,7 +90,28 @@ public class TrajectoryLoader
         return trajectories;
     }
     
-    public Map<Integer, double[][]> loadIndexedDataToMap(String collectionName)
+
+    public Map<Integer, MongoTrajectory> loadIndexedDataToMap(String collectionName)
+    {
+        CodecRegistry pojoCodecRegistry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build()));
+        MongoClientSettings settings = MongoClientSettings.builder().codecRegistry(pojoCodecRegistry).build();
+        MongoClient mongoClient = MongoClients.create(settings);
+
+        System.out.println("About to load data from database");
+        MongoDatabase indexedTrajectoriesDB = mongoClient.getDatabase("indexed_trajectories");
+        
+        MongoCollection<MongoTrajectory> dbTrajectories = indexedTrajectoriesDB.getCollection(collectionName, MongoTrajectory.class);
+        List<MongoTrajectory> trajectories = dbTrajectories.find().into(new ArrayList<MongoTrajectory>());
+        Map<Integer, MongoTrajectory> result = trajectories.stream().collect(Collectors.toMap(MongoTrajectory::getIdx, mongoTrajectory -> mongoTrajectory));
+    
+        System.out.format("Number of decoded Trajectories: %d\n", trajectories.size());
+        
+        mongoClient.close();
+        return result;
+    }
+
+    
+    public Map<Integer, double[][]> loadIndexedTrajectoriesToMap(String collectionName)
     {
         CodecRegistry pojoCodecRegistry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build()));
         MongoClientSettings settings = MongoClientSettings.builder().codecRegistry(pojoCodecRegistry).build();

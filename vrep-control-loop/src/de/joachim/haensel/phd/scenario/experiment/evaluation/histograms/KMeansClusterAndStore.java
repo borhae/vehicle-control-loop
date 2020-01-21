@@ -1,13 +1,12 @@
 package de.joachim.haensel.phd.scenario.experiment.evaluation.histograms;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -35,13 +34,11 @@ public class KMeansClusterAndStore implements Runnable
     @Override
     public void run()
     {
-        boolean isLimitedLoad = false;
         int limitLoad = 0;
-        boolean isLimitedUse = false;
         int limitUse = 0;
 
         TrajectoryLoader loader = new TrajectoryLoader();
-        Map<Integer, double[][]> indexedTrajectories = loader.loadIndexedDataToMap("data_available_at_2020-01-18");
+        Map<Integer, double[][]> indexedTrajectories = loader.loadIndexedTrajectoriesToMap("data_available_at_2020-01-18");
         Map<double[][], Integer> lookupMap = indexedTrajectories.entrySet().stream().collect(Collectors.toMap(entry -> entry.getValue(), entry -> entry.getKey()));
         
         MongoClient mongoClient = openDBToWrite();
@@ -52,17 +49,28 @@ public class KMeansClusterAndStore implements Runnable
         
         int[] ks = new int[] 
                 {
+                        10,
                         20,
-                        200,
-                        1000
+                        30,
+                        40,
+                        60,
+                        80,
+                        100,
+                        120,
+                        140,
+                        160, 
+                        180, 
+                        200
                 };
-        
+
         for(int idxK = 0; idxK < ks.length; idxK++)
         {
             int k = ks[idxK];
-            
-            Map<Trajectory3DSummaryStatistics, List<double[][]>> minRunResult = cluster(limitLoad, limitUse, k, seedBase, maxIterations, runs, indexedTrajectories.values(), mongoClient);
-            String collectionName = String.format("DataLoad%dDataUsed%dK%dSeed%dIterations%dRuns%d", limitLoad, limitUse, k, seedBase, maxIterations, runs);
+            //for a deterministic clustering (seed and data) data has to be in deterministic order 
+            List<double[][]> trajectories = 
+                    IntStream.range(0, indexedTrajectories.values().size()).boxed().map(idx -> indexedTrajectories.get(idx)).collect(Collectors.toList());
+            Map<Trajectory3DSummaryStatistics, List<double[][]>> minRunResult = cluster(limitLoad, limitUse, k, seedBase, maxIterations, runs, trajectories, mongoClient);
+            String collectionName = String.format("20200120DataLoad%dDataUsed%dK%dSeed%dIterations%dRuns%d", limitLoad, limitUse, k, seedBase, maxIterations, runs);
             storeToDatabase(mongoClient, minRunResult, collectionName, lookupMap);
         }
 
@@ -77,9 +85,9 @@ public class KMeansClusterAndStore implements Runnable
         return mongoClient;
     }
 
-    private Map<Trajectory3DSummaryStatistics, List<double[][]>> cluster(int limitLoad, int limitUse, int k, int seedBase, int maxIterations, int runs, Collection<double[][]> trajectoryArrays, MongoClient mongoClient)
+    private Map<Trajectory3DSummaryStatistics, List<double[][]>> cluster(int limitLoad, int limitUse, int k, int seedBase, int maxIterations, int runs, List<double[][]> trajectoryArrays, MongoClient mongoClient)
     {
-        KMeansClusterer clusterer = new KMeansClusterer(new ArrayList<double[][]>(trajectoryArrays), k, new MersenneTwister(), maxIterations);
+        KMeansClusterer clusterer = new KMeansClusterer(trajectoryArrays, k, new MersenneTwister(), maxIterations);
         Map<Trajectory3DSummaryStatistics, List<double[][]>> minRunResult = clusterer.cluster(seedBase, runs);
         return minRunResult;
     }
@@ -98,7 +106,7 @@ public class KMeansClusterAndStore implements Runnable
         KMeansClassification result = new KMeansClassification();
         result.setClassifier(toDoubleList(entry.getKey().getAverage()));
         result.setClusteringMethod("k-means");
-        result.setClusterNr(1);
+        result.setClusterNr(entry.getKey().getClusterNr());
         result.setMembers(entry.getValue().stream().map(trajectory -> lookUpMap.get(trajectory)).collect(Collectors.toList()));
         return result;
     }

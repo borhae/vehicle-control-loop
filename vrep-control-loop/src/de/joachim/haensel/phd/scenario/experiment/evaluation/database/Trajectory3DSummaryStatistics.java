@@ -17,7 +17,13 @@ public class Trajectory3DSummaryStatistics
     private int _runningCount = 0;
     private List<Double> _averageDistances;
     private Double _averageDistance = null;
+    private Integer _idx;
 
+    public Trajectory3DSummaryStatistics(int idx)
+    {
+        _idx = idx;
+    }
+    
     public Trajectory3DSummaryStatistics()
     {
         _accumulatedData = new ArrayList<double[][]>();
@@ -26,6 +32,12 @@ public class Trajectory3DSummaryStatistics
     public Trajectory3DSummaryStatistics(double[][] center)
     {
         _average = center;
+    }
+
+    public Trajectory3DSummaryStatistics(double[][] center, Integer idx)
+    {
+        this(center);
+        _idx = idx;
     }
 
     private static double[][] createEmpty()
@@ -107,6 +119,16 @@ public class Trajectory3DSummaryStatistics
     {
         _runningCount = _runningCount + other._runningCount;
         _accumulatedData.addAll(other._accumulatedData);
+    }
+    
+    public int getClusterNr()
+    {
+        return _idx;
+    }
+
+    public void setClusterNr(int clusterNr)
+    {
+        _idx = clusterNr;
     }
 
     public double[][] getAverage()

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.Trajectory3DSummaryStatistics;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.debug.DistanceCache;
@@ -67,7 +68,8 @@ public class KMeansClusterer
     public Map<Trajectory3DSummaryStatistics, List<double[][]>> cluster(List<double[][]> allTrajectories, int numOfClusters, int maxIters, Random randomGen)
     {
         List<double[][]> centers0 = createInitialCenters(allTrajectories, numOfClusters, randomGen);
-        List<Trajectory3DSummaryStatistics> initialSummaries = centers0.parallelStream().map(center -> new Trajectory3DSummaryStatistics(center)).collect(Collectors.toList());
+        List<Trajectory3DSummaryStatistics> initialSummaries = 
+                IntStream.range(0, centers0.size()).boxed().map(idx -> new Trajectory3DSummaryStatistics(centers0.get(idx), idx)).collect(Collectors.toList());
         
         Map<Trajectory3DSummaryStatistics, List<double[][]>> curState = assignToCenters(allTrajectories, initialSummaries);
         for(int cnt = 0; cnt < maxIters; cnt++)
@@ -80,7 +82,7 @@ public class KMeansClusterer
     }
 
     /**
-     * Cluster according to k-means clustering, doing runs runs, resulting in clustering with minimum average distance from means
+     * Cluster according to k-means clustering, doing "runs" runs, resulting in clustering with minimum average distance from means
      * @param seedBase A seed base for the random number generator
      * @param runs how many runs to do 
      * @return
@@ -134,15 +136,16 @@ public class KMeansClusterer
     
     private List<Trajectory3DSummaryStatistics> findNewCenters(Map<Trajectory3DSummaryStatistics, List<double[][]>> cluster)
     {
-        List<Trajectory3DSummaryStatistics> result = cluster.entrySet().parallelStream().map(entry -> findCenter(entry.getValue())).collect(Collectors.toList());
+        List<Trajectory3DSummaryStatistics> result = cluster.entrySet().parallelStream().map(entry -> findCenter(entry.getValue(), entry.getKey())).collect(Collectors.toList());
         return result;
     }
 
-    private Trajectory3DSummaryStatistics findCenter(List<double[][]> trajectoriesInCluster)
+    private Trajectory3DSummaryStatistics findCenter(List<double[][]> trajectoriesInCluster, Trajectory3DSummaryStatistics prevCenter)
     {
-        Trajectory3DSummaryStatistics statistics = 
+        Trajectory3DSummaryStatistics newCenter = 
                 trajectoriesInCluster.parallelStream().collect(Trajectory3DSummaryStatistics::new, Trajectory3DSummaryStatistics::accept, Trajectory3DSummaryStatistics::combine);
-        return statistics;
+        newCenter.setClusterNr(prevCenter.getClusterNr());
+        return newCenter;
     }
 
     private List<double[][]> createInitialCenters(List<double[][]> allTrajectories, int numberOfClusters, Random randomGen)
