@@ -24,23 +24,61 @@ public class KMeansFindKRiskBased implements Runnable
     @Override
     public void run()
     {
+        List<Integer> intRange = IntStream.rangeClosed(1, 10).boxed().collect(Collectors.toList());
+        List<Double> doubleRange = intRange.stream().mapToDouble(i -> (i)).boxed().collect(Collectors.toList());
+        List<Double> rValues = doubleRange.stream().map(d -> d * Math.pow(10.0, -6.0)).collect(Collectors.toList());
+        rValues.forEach(s -> System.out.format("%.10f\n", s));
         TrajectoryLoader trajectoryLoader = new TrajectoryLoader();
         Map<Integer, MongoTrajectory> dbTrajectories = trajectoryLoader.loadIndexedDataToMap("data_available_at_2020-01-18");
-        List<Integer> luebeckIndices = getIndicesForCity(dbTrajectories, "Luebeck");
-        List<Integer> chandigarhIndices = getIndicesForCity(dbTrajectories, "Chandigarh");
+        
+        int[] ks = new int[]
+                {
+                  10,
+                  20,
+                  30,
+                  40,
+                  60,
+                  80,
+                  100,
+                  120,
+                  140,
+                  160,
+                  180,
+                  200,
+                  1000
+                };
+
+        StringBuilder result = new StringBuilder();
+        result.append("k R t_i-sum\n");
+        for(int idx = 0; idx < ks.length; idx++)
+        {
+            int k = ks[idx];
+            Map<Trajectory3DSummaryStatistics, List<Integer>> clustering = loadClusterK(k);
+
+            List<String> runResult = 
+                    rValues.stream().map(r -> computeTforRAndP_iFromClustering(r, dbTrajectories.size(), k, clustering)).collect(Collectors.toList());
+            
+            result.append(runResult.stream().collect(Collectors.joining()));
+        }
+        System.out.println(result.toString());
+    }
+
+    private Map<Trajectory3DSummaryStatistics, List<Integer>> loadClusterK(int k)
+    {
+        String clusterID = "20200120DataLoad0DataUsed0K" + Integer.toString(k) + "Seed1000Iterations100Runs3";
         
         ClusteringLoader clusteringLoader = new ClusteringLoader();
-        Map<Trajectory3DSummaryStatistics, List<Integer>> clustering = clusteringLoader.loadClusters("20200120DataLoad0DataUsed0K10Seed1000Iterations100Runs3");
+        Map<Trajectory3DSummaryStatistics, List<Integer>> clustering = clusteringLoader.loadClusters(clusterID);
+        return clustering;
+    }
+
+    private String computeTforRAndP_iFromClustering(double R, int dataSetSize, int k, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering)
+    {
         Set<Trajectory3DSummaryStatistics> clusterKeys = clustering.keySet();
 
-        Map<Trajectory3DSummaryStatistics, List<Integer>> clusteringLuebeck = extractForCity(dbTrajectories, clustering, clusterKeys, "Luebeck");
-        
-        Map<Trajectory3DSummaryStatistics, List<Integer>> clusteringChandigarh = extractForCity(dbTrajectories, clustering, clusterKeys, "Chandigarh");
-        
         ArrayList<Trajectory3DSummaryStatistics> centersNumbered = new ArrayList<Trajectory3DSummaryStatistics>(clusterKeys);
         centersNumbered.sort((a, b) -> Integer.compare(a.getClusterNr(), b.getClusterNr()));
         
-        int sumOfTrajectories = dbTrajectories.size();
         List<Integer> bins = new ArrayList<Integer>();
         for(int idx = 0; idx < centersNumbered.size(); idx++)
         {
@@ -48,35 +86,54 @@ public class KMeansFindKRiskBased implements Runnable
             int binCount = members.size();
             bins.add(binCount);
         }
-        List<Double> probabilities = bins.parallelStream().mapToDouble(binCount -> ((double)binCount/(double)sumOfTrajectories)).boxed().collect(Collectors.toList());
-        int T = computeT(probabilities, Math.pow(10.0, -6.0));
-        
-//        StringBuilder result = new StringBuilder();
-//        int luebeckSum = 0;
-//        int chandigarhSum = 0;
-//        for (Trajectory3DSummaryStatistics curCenter : centersNumbered)
-//        {
-//            int luebeckSize = clusteringLuebeck.get(curCenter).size();
-//            int chandigarhSize = clusteringChandigarh.get(curCenter).size();
-//            String row = String.format("%d %d %d\n", curCenter.getClusterNr(), luebeckSize, chandigarhSize);
-//            result.append(row);
-//            luebeckSum += luebeckSize;
-//            chandigarhSum += chandigarhSize;
-//        }
-//        System.out.println(result.toString());
-//        System.out.format("Luebeck: %d samples, Chandigarh: %d samples\n", luebeckSum, chandigarhSum);
+        List<Double> probabilities = bins.parallelStream().mapToDouble(binCount -> ((double)binCount/(double)dataSetSize)).boxed().collect(Collectors.toList());
+        double p_sum = probabilities.stream().collect(Collectors.summarizingDouble(Double::valueOf)).getSum();
+        List<Integer> t_is = computeT(probabilities, R);
+        Integer T = t_is.stream().collect(Collectors.summingInt(Integer::intValue));
+        String result = String.format("%d %.10f %d\n", k, R, T);
+        return result;
     }
 
-    private int computeT(List<Double> probabilities, double R)
+    private List<Integer> computeT(List<Double> probabilities, double R)
     {
-        double sumOfp_iSquareroot = probabilities.stream().mapToDouble(p_i -> Math.sqrt(p_i)).sum();
-        List<Double> t_is = probabilities.stream().mapToDouble(p_i -> ((Math.sqrt(p_i) / R) * sumOfp_iSquareroot)).boxed().collect(Collectors.toList());
-        for(int idx = 0; idx < t_is.size(); idx++)
+        double sumOfp_iRoot = probabilities.stream().mapToDouble(p_i -> Math.sqrt(p_i)).sum();
+        List<Double> t_is = probabilities.stream().mapToDouble(p_i -> ((Math.sqrt(p_i) / R) * sumOfp_iRoot) - 2.0).boxed().collect(Collectors.toList());
+        List<Double> rounded_t_is = roundUpDown(t_is, probabilities);
+        
+        return rounded_t_is.stream().mapToInt(rounded_t_i -> rounded_t_i.intValue()).boxed().collect(Collectors.toList());
+    }
+    
+    private List<Double> roundUpDown(List<Double> t_is, List<Double> p_is)
+    {
+        List<Double> result = new ArrayList<Double>();
+        double riskBuffer = 0;
+        for (int idx = 0; idx < t_is.size(); idx++) 
         {
-            double t_i = t_is.get(idx);
-//            if(t_i > )
+            double t_i = t_is.get(idx); //array[i]
+            double p_i = p_is.get(idx); //pArray[i]
+            if (t_i <= 0) 
+            {
+                result.add(0.0);
+                riskBuffer = riskBuffer + p_i / (2 + t_i) - p_i / 2;  
+            } 
+            else 
+            {
+                double floor = Math.floor(t_i);
+                double lostRisk = p_i / (2 + floor) - p_i / (2 + t_i);
+                if (lostRisk <= riskBuffer) 
+                {
+                    result.add(floor);
+                    riskBuffer = riskBuffer - lostRisk;
+                } 
+                else 
+                {
+                    double ceiling = Math.ceil(t_i);
+                    result.add(ceiling);
+                    riskBuffer = riskBuffer - p_i / (2 + ceiling) + p_i / (2 + t_i);
+                }
+            }
         }
-        return 10;
+        return result;
     }
 
     private List<Integer> getIndicesForCity(Map<Integer, MongoTrajectory> dbTrajectories, String cityName)
