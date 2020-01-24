@@ -2,6 +2,7 @@ package de.joachim.haensel.phd.scenario.experiment.evaluation;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,11 +23,28 @@ public class ClusteringInformationRetreival
     public static List<Double> retreiveProfileFrom(Map<Trajectory3DSummaryStatistics, List<Integer>> clustering)
     {
         int sum = clustering.values().stream().mapToInt(trajectoryList -> trajectoryList.size()).sum();
-        List<Double> result = clustering.entrySet().stream().mapToDouble(entry -> ((double)entry.getValue().size()/(double)sum)).boxed().collect(Collectors.toList());
+        List<Trajectory3DSummaryStatistics> centers = new ArrayList<Trajectory3DSummaryStatistics>(clustering.keySet());
+        Collections.sort(centers, (a, b) -> compare(a, b));
+        List<Double> result = centers.stream().mapToDouble(center -> ((double)clustering.get(center).size()/(double)sum)).boxed().collect(Collectors.toList());
+        return result;
+    }
+    
+    public static List<Double> retreiveProfileFromIndexed(Map<Integer, Integer> clusterCounts)
+    {
+        ArrayList<Integer> clusterNrs = new ArrayList<Integer>(clusterCounts.keySet());
+        Collections.sort(clusterNrs);
+        int sum = clusterCounts.values().stream().mapToInt(Integer::valueOf).sum();
+        List<Double> result = 
+                clusterNrs.stream().mapToDouble(clusterNr -> (((double)clusterCounts.get(clusterNr))/((double)sum))).boxed().collect(Collectors.toList());
         return result;
     }
 
-    public static Map<Trajectory3DSummaryStatistics, List<Integer>> clusterDataSet(Map<Integer, Trajectory3DSummaryStatistics> reversedMap, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering, ArrayList<Integer> dataPoints)
+    private static int compare(Trajectory3DSummaryStatistics a, Trajectory3DSummaryStatistics b)
+    {
+        return Integer.compare(a.getClusterNr(), b.getClusterNr());
+    }
+
+    public static Map<Trajectory3DSummaryStatistics, List<Integer>> clusterDataSet(Map<Integer, Trajectory3DSummaryStatistics> reversedMap, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering, List<Integer> dataPoints)
     {
         Map<Trajectory3DSummaryStatistics, List<Integer>> result = 
                 dataPoints.stream().map(trajectory -> Map.entry(reversedMap.get(trajectory), trajectory)).collect(Collectors.groupingBy(entry -> entry.getKey(), Collectors.mapping(entry -> entry.getValue(), Collectors.toList())));

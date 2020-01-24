@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import de.joachim.haensel.phd.scenario.experiment.evaluation.RiskAnalysis;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.ClusteringLoader;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.Trajectory3DSummaryStatistics;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.TrajectoryLoader;
@@ -88,51 +89,9 @@ public class KMeansFindKRiskBased implements Runnable
         }
         List<Double> probabilities = bins.parallelStream().mapToDouble(binCount -> ((double)binCount/(double)dataSetSize)).boxed().collect(Collectors.toList());
         double p_sum = probabilities.stream().collect(Collectors.summarizingDouble(Double::valueOf)).getSum();
-        List<Integer> t_is = computeT(probabilities, R);
+        List<Integer> t_is = RiskAnalysis.computeT(probabilities, R);
         Integer T = t_is.stream().collect(Collectors.summingInt(Integer::intValue));
         String result = String.format("%d %.10f %d\n", k, R, T);
-        return result;
-    }
-
-    private List<Integer> computeT(List<Double> probabilities, double R)
-    {
-        double sumOfp_iRoot = probabilities.stream().mapToDouble(p_i -> Math.sqrt(p_i)).sum();
-        List<Double> t_is = probabilities.stream().mapToDouble(p_i -> ((Math.sqrt(p_i) / R) * sumOfp_iRoot) - 2.0).boxed().collect(Collectors.toList());
-        List<Double> rounded_t_is = roundUpDown(t_is, probabilities);
-        
-        return rounded_t_is.stream().mapToInt(rounded_t_i -> rounded_t_i.intValue()).boxed().collect(Collectors.toList());
-    }
-    
-    private List<Double> roundUpDown(List<Double> t_is, List<Double> p_is)
-    {
-        List<Double> result = new ArrayList<Double>();
-        double riskBuffer = 0;
-        for (int idx = 0; idx < t_is.size(); idx++) 
-        {
-            double t_i = t_is.get(idx); //array[i]
-            double p_i = p_is.get(idx); //pArray[i]
-            if (t_i <= 0) 
-            {
-                result.add(0.0);
-                riskBuffer = riskBuffer + p_i / (2 + t_i) - p_i / 2;  
-            } 
-            else 
-            {
-                double floor = Math.floor(t_i);
-                double lostRisk = p_i / (2 + floor) - p_i / (2 + t_i);
-                if (lostRisk <= riskBuffer) 
-                {
-                    result.add(floor);
-                    riskBuffer = riskBuffer - lostRisk;
-                } 
-                else 
-                {
-                    double ceiling = Math.ceil(t_i);
-                    result.add(ceiling);
-                    riskBuffer = riskBuffer - p_i / (2 + ceiling) + p_i / (2 + t_i);
-                }
-            }
-        }
         return result;
     }
 
