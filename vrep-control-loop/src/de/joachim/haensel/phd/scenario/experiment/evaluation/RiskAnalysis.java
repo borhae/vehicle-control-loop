@@ -26,10 +26,11 @@ public class RiskAnalysis
 //        return ;
 //    }
 
-    private static Double sqr(Double val)
+    public static Double sqr(Double val)
     {
         return val * val;
     }
+    
     public static int computeTDiff(List<Double> t_is_new, List<Double> t_is_old)
     {
         //test only in bins where there were not enough tests, if there were the same amount or more, just leave it
@@ -79,7 +80,7 @@ public class RiskAnalysis
         return rounded_t_is;
     }
     
-    private static double sumOfp_iRoot(List<Double> probabilities)
+    public static double sumOfp_iRoot(List<Double> probabilities)
     {
         return probabilities.stream().mapToDouble(p_i -> Math.sqrt(p_i)).sum();
     }
