@@ -17,7 +17,6 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.function.IntToDoubleFunction;
 import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -37,7 +36,7 @@ public class StartLuebeckEvolveWithChandigahr
         Random randomGen = new MersenneTwister(1001);
         double riskUpperBound = Math.pow(10.0, -4.0);
         double maxTests = 10000.0;
-        double maxAdditionalTests = 100;
+        double maxAdditionalTests = 6;
 //        runEvolve(dbTrajectories, clustering, randomGen, riskUpperBound, maxTests, "Luebeck", "Chandigarh");
         runEvolve(dbTrajectories, clustering, randomGen, riskUpperBound, maxTests, maxAdditionalTests, "Chandigarh", "Luebeck");
     }
@@ -80,23 +79,30 @@ public class StartLuebeckEvolveWithChandigahr
             cityProbability.add(0.5);
         }
         
-        List<Double> t_i_maintainUpperBound = RiskAnalysis.compute_t_iGivenR(startCity_p, riskUpperBound);
-        List<Double> t_i_minimizeWithAdditionalTests = null;
-        List<Double> t_i_minimizeWithAdditionalTestsMaintainUpperBound = null;
+        List<Double> initial_tis = RiskAnalysis.compute_t_iGivenR(startCity_p, riskUpperBound);
+        List<Double> t_i_maintainUpperBound = new ArrayList<Double>(initial_tis);
+        List<Double> t_i_minimizeWithAdditionalTests = new ArrayList<Double>(initial_tis);
+        List<Double> t_i_minimizeWithAdditionalTestsMaintainUpperBound = new ArrayList<Double>(initial_tis);
         List<Double> previousProfile_p = retreiveProfileFromIndexed(clusterCounts);
         try
         {
             String ubFileName = String.format("./evolve%sTo%s_k%dMaintainUP.csv", startCityName, evolveIntoCityName, clustering.keySet().size());
             BufferedWriter ubWriter = Files.newBufferedWriter(Paths.get(ubFileName));
-            String ubHeaderRow = String.format("diff_p batchCnt%1$s batchCnt%2$s nr_newTests nr_allTests", startCityName, evolveIntoCityName);
+            String ubHeaderRow = String.format("diff_p batchCnt%1$s batchCnt%2$s nr_newTests nr_allTests risk risk_no_added_test", startCityName, evolveIntoCityName);
             ubWriter.write(ubHeaderRow);
             ubWriter.newLine();
 
             String addedFileName = String.format("./evolve%sTo%s_k%dAddm%smoreTests.csv", startCityName, evolveIntoCityName, clustering.keySet().size(), maxAdditionalTests);
-            BufferedWriter addedWriter = Files.newBufferedWriter(Paths.get(ubFileName));
-            String addedHeaderRow = String.format("diff_p batchCnt%1$s batchCnt%2$s nr_newTests nr_allTests", startCityName, evolveIntoCityName);
-            addedWriter.write(ubHeaderRow);
+            BufferedWriter addedWriter = Files.newBufferedWriter(Paths.get(addedFileName));
+            String addedHeaderRow = String.format("diff_p batchCnt%1$s batchCnt%2$s nr_newTests nr_allTests risk risk_no_added_test", startCityName, evolveIntoCityName);
+            addedWriter.write(addedHeaderRow);
             addedWriter.newLine();
+
+            String addedUbFileName = String.format("./evolve%sTo%s_k%dAddm%smoreTestsMaintainUB.csv", startCityName, evolveIntoCityName, clustering.keySet().size(), maxAdditionalTests);
+            BufferedWriter addedUbWriter = Files.newBufferedWriter(Paths.get(addedUbFileName));
+            String addedUbHeaderRow = String.format("diff_p batchCnt%1$s batchCnt%2$s nr_newTests nr_allTests risk risk_no_added_test", startCityName, evolveIntoCityName);
+            addedUbWriter.write(addedUbHeaderRow);
+            addedUbWriter.newLine();
 
             for(int cnt = 0; cnt < maxRange - 1; cnt++)
             {
@@ -132,6 +138,7 @@ public class StartLuebeckEvolveWithChandigahr
                     }
                 }
                 List<Double> currentProfile_p = retreiveProfileFromIndexed(clusterCounts);
+                String bareRiskDiff = Double.toString(RiskAnalysis.computeR(initial_tis, currentProfile_p));
                 
                 List<Double> newTestsMaintainUpperBound = 
                         maintainUpperBound(t_i_maintainUpperBound, currentProfile_p, previousProfile_p, riskUpperBound);
@@ -139,28 +146,41 @@ public class StartLuebeckEvolveWithChandigahr
                 //TODO do rounding each time (the t_is in the loop need to stay Integers though
                 String ubNewTests = Double.toString(newTestsMaintainUpperBound.stream().mapToDouble(Double::valueOf).sum());
                 String ubAllTests = Double.toString(t_i_maintainUpperBound.stream().mapToDouble(Double::valueOf).sum());
+                String ubRisk = Double.toString(RiskAnalysis.computeR(t_i_maintainUpperBound, currentProfile_p));
                 
+                List<Double> newTestsMinimizeWithAdditional = 
+                        minimizeWithAdditionalTests(t_i_minimizeWithAdditionalTests, currentProfile_p, previousProfile_p, maxAdditionalTests);
+                t_i_minimizeWithAdditionalTests = merge(newTestsMinimizeWithAdditional, t_i_minimizeWithAdditionalTests);
+                String addedNewTests = Double.toString(newTestsMinimizeWithAdditional.stream().mapToDouble(Double::valueOf).sum());
+                String addedAllTests = Double.toString(t_i_minimizeWithAdditionalTests.stream().mapToDouble(Double::valueOf).sum());
+                String addedNewTestsRisk = Double.toString(RiskAnalysis.computeR(t_i_minimizeWithAdditionalTests, currentProfile_p));
+
                 
-//                List<Double> newTestsMinimizeWithAdditional = 
-//                        minimizeWithAdditionalTests(t_i_minimizeWithAdditionalTests, currentProfile_p, previousProfile_p, maxAdditionalTests);
-//                t_i_minimizeWithAdditionalTests = merge(newTestsMinimizeWithAdditional, t_i_minimizeWithAdditionalTests);
-//                String addedNewTests = Double.toString(newTestsMinimizeWithAdditional.stream().mapToDouble(Double::valueOf).sum());
-//                String addedAllTests = Double.toString(t_i_minimizeWithAdditionalTests.stream().mapToDouble(Double::valueOf).sum());
-//
-//                
-//                List<Double> newTestsMinimizeWithAdditionalAndMaintain = 
-//                        minimizeWithAdditionalTestsAndMaintainUpperBound(t_i_minimizeWithAdditionalTestsMaintainUpperBound, currentProfile_p, previousProfile_p, riskUpperBound, maxAdditionalTests);
+                List<Double> newTestsMinimizeWithAdditionalAndMaintain = 
+                        minimizeWithAdditionalTestsAndMaintainUpperBound(t_i_minimizeWithAdditionalTestsMaintainUpperBound, currentProfile_p, previousProfile_p, riskUpperBound, maxAdditionalTests);
+                t_i_minimizeWithAdditionalTestsMaintainUpperBound = merge(newTestsMinimizeWithAdditionalAndMaintain, t_i_minimizeWithAdditionalTestsMaintainUpperBound);
+                String addedUbNewTests = Double.toString(newTestsMinimizeWithAdditionalAndMaintain.stream().mapToDouble(Double::valueOf).sum());
+                String addedUbAllTests = Double.toString(t_i_minimizeWithAdditionalTestsMaintainUpperBound.stream().mapToDouble(Double::valueOf).sum());
+                String addedUbTestsRisk = Double.toString(RiskAnalysis.computeR(t_i_minimizeWithAdditionalTestsMaintainUpperBound, currentProfile_p));
                 
                 previousProfile_p = currentProfile_p;
                 
                 double diff_p = RiskAnalysis.deltaProfile(currentProfile_p, startCity_p);
-                ubWriter.write(String.format("%f %d %d %s %s", diff_p, batchCntStartCity, batchCntEvolveIntoCity, ubNewTests, ubAllTests));
+                ubWriter.write(String.format("%f %d %d %s %s %s %s", diff_p, batchCntStartCity, batchCntEvolveIntoCity, ubNewTests, ubAllTests, ubRisk, bareRiskDiff));
                 ubWriter.newLine();
                 
-//                addedWriter.write(String.format("%f %d %d %s %s", diff_p, batchCntStartCity, batchCntEvolveIntoCity, addedNewTests, addedAllTests));
-//                addedWriter.newLine();
+                addedWriter.write(String.format("%f %d %d %s %s %s %s", diff_p, batchCntStartCity, batchCntEvolveIntoCity, addedNewTests, addedAllTests, addedNewTestsRisk, bareRiskDiff));
+                addedWriter.newLine();
+
+                addedUbWriter.write(String.format("%f %d %d %s %s %s %s", diff_p, batchCntStartCity, batchCntEvolveIntoCity, addedUbNewTests, addedUbAllTests, addedUbTestsRisk, bareRiskDiff));
+                addedUbWriter.newLine();
             }
+            ubWriter.flush();
             ubWriter.close();
+            addedWriter.flush();
+            addedWriter.close();
+            addedUbWriter.flush();
+            addedUbWriter.close();
         }
         catch (IOException  exc) 
         {
@@ -195,9 +215,23 @@ public class StartLuebeckEvolveWithChandigahr
             }
             else
             {
+//                return allocateNeccessaryTestsAlg2(t_is_old, currentProfile_p, previousProfile_p, riskUpperBound);
                 return allocateNeccessaryTests(t_is_old, currentProfile_p, previousProfile_p, riskUpperBound);
             }
         }
+    }
+
+    private static List<Double> allocateNeccessaryTestsAlg2(List<Double> t_is_old, List<Double> currentProfile_p, List<Double> previousProfile_p, double riskUpperBound)
+    {
+        List<Double> new_ti_all = RiskAnalysis.compute_t_iGivenR(currentProfile_p, riskUpperBound);
+        return diffLargerZero(new_ti_all, t_is_old);
+    }
+
+    private static List<Double> diffLargerZero(List<Double> new_ti_all, List<Double> t_is_old)
+    {
+        List<Double> result = 
+                IntStream.range(0, new_ti_all.size()).mapToDouble(idx -> new_ti_all.get(idx) > t_is_old.get(idx) ? new_ti_all.get(idx) - t_is_old.get(idx) : 0.0).boxed().collect(Collectors.toList());
+        return result;
     }
 
     private static List<Double> allocateNeccessaryTests(List<Double> t_is_old, List<Double> currentProfile_p, List<Double> previousProfile_p, double riskUpperBound)
@@ -222,8 +256,11 @@ public class StartLuebeckEvolveWithChandigahr
                     {
                         // is - 2 really a thing? shouldn't it be necessary only once?
                         // When we had in the formula - 2 I got negative numbers from this equation 
-                        double tStar_i = Math.sqrt(currentProfile_p.get(idx)) / (riskUpperBound - R_cov) * sumOfp_iRoot;// - 2;
-                        return tStar_i - t_is_old.get(idx);
+//                        double tStar_i = Math.sqrt(currentProfile_p.get(idx)) / (riskUpperBound - R_cov) * sumOfp_iRoot;// - 2;
+                        double tStar_i = Math.sqrt(currentProfile_p.get(idx)) / (riskUpperBound - R_cov) * sumOfp_iRoot - 2;
+                        Double old = t_is_old.get(idx);
+                        double result = tStar_i - old;
+                        return result;
                     }
                 };
         //equation 14
@@ -252,7 +289,8 @@ public class StartLuebeckEvolveWithChandigahr
                     {
                         // should read maxAdditionalTests + 2 * ) / sumOfp_iRoot - 2 
                         // as in the other case I omit 2 from 1/(2+t) because 2 was already included in former computations
-                        double tStar_i = (Math.sqrt(currentProfile_p.get(idx)) * (maxAdditionalTests + n_larger_old)) / (sumOfp_iRoot);
+//                        double tStar_i = (Math.sqrt(currentProfile_p.get(idx)) * (maxAdditionalTests + 2* n_larger_old)) / (sumOfp_iRoot);
+                        double tStar_i = (Math.sqrt(currentProfile_p.get(idx)) * (maxAdditionalTests)) / (sumOfp_iRoot);
                         return tStar_i;
                     }
                 };
@@ -262,8 +300,86 @@ public class StartLuebeckEvolveWithChandigahr
 
     private static List<Double> minimizeWithAdditionalTestsAndMaintainUpperBound(List<Double> t_is, List<Double> currentProfile_p, List<Double> previousProfile_p, double riskUpperBound, double maxAdditionalTests)
     {
-        // TODO Auto-generated method stub
-        return null;
+        int n = currentProfile_p.size();
+        List<Boolean> newPSmallerOrEqualOld = 
+                IntStream.range(0, n).boxed().map(idx -> (currentProfile_p.get(idx) - previousProfile_p.get(idx) <= 0)).collect(Collectors.toList());
+        List<Double> currentProfile_p_largerOld = IntStream.range(0, n).mapToDouble(idx -> !newPSmallerOrEqualOld.get(idx) ? currentProfile_p.get(idx) : 0.0).boxed().collect(Collectors.toList());
+        int n_larger_old = currentProfile_p_largerOld.stream().mapToInt(p_i -> p_i > 0 ? 1 : 0).sum();
+        double sumOfp_iRoot = RiskAnalysis.sumOfp_iRoot(currentProfile_p_largerOld);
+        
+        //equation 15 / 16
+        IntToDoubleFunction t_i_assigner = 
+                idx -> 
+                {
+                    if(newPSmallerOrEqualOld.get(idx))
+                    {
+                        return 0.0;
+                    }
+                    else
+                    {
+                        // should read maxAdditionalTests + 2 * ) / sumOfp_iRoot - 2 
+                        // as in the other case I omit 2 from 1/(2+t) because 2 was already included in former computations
+//                        double tStar_i = (Math.sqrt(currentProfile_p.get(idx)) * (maxAdditionalTests + n_larger_old)) / (sumOfp_iRoot);
+                        double tStar_i = (Math.sqrt(currentProfile_p.get(idx)) * (maxAdditionalTests)) / (sumOfp_iRoot);
+                        return tStar_i;
+                    }
+                };
+        List<Double> t_iNew = IntStream.range(0, n).mapToDouble(t_i_assigner).boxed().collect(Collectors.toList());
+        List<Double> mergedTests = merge(t_iNew, t_is);
+        double currentRisk = RiskAnalysis.computeR(mergedTests, currentProfile_p);
+        List<Double> result = null;
+        if(currentRisk <= riskUpperBound)
+        {
+            result = t_iNew;
+        }
+        else
+        {
+//            List<Double> prelimResult = RiskAnalysis.compute_t_iGivenR(currentProfile_p, riskUpperBound);
+//            result = prelimResult;
+            result = allocateNeccessaryTestsSysout(t_is, currentProfile_p, previousProfile_p, riskUpperBound);
+        }
+        return result;
+    }
+    
+    private static List<Double> allocateNeccessaryTestsSysout(List<Double> t_is_old, List<Double> currentProfile_p, List<Double> previousProfile_p, double riskUpperBound)
+    {
+        int n = currentProfile_p.size();
+        
+        List<Boolean> newPSmallerOrEqualOld = 
+                IntStream.range(0, n).boxed().map(idx -> (currentProfile_p.get(idx) <= previousProfile_p.get(idx) + 0.000001)).collect(Collectors.toList());
+        //equation 12
+        double R_cov = IntStream.range(0, n).mapToDouble(idx -> newPSmallerOrEqualOld.get(idx) ? (currentProfile_p.get(idx)/(2 + t_is_old.get(idx))) : 0.0).sum();
+        //equation 13
+        List<Double> currentProfile_p_largerOld = IntStream.range(0, n).mapToDouble(idx -> !newPSmallerOrEqualOld.get(idx) ? currentProfile_p.get(idx) : 0.0).boxed().collect(Collectors.toList());
+        double sumOfp_iRoot = RiskAnalysis.sumOfp_iRoot(currentProfile_p_largerOld);
+        
+        IntToDoubleFunction t_i_assigner = 
+                idx -> 
+                {
+                    if(newPSmallerOrEqualOld.get(idx))
+                    {
+                        return 0.0;
+                    }
+                    else
+                    {
+                        // is - 2 really a thing? shouldn't it be necessary only once?
+                        // When we had in the formula - 2 I got negative numbers from this equation 
+//                        double tStar_i = Math.sqrt(currentProfile_p.get(idx)) / (riskUpperBound - R_cov) * sumOfp_iRoot;// - 2;
+                        double tStar_i = Math.sqrt(currentProfile_p.get(idx)) / (riskUpperBound - R_cov) * sumOfp_iRoot - 2;
+                        Double old = t_is_old.get(idx);
+                        double result = tStar_i - old;
+                        if(result < 0.0)
+                        {
+                            // p'_i p_i t_diff
+//                            System.out.println(String.format("%f %f %f", currentProfile_p.get(idx), previousProfile_p.get(idx), result));
+                            return 0.0;
+                        }
+                        return result;
+                    }
+                };
+        //equation 14
+        List<Double> t_iNew = IntStream.range(0, n).mapToDouble(t_i_assigner).boxed().collect(Collectors.toList());
+        return t_iNew;
     }
 
     private static HashMap<Integer, Integer> initializeClusterCountsFrom(Map<Trajectory3DSummaryStatistics, List<Integer>> clustering)

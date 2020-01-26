@@ -70,12 +70,12 @@ public class KMeansClusterDebug extends AbstractAnalysis
     {
         chart = AWTChartComponentFactory.chart(Quality.Nicest, Toolkit.newt);
         chart.addMouseCameraController();
-        LineStrip line1 = createStandardLine(-100.0, -100.0, 0.0, 100.0, 100.0, 0.0);
-        LineStrip line2 = createStandardLine(100.0, -100.0, 0.0, 100.0, -100.0, 50.0);
-        LineStrip line3 = createStandardLine(100.0, 100.0, 0.0, 100.0, 100.0, 50.0);
-        chart.getScene().getGraph().add(line1);
-        chart.getScene().getGraph().add(line2);
-        chart.getScene().getGraph().add(line3);
+//        LineStrip line1 = createStandardLine(-100.0, -100.0, 0.0, 100.0, 100.0, 0.0);
+//        LineStrip line2 = createStandardLine(100.0, -100.0, 0.0, 100.0, -100.0, 50.0);
+//        LineStrip line3 = createStandardLine(100.0, 100.0, 0.0, 100.0, 100.0, 50.0);
+//        chart.getScene().getGraph().add(line1);
+//        chart.getScene().getGraph().add(line2);
+//        chart.getScene().getGraph().add(line3);
         TrajectoryDraw visualizer = new TrajectoryDraw(chart);
         Executors.newCachedThreadPool().execute(createClusterTask(visualizer));
     }
