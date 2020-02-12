@@ -65,16 +65,16 @@ public class CreateDomainKnowledgeProfile
         return createStraightAccelerationTrajectory(5.0, 120.0);
     }
     
-    private static double[][] createStraightTrajectory(double velocityKmPHour)
+    public static double[][] createStraightTrajectory(double velocityKmPHour)
     {
-        double[][] trajectorySlowStraight = new double[21][3];
+        double[][] result = new double[21][3];
         for(int idx = 0; idx < 21; idx++)
         {
-            trajectorySlowStraight[idx][0] = 5.0 * (double)idx;
-            trajectorySlowStraight[idx][1] = 0.0;
-            trajectorySlowStraight[idx][2] = UnitConverter.kilometersPerHourToMetersPerSecond(velocityKmPHour);
+            result[idx][0] = 5.0 * (double)idx;
+            result[idx][1] = 0.0;
+            result[idx][2] = UnitConverter.kilometersPerHourToMetersPerSecond(velocityKmPHour);
         }
-        return trajectorySlowStraight;
+        return result;
     }
 
     private static double[][] createStraightAccelerationTrajectory(double startVelocity, double finalVelocity)

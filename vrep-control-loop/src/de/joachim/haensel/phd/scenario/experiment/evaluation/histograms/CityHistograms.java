@@ -1,13 +1,18 @@
 package de.joachim.haensel.phd.scenario.experiment.evaluation.histograms;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.joachim.haensel.phd.scenario.experiment.evaluation.CreateDomainKnowledgeProfile;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.ClusteringLoader;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.Trajectory3DSummaryStatistics;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.TrajectoryLoader;
+import de.joachim.haensel.phd.scenario.experiment.evaluation.database.debug.DistanceCache;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoTrajectory;
 import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.*;
 
@@ -19,19 +24,37 @@ public class CityHistograms
         Map<Integer, MongoTrajectory> dbTrajectories = trajectoryLoader.loadIndexedDataToMap("data_available_at_2020-01-18");
         
         ClusteringLoader clusteringLoader = new ClusteringLoader();
-        Map<Trajectory3DSummaryStatistics, List<Integer>> clustering = clusteringLoader.loadClusters("20200120DataLoad0DataUsed0K10Seed1000Iterations100Runs3");
+        Map<Trajectory3DSummaryStatistics, List<Integer>> clustering = clusteringLoader.loadClusters("20200120DataLoad0DataUsed0K1000Seed1000Iterations100Runs3");
         Set<Trajectory3DSummaryStatistics> clusterKeys = clustering.keySet();
 
         Map<Trajectory3DSummaryStatistics, List<Integer>> clusteringLuebeck = extractForCity(dbTrajectories, clustering, clusterKeys, "Luebeck");
         Map<Trajectory3DSummaryStatistics, List<Integer>> clusteringChandigarh = extractForCity(dbTrajectories, clustering, clusterKeys, "Chandigarh");
         ArrayList<Trajectory3DSummaryStatistics> centersNumbered = new ArrayList<Trajectory3DSummaryStatistics>(clusterKeys);
 //        centersNumbered.sort((a, b) -> Integer.compare(a.getClusterNr(), b.getClusterNr()));
-        centersNumbered.sort((a, b) -> sortFrequenciess(a, b, clustering));
+//        centersNumbered.sort((a, b) -> sortFrequenciess(a, b, clustering));
 //        centersNumbered.sort((a, b) -> sortNew(a, b));
+        Deque<Trajectory3DSummaryStatistics> input = new LinkedList<Trajectory3DSummaryStatistics>(centersNumbered);
+        List<Trajectory3DSummaryStatistics> sortedCenters = new ArrayList<Trajectory3DSummaryStatistics>();
+        double[][] initialCenter = CreateDomainKnowledgeProfile.createStraightTrajectory(0.0);
+        Trajectory3DSummaryStatistics closestCenter = null;
+        double[][] previousCenterTrajectory = initialCenter;
+        while(!input.isEmpty())
+        {
+            if(!sortedCenters.isEmpty())
+            {
+                 previousCenterTrajectory = closestCenter.getAverage();
+            }
+            final double[][] centerToLookFor = previousCenterTrajectory;
+            closestCenter = 
+                    input.stream().min(Comparator.comparingDouble(center -> DistanceCache.distance(centerToLookFor, center.getAverage()))).get();
+            input.remove(closestCenter);
+            sortedCenters.add(closestCenter);
+        }
         StringBuilder result = new StringBuilder();
         int luebeckSum = 0;
         int chandigarhSum = 0;
-        for (Trajectory3DSummaryStatistics curCenter : centersNumbered)
+//        for (Trajectory3DSummaryStatistics curCenter : centersNumbered)
+        for (Trajectory3DSummaryStatistics curCenter : sortedCenters)
         {
             int luebeckSize = clusteringLuebeck.get(curCenter).size();
             int chandigarhSize = clusteringChandigarh.get(curCenter).size();
