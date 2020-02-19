@@ -84,7 +84,7 @@ public class RiskAnalyzer {
 			if (valuesEncountered.get(d) != null) {
 				valuesEncountered.put(d, valuesEncountered.get(d) + 1);
 			} else {
-				valuesEncountered.put(d, new Long(1));
+				valuesEncountered.put(d, Long.valueOf(1));
 			}
 		}
 		for (Map.Entry<Double, Long> entry : valuesEncountered.entrySet()) {
@@ -96,7 +96,7 @@ public class RiskAnalyzer {
 			if (valuesEncountered.get(d) != null) {
 				valuesEncountered.put(d, valuesEncountered.get(d) + 1);
 			} else {
-				valuesEncountered.put(d, new Long(1));
+				valuesEncountered.put(d, Long.valueOf(1));
 			}
 		}
 		
@@ -183,7 +183,7 @@ public class RiskAnalyzer {
 			current = br.readLine();
 			count = 0;
 			while (current != null) {				
-				Double value = new Double(current);
+				Double value = Double.valueOf(current);
 				pArray[count] = value;
 				current = br.readLine();
 				count++;

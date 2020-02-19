@@ -31,7 +31,7 @@ public class CityHistograms
         Map<Trajectory3DSummaryStatistics, List<Integer>> clusteringChandigarh = extractForCity(dbTrajectories, clustering, clusterKeys, "Chandigarh");
         ArrayList<Trajectory3DSummaryStatistics> centersNumbered = new ArrayList<Trajectory3DSummaryStatistics>(clusterKeys);
 //        centersNumbered.sort((a, b) -> Integer.compare(a.getClusterNr(), b.getClusterNr()));
-//        centersNumbered.sort((a, b) -> sortFrequenciess(a, b, clustering));
+//        centersNumbered.sort((a, b) -> sortFrequencies(a, b, clustering));
 //        centersNumbered.sort((a, b) -> sortNew(a, b));
         Deque<Trajectory3DSummaryStatistics> input = new LinkedList<Trajectory3DSummaryStatistics>(centersNumbered);
         List<Trajectory3DSummaryStatistics> sortedCenters = new ArrayList<Trajectory3DSummaryStatistics>();
@@ -132,7 +132,7 @@ public class CityHistograms
      * @param clustering 
      * @return
      */
-    private static int sortFrequenciess(Trajectory3DSummaryStatistics a, Trajectory3DSummaryStatistics b, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering)
+    private static int sortFrequencies(Trajectory3DSummaryStatistics a, Trajectory3DSummaryStatistics b, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering)
     {
         int sizeA = clustering.get(a).size();
         int sizeB = clustering.get(b).size();

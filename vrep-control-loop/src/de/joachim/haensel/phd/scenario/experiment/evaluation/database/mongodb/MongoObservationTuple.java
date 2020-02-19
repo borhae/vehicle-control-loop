@@ -4,8 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.bson.Document;
-
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.ObservationTuple;
 
 public class MongoObservationTuple

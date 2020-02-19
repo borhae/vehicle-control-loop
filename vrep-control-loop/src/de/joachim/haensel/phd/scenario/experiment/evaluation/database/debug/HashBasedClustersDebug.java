@@ -1,18 +1,12 @@
 package de.joachim.haensel.phd.scenario.experiment.evaluation.database.debug;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -39,7 +33,6 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.TrajectoryNormalizer;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.TurtleHash;
-import de.joachim.haensel.phd.scenario.random.MersenneTwister;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class HashBasedClustersDebug extends AbstractAnalysis

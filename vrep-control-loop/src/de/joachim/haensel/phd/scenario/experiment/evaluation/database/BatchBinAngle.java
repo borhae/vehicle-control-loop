@@ -20,7 +20,6 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.MongoObservationConfiguration;
-import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.TrajectoryNormalizer;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.ObservationConfiguration;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.hashing.anglesimple.AngleHash;
 
@@ -69,10 +68,5 @@ public class BatchBinAngle
     private static ArrayList<ObservationConfiguration> decodeMongoCollection(MongoCollection<MongoObservationConfiguration> collection)
     {
         return collection.find().map(doc -> doc.decode()).into(new ArrayList<ObservationConfiguration>());
-    }
-
-    private static List<ObservationConfiguration> align(List<ObservationConfiguration> data)
-    {
-        return data.parallelStream().map(confObs -> TrajectoryNormalizer.normalize(confObs)).collect(Collectors.toList());
     }
 }
