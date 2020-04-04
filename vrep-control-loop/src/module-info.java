@@ -4,6 +4,8 @@
  */
 module vrepvehicle
 {
+    exports de.joachim.haensel.phd.scenario.experiment.runner;
+    
     exports de.joachim.haensel.phd.scenario.experiment.evaluation.database;
     exports de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb;
     exports de.joachim.haensel.phd.scenario.experiment.evaluation.histograms;
@@ -30,6 +32,7 @@ module vrepvehicle
     requires transitive coppelialib;
     requires jzy3d.api;
     requires jzy3d.jdt.core;
+    requires typesafe.config;
 
     requires java.logging;
     

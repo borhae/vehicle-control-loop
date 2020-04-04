@@ -69,7 +69,7 @@ public class ExperimentGeneratorAndRunner
                         
                         String mapFilenName = positionGenerator.getMapFileName();
                         String testID = String.format("%s_%d_gen_S%d_", positionGenerator.getCityName(), positionGenerator.getNumberOfPositions(), positionGenerator.getSeed()); 
-                        runner.run(testID, 15.0, 120.0, 3.8, 4.0, 0.8, positions, mapFilenName, "blue", 120);
+                        runner.run(testID, 15.0, 120.0, 3.8, 4.0, 0.8, positions, mapFilenName, 120);
                         
                         runner.tearDown();
                     } catch (IOException exc)
@@ -123,7 +123,7 @@ public class ExperimentGeneratorAndRunner
 
     public void run(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration,
             double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints,
-            String mapFilenName, String color, int controlLoopRate) throws VRepException
+            String mapFilenName, int controlLoopRate) throws VRepException
     {
         RoadMap map = null;
         List<Position2D> targetPointsMapped = null;
