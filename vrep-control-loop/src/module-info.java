@@ -38,9 +38,10 @@ module vrepvehicle
     
     requires java.xml;
     requires java.xml.bind;
-    requires org.junit.jupiter.api;
-    requires org.junit.jupiter.params;
     requires org.hamcrest;
+    requires org.junit.jupiter;
+    requires org.junit.jupiter.params;
+    requires org.junit.platform.commons;
     requires java.desktop;
 	requires com.fasterxml.jackson.core;
 	requires com.fasterxml.jackson.annotation;
