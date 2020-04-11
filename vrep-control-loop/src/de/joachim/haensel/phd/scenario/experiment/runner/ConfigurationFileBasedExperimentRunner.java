@@ -38,9 +38,9 @@ public class ConfigurationFileBasedExperimentRunner
 {
     public static final String RES_ROADNETWORKS_DIRECTORY = "./res/roadnetworks/";
 
-    private static VRepRemoteAPI _vrep;
-    private static int _clientID;
-    private static VRepObjectCreation _objectCreator;
+    private  VRepRemoteAPI _vrep;
+    private  int _clientID;
+    private  VRepObjectCreation _objectCreator;
 
     public static void main(String[] args)
     {
@@ -109,7 +109,7 @@ public class ConfigurationFileBasedExperimentRunner
         _objectCreator = new VRepObjectCreation(_vrep, _clientID);
     }
 
-    private static void waitForRunningSimulationToStop() throws VRepException
+    private void waitForRunningSimulationToStop() throws VRepException
     {
         IntWA simStatus = new IntWA(1);
         _vrep.simxCallScriptFunction(_clientID, "ScriptLoader", remoteApi.sim_scripttype_customizationscript,
