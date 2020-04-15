@@ -1,6 +1,7 @@
 package de.joachim.haensel.phd.scenario.vehicle.test;
 
 
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +21,7 @@ import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepPartwiseVehicleCreator;
@@ -106,10 +107,7 @@ public class VehicleCreationTest implements TestConstants
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
-        ILowerLayerFactory lowerFact = () -> {
-            PurePursuitController ctrl = new PurePursuitController(2.0);
-            return ctrl;
-        };
+        ILowerLayerFactory lowerFact = () -> new PurePursuitControllerVariableLookahead();
         vehicleConf.setUpperCtrlFactory(upperFact);
         vehicleConf.setLowerCtrlFactory(lowerFact);
         vehicleConf.setPosition(0.0, 0.0, 3.0);
@@ -123,7 +121,7 @@ public class VehicleCreationTest implements TestConstants
         float height = vehicleCreator.getVehicleHeight();
         
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
-        ILowerLayerFactory lowerFact = () -> new PurePursuitController(5.0);
+        ILowerLayerFactory lowerFact = () -> new PurePursuitControllerVariableLookahead();
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, null, upperFact, lowerFact);
         vehicle.setOrientation(1.0f, 1.0f, 1.0f);
@@ -134,13 +132,12 @@ public class VehicleCreationTest implements TestConstants
     public void testScaledCreateVehicle() throws VRepException
     {
         float scaleFactor = 0.1f;
-        double lookahead = 5.0 * scaleFactor;
         VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, scaleFactor);
         float height = vehicleCreator.getVehicleHeight();
         
         
-        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0 * scaleFactor, 30.0);};
-        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController(lookahead);};
+        IUpperLayerFactory upperFact = () -> new DefaultNavigationController(2.0 * scaleFactor, 30.0);
+        ILowerLayerFactory lowerFact = () -> new PurePursuitControllerVariableLookahead();
 
         vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + scaleFactor, null, upperFact, lowerFact);
         System.out.println("look at me");
@@ -157,8 +154,8 @@ public class VehicleCreationTest implements TestConstants
         VRepPartwiseVehicleCreator vehicleCreator = new VRepPartwiseVehicleCreator(_vrep, _clientID, _objectCreator, 1.0f);
         float height = vehicleCreator.getVehicleHeight();
         
-        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
-        ILowerLayerFactory lowerFact = () -> new PurePursuitController(10.0);
+        IUpperLayerFactory upperFact = () -> new DefaultNavigationController(2.0, 30.0);
+        ILowerLayerFactory lowerFact = () -> new PurePursuitControllerVariableLookahead();
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap, upperFact, lowerFact);
         NetType network = roadMap.getNetwork();

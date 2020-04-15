@@ -15,7 +15,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
@@ -27,11 +27,8 @@ public class SimulationSetupConvenienceMethods
     public static IVehicleConfiguration createMercedesLikeConfiguration(RoadMap roadMap, Position2D startPosition, Position2D targetPosition, double placementHeight)
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
-        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(5.0, 60.0);};
-        ILowerLayerFactory lowerFact = () -> {
-            PurePursuitController ctrl = new PurePursuitController(10.0);
-            return ctrl;
-        };
+        IUpperLayerFactory upperFact = () -> new DefaultNavigationController(5.0, 60.0);
+        ILowerLayerFactory lowerFact = () -> new PurePursuitControllerVariableLookahead();
         vehicleConf.setUpperCtrlFactory(upperFact);
         vehicleConf.setLowerCtrlFactory(lowerFact);
         
@@ -61,10 +58,7 @@ public class SimulationSetupConvenienceMethods
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(5.0, 60.0);};
-        ILowerLayerFactory lowerFact = () -> {
-            PurePursuitController ctrl = new PurePursuitController(10.0);
-            return ctrl;
-        };
+        ILowerLayerFactory lowerFact = () -> new PurePursuitControllerVariableLookahead();
         vehicleConf.setUpperCtrlFactory(upperFact);
         vehicleConf.setLowerCtrlFactory(lowerFact);
         

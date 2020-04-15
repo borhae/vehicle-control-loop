@@ -33,7 +33,7 @@ import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.NullBehaviorActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
@@ -125,7 +125,7 @@ public class LayerInteractionTest implements TestConstants
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
         IUpperLayerFactory uperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
-        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController(5.0 * DOWN_SCALE_FACTOR);};
+        ILowerLayerFactory lowerFact = () -> {return new PurePursuitControllerVariableLookahead();};
         
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
         
@@ -196,7 +196,7 @@ public class LayerInteractionTest implements TestConstants
         Line2D lastLine = route.get(route.size() - 1);
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         IUpperLayerFactory uperFact = () -> {return new DefaultNavigationController(segmentSize, 30.0);};
-        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController(lookahead);};
+        ILowerLayerFactory lowerFact = () -> {return new PurePursuitControllerVariableLookahead();};
         
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
         
@@ -263,7 +263,7 @@ public class LayerInteractionTest implements TestConstants
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
         IUpperLayerFactory uperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
-        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController(15.0);};
+        ILowerLayerFactory lowerFact = () -> {return new PurePursuitControllerVariableLookahead();};
         
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, uperFact , lowerFact);
         
@@ -338,7 +338,7 @@ public class LayerInteractionTest implements TestConstants
         
         
         IUpperLayerFactory uperFact = () -> {return new DefaultNavigationController(2.0 * scaleFactor, 30.0);};
-        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController(5.0 * scaleFactor);};
+        ILowerLayerFactory lowerFact = () -> {return new PurePursuitControllerVariableLookahead();};
         
         float vehicleZPos = 0.25f;
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), vehicleZPos, roadMap, uperFact , lowerFact);
@@ -414,7 +414,7 @@ public class LayerInteractionTest implements TestConstants
         Position2D target = new Position2D(lastLine.getX2(), lastLine.getY2());
         
         IUpperLayerFactory uperFact = () -> {return new DefaultNavigationController(5.0 * scaleFactor, 30.0);};
-        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController(10.0 * scaleFactor);};
+        ILowerLayerFactory lowerFact = () -> {return new PurePursuitControllerVariableLookahead();};
         
         float vehicleZPos = 0.25f;
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), vehicleZPos, roadMap, uperFact , lowerFact);
@@ -490,7 +490,7 @@ public class LayerInteractionTest implements TestConstants
         Position2D target = new Position2D(lastLine.getX2(), lastLine.getY2());
         
         IUpperLayerFactory uperFact = () -> {return new DefaultNavigationController(4.0 * scaleFactor, 30.0);};
-        ILowerLayerFactory lowerFact = () -> {return new PurePursuitController(10.0 * scaleFactor);};
+        ILowerLayerFactory lowerFact = () -> {return new PurePursuitControllerVariableLookahead();};
         
         float vehicleZPos = 0.25f;
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), vehicleZPos, roadMap, uperFact , lowerFact);

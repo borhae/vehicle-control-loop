@@ -1,6 +1,6 @@
 package de.joachim.haensel.phd.scenario.vehicle.experiment.test;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,7 +36,7 @@ import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.PurePursuitController;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TireBlowOutAfterDistanceEventGenerator;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TireBlowOutAtPositionEventGenerator;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
@@ -298,11 +298,8 @@ public class TestTireBlowout implements TestConstants
     private IVehicleConfiguration createConfiguration(RoadMap roadMap, Position2D startPosition, Position2D destinationPosition)
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
-        IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(5.0, 60.0);};
-        ILowerLayerFactory lowerFact = () -> {
-            PurePursuitController ctrl = new PurePursuitController(10.0);
-            return ctrl;
-        };
+        IUpperLayerFactory upperFact = () -> new DefaultNavigationController(5.0, 60.0);
+        ILowerLayerFactory lowerFact = () -> new PurePursuitControllerVariableLookahead();
         vehicleConf.setUpperCtrlFactory(upperFact);
         vehicleConf.setLowerCtrlFactory(lowerFact);
         

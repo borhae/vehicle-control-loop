@@ -46,6 +46,8 @@ public class StanleyController implements ILowerLayerControl
     private double _speedToWheelRotationFactor;
     private List<IArrivedListener> _arrivedListeners;
     private double _frontwheelCurrentSegmentDistance;
+    private List<ITrajectoryRequestListener> _trajectoryRequestListeners;
+    private List<ITrajectoryReportListener> _trajectoryReportListeners;
 
     public class DefaultReactiveControllerStateMachine extends FiniteStateMachineTemplate
     {
@@ -65,7 +67,6 @@ public class StanleyController implements ILowerLayerControl
             createTransition(ControllerStates.DRIVING, ControllerMsg.CONTROL_EVENT, notArrivedGuard, ControllerStates.DRIVING, driveAction);
             
             createTransition(ControllerStates.DRIVING, ControllerMsg.STOP, null, ControllerStates.IDLE, breakAndStopAction);
-            
             setInitialState(ControllerStates.IDLE);
             reset();
         }
@@ -101,6 +102,8 @@ public class StanleyController implements ILowerLayerControl
         _debugging = false;
         _arrivedListeners = new ArrayList<>();
         _frontwheelCurrentSegmentDistance = 0.0;
+        _trajectoryReportListeners = new ArrayList<>();
+        _trajectoryRequestListeners = new ArrayList<>();
         _lookahead = lookahead;
     }
 
@@ -220,63 +223,46 @@ public class StanleyController implements ILowerLayerControl
 
     private void chooseCurrentSegment(Position2D currentPosition)
     {
-        if(currentPosition == null)
+        if(_currentSegment != null && isInRange(currentPosition, _currentSegment.getVector(), _lookahead))
         {
+            // current segment still in range, we are good here
             return;
-        }
-        double minDist = Double.POSITIVE_INFINITY;
-        int minDistIdx = Integer.MAX_VALUE;
-        for(int idx = 0; idx < _segmentBuffer.size(); idx++)
-        {
-            Position2D perpendicularIntersection = Vector2D.getPerpendicularIntersection(_segmentBuffer.get(idx).getVector(), currentPosition);
-            if(perpendicularIntersection != null)
-            {
-                double curDist = perpendicularIntersection.distance(currentPosition);
-                if(curDist < minDist)
-                {
-                    minDist = curDist;
-                    minDistIdx = idx;
-                }
-            }
-        }
-        if(minDistIdx != Integer.MAX_VALUE)
-        {
-            _currentSegment = _segmentBuffer.peek();
-            for(int cnt = 0; cnt < minDistIdx; cnt++)
-            {
-                _currentSegment = _segmentBuffer.pop();
-            }
-            _frontwheelCurrentSegmentDistance = minDist;
         }
         else
         {
-            for(int idx = 0; idx < _segmentBuffer.size(); idx++)
+            boolean segmentFound = false;
+            int dropCount = 0;
+            for (TrajectoryElement curTraj : _segmentBuffer)
             {
-                Position2D roadPoint = _segmentBuffer.get(idx).getVector().getBase();
-                double curDist = roadPoint.distance(currentPosition);
-                if(curDist < minDist)
+                dropCount++;
+                if(isInRange(currentPosition, curTraj.getVector(), _lookahead))
                 {
-                    minDist = curDist;
-                    minDistIdx = idx;
+                    segmentFound = true;
+                    break;
                 }
             }
-            if(minDistIdx != Integer.MAX_VALUE)
+            if(!segmentFound)
             {
-                _currentSegment = _segmentBuffer.peek();
-                for(int cnt = 0; cnt < minDistIdx; cnt++)
-                {
-                    _currentSegment = _segmentBuffer.pop();
-                }
-                _frontwheelCurrentSegmentDistance = Vector2D.getUnrangedPerpendicularIntersection(_currentSegment.getVector(), currentPosition).distance(currentPosition);
+                //we have no direction here...
+//                System.out.println("No new segment. Lookahead:" +  _lookahead + ", Pos: " + currentPosition + ", buffer: " + _segmentBuffer);
+                return;
             }
             else
             {
-                _currentSegment = _segmentBuffer.peek();
-                _frontwheelCurrentSegmentDistance = 0.0;
-//            NO SEGMENT FOUND! Do nothing
-                System.out.println("panic, no segment found");
+                while(dropCount > 0)
+                {
+                    _currentSegment = _segmentBuffer.pop();
+                    dropCount--;
+                }
             }
         }
+    }
+
+    private boolean isInRange(Position2D position, Vector2D vector, double requiredDistance)
+    {
+        double baseDist = Position2D.distance(vector.getBase(), position);
+        double tipDist = Position2D.distance(vector.getTip(), position);
+        return tipDist > requiredDistance && baseDist <= requiredDistance;
     }
 
     private void ensureBufferSize()
@@ -338,13 +324,13 @@ public class StanleyController implements ILowerLayerControl
     @Override
     public void addTrajectoryRequestListener(ITrajectoryRequestListener requestListener)
     {
-        // TODO Auto-generated method stub
+        _trajectoryRequestListeners.add(requestListener);
     }
 
     @Override
     public void addTrajectoryReportListener(ITrajectoryReportListener reportListener)
     {
-        // TODO Auto-generated method stub
+        _trajectoryReportListeners.add(reportListener);
     }
 
     @Override
