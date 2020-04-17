@@ -9,9 +9,13 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ICarInterfaceActions;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ICarInterfaceActionsWithLookahead;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.IDebugVisualizer;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.NoOpDebugger;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
-public class CarInterfaceActions
+public class CarInterfaceActions implements ICarInterfaceActionsWithLookahead
 {
     private static final double LOOKAHEAD_FACTOR = 2.0;
     private static final double MIN_DYNAMIC_LOOKAHEAD = 5.1;
@@ -243,5 +247,11 @@ public class CarInterfaceActions
     public double getCurrentLookahead()
     {
         return _cashedLookahead;
+    }
+
+    @Override
+    public boolean hasLookahead()
+    {
+        return true;
     }
 }

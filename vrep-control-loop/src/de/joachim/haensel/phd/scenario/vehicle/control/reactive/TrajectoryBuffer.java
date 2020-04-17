@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable;
+package de.joachim.haensel.phd.scenario.vehicle.control.reactive;
 
 import java.util.ArrayList;
 import java.util.Arrays;

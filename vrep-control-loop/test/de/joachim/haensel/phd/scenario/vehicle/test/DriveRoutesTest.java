@@ -24,7 +24,7 @@ import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitVariableLookaheadController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
@@ -217,7 +217,7 @@ public class DriveRoutesTest
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(5.0, 60.0);};
         ILowerLayerFactory lowerFact = () -> {
-            PurePursuitControllerVariableLookahead ctrl = new PurePursuitControllerVariableLookahead();
+            PurePursuitVariableLookaheadController ctrl = new PurePursuitVariableLookaheadController();
             return ctrl;
         };
         vehicleConf.setUpperCtrlFactory(upperFact);

@@ -1,12 +1,11 @@
-package de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable;
+package de.joachim.haensel.phd.scenario.vehicle.control.reactive;
 
 import java.util.function.Consumer;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerMsg;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ControllerStates;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.CarInterfaceActions;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.statemachine.DebuggableGuard;
 import de.joachim.haensel.statemachine.EmptyParam;
@@ -17,10 +16,10 @@ public class EventLoopStateMachine extends FiniteStateMachineTemplate
     private static final double DISTANCE_TO_TARGET_THRESHOLD = 3.0;
     private IActuatingSensing _actuatorsSensors;
     private Position2D _target;
-    private CarInterfaceActions _carInterface;
+    private ICarInterfaceActions _carInterface;
 
     
-    public EventLoopStateMachine(IActuatingSensing actuatorsSensors, CarInterfaceActions carInterface, PurePuresuitTargetProvider targetProvider)
+    public EventLoopStateMachine(IActuatingSensing actuatorsSensors, ICarInterfaceActions carInterface, ITargetProvider targetProvider)
     {
         _carInterface = carInterface;
         _actuatorsSensors = actuatorsSensors;
@@ -28,7 +27,7 @@ public class EventLoopStateMachine extends FiniteStateMachineTemplate
 
         Consumer<EmptyParam> driveAction = dummy -> { _actuatorsSensors.computeAndLockSensorData(); targetProvider.loopPrepare(); carInterface.driveLoopAction();};
         Consumer<EmptyParam> brakeAndStopAction = dummy -> carInterface.brakeAndStopAction();
-        Consumer<EmptyParam> arrivedBrakeAndStopAction = dummy -> { _actuatorsSensors.computeAndLockSensorData(); carInterface.arrivedBrakeAndStopAction();};
+        Consumer<EmptyParam> arrivedBrakeAndStopAction = dummy -> { _actuatorsSensors.computeAndLockSensorData(); carInterface.brakeAndStopAction();};
         Consumer<Position2D> informFailedAction = newTarget -> informFailed(newTarget);
         
 //        Guard notArrivedGuard = () -> {return !arrivedAtTarget() && !lostTrack();};
@@ -98,24 +97,32 @@ public class EventLoopStateMachine extends FiniteStateMachineTemplate
 
     private boolean lostTrack()
     {
-        Position2D curPos = _actuatorsSensors.getRearWheelCenterPosition();
-        TrajectoryElement curLookaheadElement = _carInterface.getCurrentLookaheadTrajectoryElement();
-        double lookahead = _carInterface.getCurrentLookahead();
-        if(curLookaheadElement == null)
+        if(_carInterface.hasLookahead())
         {
-            System.out.println("\nno lookahead element yet");
+            Position2D curPos = _actuatorsSensors.getRearWheelCenterPosition();
+            ICarInterfaceActionsWithLookahead carInterface = (ICarInterfaceActionsWithLookahead)_carInterface;
+            TrajectoryElement curLookaheadElement = carInterface.getCurrentLookaheadTrajectoryElement();
+            double lookahead = carInterface.getCurrentLookahead();
+            if(curLookaheadElement == null)
+            {
+                System.out.println("\nno lookahead element yet");
+                return false;
+            }
+            Vector2D vector = curLookaheadElement.getVector();
+            double baseDist = Position2D.distance(vector.getBase(), curPos);
+            double tipDist = Position2D.distance(vector.getTip(), curPos);
+            double allowedDeviation = 50.0;
+            boolean inRange = tipDist + allowedDeviation > lookahead && baseDist - allowedDeviation <= lookahead;
+            if(!inRange)
+            {
+                System.out.format("\nTip dist: %.2f, base dist: %.2f, lookahead: %.2f", tipDist, baseDist, lookahead);
+            }
+            return !inRange;
+        }
+        else
+        {
             return false;
         }
-        Vector2D vector = curLookaheadElement.getVector();
-        double baseDist = Position2D.distance(vector.getBase(), curPos);
-        double tipDist = Position2D.distance(vector.getTip(), curPos);
-        double allowedDeviation = 50.0;
-        boolean inRange = tipDist + allowedDeviation > lookahead && baseDist - allowedDeviation <= lookahead;
-        if(!inRange)
-        {
-            System.out.format("\nTip dist: %.2f, base dist: %.2f, lookahead: %.2f", tipDist, baseDist, lookahead);
-        }
-        return !inRange;
     }
 
     private boolean arrivedAtTarget()

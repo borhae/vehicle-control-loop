@@ -25,7 +25,7 @@ import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
 import de.joachim.haensel.phd.scenario.vehicle.control.BlockingArrivedListener;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitVariableLookaheadController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepLoadModelVehicleFactory;
@@ -81,7 +81,7 @@ public class SubScenarioCreationTest implements TestConstants
         Position2D target = new Position2D(lastLine.getX1(), lastLine.getY1());
         
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(2.0, 30.0);};
-        ILowerLayerFactory lowerFact = () -> new PurePursuitControllerVariableLookahead();
+        ILowerLayerFactory lowerFact = () -> new PurePursuitVariableLookaheadController();
 
         Vehicle vehicle = vehicleCreator.createAt((float)startingPoint.getX(), (float)startingPoint.getY(), 0.0f + vehicleCreator.getVehicleHeight() + 0.2f, roadMap, upperFact, lowerFact);
         vehicle.setOrientation(0.0f, 0.0f, 0.0f);
@@ -100,7 +100,7 @@ public class SubScenarioCreationTest implements TestConstants
         float height = vehicleCreator.getVehicleHeight();
 
         IUpperLayerFactory upperFact = () -> new DefaultNavigationController(2.0, 30.0);
-        ILowerLayerFactory lowerFact = () -> new PurePursuitControllerVariableLookahead();
+        ILowerLayerFactory lowerFact = () -> new PurePursuitVariableLookaheadController();
 
         Vehicle vehicle = vehicleCreator.createAt(0.0f, 0.0f, 0.0f + height + 0.1f, roadMap, upperFact, lowerFact);
         vehicle.setOrientation(0.0f, 0.0f, 0.0f);

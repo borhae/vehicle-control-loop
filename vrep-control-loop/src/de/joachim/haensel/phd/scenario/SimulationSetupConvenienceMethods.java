@@ -15,7 +15,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitVariableLookaheadController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
 import de.joachim.haensel.phd.scenario.vehicle.vrep.VRepVehicleConfiguration;
@@ -28,7 +28,7 @@ public class SimulationSetupConvenienceMethods
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
         IUpperLayerFactory upperFact = () -> new DefaultNavigationController(5.0, 60.0);
-        ILowerLayerFactory lowerFact = () -> new PurePursuitControllerVariableLookahead();
+        ILowerLayerFactory lowerFact = () -> new PurePursuitVariableLookaheadController();
         vehicleConf.setUpperCtrlFactory(upperFact);
         vehicleConf.setLowerCtrlFactory(lowerFact);
         
@@ -58,7 +58,7 @@ public class SimulationSetupConvenienceMethods
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
         IUpperLayerFactory upperFact = () -> {return new DefaultNavigationController(5.0, 60.0);};
-        ILowerLayerFactory lowerFact = () -> new PurePursuitControllerVariableLookahead();
+        ILowerLayerFactory lowerFact = () -> new PurePursuitVariableLookaheadController();
         vehicleConf.setUpperCtrlFactory(upperFact);
         vehicleConf.setLowerCtrlFactory(lowerFact);
         

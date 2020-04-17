@@ -31,7 +31,8 @@ import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitVariableLookaheadController;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.stanley.StanleyController;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class ConfigurationFileBasedExperimentRunner
@@ -79,7 +80,7 @@ public class ConfigurationFileBasedExperimentRunner
                         
                         String mapFilenName = positionGenerator.getMapFileName();
                         String testID = String.format("%s_%d_gen_S%d_", positionGenerator.getCityName(), positionGenerator.getNumberOfPositions(), positionGenerator.getSeed()); 
-                        runner.run(testID, 15.0, 120.0, 3.8, 4.0, 0.8, positions, mapFilenName, 120);
+                        runner.run(testID, 15.0, 120.0, 3.8, 4.0, 0.8, positions, mapFilenName, 120, configuration);
                         
                         runner.tearDown();
                     } catch (IOException exc)
@@ -131,7 +132,7 @@ public class ConfigurationFileBasedExperimentRunner
 
     public void run(String testID, double lookahead, double maxVelocity, double maxLongitudinalAcceleration,
             double maxLongitudinalDecceleration, double maxLateralAcceleration, List<Position2D> targetPoints,
-            String mapFilenName, int controlLoopRate) throws VRepException
+            String mapFilenName, int controlLoopRate, ExperimentConfiguration configuration) throws VRepException
     {
         RoadMap map = null;
         List<Position2D> targetPointsMapped = null;
@@ -172,7 +173,16 @@ public class ConfigurationFileBasedExperimentRunner
             @Override
             public ILowerLayerControl create()
             {
-                PurePursuitControllerVariableLookahead controller = new PurePursuitControllerVariableLookahead();
+                String controllerType = configuration.getControllerType();
+                ILowerLayerControl controller = null;
+                if(controllerType.equals("PurePursuitVariableLookahead"))
+                {
+                    controller = new PurePursuitVariableLookaheadController();
+                }
+                else if (controllerType.equals("Stanley"))
+                {
+                    controller = new StanleyController();
+                }
                 controller.addTrajectoryRequestListener(requestListener);
                 controller.addTrajectoryReportListener(reportListener);
                 return controller;

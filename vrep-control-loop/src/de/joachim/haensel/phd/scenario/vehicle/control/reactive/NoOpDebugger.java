@@ -1,5 +1,6 @@
-package de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable;
+package de.joachim.haensel.phd.scenario.vehicle.control.reactive;
 
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.IDebugVisualizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class NoOpDebugger implements IDebugVisualizer

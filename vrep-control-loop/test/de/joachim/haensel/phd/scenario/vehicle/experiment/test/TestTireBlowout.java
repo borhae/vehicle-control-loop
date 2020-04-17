@@ -36,7 +36,7 @@ import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicle;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleConfiguration;
 import de.joachim.haensel.phd.scenario.vehicle.IVehicleFactory;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitVariableLookaheadController;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TireBlowOutAfterDistanceEventGenerator;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TireBlowOutAtPositionEventGenerator;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
@@ -299,7 +299,7 @@ public class TestTireBlowout implements TestConstants
     {
         IVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
         IUpperLayerFactory upperFact = () -> new DefaultNavigationController(5.0, 60.0);
-        ILowerLayerFactory lowerFact = () -> new PurePursuitControllerVariableLookahead();
+        ILowerLayerFactory lowerFact = () -> new PurePursuitVariableLookaheadController();
         vehicleConf.setUpperCtrlFactory(upperFact);
         vehicleConf.setLowerCtrlFactory(lowerFact);
         

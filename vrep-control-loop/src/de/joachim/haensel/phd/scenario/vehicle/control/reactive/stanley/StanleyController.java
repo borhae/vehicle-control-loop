@@ -1,4 +1,4 @@
-package de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable;
+package de.joachim.haensel.phd.scenario.vehicle.control.reactive.stanley;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,9 +11,19 @@ import de.joachim.haensel.phd.scenario.vehicle.ITrajectoryProvider;
 import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.DebugVisualizer;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.EventLoopStateMachine;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.IDebugVisualizer;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.NoOpDebugger;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.TrajectoryBuffer;
 import de.joachim.haensel.phd.scenario.vrepdebugging.IVrepDrawing;
 
-public class PurePursuitControllerVariableLookahead implements ILowerLayerControl
+/**
+ * First go at the stanley controller. Does not work at all. Get back when I'll have the time for it (wildly oscillating).
+ * @author dummy
+ *
+ */
+public class StanleyController implements ILowerLayerControl
 {
     private EventLoopStateMachine _eventLoopStateMachine;
     
@@ -27,7 +37,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
 
     private IDebugVisualizer _debugger;
 
-    public PurePursuitControllerVariableLookahead()
+    public StanleyController()
     {
         _arrivedListeners = new ArrayList<>();
         _trajectoryRequestListeners = new ArrayList<>();
@@ -38,7 +48,7 @@ public class PurePursuitControllerVariableLookahead implements ILowerLayerContro
     public void initController(IActuatingSensing actuatorsSensors, ITrajectoryProvider trajectoryProvider)
     {
         TrajectoryBuffer trajectoryBuffer = new TrajectoryBuffer(trajectoryProvider, actuatorsSensors, _trajectoryReportListeners, _trajectoryRequestListeners);
-        PurePuresuitTargetProvider targetProvider = new PurePuresuitTargetProvider(trajectoryBuffer, actuatorsSensors);
+        StanleyTargetProvider targetProvider = new StanleyTargetProvider(trajectoryBuffer, actuatorsSensors);
         _carInterface = new CarInterfaceActions(actuatorsSensors, _arrivedListeners, targetProvider);
         _eventLoopStateMachine = new EventLoopStateMachine(actuatorsSensors, _carInterface, targetProvider);
         _actuatorsSensors = actuatorsSensors;

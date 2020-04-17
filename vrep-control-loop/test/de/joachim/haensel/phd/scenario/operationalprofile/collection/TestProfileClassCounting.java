@@ -46,7 +46,7 @@ import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitVariableLookaheadController;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
@@ -201,7 +201,7 @@ public class TestProfileClassCounting
             @Override
             public ILowerLayerControl create()
             {
-                PurePursuitControllerVariableLookahead purePursuitControllerVariableLookahead = new PurePursuitControllerVariableLookahead();
+                PurePursuitVariableLookaheadController purePursuitControllerVariableLookahead = new PurePursuitVariableLookaheadController();
                 ITrajectoryRequestListener requestListener = (newTrajectories, timestamp) ->
                 {
                     configurations.put(Long.valueOf(timestamp), newTrajectories);

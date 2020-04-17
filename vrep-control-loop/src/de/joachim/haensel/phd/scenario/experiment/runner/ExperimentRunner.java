@@ -23,7 +23,7 @@ import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitVariableLookaheadController;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class ExperimentRunner
@@ -93,7 +93,7 @@ public class ExperimentRunner
             @Override
             public ILowerLayerControl create()
             {
-                PurePursuitControllerVariableLookahead controller = new PurePursuitControllerVariableLookahead();
+                PurePursuitVariableLookaheadController controller = new PurePursuitVariableLookaheadController();
                 controller.addTrajectoryRequestListener(requestListener);
                 controller.addTrajectoryReportListener(reportListener);
                 return controller;

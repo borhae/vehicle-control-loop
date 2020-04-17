@@ -25,6 +25,9 @@ public class ExperimentConfiguration
     private String _positionListFileName;
     private boolean _positionListFilenameDefault;
     private boolean _detachSimulator;
+    private int _numberOfTargets;
+//  What kind of controller (PurepursuitVariableLookahead, Stanley)
+    private String _controllerType;
 
     public ExperimentConfiguration()
     {
@@ -42,27 +45,27 @@ public class ExperimentConfiguration
         _runRouteSanityCheck = true;
         _showRoutes = false;
         String city = compileCityName();
-        _positionListFileName = city.substring(0, 1).toUpperCase() + city.substring(1) + "points_generatedSeed" + getSeed() + ".txt";
+        _positionListFileName = city.substring(0, 1).toUpperCase() + city.substring(1) + "points_generatedSeed"
+                + getSeed() + ".txt";
         _positionListFilenameDefault = true;
         _detachSimulator = false;
+        _numberOfTargets = 400;
     }
-    
+
     public String compileCityName()
     {
-        if(_mapFileName.equals("luebeck-roads.net.xml"))
+        if (_mapFileName.equals("luebeck-roads.net.xml"))
         {
             return "luebeck";
-        }
-        else if(_mapFileName.equals("chandigarh-roads-lefthand.removed.net.xml"))
+        } else if (_mapFileName.equals("chandigarh-roads-lefthand.removed.net.xml"))
         {
             return "chandigarh";
-        }
-        else
+        } else
         {
             return "";
         }
     }
-    
+
     public boolean getRunRouteSanityCheck()
     {
         return _runRouteSanityCheck;
@@ -128,6 +131,16 @@ public class ExperimentConfiguration
         _detachSimulator = detachSimulator;
     }
 
+    public void setNumberOfTargets(int numberOfTargets)
+    {
+        _numberOfTargets = numberOfTargets;
+    }
+
+    public void setControllerType(String controllerType)
+    {
+        _controllerType = controllerType;
+    }
+
     public boolean getVisualisationInSimulator()
     {
         return _visualisationInSimulator;
@@ -186,5 +199,15 @@ public class ExperimentConfiguration
     public boolean getDetachSimulator()
     {
         return _detachSimulator;
+    }
+
+    public int getNumberOfTargets()
+    {
+        return _numberOfTargets;
+    }
+    
+    public String getControllerType()
+    {
+        return _controllerType;
     }
 }

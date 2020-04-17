@@ -29,7 +29,7 @@ import de.joachim.haensel.phd.scenario.tasks.ITask;
 import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig;
 import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitVariableLookaheadController;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class ErrounousToursTest 
@@ -152,7 +152,7 @@ public class ErrounousToursTest
         taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisuals.ttm");
 
         taskConfiguration.setTargetPoints(targetPositionsMapped);
-        taskConfiguration.setLowerLayerController(() -> new PurePursuitControllerVariableLookahead());
+        taskConfiguration.setLowerLayerController(() -> new PurePursuitVariableLookaheadController());
         IIDCreator routeIdCreator = new RouteIDCreator(routeStartIdx);
         VRepNavigationListener routesEndsMarker = new VRepNavigationListener(_objectCreator, routeIdCreator);
         routesEndsMarker.activateRouteEndsDebugging();
@@ -221,7 +221,7 @@ public class ErrounousToursTest
         taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisuals.ttm");
 
         taskConfiguration.setTargetPoints(targetPositionsMapped);
-        taskConfiguration.setLowerLayerController(() -> new PurePursuitControllerVariableLookahead());
+        taskConfiguration.setLowerLayerController(() -> new PurePursuitVariableLookaheadController());
         IIDCreator routeIdCreator = new RouteIDCreator(routeStartIdx);
         VRepNavigationListener routesEndsMarker = new VRepNavigationListener(_objectCreator, routeIdCreator);
         routesEndsMarker.activateRouteEndsDebugging();
@@ -263,7 +263,7 @@ public class ErrounousToursTest
         taskConfiguration.setCarModel("./res/simcarmodel/vehicleVisuals.ttm");
 
         taskConfiguration.setTargetPoints(Arrays.asList(new Position2D[] {startPos, endPos}));
-        taskConfiguration.setLowerLayerController(() -> new PurePursuitControllerVariableLookahead());
+        taskConfiguration.setLowerLayerController(() -> new PurePursuitVariableLookaheadController());
         IIDCreator routeIdCreator = new RouteIDCreator(1);
         VRepNavigationListener routesEndsMarker = new VRepNavigationListener(_objectCreator, routeIdCreator);
         routesEndsMarker.activateRouteEndsDebugging();

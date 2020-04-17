@@ -29,7 +29,7 @@ import de.joachim.haensel.phd.scenario.tasks.ITask;
 import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig;
 import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitControllerVariableLookahead;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitVariableLookaheadController;
 import de.joachim.haensel.phd.scenario.vehicle.experiment.TrajectoryRecorder;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
@@ -117,7 +117,7 @@ public class TestParcourGeneration
 
         config.setTargetPoints(targetPoints);
         config.addNavigationListener(trajectoryRecorder);
-        config.setLowerLayerController(() -> new PurePursuitControllerVariableLookahead());
+        config.setLowerLayerController(() -> new PurePursuitVariableLookaheadController());
         taskCreator.configure(config);
         List<ITask> tasks = taskCreator.createTasks();
 

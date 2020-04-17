@@ -56,7 +56,6 @@ public class ValidatedRoadPositionGeneratorConfigFile
     private RoadMap _roadMap;
     private String _resultPath;
     private VRepSimulatorData _connectedSimulator;
-    private int _numberOfPoints;
     private ExperimentConfiguration _config;
 
     private boolean _positionsSaved;
@@ -227,9 +226,8 @@ public class ValidatedRoadPositionGeneratorConfigFile
 
     private List<Position2D> generateUnvalidatedPositions()
     {
-        _numberOfPoints = 400;
         MersenneTwister randomGen = new MersenneTwister(_seed);
-        List<Position2D> generatedPointsOnMap = randomPointsByRandomMapElementSelection(_numberOfPoints, _roadMap, randomGen);
+        List<Position2D> generatedPointsOnMap = randomPointsByRandomMapElementSelection(_config.getNumberOfTargets(), _roadMap, randomGen);
         return generatedPointsOnMap;
     }
 
@@ -502,7 +500,7 @@ public class ValidatedRoadPositionGeneratorConfigFile
 
     public int getNumberOfPositions()
     {
-        return _numberOfPoints;
+        return _config.getNumberOfTargets();
     }
 
     public long getSeed()

@@ -1,0 +1,169 @@
+package de.joachim.haensel.phd.scenario.vehicle.control.reactive.stanley;
+
+import java.util.Arrays;
+import java.util.List;
+
+import de.joachim.haensel.phd.converters.UnitConverter;
+import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
+import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
+import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ICarInterfaceActions;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.IDebugVisualizer;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.NoOpDebugger;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
+
+public class CarInterfaceActions implements ICarInterfaceActions
+{
+    private double[] _speedBuf;
+    private IActuatingSensing _actuatorsSensors;
+    private IDebugVisualizer _debugger;
+    private StanleyTargetProvider _targetProvider;
+    private double _speedToWheelRotationFactor;
+
+    private List<IArrivedListener> _arrivedListeners;
+    private TrajectoryElement _cachedLookaheadTrajectoryElement;
+    private double _cashedLookahead;
+    private double[] _steeringAngleBuffer;
+
+    public CarInterfaceActions(IActuatingSensing actuatorsSensors, List<IArrivedListener> arrivedListeners, StanleyTargetProvider targetProvider)
+    {
+        _actuatorsSensors = actuatorsSensors;
+        _debugger = new NoOpDebugger();
+        _speedBuf = new double[3];
+        Arrays.parallelSetAll(_speedBuf, idx -> 0.0);
+        _arrivedListeners = arrivedListeners;
+        _targetProvider = targetProvider;
+        _cachedLookaheadTrajectoryElement = null;
+        _cashedLookahead = 0.0;
+        _steeringAngleBuffer = new double[10];
+    }
+    
+    public void reInit()
+    {
+        _actuatorsSensors.computeAndLockSensorData();
+        _targetProvider.loopPrepare();
+        _speedToWheelRotationFactor = 2.0 / _actuatorsSensors.getWheelDiameter(); // 2/diameter = 1/radius
+    }
+
+    public void clearSegmentBuffer()
+    {
+        _targetProvider.reset();
+    }
+
+    public void driveLoopAction()
+    {
+        TrajectoryElement closestTrajectoryElement = _targetProvider.getClosestTrajectoryElement();
+        
+        float targetWheelRotation = 0.0f;
+        float targetSteeringAngle = 0.0f;
+        targetWheelRotation = computeTargetWheelRotationSpeed(closestTrajectoryElement);
+        targetSteeringAngle = computeTargetSteeringAngle(closestTrajectoryElement);
+
+        _debugger.showVelocities(targetWheelRotation, closestTrajectoryElement, closestTrajectoryElement);
+        _actuatorsSensors.drive(targetWheelRotation, targetSteeringAngle);
+    }
+
+    private float computeTargetWheelRotationSpeed(TrajectoryElement closestSegment)
+    {
+        if(closestSegment != null)
+        {
+//            double setSpeed = closestSegment.getVelocity();
+//            double speed = lowPassFilter(setSpeed);f
+            double speed = UnitConverter.kilometersPerHourToMetersPerSecond(5.0);
+            return (float) (speed * _speedToWheelRotationFactor);
+        }
+        else
+        {
+            return 0.0f;
+        }
+    }
+
+    private double lowPassFilter(double setSpeed)
+    {
+        double speed = (_speedBuf[0] + _speedBuf[1] + _speedBuf[2] + setSpeed) / 4.0;
+        _speedBuf[0] = _speedBuf[1];
+        _speedBuf[1] = _speedBuf[2];
+        _speedBuf[2] = setSpeed;
+        return speed;
+    }
+    
+    protected float computeTargetSteeringAngle(TrajectoryElement currentTrajectory)
+    {
+        Position2D rearWheelPosition = _actuatorsSensors.getRearWheelCenterPosition();
+        Position2D frontWheelPosition = _actuatorsSensors.getFrontWheelCenterPosition();
+        Vector2D rearWheelToFrontWheel = new Vector2D(rearWheelPosition, frontWheelPosition);
+        Vector2D streetTangent = currentTrajectory.getVector();
+//        double deltaError = Vector2D.computeSplitAngle(rearWheelToFrontWheel, streetTangent);
+        double deltaError = Vector2D.computeSplitAngle(streetTangent, rearWheelToFrontWheel);
+        double[] vehicleVelocityXYZ = _actuatorsSensors.getVehicleVelocity();
+        double vehicleVelocity = new Vector2D(0.0, 0.0, vehicleVelocityXYZ[0], vehicleVelocityXYZ[1]).getLength();
+        double trackError = streetTangent.unboundedDistance(frontWheelPosition);
+        double k = 2.0;
+//        double result = deltaError + Math.atan(k * trackError / vehicleVelocity);
+        double result = deltaError + Math.atan(k * trackError / vehicleVelocity);
+        System.out.format("%.4f\n", result);
+        result = cap(result);
+        System.arraycopy(_steeringAngleBuffer, 0, _steeringAngleBuffer, 1, _steeringAngleBuffer.length - 1);
+        _steeringAngleBuffer[0] = result;
+        return (float) result;
+    }
+
+    private double cap(double result)
+    {
+        if(result >= (Math.PI / 4.0))
+        {
+            result = Math.PI / 4.0;
+        }
+        else if(result <=  -Math.PI / 4.0)
+        {
+            result = -Math.PI / 4.0;
+        }
+        return result;
+    }
+
+    public void brakeAndStopAction()
+    {
+        System.out.println("Brake!");
+        _actuatorsSensors.drive(0.0f, 0.0f);
+    }
+
+    public void arrivedBrakeAndStopAction()
+    {
+        System.out.println("Arrived!");
+        _actuatorsSensors.drive(0.0f, 0.0f);
+        Position2D position = _actuatorsSensors.getFrontWheelCenterPosition();
+//        Hopefully I don't get a concurrent modification exception if the list is copied to an array first
+//        weird though... TODO rethink this when I have the time
+//        _arrivedListeners.forEach(listener -> listener.arrived(position));
+        System.out.println("copying arrived listeners to have no concurrent situation");
+        IArrivedListener[] array = _arrivedListeners.toArray(new IArrivedListener[0]);
+        for (int idx = 0; idx < array.length; idx++)
+        {
+            array[idx].arrived(position);
+        }
+        System.out.println("all listeners called, clearing the list");
+        _arrivedListeners.clear();
+    }
+
+    public void setDebugger(IDebugVisualizer debugger)
+    {
+        _debugger = debugger;
+    }
+
+    public TrajectoryElement getCurrentLookaheadTrajectoryElement()
+    {
+        return _cachedLookaheadTrajectoryElement;
+    }
+
+    public double getCurrentLookahead()
+    {
+        return _cashedLookahead;
+    }
+
+    @Override
+    public boolean hasLookahead()
+    {
+        return false;
+    }
+}
