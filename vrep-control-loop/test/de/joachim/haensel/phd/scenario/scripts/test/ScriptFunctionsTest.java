@@ -77,7 +77,7 @@ public class ScriptFunctionsTest
     public void testDriveForward() throws VRepException
     {
         RoadMap roadMap = new RoadMap(new NetType());
-        IVehicleFactory vehicleFactory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", 1.0); 
+        IVehicleFactory vehicleFactory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm"); 
         VRepVehicleConfiguration vehicleConf = new VRepVehicleConfiguration();
         vehicleConf.setLowerCtrlFactory(() -> new MonitoringController());
         vehicleConf.setUpperCtrlFactory(new IUpperLayerFactory() {

@@ -66,7 +66,7 @@ public class SimpleVehicleBuildTask implements ITask, IVehicleProvider
 
     private IVehicle createVehicle(RoadMap map, Position2D vehiclePosition, Vector2D orientation)
     {
-        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", 1.0f);
+        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm");
         IVehicleConfiguration vehicleConf = createConfiguration(map, vehiclePosition, orientation, 0.3);
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();

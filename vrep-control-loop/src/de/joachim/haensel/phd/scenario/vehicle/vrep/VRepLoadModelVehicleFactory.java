@@ -27,7 +27,7 @@ public class VRepLoadModelVehicleFactory implements IVehicleFactory
     private VRepObjectCreation _objectCreator;
     private String _vrepModelPath;
 
-    public VRepLoadModelVehicleFactory(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator, String vrepModelFilePath, double scale)
+    public VRepLoadModelVehicleFactory(VRepRemoteAPI vrep, int clientID, VRepObjectCreation objectCreator, String vrepModelFilePath)
     {
         _vrep = vrep;
         _clientID = clientID;
@@ -46,10 +46,37 @@ public class VRepLoadModelVehicleFactory implements IVehicleFactory
     {
         try
         {
+            IntW handle = new IntW(-1);
+            int errVal = -1;
+            VRepException exc = null;
+            try
+            {
+                _vrep.simxGetObjectHandle(_clientID, PHYSICAL_CAR_BODY_NAME, handle, remoteApi.simx_opmode_blocking);
+            }
+            catch (VRepException e) 
+            {
+                errVal = e.getRetVal();
+                exc = e;
+            }
+            boolean carAlreadyLoaded = false;
+            if(handle.getValue() != errVal)
+            {
+                carAlreadyLoaded  = true;
+            }
+            else
+            {
+                if(errVal != 1 && errVal != 8)
+                {
+                    throw exc;
+                }
+            }
             IntW baseHandle = new IntW(0);
-            _vrep.simxLoadModel(_clientID, Paths.get(_vrepModelPath).toAbsolutePath().toString(), 0, baseHandle, remoteApi.simx_opmode_blocking);
-            VehicleWithCameraHandles handles = new VehicleWithCameraHandles();
+            if(!carAlreadyLoaded)
+            {
+                _vrep.simxLoadModel(_clientID, Paths.get(_vrepModelPath).toAbsolutePath().toString(), 0, baseHandle, remoteApi.simx_opmode_blocking);
+            }
             
+            VehicleWithCameraHandles handles = new VehicleWithCameraHandles();
             handles.setAxisRearLeft(getHandle("axisRearLeft"));
             handles.setAxisRearRight(getHandle("axisRearRight"));
             

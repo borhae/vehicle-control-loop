@@ -53,6 +53,24 @@ public class VRepObjectCreation
 
     private void loadModelWithAttachedScriptThatLoadsScripts(VRepRemoteAPI vrep, int clientID)
     {
+        IntW testScriptLoaderHandle = new IntW(0);
+        int testResult = -1;
+        try
+        {
+            vrep.simxGetObjectHandle(clientID, VREP_LOADING_SCRIPT_PARENT_OBJECT, testScriptLoaderHandle, remoteApi.simx_opmode_blocking);
+            testResult = testScriptLoaderHandle.getValue();
+        }
+        catch (VRepException e)
+        {
+            //That's ok, seems like we do not have a handle yet. 
+            testResult = -1;
+        }
+        if(testResult != -1)
+        {
+            System.out.println("scriptloader script already in scene");
+            _scriptLoaderHandle = testResult;
+            return;
+        }
         IntW scriptLoaderHandle = new IntW(0);
         try
         {

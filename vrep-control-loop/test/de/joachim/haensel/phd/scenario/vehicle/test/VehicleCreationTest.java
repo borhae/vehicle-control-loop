@@ -76,7 +76,7 @@ public class VehicleCreationTest implements TestConstants
     @Test
     public void testCreateAndDestroyVehicleLoadModel() throws VRepException
     {
-        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", 1.0f);
+        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm");
         IVehicleConfiguration vehicleConf = createConfiguration();
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();
@@ -87,7 +87,7 @@ public class VehicleCreationTest implements TestConstants
     @Test
     public void testCreateAndDestroyVehicleLoadModelWithAutoBody() throws VRepException
     {
-        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/carvisuals.ttm", 1.0f);
+        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/carvisuals.ttm");
         IVehicleConfiguration vehicleConf = createConfiguration();
         List<String> autoBodyNames = new ArrayList<>();
         autoBodyNames.add(MercedesVisualsNames.AUTO_BODY_NAME);

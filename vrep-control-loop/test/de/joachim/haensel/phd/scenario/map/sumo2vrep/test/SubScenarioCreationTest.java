@@ -114,7 +114,7 @@ public class SubScenarioCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0, 0.0);
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
         mapCreator.createSimplesShapeBasedMap(roadMap);
-        VRepLoadModelVehicleFactory vehicleCreator = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", DOWN_SCALE_FACTOR);
+        VRepLoadModelVehicleFactory vehicleCreator = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm");
 
         JunctionType startingJunction = roadMap.getJunctions().get(3);
         String startingLaneID = startingJunction.getIncLanes().split(" ")[0];

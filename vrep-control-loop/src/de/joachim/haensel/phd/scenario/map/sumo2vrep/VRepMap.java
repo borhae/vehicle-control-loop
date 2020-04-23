@@ -15,6 +15,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import coppelia.FloatWA;
+import coppelia.IntW;
 import coppelia.StringWA;
 import coppelia.remoteApi;
 import de.hpi.giese.coppeliawrapper.VRepException;
@@ -51,16 +52,59 @@ public class VRepMap
         _vrepObjectCreator = vrepObjectCreator;
     }
 
-    public void createMapSizedRectangle(RoadMap roadMap, boolean isVisible)
+    public int createMapSizedRectangle(RoadMap roadMap, boolean isVisible) throws VRepException
     {
+        IntW handle = new IntW(-1);
+        if(_elementNameCreator == null)
+        {
+            _elementNameCreator = new IDCreator();
+        }
+        String mapID = _elementNameCreator.createPlaneID();
+        int errVal = -1;
+        VRepException exc = null;
         try
         {
-            createMapSizedVRepRectangle(roadMap, isVisible);
+            _vrep.simxGetObjectHandle(_clientID, mapID, handle, remoteApi.simx_opmode_blocking);
         }
-        catch (VRepException e)
+        catch (VRepException e) 
         {
-            e.printStackTrace();
+            errVal = e.getRetVal();
+            exc = e;
         }
+        if(handle.getValue() != errVal)
+        {
+            // map is already there
+            return handle.getValue();
+        }
+        else
+        {
+            if(errVal != 1 && errVal != 8)
+            {
+                throw exc;
+            }
+        }
+
+        XYMinMax minMax = roadMap.computeMapDimensions();
+        _vrepObjectCreator.createMapCenter();
+        ShapeParameters shapeParameters = new ShapeParameters();
+        shapeParameters.setIsDynamic(false);
+        shapeParameters.setIsRespondable(true);
+        shapeParameters.setMass(10000);
+        shapeParameters.setName(mapID);
+        shapeParameters.setOrientation(0.0f, 0.0f, 0.0f);
+        shapeParameters.setRespondableMask(ShapeParameters.GLOBAL_AND_LOCAL_RESPONDABLE_MASK);
+        float sizeX = (float) (minMax.distX() + 100.0); // an extra 100 meter so it does not fall of
+        float sizeY = (float) (minMax.distY() + 100.0); // an extra 100 meter so it does not fall of
+        float sizeZ = 20.0f;
+        shapeParameters.setSize(sizeX, sizeY, sizeZ);
+        float posX =  (float) (minMax.minX() + minMax.distX()/2.0);
+        float posY = (float) (minMax.minY() + minMax.distY()/2.0);
+        float posZ = (float) -sizeZ/2.0f;
+        shapeParameters.setPosition(posX, posY, posZ);
+        shapeParameters.setType(EVRepShapes.CUBOID);
+        shapeParameters.setVisibility(isVisible);
+        int rectangleHandle = _vrepObjectCreator.createPrimitive(shapeParameters);
+        return rectangleHandle;
     }
 
     public void createMapSizedRectangleWithMapTexture(RoadMap roadMap)
@@ -68,7 +112,7 @@ public class VRepMap
         try
         {
             XYMinMax minMax = roadMap.computeMapDimensions();
-            int rectangleHandle = createMapSizedVRepRectangle(roadMap, false);
+            int rectangleHandle = createMapSizedRectangle(roadMap, false);
             
             BufferedImage img = createTexture(roadMap, minMax);
             File tmp = new File("tmpmap.png");
@@ -106,6 +150,31 @@ public class VRepMap
     
     public void createMeshBasedMap(RoadMap roadMap) throws VRepException
     {
+        IntW handle = new IntW(-1);
+        int errVal = -1;
+        VRepException exc = null;
+        try
+        {
+            _vrep.simxGetObjectHandle(_clientID, "Map", handle, remoteApi.simx_opmode_blocking);
+        }
+        catch (VRepException e) 
+        {
+            errVal = e.getRetVal();
+            exc = e;
+        }
+        if(handle.getValue() != errVal)
+        {
+            // map is already there
+            return;
+        }
+        else
+        {
+            if(errVal != 1 && errVal != 8)
+            {
+                throw exc;
+            }
+        }
+            
         if(_elementNameCreator == null)
         {
             _elementNameCreator = new IDCreator();
@@ -321,34 +390,6 @@ public class VRepMap
         return img;
     }
 
-    private int createMapSizedVRepRectangle(RoadMap roadMap, boolean isVisible) throws VRepException
-    {
-        if(_elementNameCreator == null)
-        {
-            _elementNameCreator = new IDCreator();
-        }
-        XYMinMax minMax = roadMap.computeMapDimensions();
-        _vrepObjectCreator.createMapCenter();
-        ShapeParameters shapeParameters = new ShapeParameters();
-        shapeParameters.setIsDynamic(false);
-        shapeParameters.setIsRespondable(true);
-        shapeParameters.setMass(10000);
-        shapeParameters.setName(_elementNameCreator.createPlaneID());
-        shapeParameters.setOrientation(0.0f, 0.0f, 0.0f);
-        shapeParameters.setRespondableMask(ShapeParameters.GLOBAL_AND_LOCAL_RESPONDABLE_MASK);
-        float sizeX = (float) (minMax.distX() + 100.0); // an extra 100 meter so it does not fall of
-        float sizeY = (float) (minMax.distY() + 100.0); // an extra 100 meter so it does not fall of
-        float sizeZ = 20.0f;
-        shapeParameters.setSize(sizeX, sizeY, sizeZ);
-        float posX =  (float) (minMax.minX() + minMax.distX()/2.0);
-        float posY = (float) (minMax.minY() + minMax.distY()/2.0);
-        float posZ = (float) -sizeZ/2.0f;
-        shapeParameters.setPosition(posX, posY, posZ);
-        shapeParameters.setType(EVRepShapes.CUBOID);
-        shapeParameters.setVisibility(isVisible);
-        int rectangleHandle = _vrepObjectCreator.createPrimitive(shapeParameters);
-        return rectangleHandle;
-    }
 
     private void drawLane(Graphics2D graphics2dObject, int xCenter, int yCenter, LaneType lane, String p1, String p2)
     {

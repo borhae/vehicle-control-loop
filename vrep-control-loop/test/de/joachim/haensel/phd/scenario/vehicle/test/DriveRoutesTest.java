@@ -92,7 +92,7 @@ public class DriveRoutesTest
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).transform(scaleOffsetMatrix);
 
 //        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", 1.0f);
-        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/carvisuals.ttm", 1.0f);
+        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/carvisuals.ttm");
         IVehicleConfiguration vehicleConf = createConfiguration(roadMap, startPosition, destinationPosition);
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();
@@ -160,7 +160,7 @@ public class DriveRoutesTest
         Position2D startPosition = new Position2D(5747.01f, 2979.22f).transform(scaleOffsetMatrix);
         Position2D destinationPosition = new Position2D(3031.06f, 4929.45f).transform(scaleOffsetMatrix);
 
-        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm", 1.0f);
+        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/vehicleAllAnglesCleanedUpNoScript.ttm");
         IVehicleConfiguration vehicleConf = createConfiguration(roadMap, startPosition, destinationPosition);
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();

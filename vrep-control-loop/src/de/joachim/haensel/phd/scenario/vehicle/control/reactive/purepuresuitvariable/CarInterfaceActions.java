@@ -9,7 +9,6 @@ import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.control.IArrivedListener;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ICarInterfaceActions;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ICarInterfaceActionsWithLookahead;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.IDebugVisualizer;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.NoOpDebugger;

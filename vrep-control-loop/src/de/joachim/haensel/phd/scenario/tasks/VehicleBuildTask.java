@@ -30,7 +30,6 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
     private Vector2D _orientation;
 
     private IVehicle _vehicle;
-    private double _lookahead;
     private double _maxVelocity;
     private double _maxLongitudinalAcceleration;
     private double _maxLongitudinalDecceleration;
@@ -55,9 +54,8 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
         _controlLoopRate = 200; //milliseconds. So 200 means 5 times per second
     }
 
-    public void setControlParams(double lookahead, double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration)
+    public void setControlParams(double maxVelocity, double maxLongitudinalAcceleration, double maxLongitudinalDecceleration, double maxLateralAcceleration)
     {
-        _lookahead = lookahead;
         _maxVelocity = maxVelocity;
         _maxLongitudinalAcceleration = maxLongitudinalAcceleration;
         _maxLongitudinalDecceleration = maxLongitudinalDecceleration;
@@ -99,7 +97,7 @@ public class VehicleBuildTask implements ITask, IVehicleProvider
             vehicleConf = createVehicleConfiguration(map, vehiclePosition, orientation, 1.5);
         }
         vehicleConf.setControlLoopRate(_controlLoopRate);
-        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, _carmodel, 1.0f);
+        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, _carmodel);
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();
         return vehicle;

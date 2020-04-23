@@ -38,6 +38,8 @@ controlLoop = function()
 end
 
 init = function()
+  -- debugGraphHandle = sim.getObjectHandle('steering') -- added this for debugging, requires a graph for visualization called steering
+  
   -- Retrieving handles and setting initial values:
   steeringLeft = sim.getObjectHandle('steeringFrontLeft')
   steeringRight = sim.getObjectHandle('steeringFrontRight')

@@ -98,8 +98,14 @@ public class ValidatedRoadPositionGeneratorConfigFile
         _roadMap = new RoadMap(RES_ROADNETWORKS_DIRECTORY + _mapFileName);
         _generatedPointsOnMap = generateUnvalidatedPositions();
         _centerMatrix = _roadMap.center(0.0, 0.0);
-        potentiallyShowMapInSimulator(config);
-        potentiallyShowPositionsInSimulator(config);
+        if(config.getShowMap())
+        {
+            showMap();
+        }
+        if(config.getShowStartEndPoints())
+        {
+            showRouteStartEndPoints();
+        }
         List<ErrorMsg> errorMsgs = potentialSanityCheck(config);
         showRoutesInSimulator(config, errorMsgs);
         potentiallySaveToFile(config);
@@ -116,6 +122,31 @@ public class ValidatedRoadPositionGeneratorConfigFile
             System.out.println("done");
         }
         potentiallySaveToFile(config);
+    }
+
+    private void showRouteStartEndPoints() throws VRepException
+    {
+        if(!_visualisationInSimulator)
+        {
+            connectSimulator();
+        }
+        _visualisationInSimulator = true;
+        visualiseInSimulator(_roadMap, _generatedPointsOnMap, _centerMatrix);
+    }
+
+    private void showMap() throws VRepException
+    {
+        if(!_visualisationInSimulator)
+        {
+            connectSimulator();
+        }
+        _visualisationInSimulator = true;
+        float streetWidth = (float)1.5;
+        float streetHeight = (float)0.4;
+        
+        VRepMap mapCreator = new VRepMap(streetWidth, streetHeight, _vrep, _clientID, _objectCreator);
+        mapCreator.createMeshBasedMap(_roadMap);
+        mapCreator.createMapSizedRectangle(_roadMap, false);
     }
 
     private void potentiallySaveToFile(ExperimentConfiguration config)
@@ -183,37 +214,6 @@ public class ValidatedRoadPositionGeneratorConfigFile
             errorMsg = checkRoutesSanity(_roadMap, _generatedPointsOnMap, _centerMatrix);
         }
         return errorMsg;
-    }
-
-    private void potentiallyShowPositionsInSimulator(ExperimentConfiguration config) throws VRepException
-    {
-        if(config.getShowStartEndPoints())
-        {
-            if(!_visualisationInSimulator)
-            {
-                connectSimulator();
-            }
-            _visualisationInSimulator = true;
-            visualiseInSimulator(_roadMap, _generatedPointsOnMap, _centerMatrix);
-        }
-    }
-
-    private void potentiallyShowMapInSimulator(ExperimentConfiguration config) throws VRepException
-    {
-        if(config.getShowMap())
-        {
-            if(!_visualisationInSimulator)
-            {
-                connectSimulator();
-            }
-            _visualisationInSimulator = true;
-            float streetWidth = (float)1.5;
-            float streetHeight = (float)0.4;
-            
-            VRepMap mapCreator = new VRepMap(streetWidth, streetHeight, _vrep, _clientID, _objectCreator);
-            mapCreator.createMeshBasedMap(_roadMap);
-            mapCreator.createMapSizedRectangle(_roadMap, false);
-        }
     }
 
     private void connectSimulator() throws VRepException

@@ -183,7 +183,14 @@ public class MapCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
 
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMapSizedRectangle(roadMap, true);
+        try
+        {
+            mapCreator.createMapSizedRectangle(roadMap, true);
+        } 
+        catch (VRepException e)
+        {
+            assert(false);
+        }
     }
     
     @Test
@@ -193,7 +200,14 @@ public class MapCreationTest implements TestConstants
         roadMap.transform(DOWN_SCALE_FACTOR, 0.0f, 0.0f);
 
         VRepMap mapCreator = new VRepMap(STREET_WIDTH, STREET_HEIGHT, _vrep, _clientID, _objectCreator);
-        mapCreator.createMapSizedRectangle(roadMap, true);
+        try
+        {
+            mapCreator.createMapSizedRectangle(roadMap, true);
+        }
+        catch (VRepException e)
+        {
+            assert(false);
+        }
         mapCreator.createSimplesShapeBasedMap(roadMap);
     }
     

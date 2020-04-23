@@ -95,7 +95,7 @@ public class PointListTaskCreatorConfig implements ITaskCreatorConfig, IDrivingT
         
         Vector2D orientation = IDrivingTask.computeOrientation(_map, startPosition, _targetPoints.get(1));
         VehicleBuildTask vehicleBuildTask = new VehicleBuildTask(_vrep, _clientID, _objectCreator, _map, startPosition, orientation, _carmodel);
-        vehicleBuildTask.setControlParams(_lookahead, _maxVelocity, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
+        vehicleBuildTask.setControlParams(_maxVelocity, _maxLongitudinalAcceleration, _maxLongitudinalDecceleration, _maxLateralAcceleration);
         if(_controlLoopRate == -1)
         {
             _controlLoopRate = 240;

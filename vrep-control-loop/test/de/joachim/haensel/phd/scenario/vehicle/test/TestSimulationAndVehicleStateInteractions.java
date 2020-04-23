@@ -79,7 +79,7 @@ public class TestSimulationAndVehicleStateInteractions
         Position2D destinationPosition = new Position2D(3031.06, 4929.45).transform(centerMatrix);
 
         RoadMap roadMap = mapAndCenterMatrix.getRoadMap();
-        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/carvisuals.ttm", 1.0f);
+        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/carvisuals.ttm");
         IVehicleConfiguration vehicleConf = SimulationSetupConvenienceMethods.createMercedesLikeConfiguration(roadMap, startPosition, destinationPosition, 2.0);
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();
@@ -163,7 +163,7 @@ public class TestSimulationAndVehicleStateInteractions
             exc.printStackTrace();
         }
         RoadMap roadMap = mapAndCenterMatrix.getRoadMap();
-        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/carvisuals.ttm", 1.0f);
+        IVehicleFactory factory = new VRepLoadModelVehicleFactory(_vrep, _clientID, _objectCreator, "./res/simcarmodel/carvisuals.ttm");
         IVehicleConfiguration vehicleConf = SimulationSetupConvenienceMethods.createMercedesLikeConfiguration(roadMap, startPosition, destinationPosition, 2.0);
         factory.configure(vehicleConf);
         IVehicle vehicle = factory.createVehicleInstance();

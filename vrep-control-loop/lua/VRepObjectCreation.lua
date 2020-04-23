@@ -413,6 +413,13 @@ addAndAttachScript = function(inInts, inFloats, inStrings, inBuffer)
   errVal = sim.setScriptText(scriptHandle, scriptContent)
   sim.addStatusbarMessage("call to sim.setScriptText returned")
   sim.addStatusbarMessage(errVal)
+  -- sim.addStatusbarMessage("Object handle:")
+  -- sim.addStatusbarMessage(objectHandle)
+  -- sim.addStatusbarMessage("scriptHandle")
+  -- sim.addStatusbarMessage(scriptHandle)
+  -- sim.addStatusbarMessage("Script content")
+  -- sim.addStatusbarMessage(scriptContent)
+  
   sim.associateScriptWithObject(scriptHandle, objectHandle)
   
   return {scriptHandle}, {}, {}, "" 
