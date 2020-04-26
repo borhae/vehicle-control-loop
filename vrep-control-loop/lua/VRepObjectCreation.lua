@@ -407,20 +407,23 @@ addAndAttachScript = function(inInts, inFloats, inStrings, inBuffer)
   local objectHandle = inInts[1]
   local scriptType = inInts[2]
   local scriptContent = inStrings[1]
+  local scriptHandle = sim.getScriptAssociatedWithObject(objectHandle)
   
-  local scriptHandle = sim.addScript(scriptType + sim_scripttype_threaded)
+  if scriptHandle == -1 then
+    scriptHandle = sim.addScript(scriptType + sim_scripttype_threaded)
   
-  errVal = sim.setScriptText(scriptHandle, scriptContent)
-  sim.addStatusbarMessage("call to sim.setScriptText returned")
-  sim.addStatusbarMessage(errVal)
-  -- sim.addStatusbarMessage("Object handle:")
-  -- sim.addStatusbarMessage(objectHandle)
-  -- sim.addStatusbarMessage("scriptHandle")
-  -- sim.addStatusbarMessage(scriptHandle)
-  -- sim.addStatusbarMessage("Script content")
-  -- sim.addStatusbarMessage(scriptContent)
+    errVal = sim.setScriptText(scriptHandle, scriptContent)
+    sim.addStatusbarMessage("call to sim.setScriptText returned")
+    sim.addStatusbarMessage(errVal)
+    -- sim.addStatusbarMessage("Object handle:")
+    -- sim.addStatusbarMessage(objectHandle)
+    -- sim.addStatusbarMessage("scriptHandle")
+    -- sim.addStatusbarMessage(scriptHandle)
+    -- sim.addStatusbarMessage("Script content")
+    -- sim.addStatusbarMessage(scriptContent)
   
-  sim.associateScriptWithObject(scriptHandle, objectHandle)
+    sim.associateScriptWithObject(scriptHandle, objectHandle)
+  end
   
   return {scriptHandle}, {}, {}, "" 
 end

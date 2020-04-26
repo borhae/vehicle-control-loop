@@ -4,6 +4,7 @@ public interface ICarInterfaceActions
 {
     public void reInit();
     public void brakeAndStopAction();
+    public void arrivedBrakeAndStopAction();
     public void driveLoopAction();
     public boolean hasLookahead();
 }

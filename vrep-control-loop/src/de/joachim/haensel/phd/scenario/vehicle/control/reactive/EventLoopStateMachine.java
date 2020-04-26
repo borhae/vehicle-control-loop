@@ -26,7 +26,7 @@ public class EventLoopStateMachine extends FiniteStateMachineTemplate
 
         Consumer<EmptyParam> driveAction = dummy -> { _actuatorsSensors.computeAndLockSensorData(); targetProvider.loopPrepare(); carInterface.driveLoopAction();};
         Consumer<EmptyParam> brakeAndStopAction = dummy -> {System.out.println("brake and stop"); carInterface.brakeAndStopAction(); dumpStateBuffer();};
-        Consumer<EmptyParam> arrivedBrakeAndStopAction = dummy -> {System.out.println("arrived, brake and stop"); dumpStateBuffer(); _actuatorsSensors.computeAndLockSensorData(); carInterface.brakeAndStopAction();};
+        Consumer<EmptyParam> arrivedBrakeAndStopAction = dummy -> {System.out.println("arrived, brake and stop"); dumpStateBuffer(); _actuatorsSensors.computeAndLockSensorData(); carInterface.arrivedBrakeAndStopAction();};
         Consumer<Position2D> informFailedAction = newTarget -> informFailed(newTarget);
         
 //        Guard notArrivedGuard = () -> {return !arrivedAtTarget() && !lostTrack();};

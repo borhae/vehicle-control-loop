@@ -183,7 +183,7 @@ public class FiniteStateMachineTemplate
     
     protected void dumpStateBuffer()
     {
-        _debugStateBuffer.forEach(curState -> curState.toString());
+        _debugStateBuffer.forEach(curState -> System.out.println(curState.toString()));
     }
 
     @SuppressWarnings("rawtypes")
