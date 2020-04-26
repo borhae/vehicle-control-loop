@@ -1,7 +1,9 @@
 package de.joachim.haensel.statemachine;
 
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,12 +65,14 @@ public class FiniteStateMachineTemplate
     private States _initialState;
     @SuppressWarnings("rawtypes")
     private HashMap<States, Map<Messages, Map<Guard, ActionTargetStatePair>>> _transitionTable;
+    private Deque<States> _debugStateBuffer;
 
     @SuppressWarnings("rawtypes")
     public FiniteStateMachineTemplate()
     {
         _currentState = States.ILLEGAL;
         _transitionTable = new HashMap<States, Map<Messages, Map<Guard, ActionTargetStatePair>>>();
+        _debugStateBuffer = new LinkedList<States>();
     }
     
     public States getCurrentState()
@@ -112,6 +116,11 @@ public class FiniteStateMachineTemplate
             if(triggerableGuards.size() == 1)
             {
                 activeActionTargetStatePair.runAction(parameter);
+                _debugStateBuffer.push(_currentState);
+                if(_debugStateBuffer.size() > 10)
+                {
+                    _debugStateBuffer.removeLast();
+                }
                 _currentState = activeActionTargetStatePair.getState();
             } 
             else if(triggerableGuards.size() > 1)
@@ -170,6 +179,11 @@ public class FiniteStateMachineTemplate
     public void reset()
     {
         _currentState = _initialState;
+    }
+    
+    protected void dumpStateBuffer()
+    {
+        _debugStateBuffer.forEach(curState -> curState.toString());
     }
 
     @SuppressWarnings("rawtypes")
