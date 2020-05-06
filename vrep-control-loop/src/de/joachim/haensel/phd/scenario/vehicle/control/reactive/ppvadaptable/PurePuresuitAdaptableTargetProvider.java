@@ -1,14 +1,14 @@
-package de.joachim.haensel.phd.scenario.vehicle.control.reactive.stanley;
+package de.joachim.haensel.phd.scenario.vehicle.control.reactive.ppvadaptable;
 
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
 import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ITargetProvider;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.RouteBufferStates;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.TrajectoryBuffer;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ppvadaptable.AtomicSetActualError;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
-public class StanleyTargetProvider implements ITargetProvider
+public class PurePuresuitAdaptableTargetProvider implements ITargetProvider
 {
     private TrajectoryBuffer _trajectoryBuffer;
     private IActuatingSensing _actuatorsSensors;
@@ -18,7 +18,7 @@ public class StanleyTargetProvider implements ITargetProvider
     private Position2D _rearWheelCenterPosition;
     private double _trajectoryElementLength;
 
-    public StanleyTargetProvider(TrajectoryBuffer trajectoryBuffer, IActuatingSensing actuatorsSensors)
+    public PurePuresuitAdaptableTargetProvider(TrajectoryBuffer trajectoryBuffer, IActuatingSensing actuatorsSensors)
     {
         _trajectoryBuffer = trajectoryBuffer;
         _trajectoryElementLength = trajectoryBuffer.getTrajectoryElementLength();
@@ -34,13 +34,28 @@ public class StanleyTargetProvider implements ITargetProvider
 
     public void loopPrepare()
     {
-        _trajectoryBuffer.triggerEnsureSize(AtomicSetActualError.NO_FEEDBACK);
+        TrajectoryElement closestTrajectoryElement = internalGetClosestTrajectoryElement(false);
+        Vector2D v = closestTrajectoryElement.getVector();
+        double distanceErr = v.toLine().distance(_currentPosition);
+        double angleErr = Vector2D.computeAngle(v, _currentOrientation);
+        AtomicSetActualError error = new AtomicSetActualError(distanceErr, angleErr);
+        
+        _trajectoryBuffer.triggerEnsureSize(error);
         _currentPosition = _actuatorsSensors.getPosition();
         _rearWheelCenterPosition = _actuatorsSensors.getRearWheelCenterPosition();
         _currentOrientation = _actuatorsSensors.getLockedOrientation();
     }
 
+    /**
+     * Get the closest trajectory element from path. Might remove elements from buffer.
+     * @return
+     */
     public TrajectoryElement getClosestTrajectoryElement()
+    {
+        return internalGetClosestTrajectoryElement(true);
+    }
+
+    private TrajectoryElement internalGetClosestTrajectoryElement(boolean externalCall)
     {
         TrajectoryElement result = null;
         if (_currentPosition == null)
@@ -127,10 +142,65 @@ public class StanleyTargetProvider implements ITargetProvider
             return null;
         }
         result = _trajectoryBuffer.get(minDistIdx);
-        if (minDistIdx != 0 && minDist != Double.POSITIVE_INFINITY)
+        if (minDistIdx != 0 && minDist != Double.POSITIVE_INFINITY && externalCall)
         {
             _trajectoryBuffer.removeBelowIndex(minDistIdx);
         }
         return result;
+    }
+
+    public TrajectoryElement getLookaheadTrajectoryElement(double lookahead)
+    {
+        if(_currentLookaheadElement == null || !isInRange(_currentLookaheadElement, _rearWheelCenterPosition, lookahead))
+        {
+//            int maxSteps = (int) Math.round(lookahead / _trajectoryElementLength) * 2;           
+            int targetIdx = -1;   
+            
+            
+            //find a fitting trajectory element in front of the vehicle
+//            int lastIdx = Math.min(_currentClosestElementIndex + maxSteps, _trajectoryBuffer.size() -1 );
+            int lastIdx = _trajectoryBuffer.size();
+            for(int idx = 0; idx < lastIdx; idx++)
+            {
+                if(isInRange(_trajectoryBuffer.get(idx), _rearWheelCenterPosition, lookahead))
+                {
+                    targetIdx = idx;
+                    break;
+                }                           
+            }
+            
+            if(targetIdx != -1)
+            {
+                _currentLookaheadElement = _trajectoryBuffer.get(targetIdx);
+            }
+            else
+            {
+                if(_trajectoryBuffer.getCurrentState() != RouteBufferStates.ROUTE_ENDING)
+                {
+                    boolean segmentsLeft = _trajectoryBuffer.elementsLeft();
+                    System.out.println("Warning: No matching trajectory element found, taking the closest trajectory element");
+                    System.out.println("Buffersize: " + _trajectoryBuffer.size());
+                    String info = segmentsLeft ? "yep" : "nope";
+                    System.out.println("Segmentprovider has segments? " + info);
+                    _currentLookaheadElement = _trajectoryBuffer.get(0);
+                    
+                }
+                else
+                {
+                    _currentLookaheadElement = _trajectoryBuffer.get(_trajectoryBuffer.size() - 1);
+                }
+            }
+        }
+        
+        return _currentLookaheadElement;
+    }
+    
+    private boolean isInRange(TrajectoryElement trajectoryElement, Position2D position, double lookahead)
+    {
+        Vector2D vector = trajectoryElement.getVector();
+        double baseDist = Position2D.distance(vector.getBase(), position);
+        double tipDist = Position2D.distance(vector.getTip(), position);
+        
+        return tipDist > lookahead && baseDist <= lookahead;
     }
 }

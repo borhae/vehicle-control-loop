@@ -33,6 +33,7 @@ import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.NullBehaviorActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.Vehicle;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ppvadaptable.AtomicSetActualError;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitVariableLookaheadController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
@@ -544,7 +545,8 @@ public class LayerInteractionTest implements TestConstants
         fakeNav.initController(new VRepVehicleActuatorsSensors(vehicle.getVehicleHandles(), simData, roadMap), roadMap);
         fakeNav.buildSegmentBuffer(destinationPosition, roadMap);
 
-        Deque<Vector2D> input = fakeNav.getNewElements(fakeNav.getSegmentBufferSize()).stream().map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
+        int elementsToRequest = fakeNav.getSegmentBufferSize();
+        Deque<Vector2D> input = fakeNav.getNewElements(elementsToRequest, AtomicSetActualError.INITIALIZATION_REQUEST).stream().map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
         Vector2DVisualizer visualizer = new Vector2DVisualizer();
         visualizer.addVectorSet(input, Color.BLUE);
         visualizer.updateVisuals();

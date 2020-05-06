@@ -10,6 +10,8 @@ module vrepvehicle
     exports de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb;
     exports de.joachim.haensel.phd.scenario.experiment.evaluation.histograms;
     
+    exports de.joachim.haensel.phd.scenario.vehicle.control.reactive.ppvadaptable;
+    
     exports de.joachim.haensel.vehiclecreation;
     exports de.joachim.haensel.vrepshapecreation;
     exports de.joachim.haensel.vrepshapecreation.shapes;

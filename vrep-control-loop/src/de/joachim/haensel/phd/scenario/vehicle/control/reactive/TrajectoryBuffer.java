@@ -10,6 +10,7 @@ import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.ITrajectoryProvider;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ppvadaptable.AtomicSetActualError;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 import de.joachim.haensel.statemachine.FiniteStateMachineTemplate;
 import de.joachim.haensel.statemachine.Guard;
@@ -25,6 +26,7 @@ public class TrajectoryBuffer extends FiniteStateMachineTemplate
     private int _currentElementRequestSize;
     private List<ITrajectoryReportListener> _trajectoryReportListeners;
     private List<ITrajectoryRequestListener> _trajectoryRequestListeners;
+    private List<AtomicSetActualError> _errorBuffer;
 
     public TrajectoryBuffer(ITrajectoryProvider trajectoryProvider, IActuatingSensing actuatorsSensors, List<ITrajectoryReportListener> trajectoryReportListeners, List<ITrajectoryRequestListener> trajectoryRequestListeners)
     {
@@ -33,6 +35,7 @@ public class TrajectoryBuffer extends FiniteStateMachineTemplate
         _actuatorsSensors = actuatorsSensors;
         _trajectoryReportListeners = trajectoryReportListeners;
         _trajectoryRequestListeners = trajectoryRequestListeners;
+        _errorBuffer = new ArrayList<AtomicSetActualError>();
 
         setInitialState(RouteBufferStates.INIT);
         Guard enoughElements = () -> _trajectoryElements.size() < MIN_TRAJECTORY_BUFFER_SIZE && _trajectoryProvider.hasElements(_currentElementRequestSize);
@@ -90,15 +93,24 @@ public class TrajectoryBuffer extends FiniteStateMachineTemplate
         reportThread.start();
     }
 
-    public void triggerEnsureSize()
+    public void triggerEnsureSize(AtomicSetActualError error)
     {
+        _errorBuffer.add(error);
         _currentElementRequestSize = TRAJECTORY_BUFFER_SIZE - _trajectoryElements.size();
         transition(RouteBufferMsg.ENSURE_SIZE, Integer.valueOf(_currentElementRequestSize));
     }
 
     private void ensureSize(Integer elementRequestSize)
     {
-        List<TrajectoryElement> trajectories = _trajectoryProvider.getNewElements(elementRequestSize);
+        if(elementRequestSize == 0)
+        {
+            return;
+        }
+        if(_errorBuffer.size() >= 2)
+        {
+            AtomicSetActualError result = _errorBuffer.stream().reduce(new AtomicSetActualError(0.0, 0.0), (subtotal, element) -> subtotal.add(element));
+        }
+        List<TrajectoryElement> trajectories = _trajectoryProvider.getNewElements(elementRequestSize, AtomicSetActualError.INITIALIZATION_REQUEST);
         if(trajectories == null)
         {
             System.out.println("Problem: trajectory buffer returns null instead of empty list");

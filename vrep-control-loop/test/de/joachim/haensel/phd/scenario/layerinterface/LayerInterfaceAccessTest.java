@@ -19,6 +19,7 @@ import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryReportListener;
 import de.joachim.haensel.phd.scenario.vehicle.control.interfacing.ITrajectoryRequestListener;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ppvadaptable.AtomicSetActualError;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
@@ -107,11 +108,11 @@ public class LayerInterfaceAccessTest
     {
         List<TrajectoryElement> result = new ArrayList<>();
         List<TrajectoryElement> intermedidate;;
-        intermedidate = upperCtrl.getNewElements(10);
+        intermedidate = upperCtrl.getNewElements(10, AtomicSetActualError.INITIALIZATION_REQUEST);
         while(!intermedidate.isEmpty())
         {
             result.addAll(intermedidate);
-            intermedidate = upperCtrl.getNewElements(10);
+            intermedidate = upperCtrl.getNewElements(10, AtomicSetActualError.INITIALIZATION_REQUEST);
         }
         return result;
     }

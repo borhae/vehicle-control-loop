@@ -11,6 +11,7 @@ import de.joachim.haensel.phd.scenario.math.geometry.Vector2D;
 import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.IRouteBuildingListener;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ppvadaptable.AtomicSetActualError;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.Trajectorizer;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.ISegmenterFactory;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.trajectorization.segmentation.InterpolationSegmenterCircleIntersection;
@@ -86,8 +87,9 @@ public class LinearChangeAdaptiveNavigationController implements IUpperLayerCont
     }
 
     @Override
-    public List<TrajectoryElement> getNewElements(int requestSize)
+    public List<TrajectoryElement> getNewElements(int requestSize, AtomicSetActualError error)
     {
+        //error is ignored in this navigation controller
         return _segmentBuffer.getSegments(requestSize);
     }
 

@@ -6,6 +6,7 @@ import de.joachim.haensel.phd.scenario.vehicle.IActuatingSensing;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ITargetProvider;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.RouteBufferStates;
 import de.joachim.haensel.phd.scenario.vehicle.control.reactive.TrajectoryBuffer;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ppvadaptable.AtomicSetActualError;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class PurePuresuitTargetProvider implements ITargetProvider
@@ -34,7 +35,7 @@ public class PurePuresuitTargetProvider implements ITargetProvider
 
     public void loopPrepare()
     {
-        _trajectoryBuffer.triggerEnsureSize();
+        _trajectoryBuffer.triggerEnsureSize(AtomicSetActualError.NO_FEEDBACK);
         _currentPosition = _actuatorsSensors.getPosition();
         _rearWheelCenterPosition = _actuatorsSensors.getRearWheelCenterPosition();
         _currentOrientation = _actuatorsSensors.getLockedOrientation();

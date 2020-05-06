@@ -16,6 +16,10 @@ public class SegmentBuffer
 
     public List<TrajectoryElement> getSegments(int requestSize)
     {
+        if(requestSize == 0)
+        {
+            return new ArrayList<TrajectoryElement>();
+        }
         int lowerIdx = _currentIdx;
         int higherIdx = Math.min(lowerIdx + requestSize, _segments.size());
         int advance = higherIdx - lowerIdx;

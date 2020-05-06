@@ -2,6 +2,9 @@ package de.joachim.haensel.phd.scenario.vehicle.test;
 
 
 
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -12,7 +15,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.TMatrix;
@@ -24,6 +26,7 @@ import de.joachim.haensel.phd.scenario.navigation.test.Positioner;
 import de.joachim.haensel.phd.scenario.navigation.visualization.SegmentBuildingAdapter;
 import de.joachim.haensel.phd.scenario.navigation.visualization.Vector2DVisualizer;
 import de.joachim.haensel.phd.scenario.test.TestConstants;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ppvadaptable.AtomicSetActualError;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.Navigator;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
@@ -637,7 +640,7 @@ public class SegmentBuildingTest implements TestConstants
         nav.addRouteBuilderListener(new SegmentBuildingAdapter(visualizer));
         nav.initController(new Positioner(startingPoint), roadMap);
         nav.buildSegmentBuffer(destinationPosition, roadMap);
-        Stream<TrajectoryElement> segmentStream = nav.getNewElements(nav.getSegmentBufferSize()).stream();
+        Stream<TrajectoryElement> segmentStream = nav.getNewElements(nav.getSegmentBufferSize(), AtomicSetActualError.INITIALIZATION_REQUEST).stream();
         Deque<Vector2D> segmentBufferAsVectors = segmentStream.map(traj -> traj.getVector()).collect(Collectors.toCollection(LinkedList::new));
     }
 

@@ -5,12 +5,13 @@ import java.util.List;
 import de.joachim.haensel.phd.scenario.debug.DebugParams;
 import de.joachim.haensel.phd.scenario.map.RoadMap;
 import de.joachim.haensel.phd.scenario.math.geometry.Position2D;
+import de.joachim.haensel.phd.scenario.vehicle.control.reactive.ppvadaptable.AtomicSetActualError;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.TrajectoryElement;
 
 public class UpperLayerControlAdapter implements IUpperLayerControl
 {
     @Override
-    public List<TrajectoryElement> getNewElements(int segmentRequestSize)
+    public List<TrajectoryElement> getNewElements(int requestSize, AtomicSetActualError error)
     {
         return null;
     }
