@@ -29,10 +29,6 @@ import de.joachim.haensel.phd.scenario.tasks.ITask;
 import de.joachim.haensel.phd.scenario.tasks.creation.PointListTaskCreatorConfig;
 import de.joachim.haensel.phd.scenario.tasks.creation.TaskCreator;
 import de.joachim.haensel.phd.scenario.tasks.execution.TaskExecutor;
-import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerControl;
-import de.joachim.haensel.phd.scenario.vehicle.ILowerLayerFactory;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.purepuresuitvariable.PurePursuitVariableLookaheadController;
-import de.joachim.haensel.phd.scenario.vehicle.control.reactive.stanley.StanleyController;
 import de.joachim.haensel.vrepshapecreation.VRepObjectCreation;
 
 public class ConfigurationFileBasedExperimentRunner
@@ -168,26 +164,8 @@ public class ConfigurationFileBasedExperimentRunner
 
         taskConfiguration.setTargetPoints(targetPointsMapped);
         taskConfiguration.addNavigationListener(trajectoryRecorder);
-        taskConfiguration.setLowerLayerController(new ILowerLayerFactory()
-        {
-            @Override
-            public ILowerLayerControl create()
-            {
-                String controllerType = configuration.getControllerType();
-                ILowerLayerControl controller = null;
-                if(controllerType.equals("PurePursuitVariableLookahead"))
-                {
-                    controller = new PurePursuitVariableLookaheadController();
-                }
-                else if (controllerType.equals("Stanley"))
-                {
-                    controller = new StanleyController();
-                }
-                controller.addTrajectoryRequestListener(requestListener);
-                controller.addTrajectoryReportListener(reportListener);
-                return controller;
-            }
-        });
+        taskConfiguration.setLowerLayerController(new ConfigurationBasedLowerLayerFactory(configuration, requestListener, reportListener));
+        taskConfiguration.setUpperLayerController(new ConfigurationBasedUpperLayerFactory(configuration));
 
         IIDCreator routeIdCreator = new RouteIDCreator(0);
         VRepNavigationListener routesEndsMarker = new VRepNavigationListener(_objectCreator, routeIdCreator);

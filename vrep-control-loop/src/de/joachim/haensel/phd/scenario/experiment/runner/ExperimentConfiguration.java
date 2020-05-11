@@ -17,7 +17,7 @@ public class ExperimentConfiguration
     private boolean _showMap;
 //  should start and endpoints be shown for visual analysis
     private boolean _showStartEndPoints;
-//  should the routes be checked for sanity
+//  should the routes be checked for sanity (so for example they actually go by the roads and not through the map)
     private boolean _runRouteSanityCheck;
 //  should routes be shown for visual sanity check
     private boolean _showRoutes;
@@ -28,6 +28,29 @@ public class ExperimentConfiguration
     private int _numberOfTargets;
 //  What kind of controller (PurepursuitVariableLookahead, Stanley)
     private String _controllerType;
+//  What kind of navigator / adaptation layer (regular, adapting)
+    private String _navigatorType;
+    
+//  All these values are concerned with trajectory computation and the reactive controller
+    
+//  ====================================================================================
+//  ====================================================================================
+
+//  In case the controller type is of the "pure pursuit" family (meters). 15.0 m is a good value 
+    private double _lookahead;
+    
+//  For the navigation part define the maximum velocity to assign (kilometers per hour). I chose 120.0 km/h in many experiments
+    private double _maxVelocity;
+
+//  How fast can you accelerate (meters per square second). A value that worked well with the others listed here 3.8 m/s^2 
+    private double _maxLongitudinalAcceleration;
+    
+//  How quick can you brake (meters per square second). A value that worked well with the others listed here 4.0 m/s^2;
+    private double _maxLongitudinalDecceleration;
+
+//  What is the maximum acceleration to the sides (for example in curves). Influences whether the vehicle might get carried away
+//  Unit is again meters per square second. A value that worked well with the others listed here 0.8.
+    private double _maxLateralAcceleration;
 
     public ExperimentConfiguration()
     {
@@ -50,6 +73,73 @@ public class ExperimentConfiguration
         _positionListFilenameDefault = true;
         _detachSimulator = false;
         _numberOfTargets = 400;
+        _controllerType = "PurePursuitVariableLookahead";
+        _navigatorType = "DefaultNavigationController";
+        _lookahead = 15.0;
+        _maxVelocity = 120.0;
+        _maxLongitudinalAcceleration = 3.8;
+        _maxLongitudinalDecceleration = 4.0;
+        _maxLateralAcceleration = 0.8;
+    }
+    
+    public double getLookahead()
+    {
+        return _lookahead;
+    }
+
+    public void setLookahead(double lookahead)
+    {
+        _lookahead = lookahead;
+    }
+
+    public double getMaxVelocity()
+    {
+        return _maxVelocity;
+    }
+
+    public void setMaxVelocity(double maxVelocity)
+    {
+        _maxVelocity = maxVelocity;
+    }
+
+    public double getMaxLongitudinalAcceleration()
+    {
+        return _maxLongitudinalAcceleration;
+    }
+
+    public void setMaxLongitudinalAcceleration(double maxLongitudinalAcceleration)
+    {
+        _maxLongitudinalAcceleration = maxLongitudinalAcceleration;
+    }
+
+    public double getMaxLongitudinalDecceleration()
+    {
+        return _maxLongitudinalDecceleration;
+    }
+
+    public void setMaxLongitudinalDecceleration(double maxLongitudinalDecceleration)
+    {
+        _maxLongitudinalDecceleration = maxLongitudinalDecceleration;
+    }
+
+    public double getMaxLateralAcceleration()
+    {
+        return _maxLateralAcceleration;
+    }
+
+    public void setMaxLateralAcceleration(double maxLateralAcceleration)
+    {
+        _maxLateralAcceleration = maxLateralAcceleration;
+    }
+
+    public String getNavigatorType()
+    {
+        return _navigatorType;
+    }
+
+    public void setNavigatorType(String navigatorType)
+    {
+        _navigatorType = navigatorType;
     }
 
     public String compileCityName()
