@@ -1,5 +1,15 @@
 package de.joachim.haensel.phd.scenario.experiment.runner;
 
+import java.io.File;
+
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigBeanFactory;
+import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigObject;
+import com.typesafe.config.ConfigParseOptions;
+import com.typesafe.config.ConfigSyntax;
+import com.typesafe.config.parser.ConfigDocumentFactory;
+
 public class ExperimentConfiguration
 {
 //  should the generation result be shown in the simulator
@@ -52,8 +62,25 @@ public class ExperimentConfiguration
 //  Unit is again meters per square second. A value that worked well with the others listed here 0.8.
     private double _maxLateralAcceleration;
 
+//  Trajectories are represented as a list of vectors of length <segmentSize> (Meters). Standard is set to 5.0 meters.  
+    private double _segmentSize;
+
     public ExperimentConfiguration()
     {
+    }
+    
+    /**
+     * This is only implemented so that we can conveniently generate a configuration file that conforms to the standard 
+     * set by this class.
+     * @param args
+     */
+    public static void main(String[] args)
+    {
+//        TODO rework. Probably I need to write this as a JSON File and then rearead it by config so I can write a config (not really happy about this...)
+        ExperimentConfiguration config = new ExperimentConfiguration();
+        config.setDefault();
+        Config configobj = ConfigFactory.parseFile(new File(args[0]), ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF));
+        ExperimentConfiguration configuration = ConfigBeanFactory.create(configobj, ExperimentConfiguration.class);
     }
 
     public void setDefault()
@@ -80,6 +107,7 @@ public class ExperimentConfiguration
         _maxLongitudinalAcceleration = 3.8;
         _maxLongitudinalDecceleration = 4.0;
         _maxLateralAcceleration = 0.8;
+        _segmentSize = 5.0;
     }
     
     public double getLookahead()
@@ -299,5 +327,15 @@ public class ExperimentConfiguration
     public String getControllerType()
     {
         return _controllerType;
+    }
+
+    public double getSegmentSize()
+    {
+        return _segmentSize;
+    }
+
+    public void setSegmentSize(double segmentSize)
+    {
+        _segmentSize = segmentSize;
     }
 }

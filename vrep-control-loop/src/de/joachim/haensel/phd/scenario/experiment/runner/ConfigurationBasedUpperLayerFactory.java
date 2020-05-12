@@ -4,6 +4,7 @@ import de.joachim.haensel.phd.converters.UnitConverter;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerControl;
 import de.joachim.haensel.phd.scenario.vehicle.IUpperLayerFactory;
 import de.joachim.haensel.phd.scenario.vehicle.navigation.DefaultNavigationController;
+import de.joachim.haensel.phd.scenario.vehicle.navigation.adaptable.AdaptingNavigationController;
 
 public class ConfigurationBasedUpperLayerFactory implements IUpperLayerFactory
 {
@@ -23,17 +24,19 @@ public class ConfigurationBasedUpperLayerFactory implements IUpperLayerFactory
         double maxLongitudinalAcceleration = _configuration.getMaxLongitudinalAcceleration();
         double maxLongitudinalDecceleration = _configuration.getMaxLongitudinalDecceleration();
         double maxLateralAcceleration = _configuration.getMaxLateralAcceleration();
+        double segmentSize = _configuration.getSegmentSize();
         switch (navigatorType)
         {
             case "DefaultNavigationController":
                 result = new DefaultNavigationController(5.0, UnitConverter.kilometersPerHourToMetersPerSecond(maxVelocity), maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
                 break;
-    
+            case "AdaptingNavigationController" :
+                result = new AdaptingNavigationController(5.0, UnitConverter.kilometersPerHourToMetersPerSecond(maxVelocity));
+                break;
             default:
                 result = new DefaultNavigationController(5.0, UnitConverter.kilometersPerHourToMetersPerSecond(maxVelocity), maxLongitudinalAcceleration, maxLongitudinalDecceleration, maxLateralAcceleration);
                 break;
         }
-        // TODO Auto-generated method stub
         return result;
     }
 }
