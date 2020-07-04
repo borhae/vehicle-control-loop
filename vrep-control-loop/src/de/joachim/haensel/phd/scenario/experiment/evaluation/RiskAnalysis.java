@@ -18,13 +18,6 @@ public class RiskAnalysis
         }
         return Math.sqrt(result);
     }
-//    public List<Double> addTDiff(List<Double> t_is_new, List<Double> t_is_old)
-//    {
-//        Function<Integer, Double> t_i_diff = 
-//                idx -> t_is_old.get(idx) < t_is_new.get(idx) ? t_is_new.get(idx) - t_is_old.get(idx) : 0.0;
-//        List<Double> t_is_diff = IntStream.range(0, t_is_old.size()).boxed().map(t_i_diff).collect(Collectors.toList());
-//        return ;
-//    }
 
     public static Double sqr(Double val)
     {
@@ -58,13 +51,26 @@ public class RiskAnalysis
 
     public static List<Double> compute_t_iGivenR(List<Double> probabilities, double R)
     {
-        double sumOfp_iRoot = sumOfp_iRoot(probabilities);
-        List<Double> t_is = probabilities.stream().mapToDouble(p_i -> ((Math.sqrt(p_i) / R) * sumOfp_iRoot) - 2.0).boxed().collect(Collectors.toList());
+        List<Double> t_is = compute_t_iGivenR_real(probabilities, R);
         List<Double> rounded_t_is = roundUpDown(t_is, probabilities);
         return rounded_t_is;
     }
+
+    public static List<Double> compute_t_iGivenR_real(List<Double> probabilities, double R)
+    {
+        double sumOfp_iRoot = sumOfp_iRoot(probabilities);
+        List<Double> t_is = probabilities.stream().mapToDouble(p_i -> ((Math.sqrt(p_i) / R) * sumOfp_iRoot) - 2.0).boxed().collect(Collectors.toList());
+        return t_is;
+    }
     
     public static List<Double> compute_t_iGivenT(List<Double> probabilities, double T)
+    {
+        List<Double> t_is = compute_t_iGivenT_real(probabilities, T);
+        List<Double> rounded_t_is = roundUpDown(t_is, probabilities);
+        return rounded_t_is;
+    }
+
+    public static List<Double> compute_t_iGivenT_real(List<Double> probabilities, double T)
     {
         double sumOfp_iRoot = sumOfp_iRoot(probabilities);
         ToDoubleFunction<? super Double> ti = p_i -> (( (Math.sqrt(p_i) * (T + 2.0*probabilities.size())) /sumOfp_iRoot) - 2.0);
@@ -75,9 +81,7 @@ public class RiskAnalysis
             double t_i = ti.applyAsDouble(p_i);
             t_is.add(t_i);
         }
-//        List<Double> t_is = probabilities.stream().mapToDouble(ti).boxed().collect(Collectors.toList());
-        List<Double> rounded_t_is = roundUpDown(t_is, probabilities);
-        return rounded_t_is;
+        return t_is;
     }
     
     public static double sumOfp_iRoot(List<Double> probabilities)

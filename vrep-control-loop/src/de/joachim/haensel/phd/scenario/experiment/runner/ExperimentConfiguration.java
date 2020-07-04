@@ -1,14 +1,14 @@
 package de.joachim.haensel.phd.scenario.experiment.runner;
 
 import java.io.File;
+import java.io.IOException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigBeanFactory;
 import com.typesafe.config.ConfigFactory;
-import com.typesafe.config.ConfigObject;
 import com.typesafe.config.ConfigParseOptions;
 import com.typesafe.config.ConfigSyntax;
-import com.typesafe.config.parser.ConfigDocumentFactory;
 
 public class ExperimentConfiguration
 {
@@ -79,8 +79,18 @@ public class ExperimentConfiguration
 //        TODO rework. Probably I need to write this as a JSON File and then rearead it by config so I can write a config (not really happy about this...)
         ExperimentConfiguration config = new ExperimentConfiguration();
         config.setDefault();
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectWriter objectWriter = mapper.writerWithDefaultPrettyPrinter();
+        try
+        {
+            objectWriter.writeValue(new File(args[0]), config);
+        } 
+        catch (IOException exc)
+        {
+            exc.printStackTrace();
+        }
         Config configobj = ConfigFactory.parseFile(new File(args[0]), ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF));
-        ExperimentConfiguration configuration = ConfigBeanFactory.create(configobj, ExperimentConfiguration.class);
     }
 
     public void setDefault()

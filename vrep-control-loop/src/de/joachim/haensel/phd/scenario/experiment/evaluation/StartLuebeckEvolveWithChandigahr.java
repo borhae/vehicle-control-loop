@@ -215,7 +215,6 @@ public class StartLuebeckEvolveWithChandigahr
             }
             else
             {
-//                return allocateNeccessaryTestsAlg2(t_is_old, currentProfile_p, previousProfile_p, riskUpperBound);
                 return allocateNeccessaryTests(t_is_old, currentProfile_p, previousProfile_p, riskUpperBound);
             }
         }
