@@ -21,6 +21,11 @@ import com.mongodb.client.MongoDatabase;
 import de.joachim.haensel.phd.scenario.experiment.evaluation.database.NamedObsConf;
 import de.joachim.haensel.phd.scenario.profile.equivalenceclasses.TrajectoryNormalizer;
 
+/**
+ * Accumulates data from all data-sets in the car database into one data-set in the indexed_trajectories database
+ * @author Joachim Haensel
+ *
+ */
 public class TrajectoryIndexer implements Runnable
 {
     public static void main(String[] args)
