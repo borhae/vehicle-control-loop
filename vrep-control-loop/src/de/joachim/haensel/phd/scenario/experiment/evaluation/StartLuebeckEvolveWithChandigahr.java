@@ -140,6 +140,7 @@ public class StartLuebeckEvolveWithChandigahr
                 List<Double> currentProfile_p = retreiveProfileFromIndexed(clusterCounts);
                 String bareRiskDiff = Double.toString(RiskAnalysis.computeR(initial_tis, currentProfile_p));
                 
+                //Strategy 1: add so many tests that we can keep the upper bound
                 List<Double> newTestsMaintainUpperBound = 
                         maintainUpperBound(t_i_maintainUpperBound, currentProfile_p, previousProfile_p, riskUpperBound);
                 t_i_maintainUpperBound = merge(newTestsMaintainUpperBound, t_i_maintainUpperBound);
@@ -148,6 +149,7 @@ public class StartLuebeckEvolveWithChandigahr
                 String ubAllTests = Double.toString(t_i_maintainUpperBound.stream().mapToDouble(Double::valueOf).sum());
                 String ubRisk = Double.toString(RiskAnalysis.computeR(t_i_maintainUpperBound, currentProfile_p));
                 
+                //Strategy 2: add a fixed amount of tests
                 List<Double> newTestsMinimizeWithAdditional = 
                         minimizeWithAdditionalTests(t_i_minimizeWithAdditionalTests, currentProfile_p, previousProfile_p, maxAdditionalTests);
                 t_i_minimizeWithAdditionalTests = merge(newTestsMinimizeWithAdditional, t_i_minimizeWithAdditionalTests);
@@ -155,7 +157,7 @@ public class StartLuebeckEvolveWithChandigahr
                 String addedAllTests = Double.toString(t_i_minimizeWithAdditionalTests.stream().mapToDouble(Double::valueOf).sum());
                 String addedNewTestsRisk = Double.toString(RiskAnalysis.computeR(t_i_minimizeWithAdditionalTests, currentProfile_p));
 
-                
+                //Strategy 3: add a fixed amount of tests per cycle and add more if we can't keep the upper bound
                 List<Double> newTestsMinimizeWithAdditionalAndMaintain = 
                         minimizeWithAdditionalTestsAndMaintainUpperBound(t_i_minimizeWithAdditionalTestsMaintainUpperBound, currentProfile_p, previousProfile_p, riskUpperBound, maxAdditionalTests);
                 t_i_minimizeWithAdditionalTestsMaintainUpperBound = merge(newTestsMinimizeWithAdditionalAndMaintain, t_i_minimizeWithAdditionalTestsMaintainUpperBound);
@@ -233,6 +235,7 @@ public class StartLuebeckEvolveWithChandigahr
         return result;
     }
 
+    // This works as it should (no messing around with the -2)
     private static List<Double> allocateNeccessaryTests(List<Double> t_is_old, List<Double> currentProfile_p, List<Double> previousProfile_p, double riskUpperBound)
     {
         int n = currentProfile_p.size();
@@ -267,6 +270,7 @@ public class StartLuebeckEvolveWithChandigahr
         return t_iNew;
     }
 
+    // Here I messed around with the 2. 
     private static List<Double> minimizeWithAdditionalTests(List<Double> t_is, List<Double> currentProfile_p, List<Double> previousProfile_p, double maxAdditionalTests)
     {
         int n = currentProfile_p.size();

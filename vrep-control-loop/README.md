@@ -35,6 +35,8 @@ For the evaluation and proper persistence these data should be imported into a d
 
 
 ## Existing Data
+There are different types of data available in the database
+### Driving Data
 All Data collected during the simulations are stored in a Mongo-Database. The final data-set assessed is named "data_available_at_2020-01-18" in database "indexed_trajectories". It encompasses the individual runs captured in:
 * car.sim_Chandigarh-20190709_183_max_scattered_targets
 * car.sim_Chandigarh-20190717_200_random_targets_4096Seed
@@ -52,8 +54,15 @@ All Data collected during the simulations are stored in a Mongo-Database. The fi
 
 This process is done by class "de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb.TrajectoryIndexer". Whenever this is run it will collect any data in the "car" database into a new dataset in the "indexed_trajectories" database.
 
+### Clustering Data
+There is also a database which has data-sets that contain clusterings according to the K-Means algorithm. Available k are k={10, 20, 30, 40, 60, 80, 100, 120, 140, 160, 180, 200, 1000}. There are also a couple of clusterings based on only a subset of the data of 5000 datapoints from the driving data.
+
+Loading this data is available via class "ClusteringInformationRetreival" in package "de.joachim.haensel.phd.scenario.experiment.evaluation". 
+
 ## Data Evaluation
 Classes for data evaluations are in package "de.joachim.haensel.phd.scenario.experiment.evaluation" and its sub-packages. In addition there is classes in "de.joachim.haensel.phd.scenario.experiment.recipe" and sub-packages.
+### Paper Evaluation
+In order to reproduce the results as they are shown in the paper, one can simply run the main method of class "StartLuebeckEvolveWithChandigahr" in package "de.joachim.haensel.phd.scenario.experiment.evaluation". After the run you will find three .csv files that contain the evaluation result. The idea was to simulate the deployment of a fleet of cars first in Luebeck and after a while in Chandigarh. The process goes in three intervalls: the first is just sampling more and more data from Luebeck, in the second the likelyhood to sample from Luebeck lowers and to sample from Chandigarh rises and in the third sampling continues equally likely from Luebeck and Chandigarh. The data provided in the .csv files will indicate all this values and provide an easy way to create charts from it.
 
 ## Troubleshooting
 * I sometimes had the issue of V-Rep running super slow. After a while I figured that it wasn't using the graphics card any more. It speeded up to normal when I attached graphical run settings from the NVIDIA Control Panel
