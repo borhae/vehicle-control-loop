@@ -217,16 +217,45 @@ public class RiskAnalysisAlgorithmically
     }
     
     // IS_NEW
-    public static List<Integer> computeT(List<Double> probabilities, double R)
+    public static List<Integer> computeT(List<Double> currentProfile, double R)
+    {
+        return compute_t_iGivenR(currentProfile, R);
+    }
+    
+    // IS_NEW
+    public static List<Integer> compute_t_iGivenT(List<Double> currentProfile, double T)
+    {
+        List<Integer> indices = IntStream.range(0, currentProfile.size()).boxed().collect(Collectors.toList());
+        List<Integer> t = IntStream.range(0, currentProfile.size()).boxed().map(idx -> 0).collect(Collectors.toList());
+        List<Double> p = currentProfile;
+        List<Double> diffVector = new ArrayList<Double>();
+        int availableT = (int)T;
+        while(availableT > 0)
+        {
+            //for each p_i figure out how much improvement we will get with an additional test.
+            diffVector = indices.stream().collect(Collectors.mapping(idx -> (p.get(idx) / (2 + t.get(idx))) - (p.get(idx) / (2 + t.get(idx) + 1)), Collectors.toList()));
+            
+            //figure out at which idx we got the highest improvement
+            int maxIdx = diffVector.indexOf(Collections.max(diffVector));
+            
+            //update the best candidate (make one more test there)
+            t.set(maxIdx, t.get(maxIdx) + 1);
+            availableT--;
+        }
+        return t;
+    }
+    
+    // IS_NEW
+    public static List<Integer> compute_t_iGivenR(List<Double> currentProfile, double riskUpperBound)
     {
         double currentRisk = Double.POSITIVE_INFINITY;
-        List<Integer> indices = IntStream.range(0, probabilities.size()).boxed().collect(Collectors.toList());
-        List<Integer> t = IntStream.range(0, probabilities.size()).boxed().map(idx -> 0).collect(Collectors.toList());
-        List<Double> p = probabilities;
+        List<Integer> indices = IntStream.range(0, currentProfile.size()).boxed().collect(Collectors.toList());
+        List<Integer> t = IntStream.range(0, currentProfile.size()).boxed().map(idx -> 0).collect(Collectors.toList());
+        List<Double> p = currentProfile;
         List<Double> diffVector = new ArrayList<Double>();
         List<Double> resultVector = new ArrayList<Double>();
         int cnt = 0;
-        while(currentRisk > R)
+        while(currentRisk > riskUpperBound)
         {
             //for each p_i figure out how much improvement we will get with an additional test.
             diffVector = indices.stream().collect(Collectors.mapping(idx -> (p.get(idx) / (2 + t.get(idx))) - (p.get(idx) / (2 + t.get(idx) + 1)), Collectors.toList()));
@@ -246,8 +275,8 @@ public class RiskAnalysisAlgorithmically
         return t;
     }
     
-    // IS_NEW
-    public static List<Integer> compute_t_iGivenT(List<Double> probabilities, double T)
+    // same as compute_t_iGivenT
+    public static List<Integer> t_iMinimizeRiskGivenTAndp_i(List<Double> probabilities, int T)
     {
         List<Integer> indices = IntStream.range(0, probabilities.size()).boxed().collect(Collectors.toList());
         List<Integer> t = IntStream.range(0, probabilities.size()).boxed().map(idx -> 0).collect(Collectors.toList());
@@ -267,5 +296,151 @@ public class RiskAnalysisAlgorithmically
             availableT--;
         }
         return t;
+    }
+    
+    // same as computeT
+    public static List<Integer> t_iMinimizeTGivenRAndp_i(List<Double> probabilities, double R)
+    {
+        List<Integer> indices = IntStream.range(0, probabilities.size()).boxed().collect(Collectors.toList());
+        List<Integer> t = IntStream.range(0, probabilities.size()).boxed().map(idx -> 0).collect(Collectors.toList());
+        List<Double> p = probabilities;
+        List<Double> diffVector = new ArrayList<Double>();
+        List<Double> resultVector = indices.stream().map(idx -> p.get(idx) / (2 + t.get(idx))).collect(Collectors.toList());
+        int cnt = 0;
+        double currentRisk = resultVector.stream().mapToDouble(val -> val).sum();
+        while(currentRisk > R)
+        {
+            //for each p_i figure out how much improvement we will get with an additional test.
+            diffVector = indices.stream().collect(Collectors.mapping(idx -> (p.get(idx) / (2 + t.get(idx))) - (p.get(idx) / (2 + t.get(idx) + 1)), Collectors.toList()));
+            
+            //figure out at which idx we got the highest improvement
+            int maxIdx = diffVector.indexOf(Collections.max(diffVector));
+            
+            //update the best candidate (make one more test there)
+            t.set(maxIdx, t.get(maxIdx) + 1);
+            resultVector = indices.stream().map(idx -> p.get(idx) / (2 + t.get(idx))).collect(Collectors.toList());
+            
+            //see how we improved
+            currentRisk = resultVector.stream().mapToDouble(val -> val).sum();
+            cnt++;
+        }
+        System.out.println("Iterations: " + cnt);
+        return t;
+    }
+
+    /**
+     * Algorithmic improvement of existing distribution of tests. Computes a new distribution of tests for a new probability-distribution
+     * @param probabilities the probability distribution
+     * @param testDistribution the old distribution of tests
+     * @param T the amount of new tests to add to the distribution
+     * @return the new distribution of tests with T more tests than before
+     */
+    public static List<Integer> t_iMinimizeRiskGivenT_p_iAndOldt_i(List<Double> probabilities, List<Integer> testDistribution, int T)
+    {
+        List<Integer> indices = IntStream.range(0, probabilities.size()).boxed().collect(Collectors.toList());
+        List<Integer> t = copyOldDistribution(testDistribution);
+        List<Double> p = probabilities;
+        List<Double> diffVector = new ArrayList<Double>();
+        int availableT = (int)T;
+        while(availableT > 0)
+        {
+            //for each p_i figure out how much improvement we will get with an additional test.
+            diffVector = indices.stream().collect(Collectors.mapping(idx -> (p.get(idx) / (2 + t.get(idx))) - (p.get(idx) / (2 + t.get(idx) + 1)), Collectors.toList()));
+            
+            //figure out at which idx we got the highest improvement
+            int maxIdx = diffVector.indexOf(Collections.max(diffVector));
+            
+            //update the best candidate (make one more test there)
+            t.set(maxIdx, t.get(maxIdx) + 1);
+            availableT--;
+        }
+        return t;
+    }
+
+    public static List<Integer> t_iMinimizeRiskGivenT_p_iAndOldt_iDiffOnly(List<Double> probabilities, List<Integer> testDistribution, int T)
+    {
+        List<Integer> indices = IntStream.range(0, probabilities.size()).boxed().collect(Collectors.toList());
+        List<Integer> t = copyOldDistribution(testDistribution);
+        List<Integer> result = IntStream.range(0, testDistribution.size()).boxed().map(idx -> 0).collect(Collectors.toList());
+        List<Double> p = probabilities;
+        List<Double> diffVector = new ArrayList<Double>();
+        int availableT = (int)T;
+        while(availableT > 0)
+        {
+            //for each p_i figure out how much improvement we will get with an additional test.
+            diffVector = indices.stream().collect(Collectors.mapping(idx -> (p.get(idx) / (2 + t.get(idx))) - (p.get(idx) / (2 + t.get(idx) + 1)), Collectors.toList()));
+            
+            //figure out at which idx we got the highest improvement
+            int maxIdx = diffVector.indexOf(Collections.max(diffVector));
+            
+            //update the best candidate (make one more test there)
+            t.set(maxIdx, t.get(maxIdx) + 1);
+            result.set(maxIdx, result.get(maxIdx) + 1);
+            availableT--;
+        }
+        return result;
+    }
+
+    public static List<Integer> t_iMinimizeTGivenRisk_p_iAndOldt_i(List<Double> probabilities, List<Integer> testDistribution, double R)
+    {
+        int cnt = 0;
+        List<Integer> indices = IntStream.range(0, probabilities.size()).boxed().collect(Collectors.toList());
+        List<Integer> t = copyOldDistribution(testDistribution);
+        List<Double> p = probabilities;
+        List<Double> diffVector = new ArrayList<Double>();
+        List<Double> resultVector = indices.stream().map(idx -> p.get(idx) / (2 + t.get(idx))).collect(Collectors.toList());
+        double currentRisk = resultVector.stream().mapToDouble(val -> val).sum();
+        while(currentRisk > R)
+        {
+            //for each p_i figure out how much improvement we will get with an additional test.
+            diffVector = indices.stream().collect(Collectors.mapping(idx -> (p.get(idx) / (2 + t.get(idx))) - (p.get(idx) / (2 + t.get(idx) + 1)), Collectors.toList()));
+            
+            //figure out at which idx we got the highest improvement
+            int maxIdx = diffVector.indexOf(Collections.max(diffVector));
+            
+            //update the best candidate (make one more test there)
+            t.set(maxIdx, t.get(maxIdx) + 1);
+            resultVector = indices.stream().map(idx -> p.get(idx) / (2 + t.get(idx))).collect(Collectors.toList());
+            
+            //see how we improved
+            currentRisk = resultVector.stream().mapToDouble(val -> val).sum();
+            cnt++;
+        }
+        return t;
+    }
+
+    public static List<Integer> t_iMinimizeTGivenRisk_p_iAndOldt_iDiffOnly(List<Double> probabilities, List<Integer> testDistribution, double R)
+    {
+        int cnt = 0;
+        List<Integer> indices = IntStream.range(0, probabilities.size()).boxed().collect(Collectors.toList());
+        List<Integer> t = copyOldDistribution(testDistribution);
+        List<Integer> result = IntStream.range(0, testDistribution.size()).boxed().map(idx -> 0).collect(Collectors.toList());
+        List<Double> p = probabilities;
+        List<Double> diffVector = new ArrayList<Double>();
+        List<Double> resultVector = indices.stream().map(idx -> p.get(idx) / (2 + t.get(idx))).collect(Collectors.toList());
+        double currentRisk = resultVector.stream().mapToDouble(val -> val).sum();
+        while(currentRisk > R)
+        {
+            //for each p_i figure out how much improvement we will get with an additional test.
+            diffVector = indices.stream().collect(Collectors.mapping(idx -> (p.get(idx) / (2 + t.get(idx))) - (p.get(idx) / (2 + t.get(idx) + 1)), Collectors.toList()));
+            
+            //figure out at which idx we got the highest improvement
+            int maxIdx = diffVector.indexOf(Collections.max(diffVector));
+            
+            //update the best candidate (make one more test there)
+            t.set(maxIdx, t.get(maxIdx) + 1);
+            result.set(maxIdx, result.get(maxIdx) + 1);
+            resultVector = indices.stream().map(idx -> p.get(idx) / (2 + t.get(idx))).collect(Collectors.toList());
+            
+            //see how we improved
+            currentRisk = resultVector.stream().mapToDouble(val -> val).sum();
+            cnt++;
+        }
+        return result;
+    }
+        
+    private static List<Integer> copyOldDistribution(List<Integer> testDistribution)
+    {
+        return IntStream.range(0, testDistribution.size()).boxed().map(idx -> testDistribution.get(idx)).collect(Collectors.toList());
     }
 }
