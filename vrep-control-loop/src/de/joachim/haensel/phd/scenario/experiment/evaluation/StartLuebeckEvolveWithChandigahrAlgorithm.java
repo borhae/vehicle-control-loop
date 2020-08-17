@@ -1,6 +1,11 @@
 package de.joachim.haensel.phd.scenario.experiment.evaluation;
 
-import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.*;
+import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.extractForCity;
+import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.getClusterIndices;
+import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.loadClusteringK;
+import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.retreiveProfileFrom;
+import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.retreiveProfileFromIndexed;
+import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.reverseClustering;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -32,34 +37,17 @@ public class StartLuebeckEvolveWithChandigahrAlgorithm
         TrajectoryLoader trajectoryLoader = new TrajectoryLoader();
         Map<Integer, MongoTrajectory> dbTrajectories = trajectoryLoader.loadIndexedDataToMap("data_available_at_2020-01-18");
         Map<Trajectory3DSummaryStatistics, List<Integer>> clustering = loadClusteringK(200);
-        Random randomGen = new MersenneTwister(1001);
+        Random evolveRandom = new MersenneTwister(1001);
+        Random shuffleRandom = new MersenneTwister(1002);
         double riskUpperBound = Math.pow(10.0, -4.0);
         double maxTests = 10000.0;
         int maxAdditionalTests = 1;
 //        runEvolve(dbTrajectories, clustering, randomGen, riskUpperBound, maxTests, "Luebeck", "Chandigarh");
-        runEvolve(dbTrajectories, clustering, randomGen, riskUpperBound, maxTests, maxAdditionalTests, "Chandigarh", "Luebeck");
+        runEvolve(dbTrajectories, clustering, evolveRandom, shuffleRandom, riskUpperBound, maxTests, maxAdditionalTests, "Chandigarh", "Luebeck");
     }
 
-    private static void runEvolve(Map<Integer, MongoTrajectory> dbTrajectories, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering, Random randomGen, double riskUpperBound, double maxTests, int maxAdditionalTests, String startCityName, String evolveIntoCityName)
+    private static void runEvolve(Map<Integer, MongoTrajectory> dbTrajectories, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering, Random evolveRandom, Random shuffleRandom, double riskUpperBound, double maxTests, int maxAdditionalTests, String startCityName, String evolveIntoCityName)
     {
-        Map<Integer, Trajectory3DSummaryStatistics> reversedMap = reverseClustering(clustering);
-        Map<Trajectory3DSummaryStatistics, List<Integer>> startCityClustering = extractForCity(dbTrajectories, clustering, clustering.keySet(), startCityName);
-        Map<Trajectory3DSummaryStatistics, List<Integer>> evolveIntoCityClustering = extractForCity(dbTrajectories, clustering, clustering.keySet(), evolveIntoCityName);
-    
-        List<Integer> startCityIndices = new ArrayList<Integer>(getClusterIndices(startCityClustering));
-        List<Integer> evlovIntoCityIndices = new ArrayList<Integer>(getClusterIndices(evolveIntoCityClustering));
-
-        List<Double> startCity_p = retreiveProfileFrom(startCityClustering);
-        List<Double> t_is_startCity = RiskAnalysis.compute_t_iGivenR(startCity_p, riskUpperBound);
-        
-        HashMap<Integer, Integer> clusterCounts = initializeClusterCountsFrom(startCityClustering);
-        
-
-        Collections.shuffle(startCityIndices);
-        Collections.shuffle(evlovIntoCityIndices);
-     
-        Deque<Integer> startCityUsableIndices = new LinkedList<Integer>(startCityIndices);
-        Deque<Integer> evolveIntoCityUsableIndices = new LinkedList<Integer>(evlovIntoCityIndices);
         int maxRange = 40000;
         int tenthRange = maxRange / 10;
         int dataToSample = 1000;
@@ -86,12 +74,57 @@ public class StartLuebeckEvolveWithChandigahrAlgorithm
         {
             cityProbability.add(1.0);
         }
+
+        Map<Integer, Trajectory3DSummaryStatistics> reversedMap = reverseClustering(clustering);
+        Map<Trajectory3DSummaryStatistics, List<Integer>> startCityClustering = extractForCity(dbTrajectories, clustering, clustering.keySet(), startCityName);
+        Map<Trajectory3DSummaryStatistics, List<Integer>> evolveIntoCityClustering = extractForCity(dbTrajectories, clustering, clustering.keySet(), evolveIntoCityName);
+    
+        List<Integer> startCityIndices = new ArrayList<Integer>(getClusterIndices(startCityClustering));
+        List<Integer> evlovIntoCityIndices = new ArrayList<Integer>(getClusterIndices(evolveIntoCityClustering));
+        
+        HashMap<Integer, Integer> clusterCounts = initializeClusterCountsFrom(startCityClustering);
+        
+        List<Double> startCity_p = retreiveProfileFrom(startCityClustering);
+        List<Double> t_is_startCity = RiskAnalysis.compute_t_iGivenR(startCity_p, riskUpperBound);
+        //-------------------------------------------------------------
+        //TODO (remove me) Just debugging
+        //-------------------------------------------------------------
+//        Random dEvolveRandom = new MersenneTwister(1001);
+//        Random dShuffleRandom = new MersenneTwister(1002);
+//        SimulationBySampling sampler = new SimulationBySampling(dEvolveRandom, dShuffleRandom, startCityName, evolveIntoCityName, clustering, dbTrajectories);
+//        sampler.setCyclesToSample(40000);
+//        sampler.setSamplesPerCycle(1000);
+//        ArrayList<FromTo> samplingProfile = 
+//                new ArrayList<FromTo>(Arrays.asList(
+//                        new FromTo(0.0, 0.0),
+//                        new FromTo(0.0, 0.5),
+//                        new FromTo(0.5, 0.5),
+//                        new FromTo(0.5, 1.0),
+//                        new FromTo(1.0, 1.0),
+//                        new FromTo(1.0, 1.0),
+//                        new FromTo(1.0, 1.0),
+//                        new FromTo(1.0, 1.0),
+//                        new FromTo(1.0, 1.0),
+//                        new FromTo(1.0, 1.0)
+//                )
+//        );
+//        sampler.setSamplingProfile(samplingProfile);
+//        sampler.initialize();
+        //-------------------------------------------------------------
+        //-------------------------------------------------------------
+        
+        Collections.shuffle(startCityIndices, shuffleRandom);
+        Collections.shuffle(evlovIntoCityIndices, shuffleRandom);
+     
+        Deque<Integer> startCityUsableIndices = new LinkedList<Integer>(startCityIndices);
+        Deque<Integer> evolveIntoCityUsableIndices = new LinkedList<Integer>(evlovIntoCityIndices);
         
         List<Integer> initial_tis = RiskAnalysisAlgorithmically.compute_t_iGivenR(startCity_p, riskUpperBound);
         List<Integer> t_i_maintainUpperBound = new ArrayList<Integer>(initial_tis);
         List<Integer> t_i_minimizeWithAdditionalTests = new ArrayList<Integer>(initial_tis);
         List<Integer> t_i_minimizeWithAdditionalTestsMaintainUpperBound = new ArrayList<Integer>(initial_tis);
         List<Double> previousProfile_p = retreiveProfileFromIndexed(clusterCounts);
+        
         try
         {
             String ubFileName = String.format("./evolve%sTo%s_k%dMaintainUP.csv", startCityName, evolveIntoCityName, clustering.keySet().size());
@@ -124,12 +157,12 @@ public class StartLuebeckEvolveWithChandigahrAlgorithm
                 int batchCntEvolveIntoCity = 0;
                 for(int idx = 0; idx < dataToSample; idx++)
                 {
-                    if(randomGen.nextDouble() < cityProbability.get(cnt))
+                    if(evolveRandom.nextDouble() < cityProbability.get(cnt))
                     {
                         if(evolveIntoCityUsableIndices.isEmpty())
                         {
                             //refill if empty, don't forget to shuffle
-                            Collections.shuffle(evlovIntoCityIndices);
+                            Collections.shuffle(evlovIntoCityIndices, shuffleRandom);
                             evolveIntoCityUsableIndices.addAll(evlovIntoCityIndices);
                         }
                         Integer trajectoryIdx = evolveIntoCityUsableIndices.remove();
@@ -142,7 +175,7 @@ public class StartLuebeckEvolveWithChandigahrAlgorithm
                         if(startCityUsableIndices.isEmpty())
                         {
                             //refill if empty, don't forget to shuffle
-                            Collections.shuffle(startCityIndices);
+                            Collections.shuffle(startCityIndices, shuffleRandom);
                             startCityUsableIndices.addAll(startCityIndices);
                         }
                         Integer trajectoryIdx = startCityUsableIndices.remove();
@@ -157,7 +190,7 @@ public class StartLuebeckEvolveWithChandigahrAlgorithm
                 //Strategy 1: add so many tests that we can keep the upper bound
                 List<Integer> newTestsMaintainUpperBound = 
                         maintainUpperBound(t_i_maintainUpperBound, currentProfile_p, previousProfile_p, riskUpperBound);
-                 t_i_maintainUpperBound = merge(newTestsMaintainUpperBound, t_i_maintainUpperBound);
+                t_i_maintainUpperBound = merge(newTestsMaintainUpperBound, t_i_maintainUpperBound);
                 String ubNewTests = Double.toString(newTestsMaintainUpperBound.stream().mapToDouble(Double::valueOf).sum());
                 String ubAllTests = Double.toString(t_i_maintainUpperBound.stream().mapToDouble(Double::valueOf).sum());
                 String ubRisk = Double.toString(RiskAnalysisAlgorithmically.computeR(t_i_maintainUpperBound, currentProfile_p));
@@ -192,6 +225,13 @@ public class StartLuebeckEvolveWithChandigahrAlgorithm
 
                 allInfoWriter.write(String.format("%f %d %d %s %s %s %s %s %s %s %s %s %s", diff_p, batchCntStartCity, batchCntEvolveIntoCity, ubNewTests, addedNewTests, addedUbNewTests, ubAllTests, addedAllTests, addedUbAllTests, ubRisk, addedNewTestsRisk, addedUbTestsRisk, bareRiskDiff));
                 allInfoWriter.newLine();
+                //TODO debug stuff:
+                //--------------------------------------------------------------------
+                if(cnt >= 5)
+                {
+                    System.out.println("stop after 10 iterations in debug-------------------------------------");
+                }
+                //--------------------------------------------------------------------
             }
             ubWriter.flush();
             ubWriter.close();
