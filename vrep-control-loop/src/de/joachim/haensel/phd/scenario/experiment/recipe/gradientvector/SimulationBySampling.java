@@ -46,7 +46,7 @@ public class SimulationBySampling
 
     public SimulationBySampling(Random evolveRandom, Random shuffleRandom, String startCityName, String evolveIntoCityName, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering, Map<Integer, MongoTrajectory> dbTrajectories)
     {
-        _currentCycle = 0;
+        _currentCycle = -1;
         _evolveRandom = evolveRandom;
         _shuffleRandom = shuffleRandom;
         _startCityName = startCityName;
@@ -109,11 +109,12 @@ public class SimulationBySampling
 
     public boolean hasMoreCycles()
     {
-        return _currentCycle < _cyclesToSample;
+        return _currentCycle < _cyclesToSample - 1;
     }
 
     public void sample()
     {
+        _currentCycle++;
         _batchCntStartCity = 0;
         _batchCntEvolveIntoCity = 0;
         for(int idx = 0; idx < _samplesPerCycle; idx++)

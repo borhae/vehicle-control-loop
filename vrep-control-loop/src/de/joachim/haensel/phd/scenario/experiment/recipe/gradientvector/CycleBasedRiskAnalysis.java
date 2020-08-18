@@ -5,6 +5,7 @@ import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringIn
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.IntToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -22,11 +23,16 @@ public class CycleBasedRiskAnalysis
     private List<Double> _startCity_p;
     private SimulationBySampling _sampler;
     private List<Integer> _initial_tis;
-    private List<Integer> _t_i_maintainUpperBound;
-    private List<Integer> _t_i_minimizeWithAdditionalTests;
-    private List<Integer> _t_i_minimizeWithAdditionalTestsMaintainUpperBound;
-    private List<Double> _previousProfile_p;
-    private List<Double> _currentProfile_p;
+    
+    private List<List<Integer>> _t_i_maintainUpperBound;
+    private List<List<Integer>> _t_i_minimizeWithAdditionalTests;
+    private List<List<Integer>> _t_i_minimizeWithAdditionalTestsMaintainUpperBound;
+    
+    private List<Integer> _newTestsMaintainUpperBound;
+    private List<Integer> _newTestsMinimizeWithAdditional;
+    private List<Integer> _newTestsMinimizeWithAdditionalAndMaintain;
+
+    private List<List<Double>> _currentProfile_p;
     private double _bareRiskDiff;
     private double _riskUpperBound;
     private double _ubNewTests;
@@ -48,28 +54,55 @@ public class CycleBasedRiskAnalysis
     
     public void initialize()
     {
-        System.out.println("_startCity_p = retreiveProfileFrom(_sampler.getStartCityClustering());");
         _startCity_p = retreiveProfileFrom(_sampler.getStartCityClustering());
-        System.out.println("_currentProfile_p = retreiveProfileFromIndexed(_sampler.getClusterCounts());");
-        _currentProfile_p = retreiveProfileFromIndexed(_sampler.getClusterCounts());
-        System.out.println("_previousProfile_p = retreiveProfileFromIndexed(_sampler.getClusterCounts());");
-        _previousProfile_p = retreiveProfileFromIndexed(_sampler.getClusterCounts());
+        _currentProfile_p = new ArrayList<List<Double>>();
     }
 
-    public void finishCycle()
+    public void updateTestDistributions()
     {
-        System.out.println("_previousProfile_p = _currentProfile_p;");
-        _previousProfile_p = _currentProfile_p;
+        updateUpperBoundStrategyDistribution();
+        updateAdditionalTestsStrageyDistribution();
+        updateAdditionalTestsMaintainUpperBoundStrategyDistribution();
     }
 
-    public double delta(int cycleIdx)
+    public double deltaMaintainUpperBound(int cycleIdx)
     {
-        //TODO implement me
-        return 0.0;
+        return buildDelta(cycleIdx, _t_i_maintainUpperBound);
     }
 
+    public double deltaAddConstantRate(int cycleIdx)
+    {
+        return buildDelta(cycleIdx, _t_i_minimizeWithAdditionalTests);
+    }
+
+    public double deltaAddConstantRateMaintainUpperBound(int cycleIdx)
+    {
+        return buildDelta(cycleIdx, _t_i_minimizeWithAdditionalTestsMaintainUpperBound);
+    }
+
+    private double buildDelta(int cycleIdx, List<List<Integer>> t_i)
+    {
+        // as described in paper the cycle index is called c
+        int c = _currentCycle;
+        if(cycleIdx < 0 || c - cycleIdx <= 0)
+        {
+            return 0.0;
+        }
+        else
+        {
+            int size = _currentProfile_p.get(c).size();
+            IntToDoubleFunction mapper = 
+                    idx -> 
+                {
+                    return (_currentProfile_p.get(c).get(idx) - _currentProfile_p.get(c - 1).get(idx)) / (2 + (double)t_i.get(c - 1).get(idx));
+                };
+            return IntStream.range(0, size).mapToDouble(mapper).sum();
+        }
+    }
+    
     public int getCurrentCycle()
     {
+        System.out.println("Cycle: " + _currentCycle);
         return _currentCycle;
     }
 
@@ -81,27 +114,59 @@ public class CycleBasedRiskAnalysis
 
     public void initializeUpperBoundStrategy()
     {
-        System.out.println("_t_i_maintainUpperBound = new ArrayList<Integer>(_initial_tis);");
-        _t_i_maintainUpperBound = new ArrayList<Integer>(_initial_tis);
+        ArrayList<Integer> firstEntry = new ArrayList<Integer>(_initial_tis);
+        List<List<Integer>> t_i_maintainUpperBound = new ArrayList<List<Integer>>();
+        t_i_maintainUpperBound.add(firstEntry);
+        _t_i_maintainUpperBound = t_i_maintainUpperBound;
     }
 
     public void initializeAdditionalTestsStrategy()
     {
-        System.out.println("_t_i_minimizeWithAdditionalTests = new ArrayList<Integer>(_initial_tis);");
-        _t_i_minimizeWithAdditionalTests = new ArrayList<Integer>(_initial_tis);
+        ArrayList<Integer> firstEntry = new ArrayList<Integer>(_initial_tis);
+        List<List<Integer>> t_i_minimizeWithAdditionalTests = new ArrayList<List<Integer>>();
+        t_i_minimizeWithAdditionalTests.add(firstEntry);
+        _t_i_minimizeWithAdditionalTests = t_i_minimizeWithAdditionalTests;
     }
 
     public void initializeAdditionalTestsUpperBoundStrategy()
     {
-        System.out.println("_t_i_minimizeWithAdditionalTestsMaintainUpperBound = new ArrayList<Integer>(_initial_tis);");
-        _t_i_minimizeWithAdditionalTestsMaintainUpperBound = new ArrayList<Integer>(_initial_tis);
+        ArrayList<Integer> firstEntry = new ArrayList<Integer>(_initial_tis);
+        List<List<Integer>> t_i_minimizeWithAdditionalTestsMaintainUpperBound = new ArrayList<List<Integer>>();
+        t_i_minimizeWithAdditionalTestsMaintainUpperBound.add(firstEntry);
+        _t_i_minimizeWithAdditionalTestsMaintainUpperBound = t_i_minimizeWithAdditionalTestsMaintainUpperBound;
     }
 
     public void setupNextCycle()
     {
         _currentCycle = _sampler.getCycle();
-        _currentProfile_p = retreiveProfileFromIndexed(_sampler.getClusterCounts());
-        _bareRiskDiff = RiskAnalysisAlgorithmically.computeR(_initial_tis, _currentProfile_p);
+        _currentProfile_p.add(retreiveProfileFromIndexed(_sampler.getClusterCounts()));
+        _bareRiskDiff = RiskAnalysisAlgorithmically.computeR(_initial_tis, _currentProfile_p.get(_currentCycle));
+    }
+
+    private void updateUpperBoundStrategyDistribution()
+    {
+        _t_i_maintainUpperBound.add(merge(_newTestsMaintainUpperBound, _t_i_maintainUpperBound.get(_currentCycle)));
+        
+        _ubNewTests = _newTestsMaintainUpperBound.stream().mapToDouble(Double::valueOf).sum();
+        _ubAllTests = _t_i_maintainUpperBound.get(_currentCycle + 1).stream().mapToDouble(Double::valueOf).sum();
+        _ubRisk = RiskAnalysisAlgorithmically.computeR(_t_i_maintainUpperBound.get(_currentCycle + 1), _currentProfile_p.get(_currentCycle));
+    }
+
+    private void updateAdditionalTestsStrageyDistribution()
+    {
+        _t_i_minimizeWithAdditionalTests.add(merge(_newTestsMinimizeWithAdditional, _t_i_minimizeWithAdditionalTests.get(_currentCycle)));
+        
+        _addedNewTests = _newTestsMinimizeWithAdditional.stream().mapToDouble(Double::valueOf).sum();
+        _addedAllTests = _t_i_minimizeWithAdditionalTests.get(_currentCycle + 1).stream().mapToDouble(Double::valueOf).sum();
+        _addedNewTestsRisk = RiskAnalysisAlgorithmically.computeR(_t_i_minimizeWithAdditionalTests.get(_currentCycle + 1), _currentProfile_p.get(_currentCycle));
+    }
+
+    private void updateAdditionalTestsMaintainUpperBoundStrategyDistribution()
+    {
+        _t_i_minimizeWithAdditionalTestsMaintainUpperBound.add(merge(_newTestsMinimizeWithAdditionalAndMaintain, _t_i_minimizeWithAdditionalTestsMaintainUpperBound.get(_currentCycle)));
+        _addedUbNewTests = _newTestsMinimizeWithAdditionalAndMaintain.stream().mapToDouble(Double::valueOf).sum();
+        _addedUbAllTests = _t_i_minimizeWithAdditionalTestsMaintainUpperBound.get(_currentCycle + 1).stream().mapToDouble(Double::valueOf).sum();
+        _addedUbTestsRisk = RiskAnalysisAlgorithmically.computeR(_t_i_minimizeWithAdditionalTestsMaintainUpperBound.get(_currentCycle + 1), _currentProfile_p.get(_currentCycle));
     }
 
     /**
@@ -109,12 +174,24 @@ public class CycleBasedRiskAnalysis
      */
     public void applyMaintainUpperBoundStrategy()
     {
-        List<Integer> newTestsMaintainUpperBound = 
-                maintainUpperBound(_t_i_maintainUpperBound);
-        _t_i_maintainUpperBound = merge(newTestsMaintainUpperBound, _t_i_maintainUpperBound);
-        _ubNewTests = newTestsMaintainUpperBound.stream().mapToDouble(Double::valueOf).sum();
-        _ubAllTests = _t_i_maintainUpperBound.stream().mapToDouble(Double::valueOf).sum();
-        _ubRisk = RiskAnalysisAlgorithmically.computeR(_t_i_maintainUpperBound, _currentProfile_p);
+        List<Integer> t_is_old = _t_i_maintainUpperBound.get(_currentCycle);
+        List<Double> currentProfile = _currentProfile_p.get(_currentCycle);
+        if(t_is_old == null)
+        {
+            _newTestsMaintainUpperBound = RiskAnalysisAlgorithmically.compute_t_iGivenR(currentProfile, _riskUpperBound);
+        }
+        else
+        {
+            double currentRisk = RiskAnalysisAlgorithmically.computeR(t_is_old, currentProfile);
+            if(currentRisk <= _riskUpperBound)
+            {
+                _newTestsMaintainUpperBound = IntStream.range(0, _currentProfile_p.get(_currentCycle).size()).map(idx -> 0).boxed().collect(Collectors.toList());
+            }
+            else
+            {
+                _newTestsMaintainUpperBound = RiskAnalysisAlgorithmically.t_iMinimizeTGivenRisk_p_iAndOldt_iDiffOnly(currentProfile, t_is_old, _riskUpperBound);
+            }
+        }
     }
 
     /**
@@ -122,12 +199,8 @@ public class CycleBasedRiskAnalysis
      */
     public void applyAddTestsConstantRateStrategy()
     {
-        List<Integer> newTestsMinimizeWithAdditional = 
-                minimizeWithAdditionalTests(_t_i_minimizeWithAdditionalTests, _currentProfile_p, _previousProfile_p, _maxAdditionalTests);
-        _t_i_minimizeWithAdditionalTests = merge(newTestsMinimizeWithAdditional, _t_i_minimizeWithAdditionalTests);
-        _addedNewTests = newTestsMinimizeWithAdditional.stream().mapToDouble(Double::valueOf).sum();
-        _addedAllTests = _t_i_minimizeWithAdditionalTests.stream().mapToDouble(Double::valueOf).sum();
-        _addedNewTestsRisk = RiskAnalysisAlgorithmically.computeR(_t_i_minimizeWithAdditionalTests, _currentProfile_p);
+        _newTestsMinimizeWithAdditional = 
+                RiskAnalysisAlgorithmically.t_iMinimizeRiskGivenT_p_iAndOldt_iDiffOnly(_currentProfile_p.get(_currentCycle), _t_i_minimizeWithAdditionalTests.get(_currentCycle), _maxAdditionalTests);
     }    
 
     /**
@@ -135,12 +208,13 @@ public class CycleBasedRiskAnalysis
      */
     public void applyAddTestsConstantRateAndMaintainUpperBoundStrategy()
     {
-        List<Integer> newTestsMinimizeWithAdditionalAndMaintain = 
-                minimizeWithAdditionalTestsAndMaintainUpperBound(_t_i_minimizeWithAdditionalTestsMaintainUpperBound, _currentProfile_p, _previousProfile_p, _riskUpperBound, _maxAdditionalTests);
-        _t_i_minimizeWithAdditionalTestsMaintainUpperBound = merge(newTestsMinimizeWithAdditionalAndMaintain, _t_i_minimizeWithAdditionalTestsMaintainUpperBound);
-        _addedUbNewTests = newTestsMinimizeWithAdditionalAndMaintain.stream().mapToDouble(Double::valueOf).sum();
-        _addedUbAllTests = _t_i_minimizeWithAdditionalTestsMaintainUpperBound.stream().mapToDouble(Double::valueOf).sum();
-        _addedUbTestsRisk = RiskAnalysisAlgorithmically.computeR(_t_i_minimizeWithAdditionalTestsMaintainUpperBound, _currentProfile_p);
+        List<Integer> t_is = _t_i_minimizeWithAdditionalTestsMaintainUpperBound.get(_currentCycle);
+        List<Double> currentProfile = _currentProfile_p.get(_currentCycle);
+        List<Integer> additionalTestsGivenT = RiskAnalysisAlgorithmically.t_iMinimizeRiskGivenT_p_iAndOldt_iDiffOnly(currentProfile, t_is, _maxAdditionalTests);
+        List<Integer> result = merge(additionalTestsGivenT, t_is);
+        List<Integer> additionalTestsGivenUB = RiskAnalysisAlgorithmically.t_iMinimizeTGivenRisk_p_iAndOldt_iDiffOnly(currentProfile, result, _riskUpperBound);
+        result = merge(additionalTestsGivenT, additionalTestsGivenUB);
+        _newTestsMinimizeWithAdditionalAndMaintain = result;
     }
 
     public double ubNewTests()
@@ -168,40 +242,6 @@ public class CycleBasedRiskAnalysis
         _maxAdditionalTests = maxAdditionalTests;
     }
     
-    private List<Integer> maintainUpperBound(List<Integer> t_is_old)
-    {
-        if(t_is_old == null)
-        {
-            return RiskAnalysisAlgorithmically.compute_t_iGivenR(_currentProfile_p, _riskUpperBound);
-        }
-        else
-        {
-            double currentRisk = RiskAnalysisAlgorithmically.computeR(t_is_old, _currentProfile_p);
-            if(currentRisk <= _riskUpperBound)
-            {
-                return IntStream.range(0, _currentProfile_p.size()).map(idx -> 0).boxed().collect(Collectors.toList());
-            }
-            else
-            {
-                return RiskAnalysisAlgorithmically.t_iMinimizeTGivenRisk_p_iAndOldt_iDiffOnly(_currentProfile_p, t_is_old, _riskUpperBound);
-            }
-        }
-    }
-    
-    private static List<Integer> minimizeWithAdditionalTests(List<Integer> t_is, List<Double> currentProfile_p, List<Double> previousProfile_p, int maxAdditionalTests)
-    {
-        return RiskAnalysisAlgorithmically.t_iMinimizeRiskGivenT_p_iAndOldt_iDiffOnly(currentProfile_p, t_is, maxAdditionalTests);
-    }
-    
-    private static List<Integer> minimizeWithAdditionalTestsAndMaintainUpperBound(List<Integer> t_is, List<Double> currentProfile_p, List<Double> previousProfile_p, double riskUpperBound, int maxAdditionalTests)
-    {
-        List<Integer> additionalTestsGivenT = RiskAnalysisAlgorithmically.t_iMinimizeRiskGivenT_p_iAndOldt_iDiffOnly(currentProfile_p, t_is, maxAdditionalTests);
-        List<Integer> result = merge(additionalTestsGivenT, t_is);
-        List<Integer> additionalTestsGivenUB = RiskAnalysisAlgorithmically.t_iMinimizeTGivenRisk_p_iAndOldt_iDiffOnly(currentProfile_p, result, riskUpperBound);
-        result = merge(additionalTestsGivenT, additionalTestsGivenUB);
-        return result;
-    }
-
     private static List<Integer> merge(List<Integer> additionalTests, List<Integer> currentTests)
     {
         if(currentTests == null)
@@ -246,7 +286,7 @@ public class CycleBasedRiskAnalysis
 
     public List<Double> getCurrentProfile_p()
     {
-        return _currentProfile_p;
+        return _currentProfile_p.get(_currentCycle);
     }
 
     public List<Double> getStartCity_p()
