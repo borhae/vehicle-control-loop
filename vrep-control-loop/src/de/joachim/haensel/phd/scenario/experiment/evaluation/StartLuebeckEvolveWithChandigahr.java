@@ -1,6 +1,11 @@
 package de.joachim.haensel.phd.scenario.experiment.evaluation;
 
-import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.*;
+import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.extractForCity;
+import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.getClusterIndices;
+import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.loadClusteringK;
+import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.retreiveProfileFrom;
+import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.retreiveProfileFromIndexed;
+import static de.joachim.haensel.phd.scenario.experiment.evaluation.ClusteringInformationRetreival.reverseClustering;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -35,13 +40,12 @@ public class StartLuebeckEvolveWithChandigahr
         Map<Trajectory3DSummaryStatistics, List<Integer>> clustering = loadClusteringK(200);
         Random randomGen = new MersenneTwister(1001);
         double riskUpperBound = Math.pow(10.0, -4.0);
-        double maxTests = 10000.0;
         double maxAdditionalTests = 6;
 //        runEvolve(dbTrajectories, clustering, randomGen, riskUpperBound, maxTests, "Luebeck", "Chandigarh");
-        runEvolve(dbTrajectories, clustering, randomGen, riskUpperBound, maxTests, maxAdditionalTests, "Chandigarh", "Luebeck");
+        runEvolve(dbTrajectories, clustering, randomGen, riskUpperBound, maxAdditionalTests, "Chandigarh", "Luebeck");
     }
 
-    private static void runEvolve(Map<Integer, MongoTrajectory> dbTrajectories, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering, Random randomGen, double riskUpperBound, double maxTests, double maxAdditionalTests, String startCityName, String evolveIntoCityName)
+    private static void runEvolve(Map<Integer, MongoTrajectory> dbTrajectories, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering, Random randomGen, double riskUpperBound, double maxAdditionalTests, String startCityName, String evolveIntoCityName)
     {
         Map<Integer, Trajectory3DSummaryStatistics> reversedMap = reverseClustering(clustering);
         Map<Trajectory3DSummaryStatistics, List<Integer>> startCityClustering = extractForCity(dbTrajectories, clustering, clustering.keySet(), startCityName);
@@ -51,10 +55,8 @@ public class StartLuebeckEvolveWithChandigahr
         List<Integer> evlovIntoCityIndices = new ArrayList<Integer>(getClusterIndices(evolveIntoCityClustering));
 
         List<Double> startCity_p = retreiveProfileFrom(startCityClustering);
-        List<Double> t_is_startCity = RiskAnalysis.compute_t_iGivenR(startCity_p, riskUpperBound);
         
         HashMap<Integer, Integer> clusterCounts = initializeClusterCountsFrom(startCityClustering);
-        
 
         Collections.shuffle(startCityIndices);
         Collections.shuffle(evlovIntoCityIndices);

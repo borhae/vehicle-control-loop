@@ -24,25 +24,51 @@ public class StartLuebeckEvolveWithChandigahrAlgorithmPredictive
     public static void main(String[] args)
     {
         TrajectoryLoader trajectoryLoader = new TrajectoryLoader();
+        //Dataset contains 1266747 entries
         Map<Integer, MongoTrajectory> dbTrajectories = trajectoryLoader.loadIndexedDataToMap("data_available_at_2020-01-18");
         Map<Trajectory3DSummaryStatistics, List<Integer>> clustering = loadClusteringK(200);
         Random evolveRnd = new MersenneTwister(1001);
         Random shuffleRnd = new MersenneTwister(1002);
         double riskUpperBound = Math.pow(10.0, -4.0);
         double maxTests = 10000.0;
-        int maxAdditionalTests = 1;
+        int maxAdditionalTests = 6;
+        double startWeigh = 100.0;
 //        runEvolve(dbTrajectories, clustering, randomGen, riskUpperBound, maxTests, "Luebeck", "Chandigarh");
-        runEvolve(dbTrajectories, clustering, evolveRnd, shuffleRnd, riskUpperBound, maxTests, maxAdditionalTests, "Chandigarh", "Luebeck");
+        runEvolve(dbTrajectories, clustering, evolveRnd, shuffleRnd, riskUpperBound, maxTests, maxAdditionalTests, "Chandigarh", "Luebeck", startWeigh);
     }
 
-    private static void runEvolve(Map<Integer, MongoTrajectory> dbTrajectories, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering, Random evolveRnd, Random shuffleRnd, double riskUpperBound, double maxTests, int maxAdditionalTests, String startCityName, String evolveIntoCityName)
+    private static void runEvolve(Map<Integer, MongoTrajectory> dbTrajectories, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering, Random evolveRnd, Random shuffleRnd, double riskUpperBound, double maxTests, int maxAdditionalTests, String startCityName, String evolveIntoCityName, double startWeigh)
     {
-        SimulationBySampling sampler = new SimulationBySampling(evolveRnd, shuffleRnd, startCityName, evolveIntoCityName, clustering, dbTrajectories);
+        SimulationBySampling sampler = new SimulationBySampling(evolveRnd, shuffleRnd, startCityName, evolveIntoCityName, clustering, dbTrajectories, startWeigh);
         System.out.println("Creating profile");
-        sampler.setCyclesToSample(40000);
-        sampler.setSamplesPerCycle(1000);
+//        sampler.setCyclesToSample(40000);
+//        sampler.setSamplesPerCycle(100);
+        sampler.setCyclesToSample(10000);
+        sampler.setSamplesPerCycle(20000);
         ArrayList<FromTo> samplingProfile = 
                 new ArrayList<FromTo>(Arrays.asList(
+//                        new FromTo(0.0, 0.0),
+//                        new FromTo(0.0, 0.5),
+//                        new FromTo(0.5, 0.5),
+//                        new FromTo(0.5, 1.0),
+//                        new FromTo(1.0, 1.0),
+//                        new FromTo(1.0, 1.0),
+//                        new FromTo(1.0, 1.0),
+//                        new FromTo(1.0, 1.0),
+//                        new FromTo(1.0, 1.0),
+//                        new FromTo(1.0, 1.0)
+                        
+//                        new FromTo(0.0, 0.0),
+//                        new FromTo(0.0, 0.5),
+//                        new FromTo(0.5, 0.5),
+//                        new FromTo(0.5, 1.0),
+//                        new FromTo(1.0, 1.0),
+//                        new FromTo(1.0, 0.5),
+//                        new FromTo(0.5, 0.5),
+//                        new FromTo(0.5, 0.0),
+//                        new FromTo(0.0, 0.0),
+//                        new FromTo(0.0, 0.0)
+                        
                         new FromTo(0.0, 0.0),
                         new FromTo(0.0, 0.5),
                         new FromTo(0.5, 0.5),
@@ -50,9 +76,12 @@ public class StartLuebeckEvolveWithChandigahrAlgorithmPredictive
                         new FromTo(1.0, 1.0),
                         new FromTo(1.0, 1.0),
                         new FromTo(1.0, 1.0),
-                        new FromTo(1.0, 1.0),
-                        new FromTo(1.0, 1.0),
                         new FromTo(1.0, 1.0)
+                        
+//                      new FromTo(0.0, 0.0),
+//                      new FromTo(0.0, 0.5),
+//                      new FromTo(0.5, 0.5),
+//                      new FromTo(0.5, 0.5)
                 )
         );
         sampler.setSamplingProfile(samplingProfile);
@@ -91,13 +120,13 @@ public class StartLuebeckEvolveWithChandigahrAlgorithmPredictive
             
             String allInfoFileName = String.format("./evolve%sTo%s_k%dAddm%smoreTestsAllInfosPred.csv", startCityName, evolveIntoCityName, clustering.keySet().size(), maxAdditionalTests);
             BufferedWriter allInfoWriter = Files.newBufferedWriter(Paths.get(allInfoFileName));
-            String allInfoHeaderRow = String.format("diff_p batchCnt%1$s batchCnt%2$s nr_newTests_ub nr_newTests_add nr_newTests_add_ub nr_allTestsUb nr_allTestsAdd nr_allTestsAddUb risk_ub risk_add risk_add_ub risk_no_added_test risk_diff_ub risk_diff_add risk_diff_add_ub", startCityName, evolveIntoCityName);
+            String allInfoHeaderRow = String.format("cycle diff_p batchCnt%1$s batchCnt%2$s nr_newTests_ub nr_newTests_add nr_newTests_add_ub nr_allTestsUb nr_allTestsAdd nr_allTestsAddUb risk_ub risk_add risk_add_ub risk_no_added_test risk_diff_ub risk_diff_add risk_diff_add_ub risk_no_add_test", startCityName, evolveIntoCityName);
             allInfoWriter.write(allInfoHeaderRow);
             allInfoWriter.newLine();
 
             while(sampler.hasMoreCycles())
             {
-                sampler.sample();
+                sampler.sampleWithReplacement();
                 cycleAnalysis.setupNextCycle();
                 
                 cycleAnalysis.applyMaintainUpperBoundStrategy();
@@ -110,10 +139,12 @@ public class StartLuebeckEvolveWithChandigahrAlgorithmPredictive
                 double deltaMaintainUpperBound = cycleAnalysis.deltaMaintainUpperBound(cycleAnalysis.getCurrentCycle() -1);
                 double deltaAddConstantRate = cycleAnalysis.deltaAddConstantRate(cycleAnalysis.getCurrentCycle() -1);
                 double deltaAddConstantRateMaintainUpperBound = cycleAnalysis.deltaAddConstantRateMaintainUpperBound(cycleAnalysis.getCurrentCycle() -1);
+                double deltaNoAdditionalTests = cycleAnalysis.deltaNoAdditionalTests(cycleAnalysis.getCurrentCycle() - 1);
 
                 String riskDiffUb = Double.toString(deltaMaintainUpperBound);
                 String riskDiffAded = Double.toString(deltaAddConstantRate);
                 String riskDiffAddedUb = Double.toString(deltaAddConstantRateMaintainUpperBound);
+                String riskNoAddedTests = Double.toString(deltaNoAdditionalTests);
 
 
                 String ubNewTests = Double.toString(cycleAnalysis.ubNewTests());
@@ -142,7 +173,7 @@ public class StartLuebeckEvolveWithChandigahrAlgorithmPredictive
                 addedUbWriter.write(String.format("%f %d %d %s %s %s %s", diff_p, batchCntStartCity, batchCntEvolveIntoCity, addedUbNewTests, addedUbAllTests, addedUbTestsRisk, bareRiskDiff));
                 addedUbWriter.newLine();
 
-                allInfoWriter.write(String.format("%f %d %d %s %s %s %s %s %s %s %s %s %s %s %s %s", diff_p, batchCntStartCity, batchCntEvolveIntoCity, ubNewTests, addedNewTests, addedUbNewTests, ubAllTests, addedAllTests, addedUbAllTests, ubRisk, addedNewTestsRisk, addedUbTestsRisk, bareRiskDiff, riskDiffUb, riskDiffAded, riskDiffAddedUb));
+                allInfoWriter.write(String.format("%d %f %d %d %s %s %s %s %s %s %s %s %s %s %s %s %s %s", sampler.getCycle(), diff_p, batchCntStartCity, batchCntEvolveIntoCity, ubNewTests, addedNewTests, addedUbNewTests, ubAllTests, addedAllTests, addedUbAllTests, ubRisk, addedNewTestsRisk, addedUbTestsRisk, bareRiskDiff, riskDiffUb, riskDiffAded, riskDiffAddedUb, riskNoAddedTests));
                 allInfoWriter.newLine();
             }
             ubWriter.flush();

@@ -40,13 +40,12 @@ public class StartLuebeckEvolveWithChandigahrAlgorithm
         Random evolveRandom = new MersenneTwister(1001);
         Random shuffleRandom = new MersenneTwister(1002);
         double riskUpperBound = Math.pow(10.0, -4.0);
-        double maxTests = 10000.0;
         int maxAdditionalTests = 1;
-//        runEvolve(dbTrajectories, clustering, randomGen, riskUpperBound, maxTests, "Luebeck", "Chandigarh");
-        runEvolve(dbTrajectories, clustering, evolveRandom, shuffleRandom, riskUpperBound, maxTests, maxAdditionalTests, "Chandigarh", "Luebeck");
+//        runEvolve(dbTrajectories, clustering, randomGen, riskUpperBound, "Luebeck", "Chandigarh");
+        runEvolve(dbTrajectories, clustering, evolveRandom, shuffleRandom, riskUpperBound, maxAdditionalTests, "Chandigarh", "Luebeck");
     }
 
-    private static void runEvolve(Map<Integer, MongoTrajectory> dbTrajectories, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering, Random evolveRandom, Random shuffleRandom, double riskUpperBound, double maxTests, int maxAdditionalTests, String startCityName, String evolveIntoCityName)
+    private static void runEvolve(Map<Integer, MongoTrajectory> dbTrajectories, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering, Random evolveRandom, Random shuffleRandom, double riskUpperBound, int maxAdditionalTests, String startCityName, String evolveIntoCityName)
     {
         int maxRange = 40000;
         int tenthRange = maxRange / 10;
@@ -85,7 +84,6 @@ public class StartLuebeckEvolveWithChandigahrAlgorithm
         HashMap<Integer, Integer> clusterCounts = initializeClusterCountsFrom(startCityClustering);
         
         List<Double> startCity_p = retreiveProfileFrom(startCityClustering);
-        List<Double> t_is_startCity = RiskAnalysis.compute_t_iGivenR(startCity_p, riskUpperBound);
         //-------------------------------------------------------------
         //TODO (remove me) Just debugging
         //-------------------------------------------------------------

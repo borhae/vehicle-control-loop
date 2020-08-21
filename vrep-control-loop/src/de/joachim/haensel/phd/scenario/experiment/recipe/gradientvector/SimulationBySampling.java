@@ -28,7 +28,7 @@ public class SimulationBySampling
     private Map<Trajectory3DSummaryStatistics, List<Integer>> _evolveIntoCityClustering;
     private HashMap<Integer, Integer> _clusterCounts;
     private ArrayList<Integer> _startCityIndices;
-    private ArrayList<Integer> _evlovIntoCityIndices;
+    private ArrayList<Integer> _evolveIntoCityIndices;
     private int _cyclesToSample;
     private int _samplesPerCycle;
     private List<Double> _cityProbability;
@@ -43,8 +43,9 @@ public class SimulationBySampling
     private String _evolveIntoCityName;
     private Map<Trajectory3DSummaryStatistics, List<Integer>> _clustering;
     private Map<Integer, MongoTrajectory> _dbTrajectories;
+    private double _startWeigh;
 
-    public SimulationBySampling(Random evolveRandom, Random shuffleRandom, String startCityName, String evolveIntoCityName, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering, Map<Integer, MongoTrajectory> dbTrajectories)
+    public SimulationBySampling(Random evolveRandom, Random shuffleRandom, String startCityName, String evolveIntoCityName, Map<Trajectory3DSummaryStatistics, List<Integer>> clustering, Map<Integer, MongoTrajectory> dbTrajectories, double startWeigh)
     {
         _currentCycle = -1;
         _evolveRandom = evolveRandom;
@@ -53,6 +54,7 @@ public class SimulationBySampling
         _evolveIntoCityName = evolveIntoCityName;
         _clustering = clustering;
         _dbTrajectories = dbTrajectories;
+        _startWeigh = startWeigh;
     }
 
     public void initialize()
@@ -63,21 +65,22 @@ public class SimulationBySampling
         _evolveIntoCityClustering = extractForCity(_dbTrajectories, _clustering, _clustering.keySet(), _evolveIntoCityName);
 
         _startCityIndices = new ArrayList<Integer>(getClusterIndices(_startCityClustering));
-        _evlovIntoCityIndices = new ArrayList<Integer>(getClusterIndices(_evolveIntoCityClustering));
+        _evolveIntoCityIndices = new ArrayList<Integer>(getClusterIndices(_evolveIntoCityClustering));
         
         _clusterCounts = initializeClusterCountsFrom(_startCityClustering);
 
         Collections.shuffle(_startCityIndices, _shuffleRandom);
-        Collections.shuffle(_evlovIntoCityIndices, _shuffleRandom);
+        Collections.shuffle(_evolveIntoCityIndices, _shuffleRandom);
         
         _startCityUsableIndices = new LinkedList<Integer>(_startCityIndices);
-        _evolveIntoCityUsableIndices = new LinkedList<Integer>(_evlovIntoCityIndices);
+        _evolveIntoCityUsableIndices = new LinkedList<Integer>(_evolveIntoCityIndices);
     }
     
     private HashMap<Integer, Integer> initializeClusterCountsFrom(Map<Trajectory3DSummaryStatistics, List<Integer>> clustering)
     {
         Stream<Entry<Trajectory3DSummaryStatistics, List<Integer>>> entrySetStream = clustering.entrySet().stream();
         Map<Integer, Integer> clusterNrs = entrySetStream.collect(Collectors.toMap(entry -> entry.getKey().getClusterNr(), entry -> entry.getValue().size()));
+        clusterNrs = clusterNrs.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> (int)(entry.getValue() * _startWeigh)));
         return new HashMap<Integer, Integer>(clusterNrs);
     }
 
@@ -112,7 +115,7 @@ public class SimulationBySampling
         return _currentCycle < _cyclesToSample - 1;
     }
 
-    public void sample()
+    public void sampleWithoutReplacement()
     {
         _currentCycle++;
         _batchCntStartCity = 0;
@@ -124,8 +127,8 @@ public class SimulationBySampling
                 if(_evolveIntoCityUsableIndices.isEmpty())
                 {
                     //refill if empty, don't forget to shuffle
-                    Collections.shuffle(_evlovIntoCityIndices, _shuffleRandom);
-                    _evolveIntoCityUsableIndices.addAll(_evlovIntoCityIndices);
+                    Collections.shuffle(_evolveIntoCityIndices, _shuffleRandom);
+                    _evolveIntoCityUsableIndices.addAll(_evolveIntoCityIndices);
                 }
                 Integer trajectoryIdx = _evolveIntoCityUsableIndices.remove();
                 int clusterNr = _reversedMap.get(trajectoryIdx).getClusterNr();
@@ -141,6 +144,30 @@ public class SimulationBySampling
                     _startCityUsableIndices.addAll(_startCityIndices);
                 }
                 Integer trajectoryIdx = _startCityUsableIndices.remove();
+                int clusterNr = _reversedMap.get(trajectoryIdx).getClusterNr();
+                _clusterCounts.put(clusterNr, _clusterCounts.get(clusterNr) == null ? 1 : _clusterCounts.get(clusterNr) + 1);
+                _batchCntStartCity++;
+            }
+        }
+    }
+
+    public void sampleWithReplacement()
+    {
+        _currentCycle++;
+        _batchCntStartCity = 0;
+        _batchCntEvolveIntoCity = 0;
+        for(int idx = 0; idx < _samplesPerCycle; idx++)
+        {
+            if(_evolveRandom.nextDouble() < _cityProbability.get(_currentCycle))
+            {
+                Integer trajectoryIdx = _evolveIntoCityIndices.get(_shuffleRandom.nextInt(_evolveIntoCityIndices.size()));
+                int clusterNr = _reversedMap.get(trajectoryIdx).getClusterNr();
+                _clusterCounts.put(clusterNr, _clusterCounts.get(clusterNr) == null ? 1 : _clusterCounts.get(clusterNr) + 1);
+                _batchCntEvolveIntoCity++;
+            }
+            else
+            {
+                Integer trajectoryIdx = _startCityIndices.get(_shuffleRandom.nextInt(_startCityIndices.size()));
                 int clusterNr = _reversedMap.get(trajectoryIdx).getClusterNr();
                 _clusterCounts.put(clusterNr, _clusterCounts.get(clusterNr) == null ? 1 : _clusterCounts.get(clusterNr) + 1);
                 _batchCntStartCity++;

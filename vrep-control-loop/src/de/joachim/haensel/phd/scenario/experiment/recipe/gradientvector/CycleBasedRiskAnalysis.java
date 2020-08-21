@@ -64,6 +64,26 @@ public class CycleBasedRiskAnalysis
         updateAdditionalTestsStrageyDistribution();
         updateAdditionalTestsMaintainUpperBoundStrategyDistribution();
     }
+    
+    public double deltaNoAdditionalTests(int cycleIdx)
+    {
+        // as described in paper the cycle index is called c
+        int c = _currentCycle;
+        if(cycleIdx < 0 || c - cycleIdx <= 0)
+        {
+            return 0.0;
+        }
+        else
+        {
+            int size = _currentProfile_p.get(c).size();
+            IntToDoubleFunction mapper = 
+                    idx -> 
+                {
+                    return (_currentProfile_p.get(c).get(idx) - _currentProfile_p.get(c - 1).get(idx)) / (2 + (double)_initial_tis.get(idx));
+                };
+            return IntStream.range(0, size).mapToDouble(mapper).sum();
+        }
+    }
 
     public double deltaMaintainUpperBound(int cycleIdx)
     {
@@ -79,7 +99,7 @@ public class CycleBasedRiskAnalysis
     {
         return buildDelta(cycleIdx, _t_i_minimizeWithAdditionalTestsMaintainUpperBound);
     }
-
+    
     private double buildDelta(int cycleIdx, List<List<Integer>> t_i)
     {
         // as described in paper the cycle index is called c
