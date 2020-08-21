@@ -84,32 +84,6 @@ public class StartLuebeckEvolveWithChandigahrAlgorithm
         HashMap<Integer, Integer> clusterCounts = initializeClusterCountsFrom(startCityClustering);
         
         List<Double> startCity_p = retreiveProfileFrom(startCityClustering);
-        //-------------------------------------------------------------
-        //TODO (remove me) Just debugging
-        //-------------------------------------------------------------
-//        Random dEvolveRandom = new MersenneTwister(1001);
-//        Random dShuffleRandom = new MersenneTwister(1002);
-//        SimulationBySampling sampler = new SimulationBySampling(dEvolveRandom, dShuffleRandom, startCityName, evolveIntoCityName, clustering, dbTrajectories);
-//        sampler.setCyclesToSample(40000);
-//        sampler.setSamplesPerCycle(1000);
-//        ArrayList<FromTo> samplingProfile = 
-//                new ArrayList<FromTo>(Arrays.asList(
-//                        new FromTo(0.0, 0.0),
-//                        new FromTo(0.0, 0.5),
-//                        new FromTo(0.5, 0.5),
-//                        new FromTo(0.5, 1.0),
-//                        new FromTo(1.0, 1.0),
-//                        new FromTo(1.0, 1.0),
-//                        new FromTo(1.0, 1.0),
-//                        new FromTo(1.0, 1.0),
-//                        new FromTo(1.0, 1.0),
-//                        new FromTo(1.0, 1.0)
-//                )
-//        );
-//        sampler.setSamplingProfile(samplingProfile);
-//        sampler.initialize();
-        //-------------------------------------------------------------
-        //-------------------------------------------------------------
         
         Collections.shuffle(startCityIndices, shuffleRandom);
         Collections.shuffle(evlovIntoCityIndices, shuffleRandom);
@@ -223,13 +197,6 @@ public class StartLuebeckEvolveWithChandigahrAlgorithm
 
                 allInfoWriter.write(String.format("%f %d %d %s %s %s %s %s %s %s %s %s %s", diff_p, batchCntStartCity, batchCntEvolveIntoCity, ubNewTests, addedNewTests, addedUbNewTests, ubAllTests, addedAllTests, addedUbAllTests, ubRisk, addedNewTestsRisk, addedUbTestsRisk, bareRiskDiff));
                 allInfoWriter.newLine();
-                //TODO debug stuff:
-                //--------------------------------------------------------------------
-                if(cnt >= 5)
-                {
-                    System.out.println("stop after 10 iterations in debug-------------------------------------");
-                }
-                //--------------------------------------------------------------------
             }
             ubWriter.flush();
             ubWriter.close();
