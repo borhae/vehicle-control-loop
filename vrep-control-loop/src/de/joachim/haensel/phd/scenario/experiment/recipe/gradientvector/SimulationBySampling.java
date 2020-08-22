@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -156,23 +157,25 @@ public class SimulationBySampling
         _currentCycle++;
         _batchCntStartCity = 0;
         _batchCntEvolveIntoCity = 0;
+        List<Integer> trajectoryIndices = new ArrayList<Integer>();
         for(int idx = 0; idx < _samplesPerCycle; idx++)
         {
             if(_evolveRandom.nextDouble() < _cityProbability.get(_currentCycle))
             {
                 Integer trajectoryIdx = _evolveIntoCityIndices.get(_shuffleRandom.nextInt(_evolveIntoCityIndices.size()));
-                int clusterNr = _reversedMap.get(trajectoryIdx).getClusterNr();
-                _clusterCounts.put(clusterNr, _clusterCounts.get(clusterNr) == null ? 1 : _clusterCounts.get(clusterNr) + 1);
+                trajectoryIndices.add(trajectoryIdx);
                 _batchCntEvolveIntoCity++;
             }
             else
             {
                 Integer trajectoryIdx = _startCityIndices.get(_shuffleRandom.nextInt(_startCityIndices.size()));
-                int clusterNr = _reversedMap.get(trajectoryIdx).getClusterNr();
-                _clusterCounts.put(clusterNr, _clusterCounts.get(clusterNr) == null ? 1 : _clusterCounts.get(clusterNr) + 1);
+                trajectoryIndices.add(trajectoryIdx);
                 _batchCntStartCity++;
             }
         }
+        Consumer<? super Integer> updateClusterCounts = 
+                clusterNr -> _clusterCounts.put(clusterNr, _clusterCounts.get(clusterNr) == null ? 1 : _clusterCounts.get(clusterNr) + 1);
+        trajectoryIndices.parallelStream().map(trajectoryIdx -> _reversedMap.get(trajectoryIdx).getClusterNr()).forEach(updateClusterCounts);
     }
 
     public int getBatchCntStartCity()
