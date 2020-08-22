@@ -5,6 +5,8 @@
 module vrepvehicle
 {
     exports de.joachim.haensel.phd.scenario.experiment.runner;
+    exports de.joachim.haensel.phd.scenario.experiment.recipe;
+    exports de.joachim.haensel.phd.scenario.math;
     
     exports de.joachim.haensel.phd.scenario.experiment.evaluation.database;
     exports de.joachim.haensel.phd.scenario.experiment.evaluation.database.mongodb;

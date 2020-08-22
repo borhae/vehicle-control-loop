@@ -99,7 +99,7 @@ public class SimulationBySampling
         _samplesPerCycle = samplesPerCycle;
     }
 
-    public void setSamplingProfile(ArrayList<FromTo> fromToList)
+    public void setSamplingProfile(List<FromTo> fromToList)
     {
         int partSize = _cyclesToSample/fromToList.size();
         _cityProbability = fromToList.stream().flatMap(fromTo -> Linspace.linspace(fromTo, partSize).stream()).collect(Collectors.toList());
