@@ -24,7 +24,32 @@ public class RiskAnalysisAlgorithmically
     {
 //        testGivenRisk();
 //        testGivenTests();
-        testGivenRiskSmallExample();
+//        testGivenRiskSmallExample();
+        testCompareGivenRisk();
+    }
+
+    private static void testCompareGivenRisk()
+    {
+        double R = Math.pow(10.0, -4.0);
+        List<Double> probabilities;
+        
+        MersenneTwister randomGen = new MersenneTwister();
+        List<Double> randomNums = randomGen.doubles(20).boxed().collect(Collectors.toList());
+        double sum = randomNums.stream().mapToDouble(Double::doubleValue).sum();
+        probabilities = randomNums.stream().map(num -> num / sum).collect(Collectors.toList());
+        double one = probabilities.stream().mapToDouble(Double::doubleValue).sum();
+        System.out.println("Is this one?" + one);
+        
+        long beforeRegular = System.currentTimeMillis();
+        List<Integer> t_i_regular = compute_t_iGivenRStreamBased(probabilities, R);
+        long afterRegular = System.currentTimeMillis();
+        long beforeParallel = System.currentTimeMillis();
+        List<Integer> t_i_parallel = compute_t_iGivenR(probabilities, R);
+        long afterParallel = System.currentTimeMillis();
+        
+        System.out.format("regular took: %d seconds, parallel took: %d\n", afterRegular - beforeRegular, afterParallel - beforeParallel);
+        boolean equal_t_is = t_i_regular.equals(t_i_parallel);
+        System.out.format("Are the t_i the same? %s\n", equal_t_is ? "yep" : "nope");
     }
 
     private static void testGivenTests()
@@ -246,7 +271,9 @@ public class RiskAnalysisAlgorithmically
     }
     
     // IS_NEW
-    public static List<Integer> compute_t_iGivenR(List<Double> currentProfile, double riskUpperBound)
+    // unfortunately streams with collections are significantly slower than simple arrays and loops. Not surprising considering the boxing/unboxing but
+    // the extent is actually quite large
+    public static List<Integer> compute_t_iGivenRStreamBased(List<Double> currentProfile, double riskUpperBound)
     {
         double currentRisk = Double.POSITIVE_INFINITY;
         List<Integer> indices = IntStream.range(0, currentProfile.size()).boxed().collect(Collectors.toList());
@@ -269,10 +296,73 @@ public class RiskAnalysisAlgorithmically
             
             //see how we improved
             currentRisk = resultVector.stream().mapToDouble(val -> val).sum();
+            if(cnt == 0)
+            {
+                System.out.println(p);
+                System.out.println(diffVector);
+                System.out.println(resultVector);
+                System.out.println(maxIdx);
+                System.out.println(currentRisk);
+                System.out.println(t);
+            }
             cnt++;
         }
         System.out.println("Iterations: " + cnt);
         return t;
+    }
+    
+    public static List<Integer> compute_t_iGivenR(List<Double> currentProfile, double riskUpperBound)
+    {
+        double currentRisk = Double.POSITIVE_INFINITY;
+        List<Integer> indices = IntStream.range(0, currentProfile.size()).boxed().collect(Collectors.toList());
+//        List<Integer> t = IntStream.range(0, currentProfile.size()).boxed().map(idx -> 0).collect(Collectors.toList());
+        double[] p = currentProfile.stream().mapToDouble(d -> d).toArray();
+        int[] t = new int[p.length];
+        Arrays.fill(t, 0);
+        double[] diffVector = new double[p.length];
+        double[] resultVector = new double[p.length];
+        int cnt = 0;
+        while(currentRisk > riskUpperBound)
+        {
+            for(int idx = 0; idx < p.length; idx++)
+            {
+                diffVector[idx] = (p[idx] / (2 + t[idx])) - (p[idx] / (2 + t[idx] + 1));
+            }
+            
+            //figure out at which idx we got the highest improvement
+            int maxIdx = 0;
+            double curMax = Double.NEGATIVE_INFINITY;
+            for(int idx = 0; idx < p.length; idx++)
+            {
+                if(diffVector[idx] > curMax)
+                {
+                    maxIdx = idx;
+                    curMax = diffVector[idx];
+                }
+            }
+            
+            //update the best candidate (make one more test there)
+            t[maxIdx] = t[maxIdx] + 1;
+            for(int idx = 0; idx < indices.size(); idx++)
+            {
+                resultVector[idx] = p[idx]/(2 + t[idx]);
+            }
+            
+            //see how we improved
+            currentRisk = Arrays.stream(resultVector).sum();
+            if(cnt == 0)
+            {
+                System.out.println(Arrays.toString(p));
+                System.out.println(Arrays.toString(diffVector));
+                System.out.println(Arrays.toString(resultVector));
+                System.out.println(maxIdx);
+                System.out.println(currentRisk);
+                System.out.println(Arrays.toString(t));
+            }
+            cnt++;
+        }
+        System.out.println("Iterations: " + cnt);
+        return IntStream.of(t).boxed().collect(Collectors.toList());
     }
     
     // same as compute_t_iGivenT

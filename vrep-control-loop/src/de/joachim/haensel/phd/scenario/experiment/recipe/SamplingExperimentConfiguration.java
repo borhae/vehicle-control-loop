@@ -54,7 +54,7 @@ public class SamplingExperimentConfiguration
      * How many samples should be done in one cycle (this could be interpreted as how many vehicles at the same time will provide data)
      * I started with 2000 and am now working with 20000
      */
-    private int _samplePerCycle;
+    private int _samplesPerCycle;
     /**
      * How many cycles should be done in the experiment.
      * I had 10000 and 40000, really depends on what should be going on in the experiment
@@ -117,11 +117,6 @@ public class SamplingExperimentConfiguration
         return _cyclesToSample;
     }
 
-    public int getSamplesPerCycle()
-    {
-        return _samplePerCycle;
-    }
-
     public List<FromTo> getSamplingProfile()
     {
         return _samplingProfile;
@@ -137,14 +132,14 @@ public class SamplingExperimentConfiguration
         _evoloveIntoName = evoloveIntoName;
     }
 
-    public int getSamplePerCycle()
+    public int getSamplesPerCycle()
     {
-        return _samplePerCycle;
+        return _samplesPerCycle;
     }
 
-    public void setSamplePerCycle(int samplePerCycle)
+    public void setSamplesPerCycle(int samplePerCycle)
     {
-        _samplePerCycle = samplePerCycle;
+        _samplesPerCycle = samplePerCycle;
     }
 
     public void setEvolveRndSeed(int evolveRndSeed)

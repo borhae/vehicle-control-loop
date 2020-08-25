@@ -122,13 +122,11 @@ public class CycleBasedRiskAnalysis
     
     public int getCurrentCycle()
     {
-        System.out.println("Cycle: " + _currentCycle);
         return _currentCycle;
     }
 
     public void initializeTestDistribution()
     {
-        System.out.println("_initial_tis = RiskAnalysisAlgorithmically.compute_t_iGivenR(_startCity_p, _riskUpperBound);");
         _initial_tis = RiskAnalysisAlgorithmically.compute_t_iGivenR(_startCity_p, _riskUpperBound);
     }
 

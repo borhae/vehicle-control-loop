@@ -66,14 +66,18 @@ public class ConfigurableSamplingSimulation
 
         TrajectoryLoader trajectoryLoader = new TrajectoryLoader();
         //Dataset contains 1266747 entries
+        System.out.println("loading trajectories");
         Map<Integer, MongoTrajectory> dbTrajectories = trajectoryLoader.loadIndexedDataToMap(dataSetName);
+        System.out.println("loading clustering");
         Map<Trajectory3DSummaryStatistics, List<Integer>> clustering = loadClusteringK(clusteringK);
-
+        
+        System.out.println("initialize sampling experiment");
         Random evolveRnd = new MersenneTwister(evolveRndSeed);
         Random shuffleRnd = new MersenneTwister(pickSampleRnd);
         SimulationBySampling sampler = new SimulationBySampling(evolveRnd, shuffleRnd, startCityName, evolveIntoCityName, clustering, dbTrajectories, startWeigh);
         sampler.setCyclesToSample(cyclesToSample);
         sampler.setSamplesPerCycle(samplesPerCycle);
+        System.out.println("creating profile");
         sampler.setSamplingProfile(samplingProfile);
         System.out.println("done creating profile");
         sampler.initialize();
@@ -81,15 +85,21 @@ public class ConfigurableSamplingSimulation
         CycleBasedRiskAnalysis cycleAnalysis = new CycleBasedRiskAnalysis(sampler);
         cycleAnalysis.setRiskUppeberBound(riskUpperBound);
         cycleAnalysis.setMaxAdditionalTests(maxAdditionalTests);
+        System.out.println("initializing risk analysis");
         cycleAnalysis.initialize();
         
+        System.out.println("create first distribution of tests");
         cycleAnalysis.initializeTestDistribution();
+        System.out.println("initializing strategies");
+        System.out.println("1");
         cycleAnalysis.initializeUpperBoundStrategy();
+        System.out.println("2");
         cycleAnalysis.initializeAdditionalTestsStrategy();
+        System.out.println("3");
         cycleAnalysis.initializeAdditionalTestsUpperBoundStrategy();
-        
         try
         {
+            System.out.println("file stuff");
             String ubFileName = String.format("./evolve%sTo%s_k%dMaintainUPPred.csv", startCityName, evolveIntoCityName, clustering.keySet().size());
             BufferedWriter ubWriter = Files.newBufferedWriter(Paths.get(ubFileName));
             String ubHeaderRow = String.format("diff_p batchCnt%1$s batchCnt%2$s nr_newTests nr_allTests risk risk_no_added_test", startCityName, evolveIntoCityName);
@@ -108,12 +118,14 @@ public class ConfigurableSamplingSimulation
             addedUbWriter.write(addedUbHeaderRow);
             addedUbWriter.newLine();
             
-            String allInfoFileName = String.format("./evolve%sTo%s_k%dAddm%smoreTestsAllInfosPred.csv", startCityName, evolveIntoCityName, clustering.keySet().size(), maxAdditionalTests);
+            String allInfoFileName = String.format("./evolve%sTo%s_k%dAddm%smoreTests%.2fscaledInit%dsamplePerCycle%dCyclesAllInfosPred.csv", startCityName, evolveIntoCityName, clustering.keySet().size(), maxAdditionalTests, configuration.getStartWeight(), configuration.getSamplesPerCycle(), configuration.getCyclesToSample());
             BufferedWriter allInfoWriter = Files.newBufferedWriter(Paths.get(allInfoFileName));
             String allInfoHeaderRow = String.format("cycle diff_p batchCnt%1$s batchCnt%2$s nr_newTests_ub nr_newTests_add nr_newTests_add_ub nr_allTestsUb nr_allTestsAdd nr_allTestsAddUb risk_ub risk_add risk_add_ub risk_no_added_test risk_diff_ub risk_diff_add risk_diff_add_ub risk_no_add_test", startCityName, evolveIntoCityName);
             allInfoWriter.write(allInfoHeaderRow);
             allInfoWriter.newLine();
 
+            System.out.println("sampling loop starts");
+            long startSampling = System.currentTimeMillis();
             while(sampler.hasMoreCycles())
             {
                 sampler.sampleWithReplacement();
@@ -166,6 +178,8 @@ public class ConfigurableSamplingSimulation
                 allInfoWriter.write(String.format("%d %f %d %d %s %s %s %s %s %s %s %s %s %s %s %s %s %s", sampler.getCycle(), diff_p, batchCntStartCity, batchCntEvolveIntoCity, ubNewTests, addedNewTests, addedUbNewTests, ubAllTests, addedAllTests, addedUbAllTests, ubRisk, addedNewTestsRisk, addedUbTestsRisk, bareRiskDiff, riskDiffUb, riskDiffAded, riskDiffAddedUb, riskNoAddedTests));
                 allInfoWriter.newLine();
             }
+            long finishSampling = System.currentTimeMillis();
+            System.out.format("done sampling, took: %d seconds\n", (finishSampling - startSampling)/1000);
             ubWriter.flush();
             ubWriter.close();
             addedWriter.flush();
